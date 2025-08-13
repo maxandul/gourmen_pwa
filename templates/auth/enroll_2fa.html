@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}2FA aktivieren - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>🔐 Zwei-Faktor-Authentifizierung aktivieren</h1>
+        
+        <div class="setup-instructions">
+            <h2>Schritt 1: Authenticator-App einrichten</h2>
+            <p>Öffne deine Authenticator-App (z.B. Google Authenticator, Authy, Microsoft Authenticator) und füge einen neuen Account hinzu:</p>
+            
+            <div class="mfa-section">
+                <h3>Option A: TOTP URI verwenden</h3>
+                <p>Kopiere diesen URI und füge ihn in deine Authenticator-App ein:</p>
+                <div class="mfa-uri-container">
+                    <div class="mfa-uri">{{ totp_uri }}</div>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('{{ totp_uri }}')">📋 Kopieren</button>
+                </div>
+                <p class="text-muted">📱 In den meisten Apps kannst du "QR-Code scannen" wählen und dann "URI eingeben"</p>
+            </div>
+            
+            <div class="mfa-section">
+                <h3>Option B: Secret-Code manuell eingeben</h3>
+                <p>Falls der TOTP URI nicht funktioniert, kannst du den Secret-Code manuell eingeben:</p>
+                <div class="mfa-code-container">
+                    <div class="mfa-code">{{ secret }}</div>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('{{ secret }}')">📋 Kopieren</button>
+                </div>
+                <p class="text-muted">🔑 Gib diesen Code in deine Authenticator-App ein und wähle "TOTP" als Typ</p>
+            </div>
+        </div>
+        
+        <div class="verification-step">
+            <h2>Schritt 2: Code verifizieren</h2>
+            <p>Gib den 6-stelligen Code aus deiner Authenticator-App ein:</p>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.token.label }}
+                    {{ form.token(class="form-control", placeholder="123456", autocomplete="off") }}
+                    {% if form.token.errors %}
+                    <div class="error-message">
+                        {% for error in form.token.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="actions">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('account.profile') }}" class="btn btn-secondary">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="security-info">
+            <h3>🔒 Sicherheitshinweise</h3>
+            <ul>
+                <li>Bewahre deine Authenticator-App sicher auf</li>
+                <li>Teile niemals deine Backup-Codes mit anderen</li>
+                <li>Du erhältst Backup-Codes nach der Aktivierung</li>
+                <li>2FA schützt dein Konto vor unbefugtem Zugriff</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Styles werden jetzt durch base.css abgedeckt -->
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Zeige Toast-Nachricht
+        if (typeof showToast === 'function') {
+            showToast('Code in Zwischenablage kopiert!', 'success');
+        } else {
+            alert('Code kopiert!');
+        }
+    }).catch(function(err) {
+        console.error('Fehler beim Kopieren:', err);
+        alert('Fehler beim Kopieren des Codes');
+    });
+}
+</script>
+{% endblock %}

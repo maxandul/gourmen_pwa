@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Sensible Daten - Profil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>Sensible Daten</h1>
+        <a href="{{ url_for('account.profile') }}" class="btn btn-secondary">← Zurück zum Profil</a>
+    </div>
+    
+    <div class="form-container">
+        <form method="POST" class="form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.pass_nummer.label }}
+                {{ form.pass_nummer(class="form-control") }}
+                {% if form.pass_nummer.errors %}
+                <div class="error-message">
+                    {% for error in form.pass_nummer.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.pass_ausgestellt.label }}
+                {{ form.pass_ausgestellt(class="form-control", type="date") }}
+                {% if form.pass_ausgestellt.errors %}
+                <div class="error-message">
+                    {% for error in form.pass_ausgestellt.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.pass_ablauf.label }}
+                {{ form.pass_ablauf(class="form-control", type="date") }}
+                {% if form.pass_ablauf.errors %}
+                <div class="error-message">
+                    {% for error in form.pass_ablauf.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.id_nummer.label }}
+                {{ form.id_nummer(class="form-control") }}
+                {% if form.id_nummer.errors %}
+                <div class="error-message">
+                    {% for error in form.id_nummer.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.id_ausgestellt.label }}
+                {{ form.id_ausgestellt(class="form-control", type="date") }}
+                {% if form.id_ausgestellt.errors %}
+                <div class="error-message">
+                    {% for error in form.id_ausgestellt.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.id_ablauf.label }}
+                {{ form.id_ablauf(class="form-control", type="date") }}
+                {% if form.id_ablauf.errors %}
+                <div class="error-message">
+                    {% for error in form.id_ablauf.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.fuehrerschein.label }}
+                {{ form.fuehrerschein(class="form-control") }}
+                {% if form.fuehrerschein.errors %}
+                <div class="error-message">
+                    {% for error in form.fuehrerschein.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.allergien.label }}
+                {{ form.allergien(class="form-control", rows=3) }}
+                {% if form.allergien.errors %}
+                <div class="error-message">
+                    {% for error in form.allergien.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

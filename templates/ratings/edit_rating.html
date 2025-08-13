@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Bewertung bearbeiten - {{ event.restaurant or event.event_typ.value }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bewertung bearbeiten</h2>
+                    <p class="text-muted mb-0">
+                        {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
+                    </p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.food_rating.id }}">
+                                        <strong>🍽️ Essen</strong>
+                                    </label>
+                                    {{ form.food_rating(class="form-control", min="1", max="5") }}
+                                    {% if form.food_rating.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.food_rating.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.drinks_rating.id }}">
+                                        <strong>🍷 Getränke</strong>
+                                    </label>
+                                    {{ form.drinks_rating(class="form-control", min="1", max="5") }}
+                                    {% if form.drinks_rating.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.drinks_rating.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.service_rating.id }}">
+                                        <strong>👨‍💼 Bedienung</strong>
+                                    </label>
+                                    {{ form.service_rating(class="form-control", min="1", max="5") }}
+                                    {% if form.service_rating.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.service_rating.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <label for="{{ form.highlights.id }}">
+                                <strong>✨ Highlights & Notizen (optional)</strong>
+                            </label>
+                            {{ form.highlights(class="form-control", rows="4", placeholder="Was war besonders gut? Gibt es Verbesserungsvorschläge?") }}
+                            {% if form.highlights.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.highlights.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Bewertung aktualisieren
+                            </button>
+                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">
+                                Abbrechen
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.rating-scale span {
+    text-align: center;
+    flex: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add rating scale info to each rating field
+    const ratingFields = document.querySelectorAll('input[type="number"]');
+    
+    ratingFields.forEach(function(field) {
+        const parent = field.parentElement;
+        const scaleDiv = document.createElement('div');
+        scaleDiv.className = 'rating-scale';
+        scaleDiv.innerHTML = `
+            <span>1<br><small>Sehr schlecht</small></span>
+            <span>2<br><small>Schlecht</small></span>
+            <span>3<br><small>Mittel</small></span>
+            <span>4<br><small>Gut</small></span>
+            <span>5<br><small>Ausgezeichnet</small></span>
+        `;
+        parent.appendChild(scaleDiv);
+    });
+});
+</script>
+{% endblock %}

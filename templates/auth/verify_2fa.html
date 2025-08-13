@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}2FA Verifizierung - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>🔐 Zwei-Faktor-Authentifizierung</h1>
+        
+        <div class="verification-info">
+            <h2>Verifizierung erforderlich</h2>
+            <p>Gib den 6-stelligen Code aus deiner Authenticator-App ein, um dich anzumelden.</p>
+        </div>
+        
+        <div class="verification-methods">
+            <!-- TOTP Form -->
+            <div class="method-section">
+                <h3>📱 Authenticator-App</h3>
+                <form method="POST">
+                    {{ totp_form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ totp_form.token.label }}
+                        {{ totp_form.token(class="form-control", placeholder="123456", autocomplete="off", autofocus=true) }}
+                        {% if totp_form.token.errors %}
+                        <div class="error-message">
+                            {% for error in totp_form.token.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="actions">
+                        {{ totp_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Backup Code Form -->
+            <div class="method-section">
+                <h3>🔑 Backup-Code</h3>
+                <p>Falls du keinen Zugriff auf deine Authenticator-App hast, kannst du einen Backup-Code verwenden.</p>
+                
+                <form method="POST">
+                    {{ backup_form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ backup_form.backup_code.label }}
+                        {{ backup_form.backup_code(class="form-control", placeholder="ABCD1234", autocomplete="off") }}
+                        {% if backup_form.backup_code.errors %}
+                        <div class="error-message">
+                            {% for error in backup_form.backup_code.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="actions">
+                        {{ backup_form.submit(class="btn btn-secondary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="help-section">
+            <h3>❓ Hilfe benötigt?</h3>
+            <ul>
+                <li>Stelle sicher, dass deine Authenticator-App synchronisiert ist</li>
+                <li>Überprüfe, ob du den richtigen Account in der App ausgewählt hast</li>
+                <li>Falls du deine Backup-Codes verloren hast, kontaktiere einen Administrator</li>
+                <li>Codes sind nur 30 Sekunden gültig - gib sie schnell ein</li>
+            </ul>
+        </div>
+        
+        <div class="actions">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Abbrechen & Abmelden</a>
+        </div>
+    </div>
+</div>
+
+<!-- Styles werden jetzt durch base.css abgedeckt -->
+
+<script>
+// Auto-focus auf das erste Eingabefeld
+document.addEventListener('DOMContentLoaded', function() {
+    const firstInput = document.querySelector('input[type="text"]');
+    if (firstInput) {
+        firstInput.focus();
+    }
+});
+
+// Auto-submit nach 6 Zeichen (für TOTP)
+document.querySelector('input[name="token"]').addEventListener('input', function(e) {
+    if (e.target.value.length === 6) {
+        e.target.form.submit();
+    }
+});
+</script>
+{% endblock %}
+
+
+

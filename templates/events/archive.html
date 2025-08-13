@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Event-Archiv - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>Event-Archiv</h1>
+        <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu aktuellen Events</a>
+    </div>
+    
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <label for="year">Jahr filtern:</label>
+            <select name="year" id="year">
+                <option value="">Alle Jahre</option>
+                {% for year in years %}
+                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                    {{ year }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-secondary">Filtern</button>
+        </form>
+    </div>
+    
+    <div class="events-list">
+        {% for event in events.items %}
+        <div class="card event-card">
+            <div class="event-info">
+                <h3>{{ event.event_typ.value }} - {{ event.display_date }}</h3>
+                {% if event.restaurant %}
+                <p><strong>Restaurant:</strong> {{ event.restaurant }}</p>
+                {% endif %}
+                {% if event.kueche %}
+                <p><strong>Küche:</strong> {{ event.kueche }}</p>
+                {% endif %}
+                <p><strong>Organisator:</strong> {{ event.organisator.display_name }}</p>
+            </div>
+            <div class="event-actions">
+                <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">Details</a>
+                {% if current_user.is_admin or event.organisator_id == current_user.id %}
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if events.pages > 1 %}
+    <div class="pagination">
+        {% if events.has_prev %}
+        <a href="{{ url_for('events.archive', page=events.prev_num, year=selected_year) }}" class="btn btn-secondary">← Vorherige</a>
+        {% endif %}
+        
+        <span class="page-info">Seite {{ events.page }} von {{ events.pages }}</span>
+        
+        {% if events.has_next %}
+        <a href="{{ url_for('events.archive', page=events.next_num, year=selected_year) }}" class="btn btn-secondary">Nächste →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Neues Mitglied erstellen - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>Neues Mitglied erstellen</h1>
+        <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
+    </div>
+    
+    <div class="form-container">
+        <form method="POST" class="form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.vorname.label }}
+                {{ form.vorname(class="form-control") }}
+                {% if form.vorname.errors %}
+                <div class="error">{{ form.vorname.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.nachname.label }}
+                {{ form.nachname(class="form-control") }}
+                {% if form.nachname.errors %}
+                <div class="error">{{ form.nachname.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control") }}
+                {% if form.email.errors %}
+                <div class="error">{{ form.email.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control") }}
+                {% if form.password.errors %}
+                <div class="error">{{ form.password.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.role.label }}
+                {{ form.role(class="form-control") }}
+                {% if form.role.errors %}
+                <div class="error">{{ form.role.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.is_active.label }}
+                {{ form.is_active() }}
+            </div>
+            
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

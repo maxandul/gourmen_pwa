@@ -1,0 +1,94 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Events - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-section">
+        <h1>Events</h1>
+        <div class="actions">
+            <a href="{{ url_for('events.stats') }}" class="btn btn-info">📊 Statistiken</a>
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">Neues Event</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if events %}
+    <div class="card">
+        <h2>Kommende Events</h2>
+        <div class="events-list">
+            {% for event in events %}
+            <div class="event-item">
+                <div class="event-info">
+                    <h3>
+                        {{ event.event_typ.value }}
+                        {% if event.restaurant %}- {{ event.restaurant }}{% endif %}
+                    </h3>
+                    <p><strong>📅 Datum:</strong> {{ event.display_date }}</p>
+                    <p><strong>🍳 Organisator:</strong> {{ event.organisator.display_name }}</p>
+                    {% if event.restaurant %}
+                    <p><strong>🍴 Restaurant:</strong> {{ event.restaurant }}</p>
+                    {% endif %}
+                    {% if event.kueche %}
+                    <p><strong>🌍 Küche:</strong> {{ event.kueche }}</p>
+                    {% endif %}
+                    
+                    <!-- Teilnahme-Status -->
+                    {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if my_participation %}
+                        {% if my_participation.teilnahme %}
+                        <p class="participation-status confirmed">✅ Du nimmst teil</p>
+                        {% else %}
+                        <p class="participation-status declined">❌ Du nimmst nicht teil</p>
+                        {% endif %}
+                    {% else %}
+                    <p class="participation-status pending">⏳ Keine Antwort</p>
+                    {% endif %}
+                    
+                    <p class="participants-count">
+                        👥 {{ event.get_participation_count() }} / {{ event.get_total_participants() }} Teilnehmer
+                    </p>
+                </div>
+                <div class="event-actions">
+                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">Details & RSVP</a>
+                    
+                    <!-- BillBro Link für Teilnehmer und Organisatoren -->
+                    {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if my_participation and my_participation.teilnahme %}
+                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-success">🍽️ BillBro</a>
+                    {% endif %}
+                    
+                    {% if current_user.is_admin or event.organisator_id == current_user.id %}
+                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <h3>📋 Event-Planung</h3>
+        <div class="quick-actions">
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('events.year_planning') }}" class="btn btn-success">📅 Jahresplanung erstellen</a>
+            <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Archiv anzeigen</a>
+            {% else %}
+            <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Vergangene Events</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if not events %}
+    <div class="card">
+        <p>Noch keine kommenden Events verfügbar.</p>
+        {% if current_user.is_admin %}
+        <p><a href="{{ url_for('events.year_planning') }}">Jahresplanung erstellen</a> um Events zu planen.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
+

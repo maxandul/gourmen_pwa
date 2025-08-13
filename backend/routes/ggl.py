@@ -1,0 +1,44 @@
+from flask import Blueprint, render_template, request
+from flask_login import login_required, current_user
+from backend.services.ggl_rules import GGLService
+from backend.models.member import Member
+
+bp = Blueprint('ggl', __name__)
+
+@bp.route('/')
+@login_required
+def index():
+    """GGL main page"""
+    # Get current season
+    current_season = GGLService.get_current_season()
+    
+    # Get available seasons
+    available_seasons = GGLService.get_available_seasons()
+    
+    # Get user's stats for current season
+    user_stats = GGLService.get_member_season_stats(current_user.id, current_season)
+    
+    return render_template('ggl/index.html',
+                         current_season=current_season,
+                         available_seasons=available_seasons,
+                         user_stats=user_stats)
+
+@bp.route('/season/<int:season_year>')
+@login_required
+def season(season_year):
+    """Season ranking"""
+    # Get season ranking
+    season_ranking = GGLService.get_season_ranking(season_year)
+    
+    # Get member details for ranking
+    for rank_entry in season_ranking:
+        member = Member.query.get(rank_entry['member_id'])
+        rank_entry['member'] = member
+    
+    # Get user's stats for this season
+    user_stats = GGLService.get_member_season_stats(current_user.id, season_year)
+    
+    return render_template('ggl/season.html',
+                         season_year=season_year,
+                         season_ranking=season_ranking,
+                         user_stats=user_stats) 

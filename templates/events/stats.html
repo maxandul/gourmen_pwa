@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Event-Statistiken - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>📊 Event-Statistiken</h1>
+        <p class="event-info">
+            <strong>Übersicht über alle Events</strong>
+        </p>
+        <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+    </div>
+
+    <div class="stats-grid">
+        <!-- Allgemeine Statistiken -->
+        <div class="card">
+            <h3>📈 Allgemeine Statistiken</h3>
+            <div class="stats-item">
+                <span class="label">Gesamte Events:</span>
+                <span class="value">{{ total_events }}</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Vergangene Events:</span>
+                <span class="value">{{ total_past_events }}</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Kommende Events:</span>
+                <span class="value">{{ total_future_events }}</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Durchschnittliche Teilnahme:</span>
+                <span class="value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
+            </div>
+        </div>
+
+        <!-- BillBro Statistiken -->
+        {% if total_billbro_events > 0 %}
+        <div class="card">
+            <h3>🍽️ BillBro Statistiken</h3>
+            <div class="stats-item">
+                <span class="label">Events mit BillBro:</span>
+                <span class="value">{{ total_billbro_events }}</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Durchschnittlicher Rechnungsbetrag:</span>
+                <span class="value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Durchschnittliches Trinkgeld:</span>
+                <span class="value">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
+            </div>
+            <div class="stats-item">
+                <span class="label">Gesamte Teilnahmen:</span>
+                <span class="value">{{ confirmed_participations }} / {{ total_participations }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Event-Typen Verteilung -->
+        <div class="card">
+            <h3>🎯 Event-Typen Verteilung</h3>
+            {% for event_type, count in event_types.items() %}
+            <div class="stats-item">
+                <span class="label">{{ event_type }}:</span>
+                <span class="value">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Restaurants -->
+    {% if restaurants %}
+    <div class="card">
+        <h3>🏆 Top Restaurants</h3>
+        <div class="participants-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Restaurant</th>
+                        <th>Besuche</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
+                    <tr>
+                        <td>{{ restaurant }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Platzhalter für zukünftige Statistiken -->
+    <div class="card">
+        <h3>🔮 Zukünftige Statistiken</h3>
+        <p>Hier werden weitere Statistiken angezeigt, wie:</p>
+        <ul>
+            <li>Beste Schätzer (wer am häufigsten richtig lag)</li>
+            <li>Trends über Zeit (teuerste/günstigste Events)</li>
+            <li>Vergleiche zwischen Jahren/Saisons</li>
+            <li>Beliebteste Küchen</li>
+            <li>Teilnahme-Trends</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Mitglieder-Verwaltung - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>Mitglieder-Verwaltung</h1>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.create_member') }}" class="btn btn-primary">Neues Mitglied erstellen</a>
+        </div>
+    </div>
+    
+    <div class="members-table">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 12%;">Name</th>
+                        <th style="width: 15%;">Kontakt</th>
+                        <th style="width: 15%;">Adresse</th>
+                        <th style="width: 12%;">Funktion</th>
+                        <th style="width: 12%;">Körperliche Daten</th>
+                        <th style="width: 15%;">Präferenzen</th>
+                        <th style="width: 8%;">System</th>
+                        <th style="width: 11%;">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr {% if not member.is_active %}class="table-secondary"{% endif %}>
+                        <!-- Name -->
+                        <td>
+                            <strong>{{ member.display_name }}</strong><br>
+                            <small class="text-muted">{{ member.vorname }} {{ member.nachname }}</small>
+                            {% if member.geburtsdatum %}
+                                <br><small>{{ member.geburtsdatum.strftime('%d.%m.%Y') }}</small>
+                            {% endif %}
+                            {% if member.nationalitaet %}
+                                <br><small>{{ member.nationalitaet }}</small>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Kontakt -->
+                        <td>
+                            <div class="text-truncate" title="{{ member.email }}">
+                                <strong>{{ member.email }}</strong>
+                            </div>
+                            {% if member.telefon %}
+                                <small>{{ member.telefon }}</small>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Adresse -->
+                        <td>
+                            {% if member.strasse %}
+                                <small>{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}</small><br>
+                            {% endif %}
+                            {% if member.plz or member.ort %}
+                                <small>{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}</small>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Funktion -->
+                        <td>
+                            {% if member.funktion %}
+                                <strong>{{ member.funktion.value }}</strong><br>
+                            {% endif %}
+                            {% if member.beitrittsjahr %}
+                                Seit {{ member.beitrittsjahr }}<br>
+                            {% endif %}
+                            {% if member.vorstandsmitglied %}
+                                <span class="badge bg-warning">Vorstand</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Körperliche Daten -->
+                        <td>
+                            {% if member.koerpergroesse %}
+                                {{ member.koerpergroesse }} cm<br>
+                            {% endif %}
+                            {% if member.koerpergewicht %}
+                                {{ member.koerpergewicht }} kg<br>
+                            {% endif %}
+                            {% if member.schuhgroesse %}
+                                Schuh: {{ member.schuhgroesse }}
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Präferenzen -->
+                        <td>
+                            {% if member.zimmerwunsch %}
+                                <small><strong>Z:</strong> {{ member.zimmerwunsch }}</small><br>
+                            {% endif %}
+                            {% if member.spirit_animal %}
+                                <small><strong>S:</strong> {{ member.spirit_animal }}</small><br>
+                            {% endif %}
+                            {% if member.fuehrerschein %}
+                                <small><strong>F:</strong> {{ member.fuehrerschein }}</small><br>
+                            {% endif %}
+                            {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
+                                <small>
+                                    {% if member.kleider_oberteil %}S:{{ member.kleider_oberteil }}{% endif %}
+                                    {% if member.kleider_hosen %}{% if member.kleider_oberteil %} {% endif %}H:{{ member.kleider_hosen }}{% endif %}
+                                    {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %} {% endif %}C:{{ member.kleider_cap }}{% endif %}
+                                </small>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- System -->
+                        <td>
+                            <span class="badge {% if member.role.value == 'ADMIN' %}bg-danger{% else %}bg-primary{% endif %}">
+                                {{ member.role.value }}
+                            </span><br>
+                            {% if member.is_active %}
+                                <span class="badge bg-success">Aktiv</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inaktiv</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Aktionen -->
+                        <td>
+                            <div class="btn-group-vertical btn-group-sm" role="group">
+                                <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">Bearbeiten</a>
+                                <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" 
+                                   class="btn btn-outline-warning btn-sm">Sensible Daten</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Gesamt</h5>
+                        <h2 class="text-primary">{{ members|length }}</h2>
+                        <small class="text-muted">Mitglieder</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Aktiv</h5>
+                        <h2 class="text-success">{{ members|selectattr('is_active')|list|length }}</h2>
+                        <small class="text-muted">Aktive Mitglieder</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Admins</h5>
+                        <h2 class="text-danger">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</h2>
+                        <small class="text-muted">Admin-Benutzer</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Vorstand</h5>
+                        <h2 class="text-warning">{{ members|selectattr('vorstandsmitglied')|list|length }}</h2>
+                        <small class="text-muted">Vorstandsmitglieder</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.members-table {
+    margin-top: 20px;
+}
+
+.table {
+    font-size: 0.85rem;
+    min-width: 1200px; /* Mindestbreite für Desktop */
+}
+
+.table td {
+    vertical-align: top;
+    padding: 8px 4px;
+    max-width: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.table th {
+    padding: 8px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-group-vertical .btn {
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+.table-responsive {
+    border-radius: 8px;
+    overflow-x: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Mobile Optimierungen */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.75rem;
+        min-width: 1000px;
+    }
+    
+    .table td, .table th {
+        padding: 4px 2px;
+    }
+    
+    .btn-group-vertical .btn {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+    }
+    
+    .admin-actions .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* Kompakte Darstellung für sehr kleine Bildschirme */
+@media (max-width: 480px) {
+    .table {
+        min-width: 800px;
+        font-size: 0.7rem;
+    }
+    
+    .table td, .table th {
+        padding: 2px 1px;
+    }
+    
+    .badge {
+        font-size: 0.6rem;
+    }
+}
+
+/* Horizontale Scrollbar Styling */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+{% endblock %} 

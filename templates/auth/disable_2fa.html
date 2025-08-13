@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}2FA deaktivieren - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>🔓 Zwei-Faktor-Authentifizierung deaktivieren</h1>
+        
+        <div class="warning-message">
+            <h2>⚠️ Sicherheitswarnung</h2>
+            <p>Das Deaktivieren der 2FA reduziert die Sicherheit deines Kontos erheblich. Bist du sicher, dass du fortfahren möchtest?</p>
+        </div>
+        
+        <div class="security-check">
+            <h3>🔐 Identitätsbestätigung erforderlich</h3>
+            <p>Gib dein Passwort ein, um die 2FA-Deaktivierung zu bestätigen:</p>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control", placeholder="Dein Passwort") }}
+                    {% if form.password.errors %}
+                    <div class="error-message">
+                        {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="actions">
+                    {{ form.submit(class="btn btn-danger") }}
+                    <a href="{{ url_for('account.profile') }}" class="btn btn-secondary">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="security-info">
+            <h3>🔒 Was passiert nach der Deaktivierung?</h3>
+            <ul>
+                <li>Du kannst dich nur noch mit E-Mail und Passwort anmelden</li>
+                <li>Alle Backup-Codes werden deaktiviert</li>
+                <li>Die Sicherheit deines Kontos wird reduziert</li>
+                <li>Du kannst 2FA jederzeit wieder aktivieren</li>
+            </ul>
+        </div>
+        
+        <div class="recommendation">
+            <h3>💡 Empfehlung</h3>
+            <p>Wir empfehlen, 2FA aktiviert zu lassen, um dein Konto zu schützen. Falls du Probleme mit deiner Authenticator-App hast, kannst du auch Backup-Codes verwenden.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Styles werden jetzt durch base.css abgedeckt -->
+{% endblock %}
+
+
+

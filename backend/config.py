@@ -1,0 +1,87 @@
+import os
+from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Config:
+    """Base configuration class"""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-me'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///gourmen_dev.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
+    
+    # Timezone settings
+    TZ = os.environ.get('TZ', 'Europe/Zurich')
+    
+    # 2FA settings
+    TWOFA_ISSUER = os.environ.get('TWOFA_ISSUER', 'Gourmen')
+    
+    # Security settings
+    CRYPTO_KEY = os.environ.get('CRYPTO_KEY')
+    SENSITIVE_ACCESS_TTL_SECONDS = int(os.environ.get('SENSITIVE_ACCESS_TTL_SECONDS', '300'))
+    
+    # Rate limiting
+    RATE_LIMIT_LOGIN = os.environ.get('RATE_LIMIT_LOGIN', '5 per minute')
+    RATE_LIMIT_STEPUP = os.environ.get('RATE_LIMIT_STEPUP', '5 per minute')
+    
+    # CSP settings
+    SECURITY_CSP = os.environ.get('SECURITY_CSP', 
+        "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
+    
+    # Cookie settings
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    
+    # CSRF settings
+    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour instead of default 1 hour
+    WTF_CSRF_SSL_STRICT = False
+    
+    # Admin initialization
+    INIT_ADMIN_EMAIL = os.environ.get('INIT_ADMIN_EMAIL', 'admin@gourmen.ch')
+    INIT_ADMIN_PASSWORD = os.environ.get('INIT_ADMIN_PASSWORD', 'change_me_admin')
+    
+    # Google Places API
+    GOOGLE_PLACES_API_KEY = os.environ.get('GOOGLE_PLACES_API_KEY')
+    
+    # Google Maps API Keys
+    GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
+    GOOGLE_MAPS_API_KEY_FRONTEND = os.environ.get('GOOGLE_MAPS_API_KEY_FRONTEND')
+
+class DevelopmentConfig(Config):
+    """Development configuration"""
+    DEBUG = True
+    TESTING = False
+
+class ProductionConfig(Config):
+    """Production configuration"""
+    DEBUG = False
+    TESTING = False
+    
+    # Production security settings
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # HSTS
+    HSTS_INCLUDE_SUBDOMAINS = True
+    HSTS_PRELOAD = True
+    HSTS_MAX_AGE = 31536000
+
+class TestingConfig(Config):
+    """Testing configuration"""
+    TESTING = True
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
+} 

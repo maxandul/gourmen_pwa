@@ -1,0 +1,281 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Profil - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>Mein Profil</h1>
+        <a href="{{ url_for('account.sensitive_data') }}" class="btn btn-secondary">🔒 Sensible Daten</a>
+    </div>
+    
+    <form method="POST" class="form">
+        {{ form.hidden_tag() }}
+        
+        <!-- Personal Data Section -->
+        <div class="card">
+            <h3>👤 Persönliche Daten</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.vorname.label }}
+                    {{ form.vorname(class="form-control") }}
+                    {% if form.vorname.errors %}
+                    <div class="error">{{ form.vorname.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.nachname.label }}
+                    {{ form.nachname(class="form-control") }}
+                    {% if form.nachname.errors %}
+                    <div class="error">{{ form.nachname.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.rufname.label }}
+                    {{ form.rufname(class="form-control") }}
+                    {% if form.rufname.errors %}
+                    <div class="error">{{ form.rufname.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control") }}
+                    {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.telefon.label }}
+                    {{ form.telefon(class="form-control") }}
+                    {% if form.telefon.errors %}
+                    <div class="error">{{ form.telefon.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.geburtsdatum.label }}
+                    {{ form.geburtsdatum(class="form-control", type="date") }}
+                    {% if form.geburtsdatum.errors %}
+                    <div class="error">{{ form.geburtsdatum.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.nationalitaet.label }}
+                {{ form.nationalitaet(class="form-control") }}
+                {% if form.nationalitaet.errors %}
+                <div class="error">{{ form.nationalitaet.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Address Section -->
+        <div class="card">
+            <h3>📍 Adresse</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.strasse.label }}
+                    {{ form.strasse(class="form-control") }}
+                    {% if form.strasse.errors %}
+                    <div class="error">{{ form.strasse.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.hausnummer.label }}
+                    {{ form.hausnummer(class="form-control") }}
+                    {% if form.hausnummer.errors %}
+                    <div class="error">{{ form.hausnummer.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.plz.label }}
+                    {{ form.plz(class="form-control") }}
+                    {% if form.plz.errors %}
+                    <div class="error">{{ form.plz.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.ort.label }}
+                    {{ form.ort(class="form-control") }}
+                    {% if form.ort.errors %}
+                    <div class="error">{{ form.ort.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Association Section -->
+        <div class="card">
+            <h3>🏛️ Vereinsdaten</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.funktion.label }}
+                    {{ form.funktion(class="form-control") }}
+                    {% if form.funktion.errors %}
+                    <div class="error">{{ form.funktion.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.beitrittsjahr.label }}
+                    {{ form.beitrittsjahr(class="form-control") }}
+                    {% if form.beitrittsjahr.errors %}
+                    <div class="error">{{ form.beitrittsjahr.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    {{ form.vorstandsmitglied() }}
+                    {{ form.vorstandsmitglied.label.text }}
+                </label>
+                {% if form.vorstandsmitglied.errors %}
+                <div class="error">{{ form.vorstandsmitglied.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Physical Data Section -->
+        <div class="card">
+            <h3>📏 Körperliche Daten</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.koerpergroesse.label }}
+                    {{ form.koerpergroesse(class="form-control") }}
+                    {% if form.koerpergroesse.errors %}
+                    <div class="error">{{ form.koerpergroesse.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.koerpergewicht.label }}
+                    {{ form.koerpergewicht(class="form-control") }}
+                    {% if form.koerpergewicht.errors %}
+                    <div class="error">{{ form.koerpergewicht.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.schuhgroesse.label }}
+                {{ form.schuhgroesse(class="form-control") }}
+                {% if form.schuhgroesse.errors %}
+                <div class="error">{{ form.schuhgroesse.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Clothing Section -->
+        <div class="card">
+            <h3>👕 Kleidergrößen</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.kleider_oberteil.label }}
+                    {{ form.kleider_oberteil(class="form-control") }}
+                    {% if form.kleider_oberteil.errors %}
+                    <div class="error">{{ form.kleider_oberteil.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.kleider_hosen.label }}
+                    {{ form.kleider_hosen(class="form-control") }}
+                    {% if form.kleider_hosen.errors %}
+                    <div class="error">{{ form.kleider_hosen.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.kleider_cap.label }}
+                {{ form.kleider_cap(class="form-control") }}
+                {% if form.kleider_cap.errors %}
+                <div class="error">{{ form.kleider_cap.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Preferences Section -->
+        <div class="card">
+            <h3>⭐ Präferenzen</h3>
+            
+            <div class="form-group">
+                {{ form.zimmerwunsch.label }}
+                {{ form.zimmerwunsch(class="form-control") }}
+                {% if form.zimmerwunsch.errors %}
+                <div class="error">{{ form.zimmerwunsch.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.spirit_animal.label }}
+                {{ form.spirit_animal(class="form-control") }}
+                {% if form.spirit_animal.errors %}
+                <div class="error">{{ form.spirit_animal.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.fuehrerschein.label }}
+                {{ form.fuehrerschein(class="form-control") }}
+                {% if form.fuehrerschein.errors %}
+                <div class="error">{{ form.fuehrerschein.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    
+    <!-- Security Section -->
+    <div class="card">
+        <h3>🔒 Sicherheit</h3>
+        
+        <div class="security-section">
+            <h4>Zwei-Faktor-Authentifizierung</h4>
+            {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
+            <p>✅ 2FA ist aktiviert</p>
+            <div class="actions">
+                <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn-secondary">2FA deaktivieren</a>
+            </div>
+            {% else %}
+            <p>❌ 2FA ist nicht aktiviert</p>
+            <div class="actions">
+                <a href="{{ url_for('auth.enroll_2fa') }}" class="btn btn-primary">2FA aktivieren</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="security-section">
+            <h4>Passwort ändern</h4>
+            <p>Ändern Sie Ihr Passwort für zusätzliche Sicherheit.</p>
+            <div class="actions">
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn-primary">Passwort ändern</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

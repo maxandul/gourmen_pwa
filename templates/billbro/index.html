@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}BillBro - {{ event.restaurant or event.event_typ.value }} - {{ event.display_date }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1>BillBro - Restaurant-Rechner</h1>
+        <p class="event-info">
+            <strong>{{ event.event_typ.value }}</strong> am {{ event.display_date }}
+            {% if event.restaurant %}
+            <br><strong>Restaurant:</strong> {{ event.restaurant }}
+            {% endif %}
+            {% if event.kueche %}
+            <br><strong>Küche:</strong> {{ event.kueche }}
+            {% endif %}
+        </p>
+        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+    </div>
+
+    {% if current_user.is_admin or event.organisator_id == current_user.id %}
+    <!-- Organisator-View -->
+    <div class="organizer-section">
+        <div class="card">
+            <h3>Organisator-Dashboard</h3>
+            
+            <!-- Anwesenheits-Check vor BillBro-Start -->
+            {% if not event.rechnungsbetrag_rappen %}
+            <div class="attendance-check">
+                <h4>✅ Anwesenheits-Check</h4>
+                <p>Wer ist wirklich da? Korrekturen vor BillBro-Start.</p>
+            </div>
+            {% endif %}
+            
+            <!-- Teilnehmer-Übersicht -->
+            <div class="participants-overview">
+                {% if event.rechnungsbetrag_rappen %}
+                <h4>🍽️ BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h4>
+                {% else %}
+                <h4>Angemeldete Personen ({{ event.get_participation_count() }} anwesend)</h4>
+                {% endif %}
+                <div class="participants-list">
+                    {% for participation in event.participations %}
+                    {% if participation.teilnahme %}
+                    <div class="participant-item" data-member-id="{{ participation.member_id }}">
+                        <span class="member-name">{{ participation.member.display_name }}</span>
+                        <span class="status">
+                            {% if event.rechnungsbetrag_rappen %}
+                            <!-- BillBro läuft - Schätzungs-Status -->
+                                {% if participation.has_guess %}
+                                ✅ {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
+                                {% else %}
+                                ⏳ Wartet auf Schätzung
+                                {% endif %}
+                            {% else %}
+                            <!-- Vor BillBro - Anwesenheits-Check -->
+                            ✅ Anwesend
+                            {% endif %}
+                        </span>
+                        {% if not event.rechnungsbetrag_rappen %}
+                        <!-- Nur vor BillBro-Start: Abmelde-Button -->
+                        <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline" 
+                                    onclick="return confirm('{{ participation.member.display_name }} ist nicht da?')">
+                                Nicht da
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <!-- Abgemeldete/Nicht anwesende Personen -->
+                {% set abgemeldete = event.participations|selectattr('teilnahme', 'equalto', False)|list %}
+                {% if abgemeldete %}
+                <div class="absent-members">
+                    <h5>❌ Nicht anwesend ({{ abgemeldete|length }})</h5>
+                    <div class="absent-list">
+                        {% for participation in abgemeldete %}
+                        <div class="absent-item">
+                            <span class="member-name">{{ participation.member.display_name }}</span>
+                            <span class="status">Nicht da</span>
+                            {% if not event.rechnungsbetrag_rappen %}
+                            <!-- Nur vor BillBro-Start: Korrektur möglich -->
+                            <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=participation.member_id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    Doch da
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Erinnerungen senden -->
+                {% set pending_guesses = event.participations|selectattr('teilnahme', 'equalto', True)|rejectattr('has_guess')|list %}
+                {% if pending_guesses %}
+                <div class="reminder-section">
+                    <h5>⏰ Ausstehende Schätzungen ({{ pending_guesses|length }})</h5>
+                    <p>{{ pending_guesses|map(attribute='member.display_name')|join(', ') }}</p>
+                    <form method="POST" action="{{ url_for('billbro.send_reminder', event_id=event.id) }}" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-warning">
+                            📱 Erinnerung senden
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- BillBro Start -->
+            {% if not event.rechnungsbetrag_rappen %}
+            <div class="billbro-start-section">
+                <h4>🍽️ BillBro starten</h4>
+                <p>Alle Teilnehmer benachrichtigen und Schätzungsrunde beginnen.</p>
+                <form method="POST" action="{{ url_for('billbro.start_session', event_id=event.id) }}" class="start-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success btn-large">
+                        📱 BillBro für alle starten
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Rechnungsbetrag eingeben -->
+            <div class="bill-input-section">
+                <h4>Rechnungsbetrag eingeben</h4>
+                <form method="POST" action="{{ url_for('billbro.enter_bill', event_id=event.id) }}" class="bill-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="rechnungsbetrag">Rechnungsbetrag (CHF)</label>
+                        <input type="number" id="rechnungsbetrag" name="rechnungsbetrag" 
+                               step="0.01" min="0" class="form-control" 
+                               value="{{ event.rechnungsbetrag_rappen / 100 if event.rechnungsbetrag_rappen else '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Berechnen</button>
+                </form>
+            </div>
+
+            {% if event.rechnungsbetrag_rappen %}
+            <!-- Ergebnisse anzeigen -->
+            <div class="results-section">
+                <h4>Berechnete Ergebnisse</h4>
+                
+                <!-- Automatischer Vorschlag -->
+                <div class="auto-calculation">
+                    <h5>📊 Automatischer Vorschlag:</h5>
+                    <div class="bill-summary">
+                        <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
+                        <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
+                        <p><strong>Vorgeschlagener Gesamtbetrag:</strong> {{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF 
+                            <small>(aufgerundet auf 10er)</small></p>
+                    </div>
+                </div>
+
+                <!-- Manuelle Anpassung -->
+                <div class="manual-override">
+                    <h5>✏️ Gesamtbetrag anpassen (optional):</h5>
+                    <form method="POST" action="{{ url_for('billbro.set_total', event_id=event.id) }}" class="total-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label for="gesamtbetrag_manual">Gewünschter Gesamtbetrag (CHF)</label>
+                            <input type="number" id="gesamtbetrag_manual" name="gesamtbetrag_manual" 
+                                   step="0.01" min="0" class="form-control" 
+                                   value="{{ event.gesamtbetrag_rappen / 100 if event.gesamtbetrag_rappen else '' }}"
+                                   placeholder="z.B. {{ '%.0f'|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gesamtbetrag übernehmen</button>
+                    </form>
+                </div>
+
+                {% if event.gesamtbetrag_rappen %}
+                <!-- Finale Berechnungen -->
+                <div class="final-results">
+                    <h5>✅ Finaler Gesamtbetrag:</h5>
+                    <div class="bill-summary final">
+                        <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</p>
+                        <p><strong>Effektives Trinkgeld:</strong> {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF 
+                            <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small></p>
+                    </div>
+                    
+                    <div class="share-amounts">
+                        <h5>Anteile pro Person:</h5>
+                        <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF</p>
+                        <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF</p>
+                        <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF</p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{{ url_for('billbro.results', event_id=event.id) }}" class="btn btn-success">Ergebnisse anzeigen</a>
+                        <a href="{{ url_for('billbro.share_whatsapp', event_id=event.id) }}" class="btn btn-whatsapp">WhatsApp teilen</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Teilnehmer-View -->
+    <div class="participant-section">
+        <div class="card">
+            <h3>Deine Schätzung</h3>
+            
+            {% if participation.has_guess %}
+            <!-- Bereits geschätzt -->
+            <div class="existing-guess">
+                <p><strong>Deine Schätzung:</strong> {{ participation.display_guess }}</p>
+                <p><strong>Ess-Typ:</strong> {{ participation.esstyp.value if participation.esstyp else 'Nicht gewählt' }}</p>
+                
+                {% if event.rechnungsbetrag_rappen %}
+                <p><strong>Differenz:</strong> {{ participation.display_diff }}</p>
+                <p><strong>Rang:</strong> {{ participation.rank }}. Platz</p>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary">Schätzung ändern</button>
+                </form>
+            </div>
+            {% else %}
+            <!-- Neue Schätzung -->
+            <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="guess-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    {{ form.esstyp.label }}
+                    {{ form.esstyp(class="form-control") }}
+                    {% if form.esstyp.errors %}
+                    <div class="error">{{ form.esstyp.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.guess_amount.label }}
+                    {{ form.guess_amount(class="form-control", placeholder="z.B. 45.50") }}
+                    {% if form.guess_amount.errors %}
+                    <div class="error">{{ form.guess_amount.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

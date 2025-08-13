@@ -1,0 +1,117 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Jahresplanung - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-section">
+        <h1>ðŸ“… Jahresplanung erstellen</h1>
+        <p>Erstelle automatisch alle Monatsessen fÃ¼r ein Jahr (jeden 2. Freitag im Monat)</p>
+    </div>
+    
+    <div class="card">
+        <h3>Automatische Event-Erstellung</h3>
+        <p>Das System erstellt automatisch:</p>
+        <ul>
+            <li>ðŸ½ï¸ <strong>12 Monatsessen</strong> - jeden 2. Freitag im Monat</li>
+            <li>ðŸ‘¨â€ðŸ³ <strong>Organisatoren</strong> werden automatisch rotierend zugewiesen</li>
+            <li>ðŸ“ <strong>Details</strong> kÃ¶nnen spÃ¤ter von den Organisatoren ergÃ¤nzt werden</li>
+        </ul>
+        
+        <form method="POST" class="year-planning-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.year.label(class="form-label") }}
+                {{ form.year(class="form-control") }}
+                {% if form.year.errors %}
+                <div class="form-errors">
+                    {% for error in form.year.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <small class="form-help">Normalerweise wird die Jahresplanung Ende des Vorjahres fÃ¼r das kommende Jahr erstellt.</small>
+            </div>
+            
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('events.index') }}" class="btn btn-secondary">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card">
+        <h4>ðŸ’¡ ZusÃ¤tzliche Events</h4>
+        <p>Nach der automatischen Erstellung kÃ¶nnen Sie manuell hinzufÃ¼gen:</p>
+        <ul>
+            <li>ðŸ›ï¸ <strong>Generalversammlung</strong> - individuelles Datum</li>
+            <li>ðŸ”ï¸ <strong>Vereinsausflug</strong> - mehrtÃ¤giger Event</li>
+            <li>ðŸŽ‰ <strong>Spezielle AnlÃ¤sse</strong> - nach Bedarf</li>
+        </ul>
+        
+        <div class="actions">
+            <a href="{{ url_for('admin.create_event') }}" class="btn btn-success">
+                âž• Spezielles Event erstellen
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.year-planning-form {
+    max-width: 400px;
+    margin: 20px 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-help {
+    display: block;
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.form-errors {
+    margin-top: 5px;
+}
+
+.error {
+    color: #d32f2f;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.actions {
+    margin-top: 20px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+
+
+
+

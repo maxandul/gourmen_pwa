@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Backup-Codes - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>🔑 Backup-Codes für 2FA</h1>
+        
+        <div class="success-message">
+            <h2>✅ 2FA erfolgreich aktiviert!</h2>
+            <p>Deine Zwei-Faktor-Authentifizierung ist jetzt aktiv. Bewahre diese Backup-Codes sicher auf:</p>
+        </div>
+        
+        <div class="backup-codes">
+            <h3>📋 Deine Backup-Codes</h3>
+            <p class="text-danger">⚠️ <strong>Wichtig:</strong> Diese Codes werden nur einmal angezeigt. Drucke sie aus oder speichere sie sicher!</p>
+            
+            <div class="codes-grid">
+                {% for code in backup_codes %}
+                <div class="backup-code">{{ code }}</div>
+                {% endfor %}
+            </div>
+            
+            <div class="print-section">
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Drucken</button>
+                <button class="btn btn-secondary" onclick="copyAllCodes()">📋 Alle kopieren</button>
+            </div>
+        </div>
+        
+        <div class="usage-info">
+            <h3>📖 Verwendung der Backup-Codes</h3>
+            <ul>
+                <li>Verwende diese Codes nur, wenn du keinen Zugriff auf deine Authenticator-App hast</li>
+                <li>Jeder Code kann nur einmal verwendet werden</li>
+                <li>Nach der Verwendung wird der Code automatisch deaktiviert</li>
+                <li>Du kannst neue Backup-Codes in deinem Profil generieren</li>
+            </ul>
+        </div>
+        
+        <div class="actions">
+            <a href="{{ url_for('account.profile') }}" class="btn btn-primary">Zum Profil</a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Zum Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-message {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid var(--success-color);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.codes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.print-section {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.usage-info {
+    background: rgba(23, 162, 184, 0.1);
+    border: 1px solid var(--info-color);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.usage-info ul {
+    margin: 10px 0 0 20px;
+}
+
+.usage-info li {
+    margin: 8px 0;
+}
+
+.actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+@media print {
+    .actions, .print-section {
+        display: none;
+    }
+    
+    .backup-codes {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    .backup-code {
+        border: 1px solid #000;
+        background: #fff;
+    }
+}
+</style>
+
+<script>
+function copyAllCodes() {
+    const codes = Array.from(document.querySelectorAll('.backup-code'))
+        .map(code => code.textContent)
+        .join('\n');
+    
+    navigator.clipboard.writeText(codes).then(function() {
+        if (typeof showToast === 'function') {
+            showToast('Alle Backup-Codes kopiert!', 'success');
+        } else {
+            alert('Alle Backup-Codes kopiert!');
+        }
+    }).catch(function(err) {
+        console.error('Fehler beim Kopieren:', err);
+        alert('Fehler beim Kopieren der Codes');
+    });
+}
+
+// Warnung beim Verlassen der Seite
+window.addEventListener('beforeunload', function(e) {
+    if (!document.querySelector('.backup-code')) {
+        return;
+    }
+    
+    e.preventDefault();
+    e.returnValue = 'Du hast die Backup-Codes noch nicht gespeichert. Möchtest du die Seite wirklich verlassen?';
+});
+</script>
+{% endblock %}
+

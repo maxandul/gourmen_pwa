@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Technischer Fehler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card text-center">
+        <h1>500 - Technischer Fehler</h1>
+        <p>Es ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.</p>
+        <div class="actions">
+            <a href="{{ url_for('public.landing') }}" class="btn btn-primary">Zur Startseite</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Zum Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

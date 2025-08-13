@@ -1,0 +1,19 @@
+# Cursor AI sollte diese Dateien NICHT bearbeiten
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+.env
+instance/
+*.db
+*.sqlite
+*.sqlite3
+migrations/versions/
+.git/
+
+# Templates sind OK zu bearbeiten - KEINE Ignorierung!
+# templates/ <-- NICHT ignorieren!
