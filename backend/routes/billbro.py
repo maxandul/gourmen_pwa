@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
@@ -142,7 +143,6 @@ def results(event_id):
                          participations=participations)
 
 # Import here to avoid circular imports
-from datetime import datetime
 
 @bp.route('/<int:event_id>/enter_bill', methods=['POST'])
 @login_required
