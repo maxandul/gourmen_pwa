@@ -68,10 +68,25 @@ class SecurityService:
         )
     
     @staticmethod
-    def verify_totp(secret, token, window=1):
-        """Verify TOTP token"""
+    def verify_totp(secret, token, window=3):
+        """Verify TOTP token with extended window for time synchronization"""
         totp = pyotp.TOTP(secret)
-        return totp.verify(token, valid_window=window)
+        result = totp.verify(token, valid_window=window)
+        
+        # Debug-Logging für 2FA-Problem
+        try:
+            from flask import current_app
+            current_app.logger.info(f"TOTP Debug: token={token}, secret_length={len(secret)}, window={window}, result={result}")
+            
+            # Zeige aktuellen TOTP-Code für Debugging
+            current_code = totp.now()
+            current_app.logger.info(f"TOTP Debug: current_code={current_code}, input_token={token}")
+            
+        except Exception as e:
+            # Ignoriere Logging-Fehler
+            pass
+            
+        return result
     
     @staticmethod
     def generate_backup_codes(count=10):

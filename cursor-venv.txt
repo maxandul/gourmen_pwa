@@ -1,0 +1,14 @@
+FLASK_ENV=development
+SECRET_KEY=change_me_in_production
+DATABASE_URL=sqlite:///gourmen_dev.db
+TZ=Europe/Zurich
+TWOFA_ISSUER=Gourmen
+CRYPTO_KEY=1FInMOpkS7kf1zmNF4KG3HZubbgXAipbFd6iYyBg2b4=
+SENSITIVE_ACCESS_TTL_SECONDS=300
+INIT_ADMIN_EMAIL=admin@gourmen.ch
+INIT_ADMIN_PASSWORD=change_me_admin
+SECURITY_CSP=default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:
+RATE_LIMIT_LOGIN=5 per minute
+RATE_LIMIT_STEPUP=5 per minute 
+GOOGLE_MAPS_API_KEY=AIzaSyDU5NCE5vZUrwiRi9H_eD_M5pb1VyV9IfA
+GOOGLE_MAPS_API_KEY_FRONTEND=AIzaSyC7PpJh70cku3KoCapCtLL4tFi0cxNswm4

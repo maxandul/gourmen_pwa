@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
@@ -71,6 +71,39 @@ def login():
         user = Member.query.filter_by(email=form.email.data, is_active=True).first()
         
         if user and user.check_password(form.password.data):
+            # Check if 2FA is enabled
+            mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
+            if mfa_data and mfa_data.is_totp_enabled:
+                # Check if device is remembered
+                remembered_device = session.get('remembered_device')
+                if remembered_device and remembered_device.get('user_id') == user.id:
+                    # Check if device token is still valid
+                    expires_at = datetime.fromisoformat(remembered_device['expires_at'])
+                    if datetime.utcnow() < expires_at:
+                        # Device is remembered, skip 2FA
+                        login_user(user, remember=True)  # Always remember when device is remembered
+                        
+                        # Log audit event
+                        SecurityService.log_audit_event(
+                            AuditAction.LOGIN, 'member', user.id,
+                            extra_data={'ip': request.remote_addr, 'remembered_device': True}
+                        )
+                        
+                        next_page = request.args.get('next')
+                        if not next_page or not next_page.startswith('/'):
+                            # Check if user needs to change password
+                            if user.needs_password_change:
+                                flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+                                next_page = url_for('auth.change_password')
+                            else:
+                                next_page = url_for('dashboard.index')
+                        return redirect(next_page)
+                
+                # Device not remembered, require 2FA
+                session['pending_2fa_user_id'] = user.id
+                return redirect(url_for('auth.verify_2fa'))
+            
+            # No 2FA enabled, login normally
             login_user(user, remember=form.remember_me.data)
             
             # Log audit event
@@ -78,12 +111,6 @@ def login():
                 AuditAction.LOGIN, 'member', user.id,
                 extra_data={'ip': request.remote_addr}
             )
-            
-            # Check if 2FA is enabled
-            mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
-            if mfa_data and mfa_data.is_totp_enabled:
-                session['pending_2fa_user_id'] = user.id
-                return redirect(url_for('auth.verify_2fa'))
             
             next_page = request.args.get('next')
             if not next_page or not next_page.startswith('/'):
@@ -137,7 +164,21 @@ def verify_2fa():
         secret = SecurityService.decrypt_json(mfa_data.totp_secret_encrypted)
         if SecurityService.verify_totp(secret, totp_form.token.data):
             session.pop('pending_2fa_user_id', None)
-            login_user(user)
+            
+            # Check if user wants to remember this device
+            remember_device = request.form.get('remember_device')
+            if remember_device:
+                device_token = secrets.token_urlsafe(32)
+                expires_at = datetime.utcnow() + timedelta(days=36500)  # ~100 years (effectively unlimited)
+                session['remembered_device'] = {
+                    'user_id': user.id,
+                    'device_token': device_token,
+                    'expires_at': expires_at.isoformat()
+                }
+                login_user(user, remember=True)  # Always remember when device is remembered
+            else:
+                login_user(user, remember=False)
+            
             mfa_data.last_verified_at = datetime.utcnow()
             db.session.commit()
             
@@ -168,7 +209,7 @@ def verify_2fa():
         
         if valid_code:
             session.pop('pending_2fa_user_id', None)
-            login_user(user)
+            login_user(user, remember=True)  # Always remember when using backup code
             valid_code.used_at = datetime.utcnow()
             db.session.commit()
             
@@ -194,7 +235,7 @@ def verify_2fa():
 @bp.route('/2fa/enroll', methods=['GET', 'POST'])
 @login_required
 def enroll_2fa():
-    """Enroll 2FA"""
+    """Enroll 2FA - Simplified version"""
     mfa_data = MemberMFA.query.filter_by(member_id=current_user.id).first()
     if not mfa_data:
         mfa_data = MemberMFA(member_id=current_user.id)
@@ -205,11 +246,17 @@ def enroll_2fa():
         flash('2FA ist bereits aktiviert', 'info')
         return redirect(url_for('account.profile'))
     
-    # Generate new secret
-    secret = SecurityService.generate_totp_secret()
-    totp_uri = SecurityService.generate_totp_uri(current_user.email, secret)
+    # Generate new secret only if not already in session
+    if '2fa_secret' not in session:
+        secret = SecurityService.generate_totp_secret()
+        session['2fa_secret'] = secret
+        current_app.logger.info(f"2FA Debug: Generated NEW secret for {current_user.email}: {secret}")
+    else:
+        secret = session['2fa_secret']
+        current_app.logger.info(f"2FA Debug: Using EXISTING secret for {current_user.email}: {secret}")
     
     totp_form = TOTPForm()
+    
     if totp_form.validate_on_submit():
         if SecurityService.verify_totp(secret, totp_form.token.data):
             # Enable 2FA
@@ -218,25 +265,26 @@ def enroll_2fa():
             mfa_data.activated_at = datetime.utcnow()
             mfa_data.last_verified_at = datetime.utcnow()
             
-            # Generate backup codes
-            backup_codes = SecurityService.generate_backup_codes()
-            for code in backup_codes:
-                backup_code = MFABackupCode(
-                    member_id=current_user.id,
-                    code_hash=SecurityService.hash_backup_code(code)
-                )
-                db.session.add(backup_code)
+            # Clear the secret from session
+            session.pop('2fa_secret', None)
             
             db.session.commit()
             
-            SecurityService.log_audit_event(AuditAction.ENABLE_MFA, 'member_mfa', current_user.id)
+            # Log audit event
+            SecurityService.log_audit_event(
+                AuditAction.ENABLE_2FA, 'member', current_user.id,
+                extra_data={'ip': request.remote_addr}
+            )
             
-            flash('2FA erfolgreich aktiviert', 'success')
-            return render_template('auth/backup_codes.html', backup_codes=backup_codes)
+            flash('2FA erfolgreich aktiviert!', 'success')
+            return redirect(url_for('auth.backup_codes'))
         else:
-            flash('Ungültiger Code', 'error')
+            flash('Ungültiger Code. Bitte versuchen Sie es erneut.', 'error')
     
-    return render_template('auth/enroll_2fa.html', secret=secret, totp_uri=totp_uri, form=totp_form)
+    return render_template('auth/enroll_2fa_simple.html', 
+                         secret=secret, 
+                         form=totp_form,
+                         current_user=current_user)
 
 @bp.route('/2fa/disable', methods=['GET', 'POST'])
 @login_required
@@ -429,10 +477,152 @@ def reset_password(token):
             extra_data={'ip': request.remote_addr}
         )
         
-        flash('Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.', 'success')
+        flash('Passwort erfolgreich zurücksetzt. Sie können sich jetzt anmelden.', 'success')
         return redirect(url_for('auth.login'))
     
     return render_template('auth/reset_password.html', form=form, token=token)
 
 # Import here to avoid circular imports
 from datetime import datetime 
+
+# 2FA Reset via Email
+@bp.route('/2fa/reset-request', methods=['GET', 'POST'])
+@limiter.limit("3 per hour")
+def request_2fa_reset():
+    """Request 2FA reset via email"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+    
+    form = ForgotPasswordForm()  # Reuse existing form
+    
+    if form.validate_on_submit():
+        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+        
+        if user:
+            # Check if user has 2FA enabled
+            mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
+            if mfa_data and mfa_data.is_totp_enabled:
+                # Generate reset token
+                token = secrets.token_urlsafe(32)
+                expires_at = datetime.utcnow() + timedelta(hours=1)
+                
+                # Store token in session (in production, use database or Redis)
+                session[f'2fa_reset_token_{token}'] = {
+                    'user_id': user.id,
+                    'expires_at': expires_at.isoformat()
+                }
+                
+                # Generate reset URL
+                reset_url = url_for('auth.reset_2fa', token=token, _external=True)
+                
+                # In production, send email here
+                # For now, we'll just show the URL (remove this in production!)
+                flash(f'2FA Reset-Link generiert: {reset_url}', 'info')
+                
+                # Log audit event
+                SecurityService.log_audit_event(
+                    AuditAction.REQUEST_2FA_RESET, 'member', user.id,
+                    extra_data={'ip': request.remote_addr}
+                )
+            else:
+                # Don't reveal if 2FA is enabled or not
+                pass
+        
+        # Always show success message to prevent enumeration
+        flash('Falls die E-Mail-Adresse existiert und 2FA aktiviert ist, wurde ein Reset-Link gesendet', 'info')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/request_2fa_reset.html', form=form)
+
+@bp.route('/2fa/reset/<token>', methods=['GET', 'POST'])
+def reset_2fa(token):
+    """Reset 2FA with token"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+    
+    # Verify token
+    token_data = session.get(f'2fa_reset_token_{token}')
+    if not token_data:
+        flash('Ungültiger oder abgelaufener 2FA Reset-Link', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Check expiration
+    expires_at = datetime.fromisoformat(token_data['expires_at'])
+    if datetime.utcnow() > expires_at:
+        session.pop(f'2fa_reset_token_{token}', None)
+        flash('2FA Reset-Link ist abgelaufen', 'error')
+        return redirect(url_for('auth.login'))
+    
+    user = Member.query.get(token_data['user_id'])
+    if not user or not user.is_active:
+        session.pop(f'2fa_reset_token_{token}', None)
+        flash('Ungültiger 2FA Reset-Link', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Disable 2FA
+    mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
+    if mfa_data:
+        mfa_data.is_totp_enabled = False
+        mfa_data.totp_secret_encrypted = None
+        mfa_data.activated_at = None
+        mfa_data.last_verified_at = None
+        
+        # Delete backup codes
+        MFABackupCode.query.filter_by(member_id=user.id).delete()
+        
+        db.session.commit()
+    
+    # Remove token
+    session.pop(f'2fa_reset_token_{token}', None)
+    
+    # Log audit event
+    SecurityService.log_audit_event(
+        AuditAction.RESET_2FA, 'member', user.id,
+        extra_data={'ip': request.remote_addr}
+    )
+    
+    flash('2FA erfolgreich zurückgesetzt. Sie können sich jetzt anmelden und 2FA neu einrichten.', 'success')
+    return redirect(url_for('auth.login'))
+
+# Remember this device for 2FA
+@bp.route('/2fa/remember-device', methods=['POST'])
+@login_required
+def remember_device():
+    """Remember this device for 2FA"""
+    # Generate device token
+    device_token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(days=36500)  # ~100 years (effectively unlimited)
+    
+    # Store in session
+    session['remembered_device'] = {
+        'user_id': current_user.id,
+        'device_token': device_token,
+        'expires_at': expires_at.isoformat()
+    }
+    
+    flash('Dieses Gerät wird dauerhaft gemerkt. 2FA wird nur bei neuen Geräten erforderlich.', 'success')
+    return redirect(url_for('dashboard.index')) 
+
+@bp.route('/2fa/backup-codes')
+@login_required
+def backup_codes():
+    """Show backup codes after 2FA enrollment"""
+    # Generate new backup codes if they don't exist
+    backup_codes = MFABackupCode.query.filter_by(member_id=current_user.id).all()
+    if not backup_codes:
+        # Generate new backup codes
+        codes = SecurityService.generate_backup_codes()
+        for code in codes:
+            backup_code = MFABackupCode(
+                member_id=current_user.id,
+                code_hash=SecurityService.hash_backup_code(code)
+            )
+            db.session.add(backup_code)
+        db.session.commit()
+        
+        # Return the plain codes for display
+        return render_template('auth/backup_codes.html', backup_codes=codes)
+    
+    # If backup codes already exist, show a message
+    flash('Backup-Codes wurden bereits generiert. Falls Sie sie verloren haben, können Sie 2FA deaktivieren und neu einrichten.', 'info')
+    return redirect(url_for('account.profile')) 

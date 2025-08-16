@@ -324,30 +324,42 @@ def set_total(event_id):
     event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
     
     # Calculate individual shares based on weights
-    total_weight = 0
+    sparsam_count = 0
+    normal_count = 0
+    allin_count = 0
+    
     for participation in event.participations:
         if participation.teilnahme and participation.esstyp:
             if participation.esstyp == Esstyp.SPARSAM:
-                total_weight += event.billbro_sparsam_weight
+                sparsam_count += 1
             elif participation.esstyp == Esstyp.NORMAL:
-                total_weight += event.billbro_normal_weight
+                normal_count += 1
             elif participation.esstyp == Esstyp.ALLIN:
-                total_weight += event.billbro_allin_weight
+                allin_count += 1
     
-    if total_weight > 0:
-        event.betrag_sparsam_rappen = int(gesamtbetrag_rappen * event.billbro_sparsam_weight / total_weight)
-        event.betrag_normal_rappen = int(gesamtbetrag_rappen * event.billbro_normal_weight / total_weight)
-        event.betrag_allin_rappen = int(gesamtbetrag_rappen * event.billbro_allin_weight / total_weight)
+    total_participants = sparsam_count + normal_count + allin_count
+    
+    if total_participants > 0:
+        # Calculate shares based on actual participant counts
+        if sparsam_count > 0:
+            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_sparsam_rappen = None
+            
+        if normal_count > 0:
+            event.betrag_normal_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_normal_rappen = None
+            
+        if allin_count > 0:
+            event.betrag_allin_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_allin_rappen = None
         
         # Update calculated shares for each participation
         for participation in event.participations:
             if participation.teilnahme and participation.esstyp:
-                if participation.esstyp == Esstyp.SPARSAM:
-                    participation.calculated_share_rappen = event.betrag_sparsam_rappen
-                elif participation.esstyp == Esstyp.NORMAL:
-                    participation.calculated_share_rappen = event.betrag_normal_rappen
-                elif participation.esstyp == Esstyp.ALLIN:
-                    participation.calculated_share_rappen = event.betrag_allin_rappen
+                participation.calculated_share_rappen = int(gesamtbetrag_rappen / total_participants)
     
     db.session.commit()
     
@@ -402,9 +414,9 @@ def share_whatsapp(event_id):
     
     # Add individual shares
     message += f"\n💸 Anteile pro Person:\n"
-    message += f"Sparsam: {event.betrag_sparsam_rappen / 100:.2f} CHF\n"
-    message += f"Normal: {event.betrag_normal_rappen / 100:.2f} CHF\n"
-    message += f"All-In: {event.betrag_allin_rappen / 100:.2f} CHF\n"
+    message += f"Sparsam: {event.betrag_sparsam_rappen / 100:.2f} CHF\n" if event.betrag_sparsam_rappen else "Sparsam: Nicht berechnet\n"
+    message += f"Normal: {event.betrag_normal_rappen / 100:.2f} CHF\n" if event.betrag_normal_rappen else "Normal: Nicht berechnet\n"
+    message += f"All-In: {event.betrag_allin_rappen / 100:.2f} CHF\n" if event.betrag_allin_rappen else "All-In: Nicht berechnet\n"
     
     # Encode for WhatsApp
     import urllib.parse
@@ -619,4 +631,38 @@ def mark_present(event_id, member_id):
     )
     
     flash(f'{participation.member.display_name} wieder angemeldet', 'success')
+    return redirect(url_for('billbro.index', event_id=event_id)) 
+
+@bp.route('/<int:event_id>/toggle_status', methods=['POST'])
+@login_required
+def toggle_billbro_status(event_id):
+    """Toggle BillBro status (close/reopen) - organizer only"""
+    event = Event.query.get_or_404(event_id)
+    
+    # Check if user is organizer or admin
+    if not (current_user.is_admin or event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann BillBro-Status ändern', 'error')
+        return redirect(url_for('billbro.index', event_id=event_id))
+    
+    # Toggle status
+    if event.billbro_closed:
+        # Reopen BillBro
+        event.billbro_closed = False
+        flash('BillBro wieder geöffnet - Teilnehmer können Schätzungen ändern', 'success')
+    else:
+        # Close BillBro
+        event.billbro_closed = True
+        flash('BillBro abgeschlossen - Schätzungen können nicht mehr geändert werden', 'success')
+    
+    db.session.commit()
+    
+    # Log audit event
+    SecurityService.log_audit_event(
+        AuditAction.BILLBRO_TOGGLE_STATUS, 'event', event.id,
+        extra_data={
+            'event_id': event_id,
+            'new_status': 'closed' if event.billbro_closed else 'open'
+        }
+    )
+    
     return redirect(url_for('billbro.index', event_id=event_id)) 

@@ -43,9 +43,9 @@
         <div class="card">
             <h3>Anteile pro Person</h3>
             <div class="share-amounts">
-                <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF</p>
-                <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF</p>
-                <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF</p>
+                <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</p>
+                <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</p>
+                <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</p>
             </div>
         </div>
 

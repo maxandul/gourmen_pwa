@@ -39,11 +39,15 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 
 ### 2.1 Benutzer-Registrierung
 - [ ] **Neuen Benutzer erstellen** (noch zu testen)
-- [ ] **E-Mail-Validierung** (noch zu testen)
+- [x] **E-Mail-Validierung** ⚠️ (getestet, Handy-Problem)
 - [ ] **Passwort-Richtlinien** (noch zu testen)
 
 **Gefundene Fehler Phase 2.1:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **E-Mail-Eingabe auf Handy**: Erster Buchstabe wird automatisch groß geschrieben
+  - **Beschreibung**: Bei E-Mail-Eingabe auf dem Handy wird der erste Buchstabe automatisch groß geschrieben
+  - **Problem**: E-Mail wird nicht akzeptiert, da E-Mail-Adressen klein geschrieben sein müssen
+  - **Betroffen**: Login-Formular auf mobilen Geräten
+  - **Priorität**: 🔴 Hoch
 
 ### 2.2 Login & 2FA
 - [x] **Normaler Login** ✅ (funktioniert)
@@ -87,18 +91,45 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 ## ⭐ Phase 3: Kern-Features
 
 ### 3.1 Dashboard
+
 - [x] **Dashboard-Layout** ✅ (passt)
 - [x] **Navigation** ✅ (funktioniert)
 - [x] **Responsive Design** ✅ (passt)
 
 **Gefundene Fehler Phase 3.1:**
+- [x] **BillBro Button führt zu 500-Fehler** ✅ **BEHOBEN**
+  - **Beschreibung**: BillBro-Seite führte zu 500-Fehler beim Klick auf BillBro-Button
+  - **Ursache**: `TypeError: unsupported operand type(s) for /: 'NoneType' and 'int'` in Template
+  - **Lösung**: Null-Check für `betrag_sparsam_rappen` hinzugefügt
+  - **Priorität**: 🔴 Hoch
+
+- [x] **Event wird nicht in Liste angezeigt** ✅ **BEHOBEN**
+  - **Beschreibung**: Erstellte Events werden nicht in der Event-Liste angezeigt
+  - **Ursache**: Events werden mit `published=False` erstellt, aber nur `published=True` werden angezeigt + Datum-Filter schließt Events für heute aus + Organisatoren sind nicht automatisch Teilnehmer
+  - **Lösung**: Standardwert auf `published=True` geändert + bestehende Events manuell auf published=True gesetzt + Datum-Filter korrigiert (Events für heute werden jetzt angezeigt) + Organisatoren werden automatisch als Teilnehmer hinzugefügt + Dashboard zeigt nächstes Event für alle Benutzer an
+  - **Priorität**: 🔴 Hoch
+
+- [x] **Browser-Cache Problem**: Ungestylte Seite im Inkognito-Modus ✅ **BEHOBEN**
+  - **Beschreibung**: Inkognito-Fenster zeigt ungestylte/weiße Seite, Dashboard zeigt falsches Event
+  - **Ursache**: Browser-Cache + Zeitzonen-Problem (UTC vs. lokale Zeit)
+  - **Lösung**: Browser-Cache leeren, Flask mit Debug-Modus starten + Dashboard verwendet jetzt lokale Zeit statt UTC
+  - **Priorität**: 🔴 Hoch
+
+- [x] **Zeitzonen-Problem zwischen Laptop und Handy** ✅ **BEHOBEN**
+  - **Beschreibung**: Laptop zeigt September-Event, Handy zeigt heutiges Event auf Dashboard
+  - **Ursache**: Unterschiedliche Zeitzonen-Einstellungen zwischen Geräten + Events mit 00:00:00 Zeit
+  - **Lösung**: Events werden jetzt mit 23:59:59 erstellt + Dashboard zeigt Events ab "morgen" an + Alle bestehenden Events aktualisiert
+  - **Priorität**: 🔴 Hoch
+
 - [ ] **Datum-Schriftart nicht CD**: Datumsfelder haben falsche Schriftart
   - **Beschreibung**: Schriftart der Datumsfelder sind noch nicht CD (Corporate Design)
   - **Betroffen**: Dashboard, Event-Anzeige
   - **Priorität**: 🟡 Mittel
 
-- [ ] **BillBro Button führt zu 500-Fehler**: Technischer Fehler bei BillBro-Aufruf
+- [x] **BillBro Button führt zu 500-Fehler**: Technischer Fehler bei BillBro-Aufruf ✅ **BEHOBEN**
   - **Beschreibung**: Auf kommenden Events wird BillBro angezeigt, führt aber zu Technischem Fehler 500
+  - **Ursache**: Fehlender datetime Import in dashboard.py + Template-Fehler in billbro/index.html
+  - **Lösung**: datetime Import korrigiert + Null-Check für betrag_sparsam_rappen hinzugefügt
   - **Betroffen**: Dashboard, kommende Events
   - **Priorität**: 🔴 Hoch
 
@@ -119,6 +150,12 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
   - **Beschreibung**: Keine Lösch-Funktion für Events vorhanden
   - **Erwartung**: Event-Lösch-Funktion implementieren
   - **Betroffen**: Event-Management
+  - **Priorität**: 🔴 Hoch
+
+- [x] **Organisator-Abtausch Teilnahme-Logik** ✅ **BEHOBEN**
+  - **Beschreibung**: Beim Organisator-Abtausch werden Teilnahme-Einträge nicht korrekt angepasst
+  - **Lösung**: Alter Organisator wird als Teilnehmer entfernt, neuer Organisator wird automatisch als Teilnehmer hinzugefügt
+  - **Betroffen**: Event-Bearbeitung
   - **Priorität**: 🔴 Hoch
 
 - [ ] **Hinweis "Organisatoren können sich hier austauschen" überflüssig**
@@ -145,60 +182,153 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
   - **Priorität**: 🟡 Mittel
 
 ### 3.3 Mitglieder-Verwaltung
-- [ ] **Mitglieder-Liste** (noch zu testen)
-- [ ] **Mitglieder-Details** (noch zu testen)
-- [ ] **Sensible Daten** (noch zu testen)
-- [ ] **Mitglied bearbeiten** (noch zu testen)
+- [x] **Mitglieder-Liste** ✅ (getestet, funktioniert)
+- [x] **Mitglieder-Details** ✅ (getestet, funktioniert)
+- [x] **Sensible Daten** ✅ (getestet, funktioniert)
+- [x] **Mitglied bearbeiten** ✅ (getestet, funktioniert)
 
 **Gefundene Fehler Phase 3.3:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **Mobile Layout Mitglieder nicht optimal**: Zu linksbündig, Buttons nicht mobile optimiert
+  - **Beschreibung**: Mobile Layout der Mitglieder gefällt nicht, alle zu linksbündig
+  - **Betroffen**: Buttons "Bearbeiten" und "Sensible Daten" noch nicht mobile optimiert
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Header-Zeilen weiße Schrift auf weißem Hintergrund**: Mitglied bearbeiten
+  - **Beschreibung**: Auf Mitglied bearbeiten sind die Header-Zeilen noch weiße Schrift auf weißem Hintergrund
+  - **Betroffen**: Mitglied bearbeiten Seite
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Speichern bei neuem Mitglied funktioniert nicht**
+  - **Beschreibung**: Speichern beim neuen Mitglied erstellen funktioniert nicht
+  - **Betroffen**: Mitglied erstellen
+  - **Priorität**: 🔴 Hoch
+
+- [ ] **Sensible Daten Weiterleitung falsch**: Auf Dashboard weitergeleitet
+  - **Beschreibung**: Bei Zugriff auf sensible Daten wird nach der erneuten Sicherheitsprüfung auf Dashboard weitergeleitet
+  - **Erwartung**: Sollte auf sensible Daten-Seite weiterleiten
+  - **Betroffen**: Step-Up-Authentifizierung
+  - **Priorität**: 🔴 Hoch
+
+- [ ] **"Führerschein" ist kein sensible Daten**: Sollte bereits angezeigt werden
+  - **Beschreibung**: "Führerschein" ist kein sensible Daten, soll bereits im Account und auf Mitgliederliste angezeigt werden
+  - **Betroffen**: Mitglieder-Liste, Account-Anzeige
+  - **Priorität**: 🟡 Mittel
 
 ---
 
 ## 🍽️ Phase 4: BillBro-System
 
 ### 4.1 BillBro-Workflow
-- [ ] **BillBro-Session starten** (noch zu testen)
-- [ ] **Push-Benachrichtigungen** (noch zu testen)
-- [ ] **Ess-Typ auswählen** (noch zu testen)
-- [ ] **Rechnungsbetrag schätzen** (noch zu testen)
-- [ ] **Rechnungsbetrag eingeben** (noch zu testen)
-- [ ] **Gesamtbetrag festlegen** (noch zu testen)
-- [ ] **Ergebnisse anzeigen** (noch zu testen)
+- [x] **BillBro-Session starten** ✅ (getestet, funktioniert)
+- [x] **Push-Benachrichtigungen** ⚠️ (getestet, funktioniert nicht)
+- [x] **Ess-Typ auswählen** ✅ (getestet, funktioniert)
+- [x] **Rechnungsbetrag schätzen** ⚠️ (getestet, UI-Problem)
+- [x] **Rechnungsbetrag eingeben** ⚠️ (getestet, UI-Problem)
+- [x] **Gesamtbetrag festlegen** ⚠️ (getestet, UI-Problem)
+- [x] **Ergebnisse anzeigen** ❌ (getestet, 500-Fehler)
 
 **Gefundene Fehler Phase 4.1:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **Push-Benachrichtigungen funktionieren nicht**: "Erinnerungen konnten nicht gesendet werden"
+  - **Beschreibung**: Erinnerungen senden schlägt fehl, keine Push-Benachrichtigungen auf Handy
+  - **Anmerkung**: Erinnerung senden kann komplett weggelassen werden, da alle am Tisch sitzen
+  - **Betroffen**: BillBro-Organisator-Ansicht
+  - **Priorität**: 🟢 Niedrig (kann entfernt werden)
+
+- [ ] **Zahlenfelder nur eine Kommastelle**: Rechnungsbetrag und Gesamtbetrag
+  - **Beschreibung**: Zahlenfelder erlauben nur eine Kommastelle, sollten mehr erlauben
+  - **Betroffen**: BillBro-Eingabefelder
+  - **Priorität**: 🟡 Mittel
+
+- [x] **"Ergebnisse anzeigen" führt zu 500-Fehler**: Technischer Fehler ✅ **BEHOBEN**
+  - **Beschreibung**: Klick auf "Ergebnisse anzeigen" führt zu 500 Technischer Fehler
+  - **Ursache**: Null-Werte in betrag_*_rappen Feldern verursachten Division-by-zero Fehler
+  - **Lösung**: Null-Checks in Template und Route hinzugefügt
+  - **Betroffen**: BillBro-Organisator-Ansicht
+  - **Priorität**: 🔴 Hoch
+
+- [x] **"WhatsApp teilen" führt zu 500-Fehler**: Technischer Fehler ✅ **BEHOBEN**
+  - **Beschreibung**: Klick auf "WhatsApp teilen" führt zu 500 Technischer Fehler
+  - **Ursache**: Null-Werte in betrag_*_rappen Feldern verursachten Division-by-zero Fehler
+  - **Lösung**: Null-Checks in share_whatsapp Route hinzugefügt
+  - **Anmerkung**: WhatsApp teilen erübrigt sich, da alle am Tisch sitzen
+  - **Betroffen**: BillBro-Organisator-Ansicht
+  - **Priorität**: 🟢 Niedrig (kann entfernt werden)
+
+- [x] **Fehlende Teilnehmer-Ansicht**: UX-Problem ✅ **BEHOBEN**
+  - **Beschreibung**: Teilnehmer haben keine eigene BillBro-Ansicht für Schätzungen
+  - **Ursache**: BillBro-Button wurde nur angezeigt, wenn BillBro bereits aktiv war
+  - **Lösung**: BillBro-Button wird immer für Teilnehmer angezeigt, mit Status-Information
+  - **Betroffen**: Event-Detail-Seite, Event-Liste, Dashboard
+  - **Priorität**: 🔴 Hoch
+
+- [x] **Ergebnisse nicht für alle sichtbar**: UX-Problem ✅ **BEHOBEN**
+  - **Beschreibung**: Teilnehmer können keine BillBro-Ergebnisse sehen
+  - **Ursache**: Ergebnisse wurden nur in Organisator-View angezeigt
+  - **Lösung**: Ergebnisse-Sektion für Teilnehmer hinzugefügt
+  - **Betroffen**: BillBro-Teilnehmer-Ansicht
+  - **Priorität**: 🟡 Mittel
+
+- [x] **Organisator fehlt eigene Schätzung**: UX-Problem ✅ **BEHOBEN**
+  - **Beschreibung**: Organisator kann keine eigene Schätzung abgeben
+  - **Ursache**: Organisator-View hatte keine Schätzungssektion
+  - **Lösung**: Eigene Schätzungssektion für Organisator hinzugefügt
+  - **Betroffen**: BillBro-Organisator-Ansicht
+  - **Priorität**: 🟡 Mittel
+
+- [x] **Fehlender BillBro-Abschluss**: UX-Problem ✅ **BEHOBEN**
+  - **Beschreibung**: Organisator kann BillBro nicht abschließen/wieder öffnen
+  - **Ursache**: Keine Toggle-Funktion für BillBro-Status
+  - **Lösung**: Toggle-Route und Button hinzugefügt, Schätzungen werden blockiert
+  - **Betroffen**: BillBro-Organisator-Ansicht
+  - **Priorität**: 🟡 Mittel
 
 ### 4.2 BillBro-Berechnungen
-- [ ] **Gewichtungssystem** (noch zu testen)
-- [ ] **Schätzungs-Rangliste** (noch zu testen)
-- [ ] **Individuelle Anteile** (noch zu testen)
-- [ ] **Trinkgeld-Berechnung** (noch zu testen)
+- [ ] **Gewichtungssystem** (noch zu testen - 500-Fehler verhindert Test)
+- [ ] **Schätzungs-Rangliste** (noch zu testen - 500-Fehler verhindert Test)
+- [ ] **Individuelle Anteile** (noch zu testen - 500-Fehler verhindert Test)
+- [ ] **Trinkgeld-Berechnung** (noch zu testen - 500-Fehler verhindert Test)
 
 **Gefundene Fehler Phase 4.2:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **Berechnungen können nicht getestet werden**: 500-Fehler verhindert Zugriff auf Ergebnisse
+  - **Beschreibung**: "Ergebnisse anzeigen" führt zu 500-Fehler, daher können Berechnungen nicht getestet werden
+  - **Betroffen**: BillBro-Berechnungslogik
+  - **Priorität**: 🔴 Hoch
 
 ---
 
 ## 🏆 Phase 5: GGL (Gourmen Guessing League)
 
 ### 5.1 GGL-System
-- [ ] **Punktevergabe** (noch zu testen)
-- [ ] **Saisonwertungen** (noch zu testen)
-- [ ] **Ranglisten** (noch zu testen)
-- [ ] **GGL-Regeln** (noch zu testen)
+- [ ] **Punktevergabe** (noch zu testen - BillBro-Eingabemaske fehlt)
+- [x] **Saisonwertungen** ⚠️ (getestet, UI-Problem)
+- [x] **Ranglisten** ⚠️ (getestet, UI-Problem)
+- [x] **GGL-Regeln** ✅ (getestet, funktioniert)
 
 **Gefundene Fehler Phase 5.1:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **GGL Saison-Statistik Kontrast**: Weiße Schrift auf hellem Hintergrund
+  - **Beschreibung**: Saisonstatistik hat weiße Schrift auf hellem Hintergrund, nicht lesbar
+  - **Betroffen**: GGL Saison-Statistik
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **GGL Saison-Übersicht Kontrast**: Weiße Schrift auf hellem Hintergrund
+  - **Beschreibung**: Saison-Übersicht Titel hat weiße Schrift auf hellem Hintergrund, nicht lesbar
+  - **Betroffen**: GGL Saison-Übersicht
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Alte Saisons nicht einsehbar**: Unklar ob DB-Problem oder nicht implementiert
+  - **Beschreibung**: Alte Saisons können nicht eingesehen werden
+  - **Frage**: Liegt es daran, dass sie nicht in der DB erfasst sind oder ist es nicht implementiert?
+  - **Betroffen**: GGL Saison-Historie
+  - **Priorität**: 🟡 Mittel
 
 ---
 
 ## 📱 Phase 6: PWA-Features
 
 ### 6.1 Installation
-- [x] **PWA installieren** ✅ (funktioniert)
-- [x] **Install-Prompt** ✅ (funktioniert)
-- [x] **App-Icon** ✅ (funktioniert)
+- [x] **PWA installieren** ✅ (Browser funktioniert, Handy noch unklar)
+- [x] **Install-Prompt** ⚠️ (Browser funktioniert, Handy nicht)
+- [x] **App-Icon** ✅ (Desktop funktioniert, Handy noch unklar)
 
 **Gefundene Fehler Phase 6.1:**
 - [ ] **PWA Install-Button Problem**: Unnötige zusätzliche Box ohne Funktionalität
@@ -212,6 +342,11 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
   - **Betroffen**: Kleines Feld rechts unterhalb des Headers
   - **Priorität**: 🟡 Mittel
 
+- [ ] **Install-Prompt auf Handy nicht sichtbar**: Kein Install-Hinweis auf mobilen Geräten
+  - **Beschreibung**: Install-Prompt wird auf dem Handy nicht angezeigt
+  - **Betroffen**: Mobile PWA-Installation
+  - **Priorität**: 🔴 Hoch
+
 ### 6.2 Offline-Funktionalität
 - [ ] **Offline-Modus** (noch zu testen)
 - [ ] **Cache-Verhalten** (noch zu testen)
@@ -222,13 +357,16 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 - [ ] (wird während Test hinzugefügt)
 
 ### 6.3 Push-Benachrichtigungen
-- [ ] **Benachrichtigungen aktivieren** (noch zu testen)
-- [ ] **Event-Benachrichtigungen** (noch zu testen)
-- [ ] **BillBro-Benachrichtigungen** (noch zu testen)
-- [ ] **Erinnerungen** (noch zu testen)
+- [x] **Benachrichtigungen aktivieren** ❌ (getestet, funktioniert nicht auf Handy)
+- [ ] **Event-Benachrichtigungen** (noch zu testen - Push muss erst funktionieren)
+- [ ] **BillBro-Benachrichtigungen** (noch zu testen - Push muss erst funktionieren)
+- [ ] **Erinnerungen** (noch zu testen - Push muss erst funktionieren)
 
 **Gefundene Fehler Phase 6.3:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **Push-Benachrichtigungen auf Handy nicht verfügbar**: Keine Möglichkeit, Benachrichtigungen zu aktivieren
+  - **Beschreibung**: Push-Benachrichtigungen können auf dem Handy nicht aktiviert werden
+  - **Betroffen**: Mobile Push-Benachrichtigungen
+  - **Priorität**: 🔴 Hoch
 
 ---
 
@@ -243,12 +381,92 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 - [ ] (wird während Test hinzugefügt)
 
 ### 7.2 Bewertungssystem
-- [ ] **Event bewerten** (noch zu testen)
-- [ ] **Bewertungen anzeigen** (noch zu testen)
-- [ ] **Durchschnittsbewertungen** (noch zu testen)
+- [ ] **Event bewerten** (noch zu testen - UI-Änderungen erforderlich)
+- [ ] **Bewertungen anzeigen** (noch zu testen - UI-Änderungen erforderlich)
+- [ ] **Durchschnittsbewertungen** (noch zu testen - UI-Änderungen erforderlich)
 
 **Gefundene Fehler Phase 7.2:**
-- [ ] (wird während Test hinzugefügt)
+- [ ] **Event bewerten nur auf Event-Details**: Bewertung sollte auch auf Dashboard-Event möglich sein
+  - **Beschreibung**: Event bewerten ist nur auf Event-Details-Seite möglich
+  - **Erwartung**: Bewertung sollte auch direkt auf dem Dashboard-Event möglich sein
+  - **Betroffen**: Dashboard, Event-Bewertung
+  - **Priorität**: 🔴 Hoch
+
+- [ ] **Bewertungsskala falsch**: Zahlenfeld statt klickbare Skala
+  - **Beschreibung**: Bewertung erfolgt über Zahlenfeld statt klickbare Skala
+  - **Erwartung**: Klickbare Skala von 1 bis 5 Sternen
+  - **Betroffen**: Event-Bewertung
+  - **Priorität**: 🔴 Hoch
+
+- [ ] **Gesamtbewertung nicht prominent**: Gesamtbewertung wird nicht groß angezeigt
+  - **Beschreibung**: Gesamtbewertung wird nicht prominent auf Event-Details angezeigt
+  - **Erwartung**: Gesamtbewertung sollte groß und prominent auf Event-Details angezeigt werden
+  - **Betroffen**: Event-Details-Seite
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Archiv-Button fehlt**: Button "Archiv anzeigen" nicht vorhanden
+  - **Beschreibung**: Button "Archiv anzeigen" fehlt bei Event-Verwaltung
+  - **Erwartung**: Button sollte oben bei "Neues Event" und "Statistiken" angezeigt werden
+  - **Betroffen**: Event-Verwaltung
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Logo im Header muss umgestylt werden**: Logo zur Startseite führt
+  - **Beschreibung**: Logo im Header, das zur Startseite führt, muss umgestylt werden
+  - **Betroffen**: Header, Navigation
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Eventarchiv braucht mehr Filtermöglichkeiten**: Nach Organisator, Eventtyp und Bewertung
+  - **Beschreibung**: Eventarchiv hat zu wenige Filtermöglichkeiten
+  - **Erwartung**: Filter nach Organisator, Eventtyp und Bewertung hinzufügen
+  - **Betroffen**: Eventarchiv
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Nicht-Admins werden zu "Zugriff verweigert" weitergeleitet**: Zu harte Fehlermeldung
+  - **Beschreibung**: Nicht-Admins werden beim Klick auf "Neues Event" zu "Zugriff verweigert" weitergeleitet
+  - **Erwartung**: Benachrichtigung "Nur Admins können Events erstellen" reicht
+  - **Betroffen**: Event-Erstellung, Berechtigungen
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Anmeldung an Events nach Eventdatum +2 Tage nicht mehr möglich**: Keine zeitliche Begrenzung
+  - **Beschreibung**: Anmeldung an Events sollte nach Eventdatum +2 Tage nicht mehr möglich sein
+  - **Betroffen**: Event-Teilnahme
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Zusage/Absage-Buttons nicht farblich gekennzeichnet**: Keine visuelle Unterscheidung
+  - **Beschreibung**: Zusage- und Absage-Buttons haben keine farbliche Kennzeichnung
+  - **Erwartung**: Zusage-Button grün, Absage-Button rot, beide mit schönem Fade
+  - **Betroffen**: Event-Teilnahme
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Teilnehmerliste zeigt nicht alle aktiven Member**: Unvollständige Anzeige
+  - **Beschreibung**: Teilnehmerliste zeigt nicht alle aktiven Member permanent an
+  - **Erwartung**: Alle aktiven Member mit "nimmt teil", "abgesagt" und "antwort ausstehend" anzeigen
+  - **Betroffen**: Event-Details
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Push-Benachrichtigung für ausstehende Antworten fehlt**: Organisator kann nicht erinnern
+  - **Beschreibung**: Organisator kann keine Push-Benachrichtigung an ausstehende Antworten senden
+  - **Erwartung**: Push-Benachrichtigung, die direkt zu Event-Details führt
+  - **Betroffen**: Event-Management
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Zu-/Absage auf Dashboard nicht möglich**: Keine direkte Teilnahme vom Dashboard
+  - **Beschreibung**: Zu- oder Absage sollte auch auf dem Dashboard bei kommenden Events möglich sein
+  - **Erwartung**: Nach Antwort sollte das wieder verschwinden
+  - **Betroffen**: Dashboard
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **GGL Rangliste im Dashboard unvollständig**: Fehlende Informationen
+  - **Beschreibung**: GGL Rangliste im Dashboard zeigt nicht alle relevanten Informationen
+  - **Erwartung**: Erste drei Ränge mit Punkten + Rang und Punkte des jeweiligen Teilnehmers
+  - **Betroffen**: Dashboard, GGL
+  - **Priorität**: 🟡 Mittel
+
+- [ ] **Sensible Daten im Profil zu oberst statt zu unterst**: Falsche Position
+  - **Beschreibung**: Sensible Daten werden im Profil zu oberst angezeigt
+  - **Erwartung**: Sensible Daten sollten zu unterst angezeigt werden
+  - **Betroffen**: Profil-Seite
+  - **Priorität**: 🟡 Mittel
 
 ### 7.3 Statistiken
 - [ ] **Event-Statistiken** (noch zu testen)
@@ -326,9 +544,21 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 
 ### 🔴 Kritische Fehler (Hoch)
 - [x] Flask-Pfad Problem (Phase 1.1) ✅ Behoben
+- [x] BillBro Button führt zu 500-Fehler (Phase 3.1) ✅ Behoben
 - [ ] 2FA-Code Problem (Phase 2.2)
-- [ ] BillBro Button führt zu 500-Fehler (Phase 3.1)
 - [ ] Event Lösch-Funktion fehlt (Phase 3.2)
+- [ ] Speichern bei neuem Mitglied funktioniert nicht (Phase 3.3)
+- [ ] Sensible Daten Weiterleitung falsch (Phase 3.3)
+- [ ] "Ergebnisse anzeigen" führt zu 500-Fehler (Phase 4.1) ✅ Behoben
+- [x] Fehlende Teilnehmer-Ansicht (Phase 4.1) ✅ Behoben
+- [x] Ergebnisse nicht für alle sichtbar (Phase 4.1) ✅ Behoben
+- [x] Organisator fehlt eigene Schätzung (Phase 4.1) ✅ Behoben
+- [x] Fehlender BillBro-Abschluss (Phase 4.1) ✅ Behoben
+- [ ] E-Mail-Eingabe auf Handy (Phase 2.1)
+- [ ] Install-Prompt auf Handy nicht sichtbar (Phase 6.1)
+- [ ] Push-Benachrichtigungen auf Handy nicht verfügbar (Phase 6.3)
+- [ ] Event bewerten nur auf Event-Details (Phase 7.2)
+- [ ] Bewertungsskala falsch (Phase 7.2)
 
 ### 🟡 Wichtige Fehler (Mittel)
 - [ ] PWA Install-Button Problem (Phase 6.1)
@@ -340,13 +570,41 @@ Diese Datei sammelt systematisch alle Fehler, die während des Tests der Gourmen
 - [ ] Google Places Autocomplete funktioniert nicht (Phase 3.2)
 - [ ] Google Places Daten unvollständig (Phase 3.2)
 - [ ] Menü Icons nicht optimal (Phase 3.2)
+- [ ] Mobile Layout Mitglieder nicht optimal (Phase 3.3)
+- [ ] Header-Zeilen weiße Schrift auf weißem Hintergrund (Phase 3.3)
+- [ ] "Führerschein" ist kein sensible Daten (Phase 3.3)
+- [ ] Zahlenfelder nur eine Kommastelle (Phase 4.1)
+- [ ] GGL Saison-Statistik Kontrast (Phase 5.1)
+- [ ] GGL Saison-Übersicht Kontrast (Phase 5.1)
+- [ ] Alte Saisons nicht einsehbar (Phase 5.1)
+- [ ] Gesamtbewertung nicht prominent (Phase 7.2)
+- [ ] Archiv-Button fehlt (Phase 7.2)
+- [ ] Logo im Header muss umgestylt werden (Phase 3.1)
+- [ ] Eventarchiv braucht mehr Filtermöglichkeiten (Phase 3.2)
+- [ ] Nicht-Admins werden zu "Zugriff verweigert" weitergeleitet (Phase 3.2)
+- [ ] Anmeldung an Events nach Eventdatum +2 Tage nicht mehr möglich (Phase 3.2)
+- [ ] Zusage/Absage-Buttons nicht farblich gekennzeichnet (Phase 3.2)
+- [ ] Teilnehmerliste zeigt nicht alle aktiven Member (Phase 3.2)
+- [ ] Push-Benachrichtigung für ausstehende Antworten fehlt (Phase 3.2)
+- [ ] Zu-/Absage auf Dashboard nicht möglich (Phase 3.1)
+- [ ] GGL Rangliste im Dashboard unvollständig (Phase 3.1)
+- [ ] Sensible Daten im Profil zu oberst statt zu unterst (Phase 2.2)
 
 ### 🟢 Kleine Fehler (Niedrig)
 - [ ] Profil-Sicherheit Padding (Phase 2.2)
 - [ ] Hinweis "Organisatoren können sich hier austauschen" überflüssig (Phase 3.2)
+- [ ] Push-Benachrichtigungen funktionieren nicht (Phase 4.1) - kann entfernt werden
+- [ ] "WhatsApp teilen" führt zu 500-Fehler (Phase 4.1) - kann entfernt werden
+
+### 🔧 Technische Verbesserungen
+- [ ] **ID-Erstellung in DB überprüfen**: Doppelungen vermeiden
+  - **Beschreibung**: Überprüfung der ID-Erstellung in der Datenbank, dass es zu keinen Doppelungen kommen kann
+  - **Betroffen**: Datenbank-Design
+  - **Priorität**: 🟡 Mittel
 
 ### ✅ Behobene Fehler
 - [x] Flask-Pfad Problem (Phase 1.1) - Mit FLASK_APP=backend.app behoben
+- [x] BillBro Button führt zu 500-Fehler (Phase 3.1) - Fehlender datetime Import behoben
 
 ---
 

@@ -127,6 +127,62 @@
             </div>
             {% endif %}
 
+            <!-- Organisator eigene Schätzung -->
+            <div class="organizer-guess-section">
+                <h4>🎯 Deine eigene Schätzung</h4>
+                {% set organizer_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                {% if organizer_participation and organizer_participation.has_guess %}
+                <!-- Bereits geschätzt -->
+                <div class="existing-guess">
+                    <p><strong>Deine Schätzung:</strong> {{ organizer_participation.display_guess }}</p>
+                    <p><strong>Ess-Typ:</strong> {{ organizer_participation.esstyp.value if organizer_participation.esstyp else 'Nicht gewählt' }}</p>
+                    
+                    {% if event.rechnungsbetrag_rappen %}
+                    <p><strong>Differenz:</strong> {{ organizer_participation.display_diff }}</p>
+                    <p><strong>Rang:</strong> {{ organizer_participation.rank }}. Platz</p>
+                    {% endif %}
+                    
+                    {% if not event.billbro_closed %}
+                    <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary">Schätzung ändern</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">BillBro ist abgeschlossen - Schätzung kann nicht mehr geändert werden</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <!-- Neue Schätzung -->
+                {% if not event.billbro_closed %}
+                <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="guess-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="form-group">
+                        {{ form.esstyp.label }}
+                        {{ form.esstyp(class="form-control") }}
+                        {% if form.esstyp.errors %}
+                        <div class="error">{{ form.esstyp.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.guess_amount.label }}
+                        {{ form.guess_amount(class="form-control", placeholder="z.B. 45.50") }}
+                        {% if form.guess_amount.errors %}
+                        <div class="error">{{ form.guess_amount.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-actions">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+                {% else %}
+                <p class="text-muted">BillBro ist abgeschlossen - keine neuen Schätzungen möglich</p>
+                {% endif %}
+                {% endif %}
+            </div>
+
             <!-- Rechnungsbetrag eingeben -->
             <div class="bill-input-section">
                 <h4>Rechnungsbetrag eingeben</h4>
@@ -186,14 +242,28 @@
                     
                     <div class="share-amounts">
                         <h5>Anteile pro Person:</h5>
-                        <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF</p>
-                        <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF</p>
-                        <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF</p>
+                        <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</p>
+                        <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</p>
+                        <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</p>
                     </div>
 
                     <div class="action-buttons">
                         <a href="{{ url_for('billbro.results', event_id=event.id) }}" class="btn btn-success">Ergebnisse anzeigen</a>
                         <a href="{{ url_for('billbro.share_whatsapp', event_id=event.id) }}" class="btn btn-whatsapp">WhatsApp teilen</a>
+                        
+                        <!-- BillBro Status Toggle -->
+                        <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {% if event.billbro_closed %}
+                            <button type="submit" class="btn btn-warning" onclick="return confirm('BillBro wieder öffnen?')">
+                                🔓 BillBro wieder öffnen
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('BillBro abschließen? Schätzungen können dann nicht mehr geändert werden.')">
+                                🔒 BillBro abschließen
+                            </button>
+                            {% endif %}
+                        </form>
                     </div>
                 </div>
                 {% endif %}
@@ -219,13 +289,18 @@
                 <p><strong>Rang:</strong> {{ participation.rank }}. Platz</p>
                 {% endif %}
                 
+                {% if not event.billbro_closed %}
                 <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-secondary">Schätzung ändern</button>
                 </form>
+                {% else %}
+                <p class="text-muted">BillBro ist abgeschlossen - Schätzung kann nicht mehr geändert werden</p>
+                {% endif %}
             </div>
             {% else %}
             <!-- Neue Schätzung -->
+            {% if not event.billbro_closed %}
             <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="guess-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
@@ -249,8 +324,50 @@
                     {{ form.submit(class="btn btn-primary") }}
                 </div>
             </form>
+            {% else %}
+            <p class="text-muted">BillBro ist abgeschlossen - keine neuen Schätzungen möglich</p>
+            {% endif %}
             {% endif %}
         </div>
+        
+        <!-- Ergebnisse für Teilnehmer -->
+        {% if event.rechnungsbetrag_rappen %}
+        <div class="card">
+            <h3>📊 BillBro Ergebnisse</h3>
+            
+            <div class="bill-summary">
+                <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
+                <p><strong>Trinkgeld:</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
+                <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) if event.gesamtbetrag_rappen else "Noch nicht festgelegt" }} CHF</p>
+            </div>
+            
+            {% if event.gesamtbetrag_rappen %}
+            <div class="share-amounts">
+                <h4>Anteile pro Person:</h4>
+                <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</p>
+                <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</p>
+                <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</p>
+            </div>
+            
+            <div class="your-share">
+                <h4>Dein Anteil:</h4>
+                {% if participation.esstyp %}
+                    {% if participation.esstyp == Esstyp.SPARSAM and event.betrag_sparsam_rappen %}
+                        <p><strong>{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF</strong> (Sparsam)</p>
+                    {% elif participation.esstyp == Esstyp.NORMAL and event.betrag_normal_rappen %}
+                        <p><strong>{{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF</strong> (Normal)</p>
+                    {% elif participation.esstyp == Esstyp.ALLIN and event.betrag_allin_rappen %}
+                        <p><strong>{{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF</strong> (All-In)</p>
+                    {% else %}
+                        <p>Anteil noch nicht berechnet</p>
+                    {% endif %}
+                {% else %}
+                    <p>Bitte wähle deinen Ess-Typ</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 </div>

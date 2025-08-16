@@ -2,6 +2,7 @@ from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from backend.models.event import Event
 from backend.services.ggl_rules import GGLService
+from datetime import datetime, timedelta
 
 bp = Blueprint('dashboard', __name__)
 
@@ -10,8 +11,10 @@ bp = Blueprint('dashboard', __name__)
 def index():
     """Dashboard main page"""
     # Get next upcoming event
+    # An event is "upcoming" until the day AFTER the event date
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     next_event = Event.query.filter(
-        Event.datum > datetime.utcnow(),
+        Event.datum >= today,
         Event.published == True
     ).order_by(Event.datum.asc()).first()
     
@@ -24,5 +27,4 @@ def index():
                          ggl_stats=ggl_stats,
                          current_season=current_season)
 
-# Import here to avoid circular imports
-from datetime import datetime 
+ 

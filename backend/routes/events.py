@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
@@ -106,8 +106,10 @@ def create_monthly_events(year):
 def index():
     """Events list"""
     # Get current and upcoming events
+    # An event is "upcoming" until the day AFTER the event date
+    today = datetime.utcnow().date()
     current_events = Event.query.filter(
-        Event.datum >= datetime.utcnow().date(),
+        Event.datum >= datetime.combine(today, datetime.min.time()),
         Event.published == True
     ).order_by(Event.datum.asc()).limit(6).all()
     
@@ -251,6 +253,32 @@ def edit(event_id):
             event.place_locality = form.place_locality.data
             event.place_country = form.place_country.data
         
+        # Handle organizer change and participation updates
+        if old_organizer_id != new_organizer_id:
+            # Remove old organizer from participants (they are usually unavailable)
+            old_organizer_participation = Participation.query.filter_by(
+                member_id=old_organizer_id,
+                event_id=event.id
+            ).first()
+            
+            if old_organizer_participation:
+                db.session.delete(old_organizer_participation)
+            
+            # Add new organizer as participant (if not already participating)
+            new_organizer_participation = Participation.query.filter_by(
+                member_id=new_organizer_id,
+                event_id=event.id
+            ).first()
+            
+            if not new_organizer_participation:
+                new_organizer_participation = Participation(
+                    member_id=new_organizer_id,
+                    event_id=event.id,
+                    teilnahme=True,
+                    responded_at=datetime.utcnow()
+                )
+                db.session.add(new_organizer_participation)
+        
         db.session.commit()
         
         # Log organizer change if it happened
@@ -267,7 +295,7 @@ def edit(event_id):
                     'new_organizer_name': new_organizer.display_name if new_organizer else 'Unbekannt'
                 }
             )
-            flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}', 'success')
+            flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}. Alter Organisator als Teilnehmer entfernt, neuer Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
         else:
             flash('Event erfolgreich bearbeitet', 'success')
         

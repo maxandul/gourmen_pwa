@@ -93,15 +93,21 @@
                 {% endif %}
             </form>
             
-            <!-- BillBro Link falls aktiv -->
-            {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
-            {% if participation and participation.teilnahme and billbro_active %}
+            <!-- BillBro Link für Teilnehmer -->
+            {% if participation and participation.teilnahme %}
             <div class="billbro-link">
                 <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-success">
                     🍽️ Zu BillBro
                 </a>
-                {% if participation.has_guess %}
-                <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
+                {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
+                {% if billbro_active %}
+                    {% if participation.has_guess %}
+                    <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
+                    {% else %}
+                    <p><small>Du hast noch nicht geschätzt</small></p>
+                    {% endif %}
+                {% else %}
+                    <p><small>BillBro noch nicht gestartet</small></p>
                 {% endif %}
             </div>
             {% endif %}

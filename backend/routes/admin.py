@@ -349,12 +349,16 @@ def create_event():
     form.organisator_id.choices = [(m.id, m.display_name) for m in Member.query.filter_by(is_active=True).all()]
     
     if form.validate_on_submit():
+        # Set event time to 23:59:59 of the selected date
+        from datetime import datetime, time
+        event_datetime = datetime.combine(form.datum.data, time(23, 59, 59))
+        
         event = Event(
-            datum=form.datum.data,
+            datum=event_datetime,
             event_typ=EventType(form.event_typ.data),
             organisator_id=form.organisator_id.data,
             season=form.datum.data.year,
-            published=False
+            published=True
         )
         
         # Set restaurant details
@@ -385,13 +389,26 @@ def create_event():
             event.place_country = form.place_country.data
         
         db.session.add(event)
+        db.session.flush()  # Get event ID
+        
+        # Automatically add organizer as participant
+        from backend.models.participation import Participation
+        from datetime import datetime
+        organizer_participation = Participation(
+            member_id=event.organisator_id,
+            event_id=event.id,
+            teilnahme=True,
+            responded_at=datetime.utcnow()
+        )
+        db.session.add(organizer_participation)
+        
         db.session.commit()
         
         SecurityService.log_audit_event(
             AuditAction.ADMIN_CREATE_EVENT, 'event', event.id
         )
         
-        flash('Event erfolgreich erstellt', 'success')
+        flash('Event erfolgreich erstellt! Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
     return render_template('admin/create_event.html', form=form) 

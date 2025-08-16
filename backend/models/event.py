@@ -64,6 +64,7 @@ class Event(db.Model):
     })
     tip_rule = db.Column(db.String(50), default="7pct_round10")
     rounding_rule = db.Column(db.String(50), default="ceil_10")
+    billbro_closed = db.Column(db.Boolean, default=False, nullable=False)
     
     # Publication status
     published = db.Column(db.Boolean, default=False, nullable=False)

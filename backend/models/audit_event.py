@@ -22,6 +22,7 @@ class AuditAction(Enum):
     BILLBRO_SET_TOTAL = 'BILLBRO_SET_TOTAL'
     BILLBRO_START_SESSION = 'BILLBRO_START_SESSION'
     BILLBRO_SEND_REMINDER = 'BILLBRO_SEND_REMINDER'
+    BILLBRO_TOGGLE_STATUS = 'BILLBRO_TOGGLE_STATUS'
     PUSH_SUBSCRIBE = 'PUSH_SUBSCRIBE'
     PUSH_UNSUBSCRIBE = 'PUSH_UNSUBSCRIBE'
     EVENT_ORGANIZER_CHANGED = 'EVENT_ORGANIZER_CHANGED'
@@ -33,6 +34,9 @@ class AuditAction(Enum):
     CHANGE_PASSWORD = 'CHANGE_PASSWORD'
     REQUEST_PASSWORD_RESET = 'REQUEST_PASSWORD_RESET'
     RESET_PASSWORD = 'RESET_PASSWORD'
+    REQUEST_2FA_RESET = 'REQUEST_2FA_RESET'
+    RESET_2FA = 'RESET_2FA'
+    ENABLE_2FA = 'ENABLE_2FA'
 
 class AuditEvent(db.Model):
     """Audit event model for security logging"""
@@ -84,9 +88,10 @@ class AuditEvent(db.Model):
             AuditAction.BILLBRO_SET_TOTAL: 'BillBro Gesamtbetrag festgelegt',
             AuditAction.BILLBRO_START_SESSION: 'BillBro Session gestartet',
             AuditAction.BILLBRO_SEND_REMINDER: 'BillBro Erinnerung gesendet',
-                    AuditAction.PUSH_SUBSCRIBE: 'Push-Notifications aktiviert',
-        AuditAction.PUSH_UNSUBSCRIBE: 'Push-Notifications deaktiviert',
-        AuditAction.EVENT_ORGANIZER_CHANGED: 'Event Organisator geändert',
+            AuditAction.BILLBRO_TOGGLE_STATUS: 'BillBro Status geändert',
+            AuditAction.PUSH_SUBSCRIBE: 'Push-Notifications aktiviert',
+            AuditAction.PUSH_UNSUBSCRIBE: 'Push-Notifications deaktiviert',
+            AuditAction.EVENT_ORGANIZER_CHANGED: 'Event Organisator geändert',
             AuditAction.RSVP_UPDATE: 'Teilnahme aktualisiert',
             AuditAction.EVENT_EDIT: 'Event bearbeitet',
             AuditAction.ADMIN_CREATE_EVENT: 'Event erstellt (Admin)',
@@ -94,7 +99,10 @@ class AuditEvent(db.Model):
             AuditAction.ADMIN_EDIT_MEMBER: 'Mitglied bearbeitet (Admin)',
             AuditAction.CHANGE_PASSWORD: 'Passwort geändert',
             AuditAction.REQUEST_PASSWORD_RESET: 'Passwort-Reset angefordert',
-            AuditAction.RESET_PASSWORD: 'Passwort zurückgesetzt'
+            AuditAction.RESET_PASSWORD: 'Passwort zurückgesetzt',
+            AuditAction.REQUEST_2FA_RESET: '2FA-Reset angefordert',
+            AuditAction.RESET_2FA: '2FA zurückgesetzt',
+            AuditAction.ENABLE_2FA: '2FA aktiviert'
         }
         return action_names.get(self.action, self.action.value)
     

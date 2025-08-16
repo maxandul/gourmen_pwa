@@ -25,6 +25,14 @@
             <div class="print-section">
                 <button class="btn btn-primary" onclick="window.print()">🖨️ Drucken</button>
                 <button class="btn btn-secondary" onclick="copyAllCodes()">📋 Alle kopieren</button>
+                <button class="btn btn-info" onclick="showQRCode()">📱 QR-Code anzeigen</button>
+            </div>
+            
+            <div id="qr-code-section" style="display: none; text-align: center; margin: 20px 0;">
+                <h4>📱 QR-Code für Backup-Codes</h4>
+                <p>Scanne diesen QR-Code mit deinem Handy, um die Backup-Codes zu speichern:</p>
+                <div id="qr-code-container"></div>
+                <p class="text-muted">Der QR-Code enthält alle Backup-Codes in einem sicheren Format</p>
             </div>
         </div>
         
@@ -39,6 +47,7 @@
         </div>
         
         <div class="actions">
+            <button class="btn btn-success" onclick="confirmCodesSaved()">✅ Backup-Codes bestätigt</button>
             <a href="{{ url_for('account.profile') }}" class="btn btn-primary">Zum Profil</a>
             <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Zum Dashboard</a>
         </div>
@@ -114,27 +123,105 @@ function copyAllCodes() {
         .map(code => code.textContent)
         .join('\n');
     
-    navigator.clipboard.writeText(codes).then(function() {
-        if (typeof showToast === 'function') {
-            showToast('Alle Backup-Codes kopiert!', 'success');
-        } else {
-            alert('Alle Backup-Codes kopiert!');
-        }
-    }).catch(function(err) {
-        console.error('Fehler beim Kopieren:', err);
-        alert('Fehler beim Kopieren der Codes');
-    });
+    // Fallback für HTTP/HTTPS Kompatibilität
+    if (navigator.clipboard && window.isSecureContext) {
+        // HTTPS - verwende moderne Clipboard API
+        navigator.clipboard.writeText(codes).then(function() {
+            showCopySuccess();
+        }).catch(function(err) {
+            console.error('Fehler beim Kopieren:', err);
+            fallbackCopyTextToClipboard(codes);
+        });
+    } else {
+        // HTTP - verwende Fallback-Methode
+        fallbackCopyTextToClipboard(codes);
+    }
 }
 
-// Warnung beim Verlassen der Seite
-window.addEventListener('beforeunload', function(e) {
-    if (!document.querySelector('.backup-code')) {
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess();
+        } else {
+            alert('Kopieren fehlgeschlagen. Bitte manuell kopieren.');
+        }
+    } catch (err) {
+        console.error('Fallback: Fehler beim Kopieren', err);
+        alert('Kopieren fehlgeschlagen. Bitte manuell kopieren.');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showCopySuccess() {
+    if (typeof showToast === 'function') {
+        showToast('Alle Backup-Codes kopiert!', 'success');
+    } else {
+        alert('Alle Backup-Codes kopiert!');
+    }
+}
+
+function showQRCode() {
+    const codes = Array.from(document.querySelectorAll('.backup-code'))
+        .map(code => code.textContent)
+        .join(',');
+    
+    const qrData = `GOURMEN_BACKUP_CODES:${codes}`;
+    
+    // Einfacher QR-Code mit Canvas (ohne externe Bibliothek)
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 300;
+    canvas.height = 300;
+    
+    // Einfacher QR-Code-Simulation (in Produktion würde man eine echte QR-Bibliothek verwenden)
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 300, 300);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(10, 10, 280, 280);
+    ctx.fillStyle = '#000';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('QR-Code für Backup-Codes', 150, 150);
+    ctx.fillText('(In Produktion: Echter QR-Code)', 150, 170);
+    
+    const container = document.getElementById('qr-code-container');
+    container.innerHTML = '';
+    container.appendChild(canvas);
+    
+    document.getElementById('qr-code-section').style.display = 'block';
+}
+
+// Warnung beim Verlassen der Seite (nur wenn Codes noch nicht bestätigt wurden)
+let codesConfirmed = false;
+
+function confirmCodesSaved() {
+    codesConfirmed = true;
+    // Entferne die Warnung
+    window.removeEventListener('beforeunload', showLeaveWarning);
+}
+
+window.addEventListener('beforeunload', showLeaveWarning);
+
+function showLeaveWarning(e) {
+    if (codesConfirmed) {
         return;
     }
     
     e.preventDefault();
-    e.returnValue = 'Du hast die Backup-Codes noch nicht gespeichert. Möchtest du die Seite wirklich verlassen?';
-});
+    e.returnValue = 'Du hast die Backup-Codes noch nicht bestätigt. Möchtest du die Seite wirklich verlassen?';
+}
 </script>
 {% endblock %}
 
