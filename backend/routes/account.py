@@ -63,7 +63,6 @@ class SensitiveDataForm(FlaskForm):
     id_nummer = StringField('ID-Nummer')
     id_ausgestellt = StringField('ID ausgestellt')
     id_ablauf = StringField('ID abläuft')
-    fuehrerschein = StringField('Führerschein')
     allergien = TextAreaField('Allergien')
     submit = SubmitField('Speichern')
 
