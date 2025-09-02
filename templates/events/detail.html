@@ -4,14 +4,23 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
+    <div class="page-header">
         <h1>{{ event.event_typ.value }} - {{ event.display_date }}</h1>
-        <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+        <p class="page-subtitle">
+            {% if event.restaurant %}{{ event.restaurant }}{% endif %}
+            {% if event.kueche %} • {{ event.kueche }}{% endif %}
+        </p>
+        <div class="page-actions">
+            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+        </div>
     </div>
     
-    <div class="event-details">
+    <div class="page-content">
         <div class="card">
-            <h3>Event-Details</h3>
+            <div class="card-header">
+                <h2>Event-Details</h2>
+            </div>
+            <div class="card-body">
             <div class="event-info">
                 <div class="event-basic-info">
                     <p><strong>📅 Datum:</strong> {{ event.display_datetime }}</p>
@@ -57,30 +66,42 @@
                 <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
                 {% endif %}
                 
-                <!-- Rating Section -->
-                {% if event.is_past %}
-                    {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if user_participation and user_participation.teilnahme %}
-                        {% if event.has_rating_from_participant(current_user.id) %}
-                            <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-warning">
-                                <i class="fas fa-star"></i> Bewertung bearbeiten
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn-primary">
-                                <i class="fas fa-star"></i> Event bewerten
-                            </a>
-                        {% endif %}
-                    {% endif %}
-                    
-                    <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-info">
-                        <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
-                    </a>
+                {% if current_user.is_admin and not event.is_past %}
+                <form method="POST" action="{{ url_for('events.delete', event_id=event.id) }}" style="display: inline;" id="delete-form-{{ event.id }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-danger delete-event-btn" 
+                            data-event-id="{{ event.id }}" 
+                            data-event-title="{{ event.restaurant or event.event_typ.value }}">
+                        🗑️ Löschen
+                    </button>
+                </form>
                 {% endif %}
+                
+                <!-- Rating Section -->
+                {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                {% if user_participation and user_participation.teilnahme %}
+                    {% if event.has_rating_from_participant(current_user.id) %}
+                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-warning">
+                            <i class="fas fa-star"></i> Bewertung bearbeiten
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn-primary">
+                            <i class="fas fa-star"></i> Event bewerten
+                        </a>
+                    {% endif %}
+                {% endif %}
+                
+                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
+                </a>
             </div>
         </div>
         
         <div class="card">
-            <h3>Teilnahme</h3>
+            <div class="card-header">
+                <h2>Teilnahme</h2>
+            </div>
+            <div class="card-body">
             
             <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -111,11 +132,15 @@
                 {% endif %}
             </div>
             {% endif %}
+            </div>
         </div>
         
         {% if participations %}
         <div class="card">
-            <h3>Teilnehmerliste</h3>
+            <div class="card-header">
+                <h2>Teilnehmerliste</h2>
+            </div>
+            <div class="card-body">
             <div class="participants-list">
                 {% for participation in participations %}
                 <div class="participant-item">
@@ -143,8 +168,29 @@
                 <p><strong>BillBro Status:</strong> {{ with_guesses|length }} / {{ participating|length }} haben geschätzt</p>
             </div>
             {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle delete event buttons
+    document.querySelectorAll('.delete-event-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const eventId = this.getAttribute('data-event-id');
+            const eventTitle = this.getAttribute('data-event-title');
+            
+            if (confirm('Möchtest du das Event "' + eventTitle + '" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+                // Submit the existing form
+                const form = document.getElementById('delete-form-' + eventId);
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %} 

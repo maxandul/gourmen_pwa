@@ -49,6 +49,58 @@ function initializeFlashMessages() {
     });
 }
 
+// Star Rating System
+function initializeStarRatings() {
+    const starRatings = document.querySelectorAll('.star-rating');
+    
+    starRatings.forEach(rating => {
+        const stars = rating.querySelectorAll('.star');
+        const hiddenInput = rating.querySelector('input[type="hidden"]');
+        
+        // Set initial state
+        if (hiddenInput.value) {
+            const value = parseInt(hiddenInput.value);
+            stars.forEach((star, index) => {
+                if (index < value) {
+                    star.classList.add('selected');
+                }
+            });
+        }
+        
+        // Add click handlers
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const value = index + 1;
+                hiddenInput.value = value;
+                
+                // Update visual state
+                stars.forEach((s, i) => {
+                    if (i < value) {
+                        s.classList.add('selected');
+                    } else {
+                        s.classList.remove('selected');
+                    }
+                });
+            });
+            
+            // Add hover effects
+            star.addEventListener('mouseenter', () => {
+                stars.forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseleave', () => {
+                stars.forEach(s => s.classList.remove('active'));
+            });
+        });
+    });
+}
+
 // Push Notification Management
 async function initializePushNotifications() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -126,6 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize flash messages
     initializeFlashMessages();
+    
+    // Initialize star ratings
+    initializeStarRatings();
     
     // Check if user is authenticated (this will be set by the template)
     const isAuthenticated = document.body.hasAttribute('data-authenticated');

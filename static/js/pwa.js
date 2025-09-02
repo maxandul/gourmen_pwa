@@ -20,11 +20,13 @@ class PWA {
         this.setupNetworkStatus();
         this.setupNotifications();
         this.setupUpdateDetection();
+        // this.showDebugInfo(); // Debug-Info anzeigen - auskommentiert
     }
 
     setupEventListeners() {
         // Install-Prompt Event
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('🚀 beforeinstallprompt Event gefangen');
             e.preventDefault();
             this.deferredPrompt = e;
             this.showInstallButton();
@@ -63,7 +65,7 @@ class PWA {
 
     setupServiceWorker() {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js')
+            navigator.serviceWorker.register('/static/service-worker.js')
                 .then(registration => {
                     console.log('Service Worker registriert:', registration);
                     
@@ -80,7 +82,12 @@ class PWA {
                 })
                 .catch(error => {
                     console.error('Service Worker Registrierung fehlgeschlagen:', error);
+                    // Fallback: Zeige Info über Service Worker Problem
+                    // this.showToast('Service Worker konnte nicht registriert werden', 'warning');
                 });
+        } else {
+            console.log('Service Worker nicht unterstützt');
+            // this.showToast('Service Worker nicht unterstützt - PWA-Installation nicht möglich', 'warning');
         }
     }
 
@@ -114,22 +121,44 @@ class PWA {
 
     checkInstallation() {
         // Prüfe ob App bereits installiert ist
-        if (window.matchMedia('(display-mode: standalone)').matches || 
-            window.navigator.standalone === true) {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                            window.navigator.standalone === true;
+        
+        console.log('🚀 Installation-Check:', {
+            displayMode: window.matchMedia('(display-mode: standalone)').matches,
+            navigatorStandalone: window.navigator.standalone,
+            isStandalone: isStandalone
+        });
+        
+        if (isStandalone) {
             this.isInstalled = true;
             this.hideInstallButton();
+            console.log('🚀 App bereits installiert');
+        } else {
+            console.log('🚀 App nicht installiert, Install-Prompt möglich');
         }
     }
 
     showInstallButton() {
-        // Nur anzeigen wenn Benutzer nicht eingeloggt ist oder Admin ist
-        if (this.isInstalled) return;
+        console.log('🚀 Zeige Install-Button an');
         
-        // Optional: Nur anzeigen wenn Benutzer nicht eingeloggt ist
-        // if (document.body.hasAttribute('data-authenticated')) return;
+        // Nur anzeigen wenn App nicht bereits installiert ist
+        if (this.isInstalled) {
+            console.log('🚀 App bereits installiert, Button nicht anzeigen');
+            return;
+        }
+        
+        // Prüfe ob Benutzer eingeloggt ist (optional)
+        const isAuthenticated = document.body.hasAttribute('data-authenticated');
+        if (isAuthenticated) {
+            console.log('🚀 Benutzer eingeloggt, Install-Button anzeigen');
+        }
 
         const existingBtn = document.getElementById('pwa-install-btn');
-        if (existingBtn) return;
+        if (existingBtn) {
+            console.log('🚀 Install-Button bereits vorhanden');
+            return;
+        }
 
         const installBtn = document.createElement('button');
         installBtn.id = 'pwa-install-btn';
@@ -142,11 +171,14 @@ class PWA {
         
         installBtn.addEventListener('click', () => this.installApp());
         document.body.appendChild(installBtn);
+        
+        console.log('🚀 Install-Button hinzugefügt');
 
         // Auto-hide nach 10 Sekunden
         setTimeout(() => {
             if (installBtn.parentNode) {
                 installBtn.style.opacity = '0.7';
+                console.log('🚀 Install-Button ausgeblendet');
             }
         }, 10000);
     }
@@ -336,6 +368,76 @@ class PWA {
             notificationPermission: 'Notification' in window ? Notification.permission : 'not-supported'
         };
     }
+
+    showDebugInfo() {
+        // Debug-Info direkt auf der Seite anzeigen
+        const debugInfo = document.createElement('div');
+        debugInfo.id = 'pwa-debug-info';
+        debugInfo.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: black;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 9999;
+            max-width: 300px;
+            word-wrap: break-word;
+            border: 2px solid #dc693c;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        `;
+        
+        const info = this.getAppInfo();
+        debugInfo.innerHTML = `
+            <strong>PWA Debug Info:</strong><br>
+            Installiert: ${info.isInstalled}<br>
+            Standalone: ${info.isStandalone}<br>
+            Online: ${info.isOnline}<br>
+            DeferredPrompt: ${this.deferredPrompt ? 'JA' : 'NEIN'}<br>
+            ServiceWorker: ${'serviceWorker' in navigator ? 'JA' : 'NEIN'}<br>
+            Manifest: ${document.querySelector('link[rel="manifest"]') ? 'JA' : 'NEIN'}<br>
+            <br>
+            <strong>Manueller Test:</strong><br>
+            <button onclick="window.gourmenPWA.manualInstall()" style="margin: 5px 0; padding: 5px 10px; background: #28a745; border: none; color: white; border-radius: 4px; cursor: pointer;">Install Test</button>
+            <button onclick="this.parentElement.remove()" style="margin-top: 5px; padding: 2px 8px; background: #dc693c; border: none; color: white; border-radius: 4px; cursor: pointer;">Schließen</button>
+        `;
+        
+        document.body.appendChild(debugInfo);
+    }
+
+    manualInstall() {
+        // Manueller Install-Test
+        if (this.deferredPrompt) {
+            console.log('🚀 Manueller Install gestartet');
+            this.deferredPrompt.prompt();
+            this.deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('✅ User hat Installation akzeptiert');
+                    this.showToast('Installation gestartet!', 'success');
+                } else {
+                    console.log('❌ User hat Installation abgelehnt');
+                    this.showToast('Installation abgebrochen', 'warning');
+                }
+                this.deferredPrompt = null;
+            });
+        } else {
+            console.log('❌ Kein DeferredPrompt verfügbar');
+            
+            // Detaillierte Diagnose
+            let diagnosis = 'PWA-Diagnose:\n';
+            diagnosis += `ServiceWorker: ${'serviceWorker' in navigator ? 'JA' : 'NEIN'}\n`;
+            diagnosis += `BeforeInstallPromptEvent: ${'BeforeInstallPromptEvent' in window ? 'JA' : 'NEIN'}\n`;
+            diagnosis += `Manifest: ${document.querySelector('link[rel="manifest"]') ? 'JA' : 'NEIN'}\n`;
+            diagnosis += `HTTPS/localhost: ${window.location.protocol === 'https:' || window.location.hostname === 'localhost' ? 'JA' : 'NEIN'}\n`;
+            diagnosis += `URL: ${window.location.href}\n`;
+            diagnosis += `User Agent: ${navigator.userAgent.substring(0, 50)}...`;
+            
+            this.showToast(diagnosis, 'info');
+        }
+    }
 }
 
 // PWA CSS für Network Indicator
@@ -383,6 +485,53 @@ const pwaStyles = `
 
 .toast-close:hover {
     opacity: 1;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1005;
+    max-width: 300px;
+    word-wrap: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toast.info {
+    background: rgba(23, 162, 184, 0.9);
+}
+
+.toast.success {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.toast.warning {
+    background: rgba(255, 193, 7, 0.9);
+    color: #1b232e;
+}
+
+.toast.error {
+    background: rgba(220, 53, 69, 0.9);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* Verbesserte PWA Buttons */
@@ -484,7 +633,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debug-Info in der Konsole
     console.log('🚀 Gourmen PWA initialisiert');
     console.log('App Info:', pwa.getAppInfo());
+    
+    // Globale PWA-Referenz für Debugging
+    window.gourmenPWA = pwa;
+    
+    // Manueller Test des Install-Prompts (für Debugging)
+    setTimeout(() => {
+        console.log('🚀 PWA Status nach 2 Sekunden:', {
+            deferredPrompt: !!pwa.deferredPrompt,
+            isInstalled: pwa.isInstalled,
+            isOnline: pwa.isOnline
+        });
+    }, 2000);
 });
-
-// Globale PWA-Referenz für Debugging
-window.gourmenPWA = pwa;

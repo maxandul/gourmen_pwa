@@ -1,12 +1,18 @@
 import json
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
+from flask_wtf.csrf import generate_csrf
+
 from wtforms import StringField, SelectField, BooleanField, DateField, SubmitField, PasswordField, FieldList
 from wtforms.validators import DataRequired, Email, Length
 from backend.extensions import db
 from backend.models.member import Member, Role, Funktion
 from backend.models.event import Event, EventType
+from backend.models.member_mfa import MemberMFA
+from backend.models.mfa_backup_code import MFABackupCode
+from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, AuditAction, require_step_up
 
 bp = Blueprint('admin', __name__)
@@ -141,7 +147,7 @@ def create_member():
             telefon=form.telefon.data or None,
             
             # Personal data
-            geburtsdatum=form.geburtsdatum.data,
+            geburtsdatum=form.geburtsdatum.data if form.geburtsdatum.data else None,
             nationalitaet=form.nationalitaet.data or None,
             
             # Address
@@ -152,13 +158,13 @@ def create_member():
             
             # Association data
             funktion=Funktion(form.funktion.data) if form.funktion.data else None,
-            beitrittsjahr=int(form.beitrittsjahr.data) if form.beitrittsjahr.data.strip() else None,
+            beitrittsjahr=int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None,
             vorstandsmitglied=form.vorstandsmitglied.data,
             
             # Physical data
-            koerpergroesse=int(form.koerpergroesse.data) if form.koerpergroesse.data.strip() else None,
-            koerpergewicht=int(form.koerpergewicht.data) if form.koerpergewicht.data.strip() else None,
-            schuhgroesse=float(form.schuhgroesse.data) if form.schuhgroesse.data.strip() else None,
+            koerpergroesse=int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() and form.koerpergroesse.data.strip() != '' else None,
+            koerpergewicht=int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() and form.koerpergewicht.data.strip() != '' else None,
+            schuhgroesse=float(form.schuhgroesse.data) if form.schuhgroesse.data and form.schuhgroesse.data.strip() and form.schuhgroesse.data.strip() != '' else None,
             
             # Clothing
             kleider_oberteil=form.kleider_oberteil.data or None,
@@ -168,6 +174,7 @@ def create_member():
             # Preferences
             zimmerwunsch=form.zimmerwunsch.data or None,
             spirit_animal=form.spirit_animal.data or None,
+            fuehrerschein=form.fuehrerschein.data or None,
             
             # System
             role=Role(form.role.data),
@@ -232,7 +239,7 @@ def edit_member(member_id):
         member.telefon = form.telefon.data or None
         
         # Personal data
-        member.geburtsdatum = form.geburtsdatum.data
+        member.geburtsdatum = form.geburtsdatum.data if form.geburtsdatum.data else None
         member.nationalitaet = form.nationalitaet.data or None
         
         # Address
@@ -243,13 +250,13 @@ def edit_member(member_id):
         
         # Association data
         member.funktion = Funktion(form.funktion.data) if form.funktion.data else None
-        member.beitrittsjahr = int(form.beitrittsjahr.data) if form.beitrittsjahr.data.strip() else None
+        member.beitrittsjahr = int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None
         member.vorstandsmitglied = form.vorstandsmitglied.data
         
         # Physical data
-        member.koerpergroesse = int(form.koerpergroesse.data) if form.koerpergroesse.data.strip() else None
-        member.koerpergewicht = int(form.koerpergewicht.data) if form.koerpergewicht.data.strip() else None
-        member.schuhgroesse = float(form.schuhgroesse.data) if form.schuhgroesse.data.strip() else None
+        member.koerpergroesse = int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() and form.koerpergroesse.data.strip() != '' else None
+        member.koerpergewicht = int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() and form.koerpergewicht.data.strip() != '' else None
+        member.schuhgroesse = float(form.schuhgroesse.data) if form.schuhgroesse.data and form.schuhgroesse.data.strip() and form.schuhgroesse.data.strip() != '' else None
         
         # Clothing
         member.kleider_oberteil = form.kleider_oberteil.data or None
@@ -412,3 +419,131 @@ def create_event():
         return redirect(url_for('events.detail', event_id=event.id))
     
     return render_template('admin/create_event.html', form=form) 
+
+@bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reset_member_password(member_id):
+    """Reset member password"""
+    member = Member.query.get_or_404(member_id)
+    
+    if request.method == 'POST':
+        # Check confirmation
+        if request.form.get('confirm') != 'RESET':
+            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+        
+        # Generate new password
+        new_password = SecurityService.generate_secure_password()
+        
+        # Update member password
+        member.set_password(new_password)
+        db.session.commit()
+        
+        # Log audit event
+        SecurityService.log_audit_event(
+            AuditAction.ADMIN_RESET_PASSWORD, 'member', member.id,
+            extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
+        )
+        
+        # Store password in session for display
+        session['temp_password'] = {
+            'member_name': member.display_name,
+            'password': new_password,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        return redirect(url_for('admin.show_temp_password'))
+    
+    return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+
+@bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST'])
+@login_required
+@admin_required
+@require_step_up
+def reset_member_2fa(member_id):
+    """Reset member 2FA"""
+    member = Member.query.get_or_404(member_id)
+    
+    if request.method == 'POST':
+        # Check confirmation
+        if request.form.get('confirm') != 'RESET':
+            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+            return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+        
+        # Get MFA data
+        mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
+        
+        if mfa_data and mfa_data.is_totp_enabled:
+            # Disable 2FA
+            mfa_data.is_totp_enabled = False
+            mfa_data.totp_secret_encrypted = None
+            mfa_data.activated_at = None
+            mfa_data.last_verified_at = None
+            
+            # Delete backup codes
+            MFABackupCode.query.filter_by(member_id=member.id).delete()
+            
+            db.session.commit()
+            
+            # Log audit event
+            SecurityService.log_audit_event(
+                AuditAction.ADMIN_RESET_2FA, 'member', member.id,
+                extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
+            )
+            
+            flash(f'2FA für {member.display_name} wurde zurückgesetzt.', 'success')
+        else:
+            flash(f'2FA für {member.display_name} war nicht aktiviert.', 'info')
+        
+        return redirect(url_for('admin.members'))
+    
+    return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+
+@bp.route('/members/<int:member_id>/security-overview')
+@login_required
+@admin_required
+def member_security_overview(member_id):
+    """Show member security overview"""
+    member = Member.query.get_or_404(member_id)
+    
+    # Get MFA data
+    mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
+    
+    # Get backup codes info
+    backup_codes = MFABackupCode.query.filter_by(member_id=member.id).all()
+    unused_backup_codes = [code for code in backup_codes if not code.is_used and not code.is_revoked]
+    
+    # Get recent audit events
+    recent_events = AuditEvent.query.filter_by(
+        actor_id=member.id
+    ).order_by(AuditEvent.at.desc()).limit(10).all()
+    
+    return render_template('admin/member_security_overview.html', 
+                         member=member, 
+                         mfa_data=mfa_data,
+                         unused_backup_codes=unused_backup_codes,
+                         recent_events=recent_events)
+
+@bp.route('/temp-password')
+@login_required
+@admin_required
+def show_temp_password():
+    """Show temporary password for admin"""
+    temp_password_data = session.get('temp_password')
+    if not temp_password_data:
+        flash('Kein temporäres Passwort verfügbar', 'error')
+        return redirect(url_for('admin.members'))
+    
+    # Check if password is not too old (5 minutes)
+    timestamp = datetime.fromisoformat(temp_password_data['timestamp'])
+    if datetime.utcnow() - timestamp > timedelta(minutes=5):
+        session.pop('temp_password', None)
+        flash('Temporäres Passwort ist abgelaufen', 'error')
+        return redirect(url_for('admin.members'))
+    
+    # Clear the temporary password from session after displaying
+    session.pop('temp_password', None)
+    
+    return render_template('admin/temp_password.html', 
+                         member_name=temp_password_data['member_name'],
+                         password=temp_password_data['password']) 

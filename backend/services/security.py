@@ -30,6 +30,33 @@ class SecurityService:
         return True, "Passwort ist stark genug"
     
     @staticmethod
+    def generate_secure_password(length=16):
+        """Generate a secure random password"""
+        # Use a mix of characters for better security
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        symbols = "!@#$%^&*"
+        
+        # Ensure at least one character from each category
+        password = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(symbols)
+        ]
+        
+        # Fill the rest with random characters
+        all_chars = lowercase + uppercase + digits + symbols
+        password.extend(secrets.choice(all_chars) for _ in range(length - 4))
+        
+        # Shuffle the password
+        password_list = list(password)
+        secrets.SystemRandom().shuffle(password_list)
+        
+        return ''.join(password_list)
+    
+    @staticmethod
     def get_fernet():
         """Get Fernet instance for encryption"""
         key = current_app.config.get('CRYPTO_KEY')

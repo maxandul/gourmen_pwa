@@ -33,13 +33,18 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ratings.css') }}">
+
+    <!-- Custom Head Block -->
+    {% block head %}{% endblock %}
     
     <!-- PWA Scripts -->
     <script src="{{ url_for('static', filename='js/pwa.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
     
     <!-- CSRF Token for AJAX -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {% if csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    {% endif %}
 </head>
 <body {% if current_user.is_authenticated %}data-authenticated="true"{% endif %}>
     <!-- Main Content -->
@@ -92,7 +97,7 @@
             </span>
             <span class="nav-text">Dashboard</span>
         </a>
-        <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint.startswith('events.') %}active{% endif %}">
+        <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
             <span class="nav-icon">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -103,7 +108,7 @@
             </span>
             <span class="nav-text">Events</span>
         </a>
-        <a href="{{ url_for('ggl.index') }}" class="nav-item {% if request.endpoint.startswith('ggl.') %}active{% endif %}">
+        <a href="{{ url_for('ggl.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('ggl.') %}active{% endif %}">
             <span class="nav-icon">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
@@ -116,7 +121,7 @@
             </span>
             <span class="nav-text">GGL</span>
         </a>
-        <a href="{{ url_for('account.profile') }}" class="nav-item {% if request.endpoint.startswith('account.') or request.endpoint.startswith('admin.') or request.endpoint.startswith('docs.') %}active{% endif %}">
+        <a href="{{ url_for('account.profile') }}" class="nav-item {% if request.endpoint and (request.endpoint.startswith('account.') or request.endpoint.startswith('admin.') or request.endpoint.startswith('docs.')) %}active{% endif %}">
             <span class="nav-icon">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>

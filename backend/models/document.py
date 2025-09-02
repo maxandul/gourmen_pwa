@@ -3,16 +3,16 @@ from enum import Enum
 from backend.extensions import db
 
 class DocumentCategory(Enum):
-    VEREIN = 'verein'
-    EVENT = 'event'
-    FOTO = 'foto'
-    STATUTEN = 'statuten'
-    SONST = 'sonst'
+    VEREIN = 'VEREIN'
+    EVENT = 'EVENT'
+    FOTO = 'FOTO'
+    STATUTEN = 'STATUTEN'
+    SONST = 'SONST'
 
 class DocumentVisibility(Enum):
-    PUBLIC = 'public'
-    MEMBER = 'member'
-    ADMIN = 'admin'
+    PUBLIC = 'PUBLIC'
+    MEMBER = 'MEMBER'
+    ADMIN = 'ADMIN'
 
 class Document(db.Model):
     """Document model for links and documents"""

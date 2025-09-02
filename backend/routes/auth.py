@@ -326,10 +326,21 @@ def step_up():
     # Get next page from URL parameters or form data
     next_page = request.args.get('next') or request.form.get('next')
     
+    # Store next page in session for reliability
+    if next_page and next_page.startswith('/'):
+        session['step_up_next'] = next_page
+    
+    # If user already has step-up access, redirect to the requested page
     if SecurityService.check_step_up_access():
-        if not next_page or not next_page.startswith('/'):
-            next_page = url_for('dashboard.index')
-        return redirect(next_page)
+        # Use session-stored next page if available
+        stored_next = session.get('step_up_next')
+        if stored_next:
+            session.pop('step_up_next', None)  # Clear after use
+            return redirect(stored_next)
+        elif next_page and next_page.startswith('/'):
+            return redirect(next_page)
+        else:
+            return redirect(url_for('dashboard.index'))
     
     form = StepUpForm()
     if form.validate_on_submit():
@@ -337,8 +348,12 @@ def step_up():
             SecurityService.grant_step_up_access()
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', current_user.id)
             
-            # Ensure we redirect to the original requested page
-            if next_page and next_page.startswith('/'):
+            # Use session-stored next page if available
+            stored_next = session.get('step_up_next')
+            if stored_next:
+                session.pop('step_up_next', None)  # Clear after use
+                return redirect(stored_next)
+            elif next_page and next_page.startswith('/'):
                 return redirect(next_page)
             else:
                 return redirect(url_for('dashboard.index'))
@@ -370,6 +385,9 @@ def change_password():
             flash('Neues Passwort muss sich vom aktuellen unterscheiden', 'error')
             return render_template('auth/change_password.html', form=form)
         
+        # Check if this was the first login (password_changed_at was None before)
+        was_first_login = current_user.password_changed_at is None
+        
         # Update password
         current_user.set_password(form.new_password.data)
         db.session.commit()
@@ -381,7 +399,12 @@ def change_password():
         )
         
         flash('Passwort erfolgreich geändert', 'success')
-        return redirect(url_for('account.profile'))
+        
+        # Redirect based on whether this was first login or normal password change
+        if was_first_login:
+            return redirect(url_for('dashboard.index'))
+        else:
+            return redirect(url_for('account.profile'))
     
     return render_template('auth/change_password.html', form=form)
 

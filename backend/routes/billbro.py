@@ -12,16 +12,66 @@ from backend.services.ggl_rules import GGLService
 from backend.services.security import SecurityService, AuditAction
 from backend.services.notifier import NotifierService
 
+def calculate_weighted_shares(event, gesamtbetrag_rappen):
+    """Calculate weighted shares for BillBro participants"""
+    sparsam_count = 0
+    normal_count = 0
+    allin_count = 0
+    
+    for participation in event.participations:
+        if participation.teilnahme and participation.esstyp:
+            if participation.esstyp == Esstyp.SPARSAM:
+                sparsam_count += 1
+            elif participation.esstyp == Esstyp.NORMAL:
+                normal_count += 1
+            elif participation.esstyp == Esstyp.ALLIN:
+                allin_count += 1
+    
+    total_participants = sparsam_count + normal_count + allin_count
+    
+    if total_participants > 0:
+        # Calculate weighted total
+        weighted_total = (sparsam_count * event.billbro_sparsam_weight + 
+                         normal_count * event.billbro_normal_weight + 
+                         allin_count * event.billbro_allin_weight)
+        
+        # Calculate shares based on weights
+        if sparsam_count > 0:
+            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen * event.billbro_sparsam_weight / weighted_total)
+        else:
+            event.betrag_sparsam_rappen = None
+            
+        if normal_count > 0:
+            event.betrag_normal_rappen = int(gesamtbetrag_rappen * event.billbro_normal_weight / weighted_total)
+        else:
+            event.betrag_normal_rappen = None
+            
+        if allin_count > 0:
+            event.betrag_allin_rappen = int(gesamtbetrag_rappen * event.billbro_allin_weight / weighted_total)
+        else:
+            event.betrag_allin_rappen = None
+        
+        # Update calculated shares for each participation
+        for participation in event.participations:
+            if participation.teilnahme and participation.esstyp:
+                if participation.esstyp == Esstyp.SPARSAM:
+                    participation.calculated_share_rappen = event.betrag_sparsam_rappen
+                elif participation.esstyp == Esstyp.NORMAL:
+                    participation.calculated_share_rappen = event.betrag_normal_rappen
+                elif participation.esstyp == Esstyp.ALLIN:
+                    participation.calculated_share_rappen = event.betrag_allin_rappen
+
 bp = Blueprint('billbro', __name__)
 
 class BillBroForm(FlaskForm):
     esstyp = SelectField('Ess-Typ', choices=[
+        ('', '-- Bitte wählen --'),
         (Esstyp.SPARSAM.value, 'Sparsam'),
         (Esstyp.NORMAL.value, 'Normal'),
         (Esstyp.ALLIN.value, 'All-In')
-    ], validators=[DataRequired()])
+    ], validators=[DataRequired()], coerce=str)
     guess_amount = StringField('Schätzung (CHF)', validators=[DataRequired()])
-    submit = SubmitField('Berechnen')
+    submit = SubmitField('Einloggen')
 
 @bp.route('/')
 @login_required
@@ -50,7 +100,8 @@ def index():
     return render_template('billbro/index.html', 
                          event=event, 
                          participation=participation,
-                         form=form)
+                         form=form,
+                         Esstyp=Esstyp)
 
 @bp.route('/<int:event_id>/compute', methods=['POST'])
 @login_required
@@ -84,6 +135,10 @@ def compute(event_id):
     
     if existing_guess:
         return jsonify({'error': 'Dieser Betrag wurde bereits geschätzt'}), 400
+    
+    # Validate esstyp selection
+    if not form.esstyp.data or form.esstyp.data == '':
+        return jsonify({'error': 'Bitte wählen Sie einen Ess-Typ'}), 400
     
     # Update participation
     participation.esstyp = Esstyp(form.esstyp.data)
@@ -376,6 +431,85 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
+    return redirect(url_for('billbro.index', event_id=event_id))
+
+@bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])
+@login_required
+def accept_suggested_total(event_id):
+    """Accept the automatically suggested total amount (organizer only)"""
+    event = Event.query.get_or_404(event_id)
+    
+    # Check if user is organizer or admin
+    if not (current_user.is_admin or event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
+        return redirect(url_for('billbro.index', event_id=event_id))
+    
+    if not event.rechnungsbetrag_rappen:
+        flash('Rechnungsbetrag muss zuerst eingegeben werden', 'error')
+        return redirect(url_for('billbro.index', event_id=event_id))
+    
+    # Calculate suggested total (rounded to next 10 CHF)
+    auto_total = event.rechnungsbetrag_rappen + event.trinkgeld_rappen
+    gesamtbetrag_rappen = ((auto_total + 999) // 1000) * 1000
+    
+    # Update event with final total
+    event.gesamtbetrag_rappen = gesamtbetrag_rappen
+    # Recalculate actual tip based on final total
+    event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
+    
+    # Calculate individual shares based on weights
+    sparsam_count = 0
+    normal_count = 0
+    allin_count = 0
+    
+    for participation in event.participations:
+        if participation.teilnahme and participation.esstyp:
+            if participation.esstyp == Esstyp.SPARSAM:
+                sparsam_count += 1
+            elif participation.esstyp == Esstyp.NORMAL:
+                normal_count += 1
+            elif participation.esstyp == Esstyp.ALLIN:
+                allin_count += 1
+    
+    total_participants = sparsam_count + normal_count + allin_count
+    
+    if total_participants > 0:
+        # Calculate shares based on actual participant counts
+        if sparsam_count > 0:
+            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_sparsam_rappen = None
+            
+        if normal_count > 0:
+            event.betrag_normal_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_normal_rappen = None
+            
+        if allin_count > 0:
+            event.betrag_allin_rappen = int(gesamtbetrag_rappen / total_participants)
+        else:
+            event.betrag_allin_rappen = None
+        
+        # Update calculated shares for each participation
+        for participation in event.participations:
+            if participation.teilnahme and participation.esstyp:
+                participation.calculated_share_rappen = int(gesamtbetrag_rappen / total_participants)
+    
+    db.session.commit()
+    
+    # Log audit event
+    SecurityService.log_audit_event(
+        AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
+        extra_data={
+            'gesamtbetrag': gesamtbetrag_rappen,
+            'manual_override': False,
+            'effective_tip': event.trinkgeld_rappen,
+            'tip_percentage': round((event.trinkgeld_rappen / event.rechnungsbetrag_rappen) * 100, 1),
+            'accepted_suggested': True
+        }
+    )
+    
+    flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
     return redirect(url_for('billbro.index', event_id=event_id))
 
 @bp.route('/<int:event_id>/share_whatsapp')

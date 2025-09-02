@@ -7,6 +7,51 @@
     margin-bottom: 20px;
 }
 
+/* Star Rating System */
+.star-rating {
+    margin: 10px 0;
+}
+
+.star-rating .stars {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.star-rating .star {
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+}
+
+.star-rating .star:hover,
+.star-rating .star.active {
+    color: #ffc107;
+    transform: scale(1.1);
+}
+
+.star-rating .star.selected {
+    color: #ffc107;
+}
+
+.star-rating .star:hover ~ .star {
+    color: #ddd;
+}
+
+/* Mobile optimierte Sterne */
+@media (max-width: 768px) {
+    .star-rating .star {
+        font-size: 28px;
+        margin: 0 2px;
+    }
+    
+    .star-rating .stars {
+        gap: 8px;
+        justify-content: center;
+    }
+}
+
 /* Spezielle Card-Padding für Rating-Templates */
 .rating-form .card {
     padding: 24px;

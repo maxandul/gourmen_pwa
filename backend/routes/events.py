@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import DateField, SelectField, StringField, SubmitField, IntegerField
@@ -105,13 +105,12 @@ def create_monthly_events(year):
 @login_required
 def index():
     """Events list"""
-    # Get current and upcoming events
-    # An event is "upcoming" until the day AFTER the event date
+    # Get all upcoming events (no limit, show all future events)
     today = datetime.utcnow().date()
     current_events = Event.query.filter(
         Event.datum >= datetime.combine(today, datetime.min.time()),
         Event.published == True
-    ).order_by(Event.datum.asc()).limit(6).all()
+    ).order_by(Event.datum.asc()).all()
     
     return render_template('events/index.html', events=current_events)
 
@@ -161,11 +160,16 @@ def create_year_planning():
 @bp.route('/archive')
 @login_required
 def archive():
-    """Events archive"""
+    """Events archive - only past events"""
     page = request.args.get('page', 1, type=int)
     year = request.args.get('year', type=int)
     
-    query = Event.query.filter(Event.published == True)
+    # Only show past events in archive
+    today = datetime.utcnow().date()
+    query = Event.query.filter(
+        Event.published == True,
+        Event.datum < datetime.combine(today, datetime.min.time())
+    )
     
     if year:
         query = query.filter(Event.season == year)
@@ -174,8 +178,10 @@ def archive():
         page=page, per_page=20, error_out=False
     )
     
-    # Get available years for filter
-    years = db.session.query(Event.season).distinct().order_by(Event.season.desc()).all()
+    # Get available years for filter (only years with past events)
+    years = db.session.query(Event.season).filter(
+        Event.datum < datetime.combine(today, datetime.min.time())
+    ).distinct().order_by(Event.season.desc()).all()
     years = [year[0] for year in years]
     
     return render_template('events/archive.html', events=events, years=years, selected_year=year)
@@ -303,6 +309,45 @@ def edit(event_id):
     
     return render_template('events/edit.html', form=form, event=event)
 
+@bp.route('/<int:event_id>/delete', methods=['POST'])
+@login_required
+def delete(event_id):
+    """Delete event"""
+    event = Event.query.get_or_404(event_id)
+    
+    # Check permissions - only admins can delete events
+    if not current_user.is_admin():
+        flash('Nur Administratoren können Events löschen', 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+    
+    # Check if event is in the past
+    if event.datum.date() < datetime.utcnow().date():
+        flash('Vergangene Events können nicht gelöscht werden', 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+    
+    # Delete all participations for this event
+    participations = Participation.query.filter_by(event_id=event_id).all()
+    for participation in participations:
+        db.session.delete(participation)
+    
+    # Log audit event before deletion
+    from backend.services.security import SecurityService, AuditAction
+    SecurityService.log_audit_event(
+        AuditAction.EVENT_DELETE, 'event', event_id,
+        extra_data={
+            'event_title': event.restaurant or f"{event.event_typ.value} am {event.display_date}",
+            'event_date': event.datum.isoformat(),
+            'deleted_by': current_user.display_name
+        }
+    )
+    
+    # Delete the event
+    db.session.delete(event)
+    db.session.commit()
+    
+    flash('Event erfolgreich gelöscht', 'success')
+    return redirect(url_for('events.index'))
+
 @bp.route('/<int:event_id>/rsvp', methods=['POST'])
 @login_required
 def rsvp(event_id):
@@ -358,17 +403,26 @@ def places_autocomplete():
     query = request.args.get('query', '').strip()
     session_token = request.args.get('session_token')
     
+    current_app.logger.info(f"Places autocomplete endpoint called with query: '{query}'")
+    current_app.logger.info(f"Session token: {session_token}")
+    
     if not query:
+        current_app.logger.info("Empty query, returning empty results")
         return jsonify([])
     
     predictions = PlacesService.autocomplete(query, session_token)
+    current_app.logger.info(f"Returning {len(predictions)} predictions")
     return jsonify(predictions)
 
-@bp.route('/places/details/<place_id>')
+@bp.route('/places/details')
 @login_required
-def places_details(place_id):
+def places_details():
     """Google Places details API endpoint"""
+    place_id = request.args.get('place_id')
     session_token = request.args.get('session_token')
+    
+    if not place_id:
+        return jsonify({'error': 'Place ID is required'}), 400
     
     details = PlacesService.get_place_details(place_id, session_token)
     if not details:
@@ -380,9 +434,16 @@ def places_details(place_id):
 @login_required
 def places_config():
     """Return Google Maps API configuration for frontend"""
+    api_key = current_app.config.get('GOOGLE_MAPS_API_KEY_FRONTEND')
+    enabled = bool(api_key)
+    
+    current_app.logger.info(f"Places config endpoint called")
+    current_app.logger.info(f"Frontend API key present: {bool(api_key)}")
+    current_app.logger.info(f"Places enabled: {enabled}")
+    
     return jsonify({
-        'api_key': current_app.config.get('GOOGLE_MAPS_API_KEY_FRONTEND'),
-        'enabled': bool(current_app.config.get('GOOGLE_MAPS_API_KEY_FRONTEND'))
+        'api_key': api_key,
+        'enabled': enabled
     })
 
 @bp.route('/stats')

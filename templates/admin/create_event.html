@@ -4,94 +4,488 @@
 
 {% block head %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/places-autocomplete.js') }}"></script>
+<script>
+// Google Places Autocomplete JavaScript direkt eingebettet
+class PlacesAutocomplete {
+    constructor() {
+        this.sessionToken = this.generateSessionToken();
+        this.selectedPlace = null;
+        this.apiKey = null;
+        this.init();
+    }
+    
+    async init() {
+        await this.loadConfig();
+        this.setupAutocomplete();
+        this.setupEventListeners();
+    }
+    
+    async loadConfig() {
+        try {
+            const response = await fetch('/events/places/config');
+            const config = await response.json();
+            this.apiKey = config.api_key;
+        } catch (error) {
+            console.warn('Could not load Places API config:', error);
+        }
+    }
+    
+    generateSessionToken() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    setupAutocomplete() {
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
+        if (!restaurantInput) {
+            return;
+        }
+        
+        // Create autocomplete container
+        const autocompleteContainer = document.createElement('div');
+        autocompleteContainer.id = 'places-autocomplete';
+        autocompleteContainer.className = 'places-autocomplete';
+        restaurantInput.parentNode.insertBefore(autocompleteContainer, restaurantInput.nextSibling);
+        
+        // Add loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'places-loading';
+        loadingIndicator.className = 'places-loading';
+        loadingIndicator.innerHTML = '🔍 Suche...';
+        loadingIndicator.style.display = 'none';
+        autocompleteContainer.appendChild(loadingIndicator);
+        
+        // Add results container
+        const resultsContainer = document.createElement('div');
+        resultsContainer.id = 'places-results';
+        resultsContainer.className = 'places-results';
+        autocompleteContainer.appendChild(resultsContainer);
+        
+        // Add details container
+        const detailsContainer = document.createElement('div');
+        detailsContainer.id = 'places-details';
+        detailsContainer.className = 'places-details';
+        detailsContainer.style.display = 'none';
+        autocompleteContainer.appendChild(detailsContainer);
+    }
+    
+    setupEventListeners() {
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
+        if (!restaurantInput) {
+            return;
+        }
+        
+        let debounceTimer;
+        
+        restaurantInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                this.hideResults();
+                return;
+            }
+            
+            debounceTimer = setTimeout(() => {
+                this.searchPlaces(query);
+            }, 300);
+        });
+        
+        restaurantInput.addEventListener('focus', () => {
+            const query = restaurantInput.value.trim();
+            if (query.length >= 2) {
+                this.searchPlaces(query);
+            }
+        });
+        
+        // Hide results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#places-autocomplete') && !e.target.closest('input[name="restaurant"]')) {
+                this.hideResults();
+            }
+        });
+    }
+    
+    async searchPlaces(query) {
+        const loadingIndicator = document.getElementById('places-loading');
+        const resultsContainer = document.getElementById('places-results');
+        
+        if (!loadingIndicator || !resultsContainer) {
+            return;
+        }
+        
+        loadingIndicator.style.display = 'block';
+        resultsContainer.innerHTML = '';
+        
+        try {
+            const response = await fetch(`/events/places/autocomplete?query=${encodeURIComponent(query)}&session_token=${this.sessionToken}`);
+            const predictions = await response.json();
+            
+            loadingIndicator.style.display = 'none';
+            this.displayResults(predictions);
+            
+        } catch (error) {
+            console.error('Places API error:', error);
+            loadingIndicator.style.display = 'none';
+            this.showError('Fehler beim Laden der Vorschläge');
+        }
+    }
+    
+    displayResults(predictions) {
+        const resultsContainer = document.getElementById('places-results');
+        if (!resultsContainer) return;
+        
+        if (predictions.length === 0) {
+            resultsContainer.innerHTML = '<div class="places-no-results">Keine Restaurants gefunden</div>';
+            resultsContainer.style.display = 'block';
+            return;
+        }
+        
+        resultsContainer.innerHTML = '';
+        predictions.forEach(prediction => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'places-result';
+            resultDiv.innerHTML = `
+                <div class="places-result-main">${prediction.structured_formatting?.main_text || prediction.description}</div>
+                <div class="places-result-secondary">${prediction.structured_formatting?.secondary_text || ''}</div>
+            `;
+            
+            resultDiv.addEventListener('click', () => {
+                this.selectPlace(prediction);
+            });
+            
+            resultsContainer.appendChild(resultDiv);
+        });
+        
+        resultsContainer.style.display = 'block';
+    }
+    
+    selectPlace(prediction) {
+        this.selectedPlace = prediction;
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
+        if (restaurantInput) {
+            restaurantInput.value = prediction.structured_formatting?.main_text || prediction.description;
+        }
+        
+        this.hideResults();
+        this.showPlaceDetails(prediction);
+    }
+    
+    showPlaceDetails(prediction) {
+        const detailsContainer = document.getElementById('places-details');
+        if (!detailsContainer) return;
+        
+        detailsContainer.innerHTML = `
+            <div class="places-details-header">
+                <h3>${prediction.structured_formatting?.main_text || prediction.description}</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div class="places-details-body">
+                <p><strong>Adresse:</strong> ${prediction.structured_formatting?.secondary_text || ''}</p>
+                <p><strong>Place ID:</strong> ${prediction.place_id}</p>
+                                 <button type="button" class="btn btn-primary save-details-btn">Details übernehmen</button>
+            </div>
+        `;
+        
+        // Add event listeners after creating the HTML
+        const closeBtn = detailsContainer.querySelector('.close-btn');
+        const saveBtn = detailsContainer.querySelector('.save-details-btn');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                detailsContainer.style.display = 'none';
+            });
+        }
+        
+                 if (saveBtn) {
+             saveBtn.addEventListener('click', (e) => {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 this.savePlaceDetails();
+             });
+         }
+        
+        detailsContainer.style.display = 'block';
+    }
+    
+    hideResults() {
+        const resultsContainer = document.getElementById('places-results');
+        if (resultsContainer) {
+            resultsContainer.style.display = 'none';
+        }
+    }
+    
+    showError(message) {
+        const resultsContainer = document.getElementById('places-results');
+        if (!resultsContainer) return;
+        
+        resultsContainer.innerHTML = `<div class="places-error">❌ ${message}</div>`;
+        resultsContainer.style.display = 'block';
+    }
+    
+         async savePlaceDetails() {
+         if (!this.selectedPlace) {
+             return;
+         }
+         
+         try {
+             // Get place details from Google Places API
+             const response = await fetch(`/events/places/details?place_id=${this.selectedPlace.place_id}&session_token=${this.sessionToken}`);
+             
+             const placeDetails = await response.json();
+             
+             if (placeDetails.error) {
+                 console.error('Error fetching place details:', placeDetails.error);
+                 return;
+             }
+             
+             // Fill hidden form fields with place data
+             this.fillFormFields(placeDetails);
+             
+             // Hide details container
+             const detailsContainer = document.getElementById('places-details');
+             if (detailsContainer) {
+                 detailsContainer.style.display = 'none';
+             }
+             
+         } catch (error) {
+             console.error('Error saving place details:', error);
+         }
+     }
+    
+    fillFormFields(placeDetails) {
+        // Fill all hidden form fields with Google Places data
+        const fields = {
+            'place_id': placeDetails.place_id,
+            'place_name': placeDetails.name,
+            'place_address': placeDetails.formatted_address,
+            'place_lat': placeDetails.geometry?.location?.lat,
+            'place_lng': placeDetails.geometry?.location?.lng,
+            'place_types': JSON.stringify(placeDetails.types || []),
+            'place_website': placeDetails.website,
+            'place_maps_url': placeDetails.url,
+            'place_price_level': placeDetails.price_level,
+            'place_street_number': placeDetails.address_components?.find(c => c.types.includes('route'))?.long_name,
+            'place_route': placeDetails.address_components?.find(c => c.types.includes('route'))?.long_name,
+            'place_postal_code': placeDetails.address_components?.find(c => c.types.includes('postal_code'))?.long_name,
+            'place_locality': placeDetails.address_components?.find(c => c.types.includes('locality'))?.long_name,
+            'place_country': placeDetails.address_components?.find(c => c.types.includes('country'))?.long_name
+        };
+        
+        // Update form fields
+        Object.entries(fields).forEach(([fieldName, value]) => {
+            const field = document.getElementById(fieldName);
+            if (field && value !== undefined) {
+                field.value = value;
+            }
+        });
+        
+        // Update visible fields with Google Places data
+        const restaurantField = document.querySelector('input[name="restaurant"]');
+        if (restaurantField && placeDetails.name) {
+            restaurantField.value = placeDetails.name;
+        }
+        
+        // Update website field
+        const websiteField = document.querySelector('input[name="website"]');
+        if (websiteField && placeDetails.website) {
+            websiteField.value = placeDetails.website;
+        }
+        
+        // Update kueche field based on place types
+        const kuecheField = document.querySelector('input[name="kueche"]');
+        if (kuecheField && placeDetails.types) {
+            const cuisineTypes = this.mapPlaceTypesToCuisine(placeDetails.types);
+            if (cuisineTypes.length > 0) {
+                kuecheField.value = cuisineTypes.join(', ');
+            }
+        }
+        
+        // Show success message
+        this.showSuccessMessage('Restaurant-Details erfolgreich übernommen!');
+    }
+    
+    mapPlaceTypesToCuisine(types) {
+        const cuisineMap = {
+            'restaurant': 'Restaurant',
+            'italian_restaurant': 'Italienisch',
+            'chinese_restaurant': 'Chinesisch',
+            'japanese_restaurant': 'Japanisch',
+            'thai_restaurant': 'Thai',
+            'indian_restaurant': 'Indisch',
+            'mexican_restaurant': 'Mexikanisch',
+            'greek_restaurant': 'Griechisch',
+            'turkish_restaurant': 'Türkisch',
+            'spanish_restaurant': 'Spanisch',
+            'french_restaurant': 'Französisch',
+            'german_restaurant': 'Deutsch',
+            'swiss_restaurant': 'Schweizer',
+            'pizza_restaurant': 'Pizza',
+            'burger_restaurant': 'Burger',
+            'steakhouse': 'Steakhouse',
+            'seafood_restaurant': 'Meeresfrüchte',
+            'vegetarian_restaurant': 'Vegetarisch',
+            'vegan_restaurant': 'Vegan',
+            'fast_food_restaurant': 'Fast Food',
+            'cafe': 'Café',
+            'bar': 'Bar',
+            'pub': 'Pub',
+            'bistro': 'Bistro'
+        };
+        
+        const cuisines = [];
+        types.forEach(type => {
+            if (cuisineMap[type]) {
+                cuisines.push(cuisineMap[type]);
+            }
+        });
+        
+        return cuisines;
+    }
+    
+    showSuccessMessage(message) {
+        // Create or update success message
+        let successDiv = document.getElementById('places-success-message');
+        if (!successDiv) {
+            successDiv = document.createElement('div');
+            successDiv.id = 'places-success-message';
+            successDiv.className = 'places-success-message';
+            successDiv.style.cssText = `
+                background-color: #d4edda;
+                color: #155724;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #c3e6cb;
+                border-radius: 4px;
+                font-size: 14px;
+            `;
+            
+            // Insert after the restaurant field
+            const restaurantField = document.querySelector('input[name="restaurant"]');
+            if (restaurantField && restaurantField.parentNode) {
+                restaurantField.parentNode.insertBefore(successDiv, restaurantField.nextSibling);
+            }
+        }
+        
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+ // Initialize when DOM is loaded
+ document.addEventListener('DOMContentLoaded', async () => {
+     const restaurantField = document.querySelector('input[name="restaurant"]');
+     
+     if (restaurantField) {
+         window.placesAutocomplete = new PlacesAutocomplete();
+     }
+ });
+</script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Neues Event erstellen</h1>
-        <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+    <div class="page-header">
+        <h1>📅 Neues Event erstellen</h1>
+        <p class="page-subtitle">Plane ein neues Gourmen-Event</p>
+        <div class="page-actions">
+            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+        </div>
     </div>
     
-    <div class="form-container">
+    <div class="page-content">
         <form method="POST" class="form">
             {{ form.hidden_tag() }}
             
             <!-- Basic Event Info -->
             <div class="card">
-                <h3>📅 Event-Grunddaten</h3>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        {{ form.datum.label }}
-                        {{ form.datum(class="form-control", type="date") }}
-                        {% if form.datum.errors %}
-                        <div class="error">{{ form.datum.errors[0] }}</div>
-                        {% endif %}
+                <div class="card-header">
+                    <h2>📅 Event-Grunddaten</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.datum.label }}
+                            {{ form.datum(class="form-control", type="date") }}
+                            {% if form.datum.errors %}
+                            <div class="error">{{ form.datum.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.event_typ.label }}
+                            {{ form.event_typ(class="form-control") }}
+                            {% if form.event_typ.errors %}
+                            <div class="error">{{ form.event_typ.errors[0] }}</div>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        {{ form.event_typ.label }}
-                        {{ form.event_typ(class="form-control") }}
-                        {% if form.event_typ.errors %}
-                        <div class="error">{{ form.event_typ.errors[0] }}</div>
+                        {{ form.organisator_id.label }}
+                        {{ form.organisator_id(class="form-control") }}
+                        {% if form.organisator_id.errors %}
+                        <div class="error">{{ form.organisator_id.errors[0] }}</div>
                         {% endif %}
+                        <small class="form-help">Organisatoren können sich hier austauschen</small>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    {{ form.organisator_id.label }}
-                    {{ form.organisator_id(class="form-control") }}
-                    {% if form.organisator_id.errors %}
-                    <div class="error">{{ form.organisator_id.errors[0] }}</div>
-                    {% endif %}
-                    <small class="form-help">Organisatoren können sich hier austauschen</small>
                 </div>
             </div>
             
             <!-- Restaurant Section -->
             <div class="card">
-                <h3>🍽️ Restaurant & Location</h3>
-                
-                <div class="form-group">
-                    {{ form.restaurant.label }}
-                    {{ form.restaurant(class="form-control", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
-                    {% if form.restaurant.errors %}
-                    <div class="error">{{ form.restaurant.errors[0] }}</div>
-                    {% endif %}
-                    <small class="form-help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
+                <div class="card-header">
+                    <h2>🍽️ Restaurant & Location</h2>
                 </div>
-                
-                <div class="form-row">
+                <div class="card-body">
                     <div class="form-group">
-                        {{ form.kueche.label }}
-                        {{ form.kueche(class="form-control", placeholder="z.B. Italienisch, Asiatisch") }}
-                        {% if form.kueche.errors %}
-                        <div class="error">{{ form.kueche.errors[0] }}</div>
+                        {{ form.restaurant.label }}
+                        {{ form.restaurant(class="form-control", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
+                        {% if form.restaurant.errors %}
+                        <div class="error">{{ form.restaurant.errors[0] }}</div>
                         {% endif %}
+                        <small class="form-help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
                     </div>
                     
-                    <div class="form-group">
-                        {{ form.website.label }}
-                        {{ form.website(class="form-control", placeholder="https://...") }}
-                        {% if form.website.errors %}
-                        <div class="error">{{ form.website.errors[0] }}</div>
-                        {% endif %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.kueche.label }}
+                            {{ form.kueche(class="form-control", placeholder="z.B. Italienisch, Asiatisch") }}
+                            {% if form.kueche.errors %}
+                            <div class="error">{{ form.kueche.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.website.label }}
+                            {{ form.website(class="form-control", placeholder="https://...") }}
+                            {% if form.website.errors %}
+                            <div class="error">{{ form.website.errors[0] }}</div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Additional Info -->
             <div class="card">
-                <h3>📝 Zusätzliche Informationen</h3>
-                
-                <div class="form-group">
-                    {{ form.notizen.label }}
-                    {{ form.notizen(class="form-control", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
-                    {% if form.notizen.errors %}
-                    <div class="error">{{ form.notizen.errors[0] }}</div>
-                    {% endif %}
+                <div class="card-header">
+                    <h2>📝 Zusätzliche Informationen</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.notizen.label }}
+                        {{ form.notizen(class="form-control", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
+                        {% if form.notizen.errors %}
+                        <div class="error">{{ form.notizen.errors[0] }}</div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             

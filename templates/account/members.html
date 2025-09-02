@@ -4,26 +4,38 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Mitglieder</h1>
-        <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">← Zurück zum Dashboard</a>
+    <div class="page-header">
+        <h1>👥 Mitglieder</h1>
+        <p class="page-subtitle">Übersicht aller Gourmen-Mitglieder</p>
+        <div class="page-actions">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">← Zurück zum Dashboard</a>
+        </div>
     </div>
     
-    <div class="members-list">
-        {% for member in members %}
-        <div class="card member-card">
-            <div class="member-info">
-                <h3>{{ member.display_name }}</h3>
-                <p><strong>E-Mail:</strong> {{ member.email }}</p>
-                {% if member.funktion %}
-                <p><strong>Funktion:</strong> {{ member.funktion }}</p>
-                {% endif %}
-                {% if member.spirit_animal %}
-                <p><strong>Spirit Animal:</strong> {{ member.spirit_animal }}</p>
-                {% endif %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card-header">
+                <h2> Mitgliederliste</h2>
+            </div>
+            <div class="card-body">
+                <div class="members-list">
+                    {% for member in members %}
+                    <div class="member-card">
+                        <div class="member-info">
+                            <h3>{{ member.display_name }}</h3>
+                            <p><strong>E-Mail:</strong> {{ member.email }}</p>
+                            {% if member.funktion %}
+                            <p><strong>Funktion:</strong> {{ member.funktion }}</p>
+                            {% endif %}
+                            {% if member.spirit_animal %}
+                            <p><strong>Spirit Animal:</strong> {{ member.spirit_animal }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %} 

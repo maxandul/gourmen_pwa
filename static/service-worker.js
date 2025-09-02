@@ -54,8 +54,8 @@ self.addEventListener('push', event => {
   
   const options = {
     body: 'Es gibt Updates von Gourmen!',
-    icon: '/static/img/icon-192.png',
-    badge: '/static/img/icon-192.png',
+    icon: '/static/img/pwa/icon-192.png',
+    badge: '/static/img/pwa/icon-192.png',
     vibrate: [200, 100, 200],
     data: {
       dateOfArrival: Date.now(),
@@ -65,7 +65,7 @@ self.addEventListener('push', event => {
       {
         action: 'open',
         title: 'Öffnen',
-        icon: '/static/img/icon-192.png'
+        icon: '/static/img/pwa/icon-192.png'
       },
       {
         action: 'close',

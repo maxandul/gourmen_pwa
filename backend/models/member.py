@@ -9,13 +9,13 @@ class Role(Enum):
     ADMIN = 'ADMIN'
 
 class Funktion(Enum):
-    MEMBER = 'Member'
-    VEREINSPRAESIDENT = 'Vereinspräsident'
-    KOMMISSIONSPRAESIDENT = 'Kommissionspräsident'
-    SCHATZMEISTER = 'Schatzmeister'
-    MARKETINGCHEF = 'Marketingchef'
-    REISEKOMMISSAR = 'Reisekommissar'
-    RECHNUNGSPRUEFER = 'Rechnungsprüfer'
+    MEMBER = 'MEMBER'
+    VEREINSPRAESIDENT = 'VEREINSPRAESIDENT'
+    KOMMISSIONSPRAESIDENT = 'KOMMISSIONSPRAESIDENT'
+    SCHATZMEISTER = 'SCHATZMEISTER'
+    MARKETINGCHEF = 'MARKETINGCHEF'
+    REISEKOMMISSAR = 'REISEKOMMISSAR'
+    RECHNUNGSPRUEFER = 'RECHNUNGSPRUEFER'
 
 class Member(db.Model, UserMixin):
     """Member model - contains non-sensitive data only"""

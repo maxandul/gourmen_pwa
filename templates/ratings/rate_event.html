@@ -4,15 +4,22 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Event bewerten</h2>
-                    <p class="text-muted mb-0">
-                        {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
-                    </p>
-                </div>
+    <div class="page-header">
+        <h1>⭐ Event bewerten</h1>
+        <p class="page-subtitle">
+            {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
+        </p>
+        <div class="page-actions">
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>⭐ Event bewerten</h2>
+            </div>
+            <div class="card-body">
                 <div class="card-body">
                     <form method="POST">
                         {{ form.hidden_tag() }}
@@ -23,7 +30,16 @@
                                     <label for="{{ form.food_rating.id }}">
                                         <strong>🍽️ Essen</strong>
                                     </label>
-                                    {{ form.food_rating(class="form-control", min="1", max="5") }}
+                                    <div class="star-rating" data-field="food_rating">
+                                        <input type="hidden" name="food_rating" id="food_rating" value="{{ form.food_rating.data or '' }}">
+                                        <div class="stars">
+                                            <span class="star" data-value="1">★</span>
+                                            <span class="star" data-value="2">★</span>
+                                            <span class="star" data-value="3">★</span>
+                                            <span class="star" data-value="4">★</span>
+                                            <span class="star" data-value="5">★</span>
+                                        </div>
+                                    </div>
                                     {% if form.food_rating.errors %}
                                         <div class="text-danger">
                                             {% for error in form.food_rating.errors %}
@@ -31,7 +47,6 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
-                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
                                 </div>
                             </div>
                             
@@ -40,7 +55,16 @@
                                     <label for="{{ form.drinks_rating.id }}">
                                         <strong>🍷 Getränke</strong>
                                     </label>
-                                    {{ form.drinks_rating(class="form-control", min="1", max="5") }}
+                                    <div class="star-rating" data-field="drinks_rating">
+                                        <input type="hidden" name="drinks_rating" id="drinks_rating" value="{{ form.drinks_rating.data or '' }}">
+                                        <div class="stars">
+                                            <span class="star" data-value="1">★</span>
+                                            <span class="star" data-value="2">★</span>
+                                            <span class="star" data-value="3">★</span>
+                                            <span class="star" data-value="4">★</span>
+                                            <span class="star" data-value="5">★</span>
+                                        </div>
+                                    </div>
                                     {% if form.drinks_rating.errors %}
                                         <div class="text-danger">
                                             {% for error in form.drinks_rating.errors %}
@@ -48,7 +72,6 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
-                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
                                 </div>
                             </div>
                             
@@ -57,7 +80,16 @@
                                     <label for="{{ form.service_rating.id }}">
                                         <strong>👨‍💼 Bedienung</strong>
                                     </label>
-                                    {{ form.service_rating(class="form-control", min="1", max="5") }}
+                                    <div class="star-rating" data-field="service_rating">
+                                        <input type="hidden" name="service_rating" id="service_rating" value="{{ form.service_rating.data or '' }}">
+                                        <div class="stars">
+                                            <span class="star" data-value="1">★</span>
+                                            <span class="star" data-value="2">★</span>
+                                            <span class="star" data-value="3">★</span>
+                                            <span class="star" data-value="4">★</span>
+                                            <span class="star" data-value="5">★</span>
+                                        </div>
+                                    </div>
                                     {% if form.service_rating.errors %}
                                         <div class="text-danger">
                                             {% for error in form.service_rating.errors %}
@@ -65,16 +97,15 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
-                                    <small class="form-text text-muted">1 = sehr schlecht, 5 = ausgezeichnet</small>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="form-group mt-4">
                             <label for="{{ form.highlights.id }}">
-                                <strong>✨ Highlights & Notizen (optional)</strong>
+                                <strong>✨ Highlights & Notizen</strong>
                             </label>
-                            {{ form.highlights(class="form-control", rows="4", placeholder="Was war besonders gut? Gibt es Verbesserungsvorschläge?") }}
+                            {{ form.highlights(class="form-control", rows="4") }}
                             {% if form.highlights.errors %}
                                 <div class="text-danger">
                                     {% for error in form.highlights.errors %}
@@ -100,45 +131,90 @@
 </div>
 
 <style>
-.rating-info {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
+.star-rating {
+    margin: 10px 0;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-.rating-scale {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    font-size: 0.9em;
-    color: #6c757d;
+.stars {
+    display: inline-block;
+    font-size: 24px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-.rating-scale span {
-    text-align: center;
-    flex: 1;
+.star {
+    color: #ddd;
+    transition: color 0.2s ease;
+    margin-right: 2px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.star:hover,
+.star.active {
+    color: #ffc107;
+}
+
+.star.active ~ .star {
+    color: #ddd;
+}
+
+.stars:hover .star {
+    color: #ffc107;
+}
+
+.stars:hover .star:hover ~ .star {
+    color: #ddd;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add rating scale info to each rating field
-    const ratingFields = document.querySelectorAll('input[type="number"]');
+    const starRatings = document.querySelectorAll('.star-rating');
     
-    ratingFields.forEach(function(field) {
-        const parent = field.parentElement;
-        const scaleDiv = document.createElement('div');
-        scaleDiv.className = 'rating-scale';
-        scaleDiv.innerHTML = `
-            <span>1<br><small>Sehr schlecht</small></span>
-            <span>2<br><small>Schlecht</small></span>
-            <span>3<br><small>Mittel</small></span>
-            <span>4<br><small>Gut</small></span>
-            <span>5<br><small>Ausgezeichnet</small></span>
-        `;
-        parent.appendChild(scaleDiv);
+    starRatings.forEach(function(rating) {
+        const stars = rating.querySelectorAll('.star');
+        const hiddenInput = rating.querySelector('input[type="hidden"]');
+        
+        // Initialize stars based on existing value
+        const currentValue = parseInt(hiddenInput.value) || 0;
+        updateStars(stars, currentValue);
+        
+        // Add click event to each star
+        stars.forEach(function(star) {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                hiddenInput.value = value;
+                updateStars(stars, value);
+            });
+        });
     });
+    
+    function updateStars(stars, value) {
+        stars.forEach(function(star, index) {
+            if (index < value) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
 });
 </script>
+
 {% endblock %}

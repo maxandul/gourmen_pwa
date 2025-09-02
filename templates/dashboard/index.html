@@ -4,54 +4,66 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Willkommen, {{ current_user.display_name }}!</h1>
+    <div class="page-header">
+        <h1>🏠 Dashboard</h1>
+        <p class="page-subtitle">Willkommen, {{ current_user.display_name }}!</p>
     </div>
     
-    {% if next_event %}
-    <div class="card">
-        <h2>Nächstes Event</h2>
-        <div class="event-card">
-            <h3>{{ next_event.event_typ.value }}</h3>
-            <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
-            <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
-            {% if next_event.organisator %}
-            <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name }}</p>
-            {% endif %}
-            {% if next_event.notizen %}
-            <p>{{ next_event.notizen }}</p>
-            {% endif %}
-            <div class="actions">
-                <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
-                {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                {% if my_participation and my_participation.teilnahme %}
-                <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-success">🍽️ BillBro</a>
-                {% endif %}
+    <div class="page-content">
+    
+        {% if next_event %}
+        <div class="card">
+            <div class="card-header">
+                <h2>📅 Nächstes Event</h2>
+            </div>
+            <div class="card-body">
+                <div class="event-card">
+                    <h3>{{ next_event.event_typ.value }}</h3>
+                    <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
+                    <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
+                    {% if next_event.organisator %}
+                    <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name }}</p>
+                    {% endif %}
+                    {% if next_event.notizen %}
+                    <p>{{ next_event.notizen }}</p>
+                    {% endif %}
+                    <div class="actions">
+                        <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
+                        {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                        {% if my_participation and my_participation.teilnahme %}
+                        <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-success">🍽️ BillBro</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    {% endif %}
-    
-    <div class="card">
-        <h3>GGL Rangliste</h3>
-        {% if ggl_stats %}
-        <div class="stats-item">
-            <span class="label">Aktuelle Saison:</span>
-            <span class="value">{{ ggl_stats.current_season }}</span>
-        </div>
-        <div class="stats-item">
-            <span class="label">Deine Punkte:</span>
-            <span class="value">{{ ggl_stats.points }}</span>
-        </div>
-        <div class="stats-item">
-            <span class="label">Dein Rang:</span>
-            <span class="value">{{ ggl_stats.rank }}</span>
-        </div>
-        {% else %}
-        <p>Noch keine GGL-Daten verfügbar.</p>
         {% endif %}
-        <div class="actions">
-            <a href="{{ url_for('ggl.index') }}" class="btn btn-secondary">GGL anzeigen</a>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2>🏆 GGL Rangliste</h2>
+            </div>
+            <div class="card-body">
+                {% if ggl_stats %}
+                <div class="stats-item">
+                    <span class="label">Aktuelle Saison:</span>
+                    <span class="value">{{ ggl_stats.current_season }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Deine Punkte:</span>
+                    <span class="value">{{ ggl_stats.points }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Dein Rang:</span>
+                    <span class="value">{{ ggl_stats.rank }}</span>
+                </div>
+                {% else %}
+                <p>Noch keine GGL-Daten verfügbar.</p>
+                {% endif %}
+                <div class="actions">
+                    <a href="{{ url_for('ggl.index') }}" class="btn btn-secondary">GGL anzeigen</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

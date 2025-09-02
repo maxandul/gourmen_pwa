@@ -4,67 +4,77 @@
 
 {% block content %}
 <div class="container">
-    <div class="card">
+    <div class="page-header">
         <h1>🔐 2FA Einrichten</h1>
-        <p>Vereinfachte Einrichtung - nur Secret-Code</p>
-        
-        <div class="mfa-section">
-            <h3>Schritt 1: Authenticator-App einrichten</h3>
-            <p>Kopiere diesen Secret-Code und füge ihn in deine Authenticator-App ein:</p>
-            
-            <div class="mfa-code-container">
-                <div class="mfa-code">{{ secret }}</div>
-                <button class="btn btn-secondary" onclick="copyToClipboard('{{ secret }}')">📋 Kopieren</button>
+        <p class="page-subtitle">Vereinfachte Einrichtung - nur Secret-Code</p>
+    </div>
+    
+    <div class="page-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>Schritt 1: Authenticator-App einrichten</h2>
             </div>
-            
-            <div class="mfa-instructions">
-                <h4>📱 Anleitung für Microsoft Authenticator:</h4>
-                <ol>
-                    <li>Öffne Microsoft Authenticator</li>
-                    <li>Tippe auf "+"</li>
-                    <li>Wähle "Anderes Konto hinzufügen"</li>
-                    <li>Wähle "QR-Code oder Barcode scannen"</li>
-                    <li>Tippe auf "Secret-Code eingeben"</li>
-                    <li>Kopiere den Code oben und füge ihn ein</li>
-                    <li>Kontoname: <strong>Gourmen</strong></li>
-                    <li>Bestätige mit "Hinzufügen"</li>
-                </ol>
+            <div class="card-body">
+                <p>Kopiere diesen Secret-Code und füge ihn in deine Authenticator-App ein:</p>
                 
-                <h4>📱 Anleitung für Google Authenticator:</h4>
-                <ol>
-                    <li>Öffne Google Authenticator</li>
-                    <li>Tippe auf "+"</li>
-                    <li>Wähle "Secret-Code eingeben"</li>
-                    <li>Kopiere den Code oben und füge ihn ein</li>
-                    <li>Kontoname: <strong>Gourmen</strong></li>
-                    <li>Bestätige</li>
-                </ol>
+                <div class="mfa-code-container">
+                    <div class="mfa-code">{{ secret }}</div>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('{{ secret }}')">📋 Kopieren</button>
+                </div>
+                
+                <div class="mfa-instructions">
+                    <h4>📱 Anleitung für Microsoft Authenticator:</h4>
+                    <ol>
+                        <li>Öffne Microsoft Authenticator</li>
+                        <li>Tippe auf "+"</li>
+                        <li>Wähle "Anderes Konto hinzufügen"</li>
+                        <li>Wähle "QR-Code oder Barcode scannen"</li>
+                        <li>Tippe auf "Secret-Code eingeben"</li>
+                        <li>Kopiere den Code oben und füge ihn ein</li>
+                        <li>Kontoname: <strong>Gourmen</strong></li>
+                        <li>Bestätige mit "Hinzufügen"</li>
+                    </ol>
+                    
+                    <h4>📱 Anleitung für Google Authenticator:</h4>
+                    <ol>
+                        <li>Öffne Google Authenticator</li>
+                        <li>Tippe auf "+"</li>
+                        <li>Wähle "Secret-Code eingeben"</li>
+                        <li>Kopiere den Code oben und füge ihn ein</li>
+                        <li>Kontoname: <strong>Gourmen</strong></li>
+                        <li>Bestätige</li>
+                    </ol>
+                </div>
             </div>
         </div>
 
-        <div class="verification-step">
-            <h2>Schritt 2: Code verifizieren</h2>
-            <p>Gib den 6-stelligen Code aus deiner Authenticator-App ein:</p>
-            
-            <form method="POST">
-                {{ form.hidden_tag() }}
+        <div class="card">
+            <div class="card-header">
+                <h2>Schritt 2: Code verifizieren</h2>
+            </div>
+            <div class="card-body">
+                <p>Gib den 6-stelligen Code aus deiner Authenticator-App ein:</p>
                 
-                <div class="form-group">
-                    {{ form.token.label }}
-                    {{ form.token(class="form-control", placeholder="123456", autocomplete="off") }}
-                    {% if form.token.errors %}
-                    <div class="error-message">
-                        {% for error in form.token.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.token.label }}
+                        {{ form.token(class="form-control", placeholder="123456", autocomplete="off") }}
+                        {% if form.token.errors %}
+                        <div class="error-message">
+                            {% for error in form.token.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                </div>
-                
-                <div class="actions">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
+                    
+                    <div class="actions">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

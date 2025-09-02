@@ -34,10 +34,7 @@ def rate_event(event_id):
         flash('Sie haben dieses Event bereits bewertet.', 'info')
         return redirect(url_for('events.detail', event_id=event_id))
     
-    # Check if event is in the past or today
-    if event.is_upcoming:
-        flash('Sie können nur vergangene Events oder Events am heutigen Tag bewerten.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id))
+    # Note: Removed time restriction - events can be rated at any time
     
     form = EventRatingForm()
     

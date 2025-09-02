@@ -3,6 +3,8 @@
  * Provides autocomplete, details, and save workflow
  */
 
+console.log('�� PlacesAutocomplete script loaded - TEST');
+
 class PlacesAutocomplete {
     constructor() {
         this.sessionToken = this.generateSessionToken();
@@ -33,7 +35,7 @@ class PlacesAutocomplete {
     }
     
     setupAutocomplete() {
-        const restaurantInput = document.getElementById('restaurant');
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
         if (!restaurantInput) return;
         
         // Create autocomplete container
@@ -65,7 +67,7 @@ class PlacesAutocomplete {
     }
     
     setupEventListeners() {
-        const restaurantInput = document.getElementById('restaurant');
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
         if (!restaurantInput) return;
         
         let debounceTimer;
@@ -100,17 +102,25 @@ class PlacesAutocomplete {
     }
     
     async searchPlaces(query) {
+        console.log('Searching places for query:', query);
         const loadingIndicator = document.getElementById('places-loading');
         const resultsContainer = document.getElementById('places-results');
         
-        if (!loadingIndicator || !resultsContainer) return;
+        if (!loadingIndicator || !resultsContainer) {
+            console.error('Required DOM elements not found');
+            return;
+        }
         
         loadingIndicator.style.display = 'block';
         resultsContainer.innerHTML = '';
         
         try {
+            console.log('Making API request to /events/places/autocomplete');
             const response = await fetch(`/events/places/autocomplete?query=${encodeURIComponent(query)}&session_token=${this.sessionToken}`);
+            console.log('API response status:', response.status);
+            
             const predictions = await response.json();
+            console.log('API response data:', predictions);
             
             loadingIndicator.style.display = 'none';
             this.displayResults(predictions);
@@ -181,7 +191,7 @@ class PlacesAutocomplete {
     
     displayPlaceDetails(place) {
         const detailsContainer = document.getElementById('places-details');
-        const restaurantInput = document.getElementById('restaurant');
+        const restaurantInput = document.querySelector('input[name="restaurant"]');
         
         if (!detailsContainer || !restaurantInput) return;
         
@@ -367,7 +377,14 @@ class PlacesAutocomplete {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    if (document.getElementById('restaurant')) {
+    console.log('🔍 DOM loaded, checking for restaurant field...');
+    const restaurantField = document.querySelector('input[name="restaurant"]');
+    console.log('🔍 Restaurant field found:', restaurantField);
+    
+    if (restaurantField) {
+        console.log('🔍 Initializing PlacesAutocomplete...');
         window.placesAutocomplete = new PlacesAutocomplete();
+    } else {
+        console.log('❌ Restaurant field not found');
     }
 });

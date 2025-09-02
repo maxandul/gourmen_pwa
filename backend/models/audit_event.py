@@ -28,6 +28,7 @@ class AuditAction(Enum):
     EVENT_ORGANIZER_CHANGED = 'EVENT_ORGANIZER_CHANGED'
     RSVP_UPDATE = 'RSVP_UPDATE'
     EVENT_EDIT = 'EVENT_EDIT'
+    EVENT_DELETE = 'EVENT_DELETE'
     ADMIN_CREATE_EVENT = 'ADMIN_CREATE_EVENT'
     ADMIN_CREATE_MEMBER = 'ADMIN_CREATE_MEMBER'
     ADMIN_EDIT_MEMBER = 'ADMIN_EDIT_MEMBER'
@@ -37,6 +38,8 @@ class AuditAction(Enum):
     REQUEST_2FA_RESET = 'REQUEST_2FA_RESET'
     RESET_2FA = 'RESET_2FA'
     ENABLE_2FA = 'ENABLE_2FA'
+    ADMIN_RESET_PASSWORD = 'ADMIN_RESET_PASSWORD'
+    ADMIN_RESET_2FA = 'ADMIN_RESET_2FA'
 
 class AuditEvent(db.Model):
     """Audit event model for security logging"""
@@ -94,6 +97,7 @@ class AuditEvent(db.Model):
             AuditAction.EVENT_ORGANIZER_CHANGED: 'Event Organisator geändert',
             AuditAction.RSVP_UPDATE: 'Teilnahme aktualisiert',
             AuditAction.EVENT_EDIT: 'Event bearbeitet',
+            AuditAction.EVENT_DELETE: 'Event gelöscht',
             AuditAction.ADMIN_CREATE_EVENT: 'Event erstellt (Admin)',
             AuditAction.ADMIN_CREATE_MEMBER: 'Mitglied erstellt (Admin)',
             AuditAction.ADMIN_EDIT_MEMBER: 'Mitglied bearbeitet (Admin)',
@@ -102,9 +106,11 @@ class AuditEvent(db.Model):
             AuditAction.RESET_PASSWORD: 'Passwort zurückgesetzt',
             AuditAction.REQUEST_2FA_RESET: '2FA-Reset angefordert',
             AuditAction.RESET_2FA: '2FA zurückgesetzt',
-            AuditAction.ENABLE_2FA: '2FA aktiviert'
+            AuditAction.ENABLE_2FA: '2FA aktiviert',
+            AuditAction.ADMIN_RESET_PASSWORD: 'Passwort zurückgesetzt (Admin)',
+            AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)'
         }
-        return action_names.get(self.action, self.action.value)
+        return action_names.get(self.action, str(self.action.value))
     
     @property
     def display_entity(self):

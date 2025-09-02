@@ -3,9 +3,9 @@ from enum import Enum
 from backend.extensions import db
 
 class Esstyp(Enum):
-    SPARSAM = 'sparsam'
-    NORMAL = 'normal'
-    ALLIN = 'allin'
+    SPARSAM = 'SPARSAM'
+    NORMAL = 'NORMAL'
+    ALLIN = 'ALLIN'
 
 class Participation(db.Model):
     """Participation model for event attendance and BillBro guesses"""

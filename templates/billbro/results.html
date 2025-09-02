@@ -4,54 +4,65 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>BillBro Ergebnisse</h1>
-        <p class="event-info">
-            <strong>{{ event.event_typ.value }}</strong> am {{ event.display_date }}
-            {% if event.restaurant %}
-            <br><strong>Restaurant:</strong> {{ event.restaurant }}
-            {% endif %}
+    <div class="page-header">
+        <h1>📊 BillBro Ergebnisse</h1>
+        <p class="page-subtitle">
+            {{ event.event_typ.value }} am {{ event.display_date }}
+            {% if event.restaurant %} • {{ event.restaurant }}{% endif %}
         </p>
-        <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu BillBro</a>
+        <div class="page-actions">
+            <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu BillBro</a>
+        </div>
     </div>
 
-    <div class="results-section">
+    <div class="page-content">
         <div class="card">
-            <h3>Rechnungsübersicht</h3>
-            <div class="bill-summary">
-                <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
-                <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
-                <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</p>
+            <div class="card-header">
+                <h2>💰 Rechnungsübersicht</h2>
             </div>
-        </div>
-
-        <div class="card">
-            <h3>Schätzungs-Rangliste</h3>
-            <div class="ranking-list">
-                {% for participation in participations %}
-                <div class="ranking-item">
-                    <span class="rank">{{ participation.rank }}.</span>
-                    <span class="member">{{ participation.member.display_name }}</span>
-                    <span class="guess">{{ participation.display_guess }}</span>
-                    <span class="diff">{{ participation.display_diff }}</span>
-                    <span class="esstyp">{{ participation.esstyp.value if participation.esstyp else 'N/A' }}</span>
+            <div class="card-body">
+                <div class="bill-summary">
+                    <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
+                    <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
+                    <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</p>
                 </div>
-                {% endfor %}
             </div>
         </div>
 
         <div class="card">
-            <h3>Anteile pro Person</h3>
-            <div class="share-amounts">
-                <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</p>
-                <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</p>
-                <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</p>
+            <div class="card-header">
+                <h2>🏆 Schätzungs-Rangliste</h2>
+            </div>
+            <div class="card-body">
+                <div class="ranking-list">
+                    {% for participation in participations %}
+                    <div class="ranking-item">
+                        <span class="rank">{{ participation.rank }}.</span>
+                        <span class="member">{{ participation.member.display_name }}</span>
+                        <span class="guess">{{ participation.display_guess }}</span>
+                        <span class="diff">{{ participation.display_diff }}</span>
+                        <span class="esstyp">{{ participation.esstyp.value if participation.esstyp else 'N/A' }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
-        <div class="actions">
+        <div class="card">
+            <div class="card-header">
+                <h2>👥 Anteile pro Person</h2>
+            </div>
+            <div class="card-body">
+                <div class="share-amounts">
+                    <p><strong>Sparsam:</strong> {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</p>
+                    <p><strong>Normal:</strong> {{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</p>
+                    <p><strong>All-In:</strong> {{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-actions">
             <a href="{{ url_for('billbro.share_whatsapp', event_id=event.id) }}" class="btn btn-whatsapp">WhatsApp teilen</a>
-            <a href="{{ url_for('billbro.export_pdf', event_id=event.id) }}" class="btn btn-secondary">PDF exportieren</a>
         </div>
     </div>
 </div>

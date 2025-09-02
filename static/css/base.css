@@ -101,6 +101,59 @@ body {
     margin-bottom: 0;
 }
 
+/* Einheitliche Seiten-Struktur */
+.page-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.page-header h1 {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.page-subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.page-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.page-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Card mit orangem Streifen (wie bei Events) */
+.card {
+    background: var(--background-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--background-tertiary);
+    transition: all var(--transition-normal);
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--accent-color); /* Oranger Streifen */
+}
+
+.card:last-child {
+    margin-bottom: 0;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     margin-bottom: 16px;

@@ -4,25 +4,29 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>BillBro - Restaurant-Rechner</h1>
-        <p class="event-info">
-            <strong>{{ event.event_typ.value }}</strong> am {{ event.display_date }}
-            {% if event.restaurant %}
-            <br><strong>Restaurant:</strong> {{ event.restaurant }}
-            {% endif %}
-            {% if event.kueche %}
-            <br><strong>Küche:</strong> {{ event.kueche }}
-            {% endif %}
+    <div class="page-header">
+        <h1>🍽️ BillBro - Restaurant-Rechner</h1>
+        <p class="page-subtitle">
+            {{ event.event_typ.value }} am {{ event.display_date }}
+            {% if event.restaurant %} • {{ event.restaurant }}{% endif %}
+            {% if event.kueche %} • {{ event.kueche }}{% endif %}
         </p>
-        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+        <div class="page-actions">
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+        </div>
     </div>
+    
+    <div class="page-content">
 
-    {% if current_user.is_admin or event.organisator_id == current_user.id %}
+    <!-- DEBUG: current_user.id={{ current_user.id }}, event.organisator_id={{ event.organisator_id }}, is_admin={{ current_user.is_admin() }} -->
+    {% if current_user.is_admin() or event.organisator_id == current_user.id %}
     <!-- Organisator-View -->
     <div class="organizer-section">
         <div class="card">
-            <h3>Organisator-Dashboard</h3>
+            <div class="card-header">
+                <h2>👨‍🍳 Organisator-Dashboard</h2>
+            </div>
+            <div class="card-body">
             
             <!-- Anwesenheits-Check vor BillBro-Start -->
             {% if not event.rechnungsbetrag_rappen %}
@@ -45,16 +49,10 @@
                     <div class="participant-item" data-member-id="{{ participation.member_id }}">
                         <span class="member-name">{{ participation.member.display_name }}</span>
                         <span class="status">
-                            {% if event.rechnungsbetrag_rappen %}
-                            <!-- BillBro läuft - Schätzungs-Status -->
-                                {% if participation.has_guess %}
-                                ✅ {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
-                                {% else %}
-                                ⏳ Wartet auf Schätzung
-                                {% endif %}
+                            {% if participation.has_guess %}
+                            ✅ {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
                             {% else %}
-                            <!-- Vor BillBro - Anwesenheits-Check -->
-                            ✅ Anwesend
+                            ⏳ Wartet auf Schätzung
                             {% endif %}
                         </span>
                         {% if not event.rechnungsbetrag_rappen %}
@@ -97,35 +95,10 @@
                 </div>
                 {% endif %}
                 
-                <!-- Erinnerungen senden -->
-                {% set pending_guesses = event.participations|selectattr('teilnahme', 'equalto', True)|rejectattr('has_guess')|list %}
-                {% if pending_guesses %}
-                <div class="reminder-section">
-                    <h5>⏰ Ausstehende Schätzungen ({{ pending_guesses|length }})</h5>
-                    <p>{{ pending_guesses|map(attribute='member.display_name')|join(', ') }}</p>
-                    <form method="POST" action="{{ url_for('billbro.send_reminder', event_id=event.id) }}" style="display: inline;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-warning">
-                            📱 Erinnerung senden
-                        </button>
-                    </form>
-                </div>
-                {% endif %}
+                <!-- Erinnerungen senden - ENTFERNT -->
             </div>
 
-            <!-- BillBro Start -->
-            {% if not event.rechnungsbetrag_rappen %}
-            <div class="billbro-start-section">
-                <h4>🍽️ BillBro starten</h4>
-                <p>Alle Teilnehmer benachrichtigen und Schätzungsrunde beginnen.</p>
-                <form method="POST" action="{{ url_for('billbro.start_session', event_id=event.id) }}" class="start-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-success btn-large">
-                        📱 BillBro für alle starten
-                    </button>
-                </form>
-            </div>
-            {% endif %}
+            <!-- BillBro Start - ENTFERNT -->
 
             <!-- Organisator eigene Schätzung -->
             <div class="organizer-guess-section">
@@ -212,11 +185,20 @@
                         <p><strong>Vorgeschlagener Gesamtbetrag:</strong> {{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF 
                             <small>(aufgerundet auf 10er)</small></p>
                     </div>
+                    
+                    <!-- Action Buttons für automatischen Vorschlag -->
+                    <div class="action-buttons">
+                        <form method="POST" action="{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success">✅ Akzeptieren</button>
+                        </form>
+                        <button type="button" class="btn btn-secondary" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
+                    </div>
                 </div>
 
-                <!-- Manuelle Anpassung -->
-                <div class="manual-override">
-                    <h5>✏️ Gesamtbetrag anpassen (optional):</h5>
+                <!-- Manuelle Anpassung (versteckt) -->
+                <div class="manual-override" id="manualOverride" style="display: none;">
+                    <h5>✏️ Gesamtbetrag anpassen:</h5>
                     <form method="POST" action="{{ url_for('billbro.set_total', event_id=event.id) }}" class="total-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="form-group">
@@ -269,6 +251,7 @@
                 {% endif %}
             </div>
             {% endif %}
+            </div>
         </div>
     </div>
 
@@ -276,7 +259,10 @@
     <!-- Teilnehmer-View -->
     <div class="participant-section">
         <div class="card">
-            <h3>Deine Schätzung</h3>
+            <div class="card-header">
+                <h2>🎯 Deine Schätzung</h2>
+            </div>
+            <div class="card-body">
             
             {% if participation.has_guess %}
             <!-- Bereits geschätzt -->
@@ -321,19 +307,23 @@
                 </div>
                 
                 <div class="form-actions">
-                    {{ form.submit(class="btn btn-primary") }}
+                    <button type="submit" class="btn btn-primary">Einloggen</button>
                 </div>
             </form>
             {% else %}
             <p class="text-muted">BillBro ist abgeschlossen - keine neuen Schätzungen möglich</p>
             {% endif %}
             {% endif %}
+            </div>
         </div>
         
         <!-- Ergebnisse für Teilnehmer -->
         {% if event.rechnungsbetrag_rappen %}
         <div class="card">
-            <h3>📊 BillBro Ergebnisse</h3>
+            <div class="card-header">
+                <h2>📊 BillBro Ergebnisse</h2>
+            </div>
+            <div class="card-body">
             
             <div class="bill-summary">
                 <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
@@ -366,10 +356,20 @@
                 {% endif %}
             </div>
             {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
     {% endif %}
+    </div>
 </div>
+
+<script>
+function showManualOverride() {
+    document.getElementById('manualOverride').style.display = 'block';
+    // Scroll to the manual override section
+    document.getElementById('manualOverride').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
 {% endblock %}
 

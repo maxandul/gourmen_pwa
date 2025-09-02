@@ -4,12 +4,15 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Neues Mitglied erstellen</h1>
-        <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
+    <div class="page-header">
+        <h1>➕ Neues Mitglied erstellen</h1>
+        <p class="page-subtitle">Füge ein neues Mitglied zum Gourmen-Verein hinzu</p>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
+        </div>
     </div>
     
-    <div class="form-container">
+    <div class="page-content">
         <form method="POST" class="form">
             {{ form.hidden_tag() }}
             
@@ -31,7 +34,7 @@
             
             <div class="form-group">
                 {{ form.email.label }}
-                {{ form.email(class="form-control") }}
+                {{ form.email(class="form-control", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}
                 {% if form.email.errors %}
                 <div class="error">{{ form.email.errors[0] }}</div>
                 {% endif %}
@@ -54,8 +57,61 @@
             </div>
             
             <div class="form-group">
+                {{ form.funktion.label }}
+                {{ form.funktion(class="form-control") }}
+                {% if form.funktion.errors %}
+                <div class="error">{{ form.funktion.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.beitrittsjahr.label }}
+                {{ form.beitrittsjahr(class="form-control") }}
+                {% if form.beitrittsjahr.errors %}
+                <div class="error">{{ form.beitrittsjahr.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.vorstandsmitglied.label }}
+                {{ form.vorstandsmitglied() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.telefon.label }}
+                {{ form.telefon(class="form-control") }}
+                {% if form.telefon.errors %}
+                <div class="error">{{ form.telefon.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.geburtsdatum.label }}
+                {{ form.geburtsdatum(class="form-control", type="date") }}
+                {% if form.geburtsdatum.errors %}
+                <div class="error">{{ form.geburtsdatum.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.nationalitaet.label }}
+                {{ form.nationalitaet(class="form-control") }}
+                {% if form.nationalitaet.errors %}
+                <div class="error">{{ form.nationalitaet.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
                 {{ form.is_active.label }}
                 {{ form.is_active() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.fuehrerschein.label }}
+                {{ form.fuehrerschein(class="form-control") }}
+                {% if form.fuehrerschein.errors %}
+                <div class="error">{{ form.fuehrerschein.errors[0] }}</div>
+                {% endif %}
             </div>
             
             <div class="form-actions">

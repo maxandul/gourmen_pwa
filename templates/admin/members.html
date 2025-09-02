@@ -4,12 +4,15 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Mitglieder-Verwaltung</h1>
-        <div class="admin-actions">
-            <a href="{{ url_for('admin.create_member') }}" class="btn btn-primary">Neues Mitglied erstellen</a>
+    <div class="page-header">
+        <h1>👥 Mitglieder-Verwaltung</h1>
+        <p class="page-subtitle">Verwalte alle Gourmen-Mitglieder und deren Daten</p>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.create_member') }}" class="btn btn-primary">➕ Neues Mitglied erstellen</a>
         </div>
     </div>
+    
+    <div class="page-content">
     
     <div class="members-table">
         <div class="table-responsive">
@@ -126,6 +129,8 @@
                                    class="btn btn-outline-primary btn-sm">Bearbeiten</a>
                                 <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" 
                                    class="btn btn-outline-warning btn-sm">Sensible Daten</a>
+                                <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" 
+                                   class="btn btn-outline-info btn-sm">🔒 Sicherheit</a>
                             </div>
                         </td>
                     </tr>
@@ -284,5 +289,7 @@
 .table-responsive::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
-</style>
+    </style>
+    </div>
+</div>
 {% endblock %} 
