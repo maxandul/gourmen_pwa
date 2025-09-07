@@ -49,8 +49,16 @@ def create_app(config_name=None):
             response.headers['Content-Type'] = 'text/html; charset=utf-8'
         return response
     
-    # Initialize admin user if needed (only if tables exist)
+    # Initialize database and admin user if needed
     with app.app_context():
+        try:
+            # Run migrations if needed (for Railway deployment)
+            from flask_migrate import upgrade
+            upgrade()
+            app.logger.info("Database migrations completed")
+        except Exception as e:
+            app.logger.warning(f"Migration check failed: {e}")
+        
         try:
             init_admin_user(app)
         except Exception:
@@ -86,6 +94,38 @@ def register_context_processors(app):
     @app.context_processor
     def inject_config():
         return dict(config=app.config)
+    
+    # Register custom Jinja2 filters
+    @app.template_filter('cuisine_type_mapper')
+    def cuisine_type_mapper(place_type):
+        """Map Google Places types to readable cuisine descriptions"""
+        cuisine_map = {
+            'restaurant': 'Restaurant',
+            'italian_restaurant': 'Italienisch',
+            'chinese_restaurant': 'Chinesisch',
+            'japanese_restaurant': 'Japanisch',
+            'thai_restaurant': 'Thai',
+            'indian_restaurant': 'Indisch',
+            'mexican_restaurant': 'Mexikanisch',
+            'greek_restaurant': 'Griechisch',
+            'turkish_restaurant': 'Türkisch',
+            'spanish_restaurant': 'Spanisch',
+            'french_restaurant': 'Französisch',
+            'german_restaurant': 'Deutsch',
+            'swiss_restaurant': 'Schweizer',
+            'pizza_restaurant': 'Pizza',
+            'burger_restaurant': 'Burger',
+            'steakhouse': 'Steakhouse',
+            'seafood_restaurant': 'Meeresfrüchte',
+            'vegetarian_restaurant': 'Vegetarisch',
+            'vegan_restaurant': 'Vegan',
+            'fast_food_restaurant': 'Fast Food',
+            'cafe': 'Café',
+            'bar': 'Bar',
+            'pub': 'Pub',
+            'bistro': 'Bistro'
+        }
+        return cuisine_map.get(place_type, place_type.replace('_', ' ').title())
 
 def init_admin_user(app):
     """Initialize admin user if it doesn't exist"""
