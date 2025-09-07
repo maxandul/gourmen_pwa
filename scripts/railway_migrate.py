@@ -28,6 +28,17 @@ def run_migrations():
         print("⚠️  Keine PostgreSQL-Datenbank - überspringe Migrationen")
         return
     
+    # Prüfe ob wir im Build-Prozess sind (keine echte DB-Verbindung möglich)
+    try:
+        # Teste eine einfache DB-Verbindung
+        import psycopg2
+        conn = psycopg2.connect(database_url)
+        conn.close()
+    except Exception as e:
+        print(f"⚠️  Datenbank nicht erreichbar während Build: {e}")
+        print("   Migrationen werden beim ersten App-Start ausgeführt")
+        return
+    
     app = create_app('production')
     
     with app.app_context():
