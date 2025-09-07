@@ -9,31 +9,41 @@ bp = Blueprint('public', __name__)
 @bp.route('/')
 def landing():
     """Landing page"""
-    # Get latest published event
-    latest_event = Event.query.filter_by(published=True).order_by(Event.datum.desc()).first()
+    try:
+        # Get latest published event
+        latest_event = Event.query.filter_by(published=True).order_by(Event.datum.desc()).first()
 
-    # Public stats
-    member_count = Member.query.filter_by(is_active=True).count()
-    restaurant_count = (
-        db.session.query(Event.restaurant)
-        .filter(
-            Event.published == True,
-            Event.datum < datetime.utcnow(),
-            Event.restaurant.isnot(None),
-            Event.restaurant != ''
+        # Public stats
+        member_count = Member.query.filter_by(is_active=True).count()
+        restaurant_count = (
+            db.session.query(Event.restaurant)
+            .filter(
+                Event.published == True,
+                Event.datum < datetime.utcnow(),
+                Event.restaurant.isnot(None),
+                Event.restaurant != ''
+            )
+            .distinct()
+            .count()
         )
-        .distinct()
-        .count()
-    )
-    days_since_foundation = (datetime.utcnow().date() - date(2021, 11, 21)).days
+        days_since_foundation = (datetime.utcnow().date() - date(2021, 11, 21)).days
 
-    return render_template(
-        'public/landing.html',
-        latest_event=latest_event,
-        member_count=member_count,
-        restaurant_count=restaurant_count,
-        days_since_foundation=days_since_foundation,
-    )
+        return render_template(
+            'public/landing.html',
+            latest_event=latest_event,
+            member_count=member_count,
+            restaurant_count=restaurant_count,
+            days_since_foundation=days_since_foundation,
+        )
+    except Exception as e:
+        # Fallback if database is not ready
+        return render_template(
+            'public/landing.html',
+            latest_event=None,
+            member_count=0,
+            restaurant_count=0,
+            days_since_foundation=(datetime.utcnow().date() - date(2021, 11, 21)).days,
+        )
 
 @bp.route('/health')
 def health():
