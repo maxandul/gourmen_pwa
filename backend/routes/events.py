@@ -243,7 +243,7 @@ def edit(event_id):
             event.notizen = form.notizen.data
         
         # Set Google Places data if available
-        if form.place_id.data:
+        if form.place_id.data or form.place_name.data or form.place_address.data:
             event.place_id = form.place_id.data
             event.place_name = form.place_name.data
             event.place_address = form.place_address.data
@@ -394,7 +394,13 @@ def rsvp(event_id):
         })
     
     flash(message, 'success')
-    return redirect(url_for('events.detail', event_id=event_id))
+    
+    # Prüfe, ob der Request vom Dashboard kommt (Referer-Header)
+    referer = request.headers.get('Referer', '')
+    if 'dashboard' in referer:
+        return redirect(url_for('dashboard.index'))
+    else:
+        return redirect(url_for('events.detail', event_id=event_id))
 
 @bp.route('/places/autocomplete')
 @login_required

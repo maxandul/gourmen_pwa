@@ -42,20 +42,11 @@
         <h3>📊 Saison-Punktetabelle</h3>
         
         {% if season_ranking %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Rang</th>
-                    <th>Name</th>
-                    <th>Punkte</th>
-                    <th>Events</th>
-                    <th>⌀ Punkte</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in season_ranking %}
-                <tr {% if entry.member_id == current_user.id %}class="current-user"{% endif %}>
-                    <td>
+        <div class="ranking-grid">
+            {% for entry in season_ranking %}
+            <div class="ranking-card {% if entry.member_id == current_user.id %}current-user{% endif %}">
+                <div class="ranking-header">
+                    <div class="rank-section">
                         {% if entry.rank <= 3 %}
                         <span class="medal">
                             {% if entry.rank == 1 %}🥇
@@ -64,16 +55,28 @@
                             {% endif %}
                         </span>
                         {% endif %}
-                        {{ entry.rank }}
-                    </td>
-                    <td>{{ entry.member.display_name }}</td>
-                    <td>{{ entry.total_points }}</td>
-                    <td>{{ entry.participation_count }}</td>
-                    <td>{{ "%.1f"|format(entry.avg_points) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        <span class="rank-number">{{ entry.rank }}</span>
+                    </div>
+                    <div class="member-name">{{ entry.member.display_name }}</div>
+                </div>
+                
+                <div class="ranking-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Punkte:</span>
+                        <span class="stat-value">{{ entry.total_points }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Events:</span>
+                        <span class="stat-value">{{ entry.participation_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">⌀ Punkte:</span>
+                        <span class="stat-value">{{ "%.1f"|format(entry.avg_points) }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
         <div class="no-data">
             <p>Noch keine Daten für Saison {{ season_year }} verfügbar.</p>
@@ -259,6 +262,90 @@ td:nth-child(5) {
     color: #333;
 }
 
+/* Ranking Grid - Mobile-First */
+.ranking-grid {
+    display: grid;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.ranking-card {
+    background: var(--background-primary);
+    border: 1px solid var(--background-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.ranking-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.ranking-card.current-user {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 4px solid var(--success-color);
+    font-weight: bold;
+}
+
+.ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--background-tertiary);
+}
+
+.rank-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rank-number {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--accent-color);
+    min-width: 30px;
+}
+
+.medal {
+    font-size: 20px;
+}
+
+.member-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+.ranking-stats {
+    display: grid;
+    gap: 12px;
+}
+
+.ranking-stats .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.ranking-stats .stat-label {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.ranking-stats .stat-value {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 16px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .stats-grid {
@@ -268,6 +355,33 @@ td:nth-child(5) {
     
     .stat-value {
         font-size: 20px;
+    }
+    
+    .ranking-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .member-name {
+        text-align: left;
+        font-size: 16px;
+    }
+    
+    .ranking-stats .stat-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .ranking-stats .stat-value {
+        align-self: flex-end;
+    }
+}
+
+@media (min-width: 768px) {
+    .ranking-grid {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     }
 }
 </style>

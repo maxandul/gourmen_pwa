@@ -13,6 +13,8 @@
             {% if next %}
             <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
+            <!-- Debug: Zeige den next Parameter an -->
+            <input type="hidden" name="debug_next" value="{{ next or 'NONE' }}">
             
             <div class="form-group">
                 {{ form.password.label(class="form-label") }}

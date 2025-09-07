@@ -279,6 +279,28 @@ a:hover {
     transform: translateY(-1px);
 }
 
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover:not(:disabled) {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+}
+
+.btn-warning:hover:not(:disabled) {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
 .btn-sm {
     padding: 8px 16px;
     font-size: 14px;
@@ -289,6 +311,256 @@ a:hover {
     padding: 16px 32px;
     font-size: 18px;
     min-height: 52px;
+}
+
+/* Mobile Vollbreite für wichtige Buttons */
+.btn-full-mobile {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .btn-full-mobile {
+        width: auto;
+    }
+}
+
+/* Google Maps Link Styling */
+.maps-link {
+    color: #dc3545;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.maps-link:hover {
+    color: #c82333;
+    text-decoration: underline;
+}
+
+/* Teilnahme-Status Styling */
+.participation-status {
+    padding: 8px 12px;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.participation-status.confirmed {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.participation-status.declined {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.participation-status.pending {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #856404;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+/* Mitglieder-Verwaltung - Mobile-First Card-Design */
+.members-grid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.member-card {
+    background: var(--background-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--background-tertiary);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.member-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.member-card.inactive {
+    opacity: 0.7;
+    background: var(--background-secondary);
+}
+
+.member-header {
+    padding: 20px;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.member-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.member-status {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: var(--border-radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.badge-admin {
+    background: var(--error-color);
+    color: white;
+}
+
+.badge-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge-inactive {
+    background: var(--text-muted);
+    color: white;
+}
+
+.badge-vorstand {
+    background: var(--warning-color);
+    color: var(--text-primary);
+}
+
+.member-content {
+    padding: 20px;
+}
+
+.member-section {
+    margin-bottom: 20px;
+}
+
+.member-section:last-child {
+    margin-bottom: 0;
+}
+
+.member-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--background-tertiary);
+    padding-bottom: 8px;
+}
+
+.member-section p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.member-section p:last-child {
+    margin-bottom: 0;
+}
+
+.member-actions {
+    padding: 20px;
+    background: var(--background-secondary);
+    border-top: 1px solid var(--background-tertiary);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.member-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Statistiken Grid */
+.stats-grid {
+    display: grid;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.stat-card {
+    background: var(--background-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--background-tertiary);
+    padding: 24px;
+    text-align: center;
+    transition: all var(--transition-normal);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.stat-title {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* Mobile-First Responsive Design */
+@media (min-width: 768px) {
+    .members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    
+    .member-header {
+        flex-direction: row;
+    }
+    
+    .member-actions {
+        justify-content: flex-start;
+    }
+    
+    .member-actions .btn {
+        flex: none;
+    }
+}
+
+@media (min-width: 1200px) {
+    .members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 /* Forms */
@@ -362,7 +634,25 @@ a:hover {
 .card-header {
     padding: 24px 24px 20px 24px; /* Mehr Padding oben und seitlich */
     border-bottom: 1px solid var(--background-tertiary);
-    background: var(--background-secondary);
+    background: #f8f9fa; /* Explizite hellgraue Farbe */
+    /* border-left entfernt - Cards haben bereits den orangen Streifen */
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Alternative Card-Header mit orangem Hintergrund */
+.card-header.primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.card-header.primary h2 {
+    color: white;
 }
 
 .card-title {
@@ -374,6 +664,22 @@ a:hover {
 
 .card-body {
     padding: 24px; /* Mehr Padding in allen Richtungen */
+}
+
+/* Einheitliche Card-Struktur: 3 Ebenen */
+.card-title {
+    margin: 0;
+    padding: 24px 24px 16px 24px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--background-tertiary);
+    background: var(--background-secondary);
+}
+
+/* Card-Inhalt (3. Ebene) */
+.card-content {
+    padding: 24px;
 }
 
 /* Cards ohne Header haben mehr Padding oben */
@@ -439,9 +745,29 @@ a:hover {
     padding: 16px 24px;
     border-top: 1px solid var(--background-tertiary);
     margin-top: 16px;
+    background: var(--background-secondary);
+}
+
+/* Event-Buttons innerhalb von Cards - korrekt positioniert */
+.card .event-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--background-tertiary);
+    margin-top: 16px;
+    background: var(--background-secondary);
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
     margin-left: -24px;
     margin-right: -24px;
-    background: var(--background-secondary);
+    margin-bottom: -24px;
+}
+
+/* Event-Buttons außerhalb von Cards (z.B. auf der Events-Übersicht) */
+.event-actions {
+    padding: 16px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 /* Allgemeine Actions ohne Hintergrund - überschreibt die vorherige Regel */
@@ -1050,6 +1376,46 @@ a:hover {
     gap: 20px;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     margin: 20px 0;
+}
+
+/* Dashboard Event Cards */
+.event-info h3 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.event-info p {
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.event-info p:last-child {
+    margin-bottom: 0;
+}
+
+.actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .actions {
+        flex-direction: column;
+    }
+    
+    .actions .btn {
+        flex: none;
+        width: 100%;
+    }
 }
 
 /* Stats Items */

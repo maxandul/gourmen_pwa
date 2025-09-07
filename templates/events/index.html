@@ -8,7 +8,7 @@
         <h1>📅 Events</h1>
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
         <div class="page-actions">
-            <a href="{{ url_for('events.stats') }}" class="btn btn-info">📊 Statistiken</a>
+            <a href="{{ url_for('events.stats') }}" class="btn btn-secondary">📊 Statistiken</a>
             {% if current_user.is_admin %}
             <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">Neues Event</a>
             {% endif %}
@@ -48,7 +48,7 @@
                     {% endif %}
                     
                     <p class="participants-count">
-                        👥 {{ event.get_participation_count() }} / {{ event.get_total_participants() }} Teilnehmer
+                        👥 {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern
                     </p>
                 </div>
                 <div class="event-actions">
@@ -57,7 +57,7 @@
                     <!-- BillBro Link für Teilnehmer und Organisatoren -->
                     {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                     {% if my_participation and my_participation.teilnahme %}
-                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-success">🍽️ BillBro</a>
+                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
                     {% endif %}
                     
                     {% if current_user.is_admin or event.organisator_id == current_user.id %}
@@ -74,7 +74,7 @@
         <h3>📋 Event-Planung</h3>
         <div class="quick-actions">
             {% if current_user.is_admin %}
-            <a href="{{ url_for('events.year_planning') }}" class="btn btn-success">📅 Jahresplanung erstellen</a>
+            <a href="{{ url_for('events.year_planning') }}" class="btn btn-primary">📅 Jahresplanung erstellen</a>
             <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Archiv anzeigen</a>
             {% else %}
             <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Vergangene Events</a>
@@ -86,7 +86,7 @@
     <div class="card">
         <p>Noch keine kommenden Events verfügbar.</p>
         {% if current_user.is_admin %}
-        <p><a href="{{ url_for('events.year_planning') }}">Jahresplanung erstellen</a> um Events zu planen.</p>
+        <p><a href="{{ url_for('events.year_planning') }}" class="btn btn-outline">Jahresplanung erstellen</a> um Events zu planen.</p>
         {% endif %}
     </div>
     {% endif %}

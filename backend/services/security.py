@@ -159,15 +159,53 @@ class SecurityService:
         if not session.get('sensitive_access_until'):
             return False
         
-        access_until = datetime.fromisoformat(session['sensitive_access_until'])
-        return datetime.utcnow() < access_until
+        try:
+            import time
+            current_timestamp = int(time.time())
+            access_until_timestamp = session['sensitive_access_until']
+            has_access = current_timestamp < access_until_timestamp
+            
+            # Debug logging
+            try:
+                from flask import current_app
+                current_datetime = datetime.fromtimestamp(current_timestamp)
+                access_until_datetime = datetime.fromtimestamp(access_until_timestamp)
+                current_app.logger.info(f"Step-up access check: {has_access}")
+                current_app.logger.info(f"Current time: {current_datetime} (timestamp: {current_timestamp})")
+                current_app.logger.info(f"Access until: {access_until_datetime} (timestamp: {access_until_timestamp})")
+                current_app.logger.info(f"Time difference: {access_until_timestamp - current_timestamp}s")
+            except:
+                pass
+            
+            return has_access
+        except Exception as e:
+            # If parsing fails, clear the corrupted session data
+            session.pop('sensitive_access_until', None)
+            return False
     
     @staticmethod
     def grant_step_up_access():
         """Grant step-up access for configured duration"""
-        ttl_seconds = current_app.config.get('SENSITIVE_ACCESS_TTL_SECONDS', 300)
-        access_until = datetime.utcnow() + timedelta(seconds=ttl_seconds)
-        session['sensitive_access_until'] = access_until.isoformat()
+        try:
+            from flask import current_app
+            ttl_seconds = current_app.config.get('SENSITIVE_ACCESS_TTL_SECONDS', 1800)  # 30 Minuten statt 5
+        except:
+            # Fallback if current_app not available
+            ttl_seconds = 1800  # 30 Minuten
+        
+        # Verwende Unix Timestamp (zeitzonenunabhängig)
+        import time
+        access_until_timestamp = int(time.time()) + ttl_seconds
+        session['sensitive_access_until'] = access_until_timestamp
+        
+        # Debug logging
+        try:
+            from flask import current_app
+            access_until_datetime = datetime.fromtimestamp(access_until_timestamp)
+            current_app.logger.info(f"Step-up access granted until {access_until_datetime} (TTL: {ttl_seconds}s)")
+            current_app.logger.info(f"Session timestamp: {access_until_timestamp}")
+        except:
+            pass
     
     @staticmethod
     def revoke_step_up_access():
@@ -204,7 +242,16 @@ def require_step_up(f):
     
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not SecurityService.check_step_up_access():
+        has_access = SecurityService.check_step_up_access()
+        
+        # Debug logging
+        try:
+            from flask import current_app
+            current_app.logger.info(f"require_step_up check for {request.url}: {has_access}")
+        except:
+            pass
+        
+        if not has_access:
             flash('Zugriff auf sensible Daten erfordert erneute Authentifizierung', 'warning')
             return redirect(url_for('auth.step_up', next=request.url))
         return f(*args, **kwargs)

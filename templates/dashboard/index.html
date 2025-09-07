@@ -13,37 +13,77 @@
     
         {% if next_event %}
         <div class="card">
-            <div class="card-header">
-                <h2>📅 Nächstes Event</h2>
-            </div>
-            <div class="card-body">
-                <div class="event-card">
+            <h2 class="card-title">📅 Nächstes Event</h2>
+            <div class="card-content">
+                <div class="event-info">
                     <h3>{{ next_event.event_typ.value }}</h3>
                     <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
                     <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
+                    {% if next_event.place_maps_url %}
+                    <p><strong>📍 Location:</strong> <a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener" class="maps-link">Auf Google Maps anzeigen</a></p>
+                    {% endif %}
                     {% if next_event.organisator %}
                     <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name }}</p>
                     {% endif %}
                     {% if next_event.notizen %}
-                    <p>{{ next_event.notizen }}</p>
+                    <p><strong>📝 Notizen:</strong> {{ next_event.notizen }}</p>
                     {% endif %}
-                    <div class="actions">
-                        <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
-                        {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                        {% if my_participation and my_participation.teilnahme %}
-                        <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-success">🍽️ BillBro</a>
+                    
+                    <!-- Teilnahme-Status -->
+                    {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if my_participation %}
+                        {% if my_participation.teilnahme %}
+                        <p class="participation-status confirmed"><strong>✅ Status:</strong> Du nimmst teil</p>
+                        {% else %}
+                        <p class="participation-status declined"><strong>❌ Status:</strong> Du nimmst nicht teil</p>
                         {% endif %}
-                    </div>
+                    {% else %}
+                    <p class="participation-status pending"><strong>⏳ Status:</strong> Noch keine Antwort</p>
+                    {% endif %}
+                </div>
+                <div class="event-actions">
+                    <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
+                    
+                    <!-- RSVP-Status und Buttons -->
+                    {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if my_participation %}
+                        {% if my_participation.teilnahme %}
+                            <!-- Zugesagt - Button zum Absagen -->
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="teilnahme" value="false">
+                                <button type="submit" class="btn btn-warning">❌ Absagen</button>
+                            </form>
+                            <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
+                        {% else %}
+                            <!-- Abgesagt - Button zum Zusagen -->
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="teilnahme" value="true">
+                                <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <!-- Noch keine Antwort - Beide Buttons anzeigen -->
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="teilnahme" value="true">
+                            <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="teilnahme" value="false">
+                            <button type="submit" class="btn btn-warning">❌ Absagen</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% endif %}
         
         <div class="card">
-            <div class="card-header">
-                <h2>🏆 GGL Rangliste</h2>
-            </div>
-            <div class="card-body">
+            <h2 class="card-title">🏆 GGL Rangliste</h2>
+            <div class="card-content">
                 {% if ggl_stats %}
                 <div class="stats-item">
                     <span class="label">Aktuelle Saison:</span>

@@ -125,6 +125,11 @@ class Event(db.Model):
         """Get total number of participants (including non-attendees)"""
         return len(self.participations)
     
+    def get_total_members_count(self):
+        """Get total number of all members in the system"""
+        from backend.models.member import Member
+        return Member.query.count()
+    
     @property
     def billbro_sparsam_weight(self):
         """Get sparsam weight for BillBro calculations"""

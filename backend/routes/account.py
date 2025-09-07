@@ -155,6 +155,12 @@ def profile():
 @require_step_up
 def sensitive_data():
     """Sensitive data management"""
+    # Debug logging
+    from flask import current_app
+    current_app.logger.info(f"Sensitive data route called by user {current_user.id}")
+    current_app.logger.info(f"Request URL: {request.url}")
+    current_app.logger.info(f"Request method: {request.method}")
+    
     form = SensitiveDataForm()
     
     # Get or create sensitive data record

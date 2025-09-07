@@ -23,23 +23,27 @@
             <div class="card-body">
             <div class="event-info">
                 <div class="event-basic-info">
-                    <p><strong>📅 Datum:</strong> {{ event.display_datetime }}</p>
-                    <p><strong>🍽️ Typ:</strong> {{ event.event_typ.value }}</p>
-                    <p><strong>👨‍🍳 Organisator:</strong> {{ event.organisator.display_name }}</p>
-                    <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} / {{ event.get_total_participants() }}</p>
+                    <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name }}</p>
+                    <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
                 </div>
                 
                 {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
                 <div class="event-location-info">
-                    <h4>📍 Location & Details</h4>
                     {% if event.restaurant %}
-                    <p><strong>🍽️ Restaurant:</strong> {{ event.restaurant }}</p>
+                    <p><strong>🏠 Restaurant:</strong> {{ event.restaurant }}</p>
                     {% endif %}
-                    {% if event.place_address %}
-                    <p><strong>📍 Adresse:</strong> {{ event.place_address }}</p>
+                    {% if event.place_maps_url %}
+                    <p><strong>📍 Adresse:</strong> 
+                        <a href="{{ event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
+                    </p>
                     {% endif %}
                     {% if event.kueche %}
                     <p><strong>🌍 Küche:</strong> {{ event.kueche }}</p>
+                    {% elif event.place_types %}
+                    <p><strong>🌍 Küche:</strong> 
+                        {% set cuisine_types = event.place_types|map('cuisine_type_mapper')|list %}
+                        {{ cuisine_types|join(', ') if cuisine_types else 'Restaurant' }}
+                    </p>
                     {% endif %}
                     {% if event.place_price_level %}
                     <p><strong>💰 Preislevel:</strong> {{ '€' * event.place_price_level }}</p>
@@ -48,10 +52,9 @@
                     <p><strong>🌐 Website:</strong> 
                         <a href="{{ event.website }}" target="_blank" rel="noopener">{{ event.website }}</a>
                     </p>
-                    {% endif %}
-                    {% if event.place_maps_url %}
-                    <p><strong>🗺️ Google Maps:</strong> 
-                        <a href="{{ event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
+                    {% elif event.place_website %}
+                    <p><strong>🌐 Website:</strong> 
+                        <a href="{{ event.place_website }}" target="_blank" rel="noopener">{{ event.place_website }}</a>
                     </p>
                     {% endif %}
                     {% if event.notizen %}
@@ -69,7 +72,7 @@
                 {% if current_user.is_admin and not event.is_past %}
                 <form method="POST" action="{{ url_for('events.delete', event_id=event.id) }}" style="display: inline;" id="delete-form-{{ event.id }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="button" class="btn btn-danger delete-event-btn" 
+                    <button type="button" class="btn btn-danger delete-event-btn btn-full-mobile" 
                             data-event-id="{{ event.id }}" 
                             data-event-title="{{ event.restaurant or event.event_typ.value }}">
                         🗑️ Löschen
@@ -81,7 +84,7 @@
                 {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                 {% if user_participation and user_participation.teilnahme %}
                     {% if event.has_rating_from_participant(current_user.id) %}
-                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-warning">
+                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-secondary">
                             <i class="fas fa-star"></i> Bewertung bearbeiten
                         </a>
                     {% else %}
@@ -91,7 +94,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-info">
+                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-secondary">
                     <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
                 </a>
             </div>
@@ -117,7 +120,7 @@
             <!-- BillBro Link für Teilnehmer -->
             {% if participation and participation.teilnahme %}
             <div class="billbro-link">
-                <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-success">
+                <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
                     🍽️ Zu BillBro
                 </a>
                 {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}

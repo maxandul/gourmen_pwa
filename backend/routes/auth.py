@@ -78,8 +78,11 @@ def login():
                 remembered_device = session.get('remembered_device')
                 if remembered_device and remembered_device.get('user_id') == user.id:
                     # Check if device token is still valid
-                    expires_at = datetime.fromisoformat(remembered_device['expires_at'])
-                    if datetime.utcnow() < expires_at:
+                    import time
+                    current_timestamp = int(time.time())
+                    expires_at_timestamp = remembered_device['expires_at']
+                    
+                    if current_timestamp < expires_at_timestamp:
                         # Device is remembered, skip 2FA
                         login_user(user, remember=True)  # Always remember when device is remembered
                         
@@ -169,11 +172,13 @@ def verify_2fa():
             remember_device = request.form.get('remember_device')
             if remember_device:
                 device_token = secrets.token_urlsafe(32)
-                expires_at = datetime.utcnow() + timedelta(days=36500)  # ~100 years (effectively unlimited)
+                import time
+                # ~100 Jahre (effectively unlimited) - Unix Timestamp für Zeitzonenunabhängigkeit
+                expires_at_timestamp = int(time.time()) + (36500 * 24 * 3600)
                 session['remembered_device'] = {
                     'user_id': user.id,
                     'device_token': device_token,
-                    'expires_at': expires_at.isoformat()
+                    'expires_at': expires_at_timestamp
                 }
                 login_user(user, remember=True)  # Always remember when device is remembered
             else:
@@ -326,9 +331,17 @@ def step_up():
     # Get next page from URL parameters or form data
     next_page = request.args.get('next') or request.form.get('next')
     
+    # Debug logging
+    current_app.logger.info(f"Step-up called with next_page: {next_page}")
+    current_app.logger.info(f"Request args: {dict(request.args)}")
+    current_app.logger.info(f"Request form: {dict(request.form)}")
+    
     # Store next page in session for reliability
     if next_page and next_page.startswith('/'):
         session['step_up_next'] = next_page
+        current_app.logger.info(f"Stored next_page in session: {next_page}")
+    else:
+        current_app.logger.info(f"Invalid or missing next_page: {next_page}")
     
     # If user already has step-up access, redirect to the requested page
     if SecurityService.check_step_up_access():
@@ -345,17 +358,26 @@ def step_up():
     form = StepUpForm()
     if form.validate_on_submit():
         if current_user.check_password(form.password.data):
+            # Grant step-up access BEFORE redirect
             SecurityService.grant_step_up_access()
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', current_user.id)
+            
+            # Debug logging
+            current_app.logger.info(f"Step-up successful for user {current_user.id}")
+            current_app.logger.info(f"Next page: {next_page}")
+            current_app.logger.info(f"Stored next: {session.get('step_up_next')}")
             
             # Use session-stored next page if available
             stored_next = session.get('step_up_next')
             if stored_next:
                 session.pop('step_up_next', None)  # Clear after use
+                current_app.logger.info(f"Redirecting to stored next: {stored_next}")
                 return redirect(stored_next)
             elif next_page and next_page.startswith('/'):
+                current_app.logger.info(f"Redirecting to next: {next_page}")
                 return redirect(next_page)
             else:
+                current_app.logger.info("No next page, redirecting to dashboard")
                 return redirect(url_for('dashboard.index'))
         else:
             flash('Ungültiges Passwort', 'error')
@@ -530,9 +552,10 @@ def request_2fa_reset():
                 expires_at = datetime.utcnow() + timedelta(hours=1)
                 
                 # Store token in session (in production, use database or Redis)
+                import time
                 session[f'2fa_reset_token_{token}'] = {
                     'user_id': user.id,
-                    'expires_at': expires_at.isoformat()
+                    'expires_at': int(time.time()) + 3600  # Unix timestamp, 1 Stunde gültig
                 }
                 
                 # Generate reset URL
@@ -570,8 +593,11 @@ def reset_2fa(token):
         return redirect(url_for('auth.login'))
     
     # Check expiration
-    expires_at = datetime.fromisoformat(token_data['expires_at'])
-    if datetime.utcnow() > expires_at:
+    import time
+    current_timestamp = int(time.time())
+    expires_at_timestamp = token_data['expires_at']
+    
+    if current_timestamp > expires_at_timestamp:
         session.pop(f'2fa_reset_token_{token}', None)
         flash('2FA Reset-Link ist abgelaufen', 'error')
         return redirect(url_for('auth.login'))
@@ -614,13 +640,14 @@ def remember_device():
     """Remember this device for 2FA"""
     # Generate device token
     device_token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(days=36500)  # ~100 years (effectively unlimited)
+    import time
+    expires_at_timestamp = int(time.time()) + (36500 * 24 * 3600)  # ~100 years (effectively unlimited)
     
     # Store in session
     session['remembered_device'] = {
         'user_id': current_user.id,
         'device_token': device_token,
-        'expires_at': expires_at.isoformat()
+        'expires_at': expires_at_timestamp
     }
     
     flash('Dieses Gerät wird dauerhaft gemerkt. 2FA wird nur bei neuen Geräten erforderlich.', 'success')

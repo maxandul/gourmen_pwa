@@ -379,7 +379,7 @@ def create_event():
             event.notizen = form.notizen.data
         
         # Set Google Places data if available
-        if form.place_id.data:
+        if form.place_id.data or form.place_name.data or form.place_address.data:
             event.place_id = form.place_id.data
             event.place_name = form.place_name.data
             event.place_address = form.place_address.data
