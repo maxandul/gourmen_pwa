@@ -58,6 +58,13 @@ def create_app(config_name=None):
             app.logger.info("Database migrations completed")
         except Exception as e:
             app.logger.warning(f"Migration check failed: {e}")
+            # Try to create tables manually if migrations fail
+            try:
+                from backend.extensions import db
+                db.create_all()
+                app.logger.info("Database tables created manually")
+            except Exception as create_error:
+                app.logger.error(f"Failed to create tables: {create_error}")
         
         try:
             init_admin_user(app)
