@@ -13,35 +13,41 @@
     
         {% if next_event %}
         <div class="card">
-            <h2 class="card-title">📅 Nächstes Event</h2>
-            <div class="card-content">
-                <div class="event-info">
-                    <h3>{{ next_event.event_typ.value }}</h3>
-                    <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
-                    <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
-                    {% if next_event.place_maps_url %}
-                    <p><strong>📍 Location:</strong> <a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener" class="maps-link">Auf Google Maps anzeigen</a></p>
-                    {% endif %}
-                    {% if next_event.organisator %}
-                    <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name }}</p>
-                    {% endif %}
-                    {% if next_event.notizen %}
-                    <p><strong>📝 Notizen:</strong> {{ next_event.notizen }}</p>
-                    {% endif %}
-                    
-                    <!-- Teilnahme-Status -->
-                    {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if my_participation %}
-                        {% if my_participation.teilnahme %}
-                        <p class="participation-status confirmed"><strong>✅ Status:</strong> Du nimmst teil</p>
-                        {% else %}
-                        <p class="participation-status declined"><strong>❌ Status:</strong> Du nimmst nicht teil</p>
+            <div class="card-header">
+                <h2>📅 Nächstes Event</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>{{ next_event.event_typ.value }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
+                        <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
+                        {% if next_event.place_maps_url %}
+                        <p><strong>📍 Location:</strong> <a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener" class="maps-link">Auf Google Maps anzeigen</a></p>
                         {% endif %}
-                    {% else %}
-                    <p class="participation-status pending"><strong>⏳ Status:</strong> Noch keine Antwort</p>
-                    {% endif %}
-                </div>
-                <div class="event-actions">
+                        {% if next_event.organisator %}
+                        <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name }}</p>
+                        {% endif %}
+                        {% if next_event.notizen %}
+                        <p><strong>📝 Notizen:</strong> {{ next_event.notizen }}</p>
+                        {% endif %}
+                        
+                        <!-- Teilnahme-Status -->
+                        {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                        {% if my_participation %}
+                            {% if my_participation.teilnahme %}
+                            <p class="participation-status confirmed"><strong>✅ Status:</strong> Du nimmst teil</p>
+                            {% else %}
+                            <p class="participation-status declined"><strong>❌ Status:</strong> Du nimmst nicht teil</p>
+                            {% endif %}
+                        {% else %}
+                        <p class="participation-status pending"><strong>⏳ Status:</strong> Noch keine Antwort</p>
+                        {% endif %}
+                        
+                        <!-- Buttons in der card-secondary -->
+                        <div class="card-actions primary">
                     <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
                     
                     <!-- RSVP-Status und Buttons -->
@@ -76,31 +82,45 @@
                             <button type="submit" class="btn btn-warning">❌ Absagen</button>
                         </form>
                     {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         {% endif %}
         
         <div class="card">
-            <h2 class="card-title">🏆 GGL Rangliste</h2>
-            <div class="card-content">
+            <div class="card-header">
+                <h2>🏆 GGL Rangliste</h2>
+            </div>
+            <div class="card-body">
                 {% if ggl_stats %}
-                <div class="stats-item">
-                    <span class="label">Aktuelle Saison:</span>
-                    <span class="value">{{ ggl_stats.current_season }}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="label">Deine Punkte:</span>
-                    <span class="value">{{ ggl_stats.points }}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="label">Dein Rang:</span>
-                    <span class="value">{{ ggl_stats.rank }}</span>
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📊 Deine GGL-Statistiken</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Aktuelle Saison:</span>
+                            <span class="value">{{ ggl_stats.current_season }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Deine Punkte:</span>
+                            <span class="value">{{ ggl_stats.points }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Dein Rang:</span>
+                            <span class="value">{{ ggl_stats.rank }}</span>
+                        </div>
+                        
+                    </div>
                 </div>
                 {% else %}
                 <p>Noch keine GGL-Daten verfügbar.</p>
                 {% endif %}
-                <div class="actions">
+                
+                <!-- Button in der Haupt-Card -->
+                <div class="card-actions center">
                     <a href="{{ url_for('ggl.index') }}" class="btn btn-secondary">GGL anzeigen</a>
                 </div>
             </div>

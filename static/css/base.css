@@ -1,4 +1,4 @@
-/* CSS Variables für das neue Farbschema */
+/* CSS Variables für das neue Farbschema - Dark Mode als Standard */
 :root {
     /* Hauptfarben */
     --primary-color: #1b232e;
@@ -12,13 +12,13 @@
     --accent-light: #e67a4d;
     --warm-light: #9a5543;
     
-    /* Neutrale Farben */
-    --text-primary: #1b232e;
-    --text-secondary: #354e5e;
-    --text-muted: #6c757d;
-    --background-primary: #ffffff;
-    --background-secondary: #f8f9fa;
-    --background-tertiary: #e9ecef;
+    /* Dark Mode Farben als Standard */
+    --text-primary: #ffffff;
+    --text-secondary: #e9ecef;
+    --text-muted: #adb5bd;
+    --background-primary: #1b232e;
+    --background-secondary: #2a3441;
+    --background-tertiary: #354e5e;
     
     /* Status-Farben */
     --success-color: #28a745;
@@ -27,19 +27,19 @@
     --info-color: #17a2b8;
     
     /* Icon-Farben */
-    --icon-primary: #1b232e;
-    --icon-secondary: #354e5e;
+    --icon-primary: #ffffff;
+    --icon-secondary: #e9ecef;
     --icon-accent: #dc693c;
-    --icon-muted: #6c757d;
+    --icon-muted: #adb5bd;
     --icon-success: #28a745;
     --icon-warning: #ffc107;
     --icon-error: #dc3545;
     --icon-info: #17a2b8;
     
     /* Schatten */
-    --shadow-sm: 0 2px 4px rgba(27, 35, 46, 0.1);
-    --shadow-md: 0 4px 8px rgba(27, 35, 46, 0.15);
-    --shadow-lg: 0 8px 16px rgba(27, 35, 46, 0.2);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
     
     /* Border Radius */
     --border-radius-sm: 4px;
@@ -50,18 +50,6 @@
     --transition-fast: 0.15s ease;
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --text-primary: #ffffff;
-        --text-secondary: #e9ecef;
-        --text-muted: #adb5bd;
-        --background-primary: #1b232e;
-        --background-secondary: #2a3441;
-        --background-tertiary: #354e5e;
-    }
 }
 
 /* Reset and Base Styles */
@@ -619,7 +607,7 @@ a:hover {
     border: 1px solid var(--background-tertiary);
     transition: all var(--transition-normal);
     overflow: hidden;
-    margin-bottom: 20px; /* Abstand zwischen Cards */
+    margin: 0 0 20px 0; /* Kein seitlicher Einzug - wird von main-content gehandhabt */
 }
 
 .card:last-child {
@@ -634,7 +622,7 @@ a:hover {
 .card-header {
     padding: 24px 24px 20px 24px; /* Mehr Padding oben und seitlich */
     border-bottom: 1px solid var(--background-tertiary);
-    background: #f8f9fa; /* Explizite hellgraue Farbe */
+    background: var(--background-secondary); /* Dark Mode Hintergrund */
     /* border-left entfernt - Cards haben bereits den orangen Streifen */
 }
 
@@ -664,6 +652,115 @@ a:hover {
 
 .card-body {
     padding: 24px; /* Mehr Padding in allen Richtungen */
+}
+
+/* Secondary Card System - für verschachtelte Cards */
+.card-secondary {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-tertiary);
+    border-radius: var(--border-radius-lg);
+    margin: 0 8px; /* Weniger Einzug - näher an die äußere Card */
+    box-shadow: none;
+    transition: all var(--transition-normal);
+}
+
+/* Mobile-first: Bei größeren Bildschirmen mehr Einzug */
+@media (min-width: 768px) {
+    .card-secondary {
+        margin: 0 12px; /* Weniger Einzug auch auf Desktop */
+    }
+}
+
+
+.card-secondary:hover {
+    box-shadow: var(--shadow-sm);
+    transform: none; /* Keine Transformation für Secondary Cards */
+}
+
+.card-secondary .card-header {
+    background: var(--background-tertiary);
+    border-bottom: 1px solid var(--background-quaternary);
+    padding: 16px 20px 12px 20px;
+}
+
+.card-secondary .card-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-secondary .card-body {
+    padding: 20px 16px; /* Weniger Padding links und rechts */
+}
+
+/* Alternative Styling für Secondary Cards */
+.card-secondary.variant-accent {
+    border-left: 4px solid var(--accent-color);
+    background: rgba(255, 140, 0, 0.05);
+}
+
+.card-secondary.variant-info {
+    border-left: 4px solid #17a2b8;
+    background: rgba(23, 162, 184, 0.05);
+}
+
+.card-secondary.variant-success {
+    border-left: 4px solid #28a745;
+    background: rgba(40, 167, 69, 0.05);
+}
+
+.card-secondary.variant-warning {
+    border-left: 4px solid #ffc107;
+    background: rgba(255, 193, 7, 0.05);
+}
+
+/* Generalisiertes Button-System für Cards */
+.card-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--background-tertiary);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.card-actions .btn {
+    margin: 0; /* Entfernt Standard-Margins */
+}
+
+/* Button-Container für verschiedene Kontexte */
+.card-actions.primary {
+    justify-content: flex-start;
+}
+
+.card-actions.center {
+    justify-content: center;
+}
+
+.card-actions.end {
+    justify-content: flex-end;
+}
+
+.card-actions.space-between {
+    justify-content: space-between;
+}
+
+/* Mobile Anpassungen für Button-Container */
+@media (max-width: 768px) {
+    .card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .card-actions .btn {
+        width: 100%;
+    }
+    
+    .card-actions.space-between {
+        flex-direction: column;
+    }
 }
 
 /* Einheitliche Card-Struktur: 3 Ebenen */
@@ -722,6 +819,30 @@ a:hover {
 .card .ranking-list,
 .card .participants-grid {
     padding: 24px;
+}
+
+/* Card-secondary innerhalb von Listen soll das volle Padding nutzen */
+.card .events-list .card-secondary,
+.card .participants-list .card-secondary,
+.card .ranking-list .card-secondary,
+.card .participants-grid .card-secondary {
+    margin: 0 -24px 16px -24px; /* Kompensiert das Padding der Liste + Abstand nach unten */
+}
+
+/* Erste card-secondary in Listen hat keinen Abstand nach oben */
+.card .events-list .card-secondary:first-child,
+.card .participants-list .card-secondary:first-child,
+.card .ranking-list .card-secondary:first-child,
+.card .participants-grid .card-secondary:first-child {
+    margin-top: 0;
+}
+
+/* Letzte card-secondary in Listen hat keinen Abstand nach unten */
+.card .events-list .card-secondary:last-child,
+.card .participants-list .card-secondary:last-child,
+.card .ranking-list .card-secondary:last-child,
+.card .participants-grid .card-secondary:last-child {
+    margin-bottom: 0;
 }
 
 .card .event-item,
@@ -908,36 +1029,36 @@ a:hover {
     flex-wrap: wrap;
 }
 
-/* Spezielle Hintergrundfarben für 2FA-Sektionen */
+/* Spezielle Hintergrundfarben für 2FA-Sektionen - Dark Mode angepasst */
 .card .verification-info {
-    background: #e7f3ff;
-    border: 1px solid #b3d9ff;
+    background: rgba(23, 162, 184, 0.1);
+    border: 1px solid rgba(23, 162, 184, 0.3);
     text-align: center;
 }
 
 .card .help-section {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .card .warning-message {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .card .warning-message h2 {
-    color: #856404;
+    color: #ffc107;
     margin-top: 0;
 }
 
 .card .security-info {
-    background: #e7f3ff;
-    border: 1px solid #b3d9ff;
+    background: rgba(23, 162, 184, 0.1);
+    border: 1px solid rgba(23, 162, 184, 0.3);
 }
 
 .card .recommendation {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
 }
 
 .card .verification-methods {
@@ -949,7 +1070,7 @@ a:hover {
 
 .card .method-section h3 {
     margin-top: 0;
-    color: #495057;
+    color: var(--text-primary);
 }
 
 .card .security-info ul,
@@ -962,16 +1083,16 @@ a:hover {
     margin: 8px 0;
 }
 
-/* Button-Styles für 2FA */
+/* Button-Styles für 2FA - Dark Mode angepasst */
 .card .btn-outline {
     background: transparent;
-    border: 1px solid #6c757d;
-    color: #6c757d;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
 }
 
 .card .btn-outline:hover {
-    background: #6c757d;
-    color: white;
+    background: var(--text-muted);
+    color: var(--background-primary);
 }
 
 .card .btn-danger {
@@ -1082,6 +1203,30 @@ a:hover {
     .card .ranking-list,
     .card .participants-grid {
         padding: 16px;
+    }
+    
+    /* Card-secondary innerhalb von Listen auf Mobile */
+    .card .events-list .card-secondary,
+    .card .participants-list .card-secondary,
+    .card .ranking-list .card-secondary,
+    .card .participants-grid .card-secondary {
+        margin: 0 -16px 12px -16px; /* Kompensiert das mobile Padding der Liste + Abstand nach unten */
+    }
+    
+    /* Erste card-secondary in Listen auf Mobile hat keinen Abstand nach oben */
+    .card .events-list .card-secondary:first-child,
+    .card .participants-list .card-secondary:first-child,
+    .card .ranking-list .card-secondary:first-child,
+    .card .participants-grid .card-secondary:first-child {
+        margin-top: 0;
+    }
+    
+    /* Letzte card-secondary in Listen auf Mobile hat keinen Abstand nach unten */
+    .card .events-list .card-secondary:last-child,
+    .card .participants-list .card-secondary:last-child,
+    .card .ranking-list .card-secondary:last-child,
+    .card .participants-grid .card-secondary:last-child {
+        margin-bottom: 0;
     }
     
     .card .event-actions,
@@ -1550,9 +1695,20 @@ a:hover {
         padding: 70px 12px 90px 12px;
     }
     
+    
+    /* Secondary Cards auf Mobile anpassen */
+    .card-secondary {
+        margin: 0 6px; /* Noch weniger Einzug auf sehr kleinen Bildschirmen */
+        border-radius: var(--border-radius-lg); /* Border-radius beibehalten */
+    }
+    
+    /* Mehr Abstand zwischen Cards auf Mobile für bessere Lesbarkeit */
     .card {
-        margin: 0 -12px;
-        border-radius: 0;
+        margin-bottom: 24px; /* Mehr Abstand zwischen Cards */
+    }
+    
+    .card:last-child {
+        margin-bottom: 0;
     }
     
     .btn {
@@ -1597,6 +1753,18 @@ a:hover {
     .main-content {
         padding: 0 !important;
         max-width: none !important;
+    }
+    
+    /* Print-spezifische Dark Mode Anpassungen */
+    .card {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .card-header {
+        background: #f8f9fa !important;
+        color: black !important;
     }
 }
 

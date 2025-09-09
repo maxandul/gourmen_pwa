@@ -37,8 +37,11 @@
                 
                 <div class="member-content">
                     <!-- Grunddaten -->
-                    <div class="member-section">
-                        <h4>👤 Grunddaten</h4>
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>👤 Grunddaten</h3>
+                        </div>
+                        <div class="card-body">
                         <p><strong>Name:</strong> {{ member.vorname }} {{ member.nachname }}</p>
                         {% if member.geburtsdatum %}
                         <p><strong>Geboren:</strong> {{ member.geburtsdatum.strftime('%d.%m.%Y') }}</p>
@@ -46,15 +49,20 @@
                         {% if member.nationalitaet %}
                         <p><strong>Nationalität:</strong> {{ member.nationalitaet }}</p>
                         {% endif %}
+                        </div>
                     </div>
                     
                     <!-- Kontakt -->
-                    <div class="member-section">
-                        <h4>📧 Kontakt</h4>
+                    <div class="card card-secondary variant-success">
+                        <div class="card-header">
+                            <h3>📧 Kontakt</h3>
+                        </div>
+                        <div class="card-body">
                         <p><strong>E-Mail:</strong> {{ member.email }}</p>
                         {% if member.telefon %}
                         <p><strong>Telefon:</strong> {{ member.telefon }}</p>
                         {% endif %}
+                        </div>
                     </div>
                     
                     <!-- Adresse -->
@@ -124,7 +132,7 @@
                 </div>
                 
                 <!-- Aktionen -->
-                <div class="member-actions">
+                <div class="card-actions primary">
                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
                     <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-warning">🔒 Sensible Daten</a>
                     <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-info">🔐 Sicherheit</a>

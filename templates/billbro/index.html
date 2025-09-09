@@ -30,19 +30,26 @@
             
             <!-- Anwesenheits-Check vor BillBro-Start -->
             {% if not event.rechnungsbetrag_rappen %}
-            <div class="attendance-check">
-                <h4>✅ Anwesenheits-Check</h4>
-                <p>Wer ist wirklich da? Korrekturen vor BillBro-Start.</p>
+            <div class="card card-secondary variant-warning">
+                <div class="card-header">
+                    <h3>✅ Anwesenheits-Check</h3>
+                </div>
+                <div class="card-body">
+                    <p>Wer ist wirklich da? Korrekturen vor BillBro-Start.</p>
+                </div>
             </div>
             {% endif %}
             
             <!-- Teilnehmer-Übersicht -->
-            <div class="participants-overview">
-                {% if event.rechnungsbetrag_rappen %}
-                <h4>🍽️ BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h4>
-                {% else %}
-                <h4>Angemeldete Personen ({{ event.get_participation_count() }} anwesend)</h4>
-                {% endif %}
+            <div class="card card-secondary variant-info">
+                <div class="card-header">
+                    {% if event.rechnungsbetrag_rappen %}
+                    <h3>🍽️ BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h3>
+                    {% else %}
+                    <h3>Angemeldete Personen ({{ event.get_participation_count() }} anwesend)</h3>
+                    {% endif %}
+                </div>
+                <div class="card-body">
                 <div class="participants-list">
                     {% for participation in event.participations %}
                     {% if participation.teilnahme %}
@@ -96,6 +103,7 @@
                 {% endif %}
                 
                 <!-- Erinnerungen senden - ENTFERNT -->
+                </div>
             </div>
 
             <!-- BillBro Start - ENTFERNT -->

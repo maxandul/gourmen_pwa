@@ -21,14 +21,18 @@
                 <h2>Event-Details</h2>
             </div>
             <div class="card-body">
-            <div class="event-info">
-                <div class="event-basic-info">
-                    <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name }}</p>
-                    <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
+            <div class="card card-secondary variant-info">
+                <div class="card-header">
+                    <h3>📋 Event-Informationen</h3>
                 </div>
-                
-                {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
-                <div class="event-location-info">
+                <div class="card-body">
+                    <div class="event-basic-info">
+                        <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name }}</p>
+                        <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
+                    </div>
+                    
+                    {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
+                    <div class="event-location-info">
                     {% if event.restaurant %}
                     <p><strong>🏠 Restaurant:</strong> {{ event.restaurant }}</p>
                     {% endif %}
@@ -62,9 +66,87 @@
                     {% endif %}
                 </div>
                 {% endif %}
+                </div>
             </div>
             
-            <div class="event-actions">
+            <!-- Deine Teilnahme als card-secondary -->
+            <div class="card card-secondary variant-accent">
+                <div class="card-header">
+                    <h3>📝 Deine Teilnahme</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if participation and participation.teilnahme %}
+                        <p>Du nimmst an diesem Event teil.</p>
+                        <button type="submit" class="btn btn-warning">Absagen</button>
+                        {% else %}
+                        <p>Du nimmst nicht an diesem Event teil.</p>
+                        <button type="submit" class="btn btn-primary">Zusagen</button>
+                        {% endif %}
+                    </form>
+                    
+                    <!-- BillBro Link für Teilnehmer -->
+                    {% if participation and participation.teilnahme %}
+                    <div class="billbro-link">
+                        <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
+                            🍽️ Zu BillBro
+                        </a>
+                        {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
+                        {% if billbro_active %}
+                            {% if participation.has_guess %}
+                            <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
+                            {% else %}
+                            <p><small>Du hast noch nicht geschätzt</small></p>
+                            {% endif %}
+                        {% else %}
+                            <p><small>BillBro noch nicht gestartet</small></p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Teilnehmer-Übersicht als card-secondary -->
+            {% if participations %}
+            <div class="card card-secondary variant-info">
+                <div class="card-header">
+                    <h3>👥 Teilnehmer-Übersicht</h3>
+                </div>
+                <div class="card-body">
+                    <div class="participants-list">
+                        {% for participation in participations %}
+                        <div class="participant-item">
+                            <span class="member">{{ participation.member.display_name }}</span>
+                            <span class="status">
+                                {% if participation.teilnahme %}
+                                ✅ Teilnehmer
+                                {% if billbro_active and participation.has_guess %}
+                                <small>🍽️ Geschätzt</small>
+                                {% elif billbro_active %}
+                                <small>⏳ Wartet</small>
+                                {% endif %}
+                                {% else %}
+                                ❌ Nicht teilnehmend
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if billbro_active %}
+                    <div class="billbro-summary">
+                        {% set participating = participations|selectattr('teilnahme', 'equalto', True)|list %}
+                        {% set with_guesses = participating|selectattr('has_guess')|list %}
+                        <p><strong>BillBro Status:</strong> {{ with_guesses|length }} / {{ participating|length }} haben geschätzt</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Buttons am Ende der Haupt-Card -->
+            <div class="card-actions primary">
                 {% if current_user.is_admin or event.organisator_id == current_user.id %}
                 <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
                 {% endif %}
@@ -99,81 +181,6 @@
                 </a>
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h2>Teilnahme</h2>
-            </div>
-            <div class="card-body">
-            
-            <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {% if participation and participation.teilnahme %}
-                <p>Du nimmst an diesem Event teil.</p>
-                <button type="submit" class="btn btn-warning">Absagen</button>
-                {% else %}
-                <p>Du nimmst nicht an diesem Event teil.</p>
-                <button type="submit" class="btn btn-primary">Zusagen</button>
-                {% endif %}
-            </form>
-            
-            <!-- BillBro Link für Teilnehmer -->
-            {% if participation and participation.teilnahme %}
-            <div class="billbro-link">
-                <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
-                    🍽️ Zu BillBro
-                </a>
-                {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
-                {% if billbro_active %}
-                    {% if participation.has_guess %}
-                    <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
-                    {% else %}
-                    <p><small>Du hast noch nicht geschätzt</small></p>
-                    {% endif %}
-                {% else %}
-                    <p><small>BillBro noch nicht gestartet</small></p>
-                {% endif %}
-            </div>
-            {% endif %}
-            </div>
-        </div>
-        
-        {% if participations %}
-        <div class="card">
-            <div class="card-header">
-                <h2>Teilnehmerliste</h2>
-            </div>
-            <div class="card-body">
-            <div class="participants-list">
-                {% for participation in participations %}
-                <div class="participant-item">
-                    <span class="member">{{ participation.member.display_name }}</span>
-                    <span class="status">
-                        {% if participation.teilnahme %}
-                        ✅ Teilnehmer
-                        {% if billbro_active and participation.has_guess %}
-                        <small>🍽️ Geschätzt</small>
-                        {% elif billbro_active %}
-                        <small>⏳ Wartet</small>
-                        {% endif %}
-                        {% else %}
-                        ❌ Nicht teilnehmend
-                        {% endif %}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-            
-            {% if billbro_active %}
-            <div class="billbro-summary">
-                {% set participating = participations|selectattr('teilnahme', 'equalto', True)|list %}
-                {% set with_guesses = participating|selectattr('has_guess')|list %}
-                <p><strong>BillBro Status:</strong> {{ with_guesses|length }} / {{ participating|length }} haben geschätzt</p>
-            </div>
-            {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 

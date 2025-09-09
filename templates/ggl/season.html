@@ -13,7 +13,10 @@
     
     {% if user_stats %}
     <div class="card user-summary">
-        <h3>🎯 Deine Saison-Statistik</h3>
+        <div class="card-header">
+            <h2>🎯 Deine Saison-Statistik</h2>
+        </div>
+        <div class="card-body">
         <div class="stats-grid">
             <div class="stat-box">
                 <span class="stat-value">{{ user_stats.total_points }}</span>
@@ -39,7 +42,10 @@
     {% endif %}
     
     <div class="card">
-        <h3>📊 Saison-Punktetabelle</h3>
+        <div class="card-header">
+            <h2>📊 Saison-Punktetabelle</h2>
+        </div>
+        <div class="card-body">
         
         {% if season_ranking %}
         <div class="ranking-grid">

@@ -4,43 +4,56 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Gourmen Guessing League</h1>
-        <p>Willkommen zur GGL - der Saisonwertung für den Gourmen-Verein!</p>
+    <div class="page-header">
+        <h1>🏆 Gourmen Guessing League</h1>
+        <p class="page-subtitle">Willkommen zur GGL - der Saisonwertung für den Gourmen-Verein!</p>
     </div>
     
-    <div class="ggl-overview">
+    <div class="page-content">
+        <div class="ggl-overview">
         <div class="card">
-            <h3>🏆 Aktuelle Saison {{ current_season }}</h3>
+            <div class="card-header">
+                <h2>🏆 Aktuelle Saison {{ current_season }}</h2>
+            </div>
+            <div class="card-body">
             {% if user_stats %}
-            <div class="user-stats">
-                <div class="stat-item">
-                    <span class="label">🎯 Deine Punkte:</span>
-                    <span class="value">{{ user_stats.total_points }}</span>
+            <div class="card card-secondary variant-accent">
+                <div class="card-header">
+                    <h3>📊 Deine Statistiken</h3>
                 </div>
-                <div class="stat-item">
-                    <span class="label">📊 Events teilgenommen:</span>
-                    <span class="value">{{ user_stats.participation_count }}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="label">⭐ Durchschnitt:</span>
-                    <span class="value">{{ "%.1f"|format(user_stats.avg_points) }} Punkte</span>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <span class="label">🎯 Deine Punkte:</span>
+                        <span class="value">{{ user_stats.total_points }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">📊 Events teilgenommen:</span>
+                        <span class="value">{{ user_stats.participation_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">⭐ Durchschnitt:</span>
+                        <span class="value">{{ "%.1f"|format(user_stats.avg_points) }} Punkte</span>
+                    </div>
                 </div>
             </div>
             {% else %}
             <p>Noch keine Teilnahme an BillBro-Events in dieser Saison.</p>
             {% endif %}
             
-            <div class="season-actions">
+            <div class="card-actions center">
                 <a href="{{ url_for('ggl.season', season_year=current_season) }}" class="btn btn-primary">
                     📈 Komplette Saison-Tabelle anzeigen
                 </a>
+            </div>
             </div>
         </div>
         
         {% if available_seasons|length > 1 %}
         <div class="card">
-            <h3>📚 Vergangene Saisons</h3>
+            <div class="card-header">
+                <h2>📚 Vergangene Saisons</h2>
+            </div>
+            <div class="card-body">
             <div class="past-seasons">
                 {% for season in available_seasons %}
                 {% if season != current_season %}
@@ -51,8 +64,10 @@
                 {% endif %}
                 {% endfor %}
             </div>
+            </div>
         </div>
         {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %} 

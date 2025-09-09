@@ -17,15 +17,20 @@
     
     {% if events %}
     <div class="card">
-        <h2>Kommende Events</h2>
-        <div class="events-list">
+        <div class="card-header">
+            <h2>📅 Kommende Events</h2>
+        </div>
+        <div class="card-body">
+            <div class="events-list">
             {% for event in events %}
-            <div class="event-item">
-                <div class="event-info">
+            <div class="card card-secondary variant-accent">
+                <div class="card-header">
                     <h3>
                         {{ event.event_typ.value }}
                         {% if event.restaurant %}- {{ event.restaurant }}{% endif %}
                     </h3>
+                </div>
+                <div class="card-body">
                     <p><strong>📅 Datum:</strong> {{ event.display_date }}</p>
                     <p><strong>🍳 Organisator:</strong> {{ event.organisator.display_name }}</p>
                     {% if event.restaurant %}
@@ -50,8 +55,9 @@
                     <p class="participants-count">
                         👥 {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern
                     </p>
-                </div>
-                <div class="event-actions">
+                    
+                    <!-- Buttons in der card-secondary -->
+                    <div class="card-actions primary">
                     <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">Details & RSVP</a>
                     
                     <!-- BillBro Link für Teilnehmer und Organisatoren -->
@@ -63,31 +69,42 @@
                     {% if current_user.is_admin or event.organisator_id == current_user.id %}
                     <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
                     {% endif %}
+                    </div>
                 </div>
             </div>
             {% endfor %}
+            </div>
         </div>
     </div>
     {% endif %}
     
     <div class="card">
-        <h3>📋 Event-Planung</h3>
-        <div class="quick-actions">
+        <div class="card-header">
+            <h2>📋 Event-Planung</h2>
+        </div>
+        <div class="card-body">
+            <div class="quick-actions">
             {% if current_user.is_admin %}
             <a href="{{ url_for('events.year_planning') }}" class="btn btn-primary">📅 Jahresplanung erstellen</a>
             <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Archiv anzeigen</a>
             {% else %}
             <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Vergangene Events</a>
             {% endif %}
+            </div>
         </div>
     </div>
     
     {% if not events %}
     <div class="card">
-        <p>Noch keine kommenden Events verfügbar.</p>
-        {% if current_user.is_admin %}
-        <p><a href="{{ url_for('events.year_planning') }}" class="btn btn-outline">Jahresplanung erstellen</a> um Events zu planen.</p>
-        {% endif %}
+        <div class="card-header">
+            <h2>📅 Events</h2>
+        </div>
+        <div class="card-body">
+            <p>Noch keine kommenden Events verfügbar.</p>
+            {% if current_user.is_admin %}
+            <p><a href="{{ url_for('events.year_planning') }}" class="btn btn-outline">Jahresplanung erstellen</a> um Events zu planen.</p>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>
