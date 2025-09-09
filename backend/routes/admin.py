@@ -157,7 +157,7 @@ def create_member():
             ort=form.ort.data or None,
             
             # Association data
-            funktion=Funktion(form.funktion.data) if form.funktion.data else None,
+            funktion=form.funktion.data if form.funktion.data else None,
             beitrittsjahr=int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None,
             vorstandsmitglied=form.vorstandsmitglied.data,
             
@@ -215,7 +215,7 @@ def edit_member(member_id):
         form.hausnummer.data = member.hausnummer
         form.plz.data = member.plz
         form.ort.data = member.ort
-        form.funktion.data = member.funktion.value if member.funktion else Funktion.MEMBER.value
+        form.funktion.data = member.funktion if member.funktion else Funktion.MEMBER.value
         form.beitrittsjahr.data = str(member.beitrittsjahr) if member.beitrittsjahr else ''
         form.vorstandsmitglied.data = member.vorstandsmitglied
         form.koerpergroesse.data = str(member.koerpergroesse) if member.koerpergroesse else ''
@@ -249,7 +249,7 @@ def edit_member(member_id):
         member.ort = form.ort.data or None
         
         # Association data
-        member.funktion = Funktion(form.funktion.data) if form.funktion.data else None
+        member.funktion = form.funktion.data if form.funktion.data else None
         member.beitrittsjahr = int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None
         member.vorstandsmitglied = form.vorstandsmitglied.data
         
