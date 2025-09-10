@@ -227,7 +227,11 @@ def edit_member(member_id):
         form.zimmerwunsch.data = member.zimmerwunsch
         form.spirit_animal.data = member.spirit_animal
         form.fuehrerschein.data = member.fuehrerschein
-        form.role.data = member.role.value
+        # Handle both Enum and string values (migration compatibility)
+        if hasattr(member.role, 'value'):
+            form.role.data = member.role.value
+        else:
+            form.role.data = str(member.role)
         form.is_active.data = member.is_active
     
     if form.validate_on_submit():

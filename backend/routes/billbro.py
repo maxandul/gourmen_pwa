@@ -523,7 +523,9 @@ def share_whatsapp(event_id):
         return redirect(url_for('billbro.index', event_id=event_id))
     
     # Create WhatsApp message
-    message = f"🍽️ BillBro Ergebnisse - {event.event_typ.value}\n"
+    # Handle both Enum and string values (migration compatibility)
+    event_type = event.event_typ.value if hasattr(event.event_typ, 'value') else str(event.event_typ)
+    message = f"🍽️ BillBro Ergebnisse - {event_type}\n"
     message += f"📅 {event.display_date}\n"
     if event.restaurant:
         message += f"🏪 {event.restaurant}\n"

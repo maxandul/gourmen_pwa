@@ -335,7 +335,7 @@ def delete(event_id):
     SecurityService.log_audit_event(
         AuditAction.EVENT_DELETE, 'event', event_id,
         extra_data={
-            'event_title': event.restaurant or f"{event.event_typ.value} am {event.display_date}",
+            'event_title': event.restaurant or f"{event.event_typ.value if hasattr(event.event_typ, 'value') else str(event.event_typ)} am {event.display_date}",
             'event_date': event.datum.isoformat(),
             'deleted_by': current_user.display_name
         }
@@ -476,7 +476,11 @@ def stats():
     # Event type distribution
     event_types = {}
     for event in past_events + future_events:
-        event_type = event.event_typ.value
+        # Handle both Enum and string values (migration compatibility)
+        if hasattr(event.event_typ, 'value'):
+            event_type = event.event_typ.value
+        else:
+            event_type = str(event.event_typ)
         event_types[event_type] = event_types.get(event_type, 0) + 1
     
     # Restaurant stats

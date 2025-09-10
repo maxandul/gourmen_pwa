@@ -60,7 +60,8 @@ class AuditEvent(db.Model):
     extra_json = db.Column(db.JSON)  # Additional context data
     
     def __repr__(self):
-        return f'<AuditEvent {self.action.value} by {self.actor_id} at {self.at}>'
+        action = self.action.value if hasattr(self.action, 'value') else str(self.action)
+        return f'<AuditEvent {action} by {self.actor_id} at {self.at}>'
     
     @property
     def actor(self):
@@ -110,7 +111,8 @@ class AuditEvent(db.Model):
             AuditAction.ADMIN_RESET_PASSWORD: 'Passwort zurückgesetzt (Admin)',
             AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)'
         }
-        return action_names.get(self.action, str(self.action.value))
+        action_value = self.action.value if hasattr(self.action, 'value') else str(self.action)
+        return action_names.get(self.action, action_value)
     
     @property
     def display_entity(self):

@@ -70,7 +70,8 @@ class Document(db.Model):
             DocumentCategory.STATUTEN: 'Statuten',
             DocumentCategory.SONST: 'Sonst'
         }
-        return category_names.get(self.category, self.category.value)
+        category_value = self.category.value if hasattr(self.category, 'value') else str(self.category)
+        return category_names.get(self.category, category_value)
     
     @property
     def display_visibility(self):
@@ -80,4 +81,5 @@ class Document(db.Model):
             DocumentVisibility.MEMBER: 'Mitglieder',
             DocumentVisibility.ADMIN: 'Admin'
         }
-        return visibility_names.get(self.visibility, self.visibility.value) 
+        visibility_value = self.visibility.value if hasattr(self.visibility, 'value') else str(self.visibility)
+        return visibility_names.get(self.visibility, visibility_value) 

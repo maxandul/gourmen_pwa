@@ -78,7 +78,8 @@ class Event(db.Model):
     documents = db.relationship('Document', backref='event')
     
     def __repr__(self):
-        return f'<Event {self.id}: {self.event_typ.value} am {self.datum.date()}>'
+        event_type = self.event_typ.value if hasattr(self.event_typ, 'value') else str(self.event_typ)
+        return f'<Event {self.id}: {event_type} am {self.datum.date()}>'
     
     @property
     def organisator(self):
