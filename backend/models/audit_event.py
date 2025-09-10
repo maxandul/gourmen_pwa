@@ -27,6 +27,7 @@ class AuditAction(Enum):
     PUSH_UNSUBSCRIBE = 'PUSH_UNSUBSCRIBE'
     EVENT_ORGANIZER_CHANGED = 'EVENT_ORGANIZER_CHANGED'
     RSVP_UPDATE = 'RSVP_UPDATE'
+    EVENT_SEND_REMINDER = 'EVENT_SEND_REMINDER'
     EVENT_EDIT = 'EVENT_EDIT'
     EVENT_DELETE = 'EVENT_DELETE'
     ADMIN_CREATE_EVENT = 'ADMIN_CREATE_EVENT'
@@ -97,6 +98,7 @@ class AuditEvent(db.Model):
             AuditAction.PUSH_UNSUBSCRIBE: 'Push-Notifications deaktiviert',
             AuditAction.EVENT_ORGANIZER_CHANGED: 'Event Organisator geändert',
             AuditAction.RSVP_UPDATE: 'Teilnahme aktualisiert',
+            AuditAction.EVENT_SEND_REMINDER: 'Event-Erinnerung gesendet',
             AuditAction.EVENT_EDIT: 'Event bearbeitet',
             AuditAction.EVENT_DELETE: 'Event gelöscht',
             AuditAction.ADMIN_CREATE_EVENT: 'Event erstellt (Admin)',

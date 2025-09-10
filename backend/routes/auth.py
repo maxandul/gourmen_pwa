@@ -328,13 +328,17 @@ def disable_2fa():
 @login_required
 def step_up():
     """Step-up authentication"""
-    # Get next page from URL parameters or form data
-    next_page = request.args.get('next') or request.form.get('next')
+    # Get next page from multiple sources for robustness
+    next_page = (request.args.get('next') or 
+                request.form.get('next') or 
+                request.form.get('next_url') or
+                session.get('step_up_next'))
     
     # Debug logging
     current_app.logger.info(f"Step-up called with next_page: {next_page}")
     current_app.logger.info(f"Request args: {dict(request.args)}")
     current_app.logger.info(f"Request form: {dict(request.form)}")
+    current_app.logger.info(f"Session step_up_next: {session.get('step_up_next')}")
     
     # Store next page in session for reliability
     if next_page and next_page.startswith('/'):
@@ -349,10 +353,13 @@ def step_up():
         stored_next = session.get('step_up_next')
         if stored_next:
             session.pop('step_up_next', None)  # Clear after use
+            current_app.logger.info(f"Already authenticated, redirecting to stored next: {stored_next}")
             return redirect(stored_next)
         elif next_page and next_page.startswith('/'):
+            current_app.logger.info(f"Already authenticated, redirecting to next: {next_page}")
             return redirect(next_page)
         else:
+            current_app.logger.info("Already authenticated, no next page, redirecting to dashboard")
             return redirect(url_for('dashboard.index'))
     
     form = StepUpForm()

@@ -149,6 +149,17 @@
             <div class="card-actions primary">
                 {% if current_user.is_admin or event.organisator_id == current_user.id %}
                 <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
+                
+                <!-- RSVP Erinnerung Button für Organisator -->
+                {% if event.is_upcoming %}
+                <form method="POST" action="{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline" 
+                            onclick="return confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?')">
+                        📧 RSVP-Erinnerung senden
+                    </button>
+                </form>
+                {% endif %}
                 {% endif %}
                 
                 {% if current_user.is_admin and not event.is_past %}

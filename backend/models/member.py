@@ -17,6 +17,22 @@ class Funktion(Enum):
     REISEKOMMISSAR = 'REISEKOMMISSAR'
     RECHNUNGSPRUEFER = 'RECHNUNGSPRUEFER'
 
+# Nationalität choices for form validation
+NATIONALITAET_CHOICES = [
+    ('', 'Bitte wählen...'),
+    ('CH', 'Schweiz'),
+    ('IT', 'Italien'),
+    ('Andere', 'Andere')
+]
+
+# Zimmerwunsch choices for form validation
+ZIMMERWUNSCH_CHOICES = [
+    ('', 'Bitte wählen...'),
+    ('Einzelzimmer', 'Einzelzimmer'),
+    ('Zweierzimmer', 'Zweierzimmer'),
+    ('Egal', 'Egal')
+]
+
 class Member(db.Model, UserMixin):
     """Member model - contains non-sensitive data only"""
     __tablename__ = 'members'
@@ -108,4 +124,32 @@ class Member(db.Model, UserMixin):
     
     def get_id(self):
         """Get user ID for Flask-Login"""
-        return str(self.id) 
+        return str(self.id)
+    
+    @property
+    def nationalitaet_display(self):
+        """Get display name for nationality"""
+        if not self.nationalitaet:
+            return None
+        
+        # Map values to display names
+        display_names = {
+            'CH': 'Schweiz',
+            'IT': 'Italien',
+            'Andere': 'Andere'
+        }
+        return display_names.get(self.nationalitaet, self.nationalitaet)
+    
+    @property
+    def zimmerwunsch_display(self):
+        """Get display name for zimmerwunsch"""
+        if not self.zimmerwunsch:
+            return None
+        
+        # Map values to display names
+        display_names = {
+            'Einzelzimmer': 'Einzelzimmer',
+            'Zweierzimmer': 'Zweierzimmer',
+            'Egal': 'Egal'
+        }
+        return display_names.get(self.zimmerwunsch, self.zimmerwunsch) 

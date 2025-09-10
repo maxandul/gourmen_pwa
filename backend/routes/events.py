@@ -12,6 +12,7 @@ from backend.models.event import Event, EventType
 from backend.models.participation import Participation, Esstyp
 from backend.models.member import Member, Role
 from backend.services.places import PlacesService
+from backend.services.notifier import NotifierService
 
 bp = Blueprint('events', __name__)
 
@@ -401,6 +402,56 @@ def rsvp(event_id):
         return redirect(url_for('dashboard.index'))
     else:
         return redirect(url_for('events.detail', event_id=event_id))
+
+@bp.route('/<int:event_id>/send_rsvp_reminder', methods=['POST'])
+@login_required
+def send_rsvp_reminder(event_id):
+    """Send RSVP reminder to members who haven't responded yet (organizer only)"""
+    event = Event.query.get_or_404(event_id)
+    
+    # Check if user is organizer or admin
+    if not (current_user.is_admin or event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann Erinnerungen senden', 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+    
+    # Get all active members
+    all_members = Member.query.filter_by(is_active=True).all()
+    
+    # Get members who have already responded (have a participation record)
+    responded_member_ids = set()
+    for participation in event.participations:
+        responded_member_ids.add(participation.member_id)
+    
+    # Find members who haven't responded yet
+    pending_member_ids = []
+    for member in all_members:
+        if member.id not in responded_member_ids:
+            pending_member_ids.append(member.id)
+    
+    if not pending_member_ids:
+        flash('Alle Mitglieder haben bereits geantwortet', 'info')
+        return redirect(url_for('events.detail', event_id=event_id))
+    
+    # Send reminder notifications
+    success = NotifierService.send_event_reminder(event_id, pending_member_ids)
+    
+    # Log audit event
+    from backend.services.security import SecurityService, AuditAction
+    SecurityService.log_audit_event(
+        AuditAction.EVENT_SEND_REMINDER, 'event', event.id,
+        extra_data={
+            'event_id': event_id,
+            'pending_members': len(pending_member_ids),
+            'notification_success': success
+        }
+    )
+    
+    if success:
+        flash(f'RSVP-Erinnerung an {len(pending_member_ids)} Mitglieder gesendet.', 'success')
+    else:
+        flash('Erinnerungen konnten nicht gesendet werden.', 'warning')
+    
+    return redirect(url_for('events.detail', event_id=event_id))
 
 @bp.route('/places/autocomplete')
 @login_required

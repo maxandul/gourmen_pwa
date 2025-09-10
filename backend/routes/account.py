@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField
 from wtforms.validators import DataRequired, Email, Optional
 from backend.extensions import db
-from backend.models.member import Member, Funktion
+from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
 from backend.services.security import SecurityService, AuditAction, require_step_up
 
@@ -18,7 +18,8 @@ class ProfileForm(FlaskForm):
     email = StringField('E-Mail', validators=[DataRequired(), Email()])
     telefon = StringField('Telefon')
     geburtsdatum = DateField('Geburtsdatum', validators=[Optional()])
-    nationalitaet = StringField('Nationalität')
+    nationalitaet = SelectField('Nationalität', choices=NATIONALITAET_CHOICES, validators=[Optional()])
+    zimmerwunsch = SelectField('Zimmerwunsch', choices=ZIMMERWUNSCH_CHOICES, validators=[Optional()])
     
     # Address data
     strasse = StringField('Straße')
@@ -81,6 +82,7 @@ def profile():
         form.telefon.data = current_user.telefon
         form.geburtsdatum.data = current_user.geburtsdatum
         form.nationalitaet.data = current_user.nationalitaet
+        form.zimmerwunsch.data = current_user.zimmerwunsch
         
         # Address data
         form.strasse.data = current_user.strasse
@@ -124,6 +126,7 @@ def profile():
         current_user.telefon = form.telefon.data
         current_user.geburtsdatum = form.geburtsdatum.data
         current_user.nationalitaet = form.nationalitaet.data
+        current_user.zimmerwunsch = form.zimmerwunsch.data
         
         # Address data
         current_user.strasse = form.strasse.data
