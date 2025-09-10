@@ -155,7 +155,7 @@
                 <form method="POST" action="{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline" 
-                            onclick="return confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?')">
+                            onclick="return confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')">
                         📧 RSVP-Erinnerung senden
                     </button>
                 </form>

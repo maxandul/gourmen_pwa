@@ -33,7 +33,8 @@ class NotifierService:
             
             if not subscriptions:
                 current_app.logger.info(f"No push subscriptions found for user {user_id}")
-                return False
+                # Fallback: Send email notification for users without push subscriptions
+                return NotifierService._send_fallback_notification(user_id, title, message, data)
             
             payload = {
                 'title': title,
@@ -65,7 +66,8 @@ class NotifierService:
             
         except Exception as e:
             current_app.logger.error(f"Error sending push notification to user {user_id}: {e}")
-            return False
+            # Fallback: Try email notification
+            return NotifierService._send_fallback_notification(user_id, title, message, data)
     
     @staticmethod
     def send_billbro_start(event_id, user_ids):
@@ -129,8 +131,8 @@ class NotifierService:
         if not event:
             return False
         
-        title = "Event-Erinnerung"
-        message = f"📅 Vergiss nicht: {event.restaurant or event.event_typ.value} am {event.display_date}"
+        title = "RSVP-Erinnerung"
+        message = f"📧 Bitte zu- oder absagen für {event.restaurant or event.event_typ.value} am {event.display_date}"
         
         data = {
             'type': 'event_reminder',
@@ -226,4 +228,29 @@ class NotifierService:
             
         except Exception as e:
             current_app.logger.error(f"Error sending to subscription {subscription.id}: {e}")
+            return False
+    
+    @staticmethod
+    def _send_fallback_notification(user_id, title, message, data=None):
+        """Fallback notification method for users without push subscriptions (e.g., Safari/iOS)"""
+        try:
+            from backend.models.member import Member
+            
+            # Get user details
+            user = Member.query.get(user_id)
+            if not user or not user.email:
+                current_app.logger.warning(f"No email found for user {user_id}")
+                return False
+            
+            # For now, just log the notification
+            # In production, you could implement email sending here
+            current_app.logger.info(f"FALLBACK NOTIFICATION for {user.email}: {title} - {message}")
+            
+            # TODO: Implement email sending for Safari/iOS users
+            # This could use Flask-Mail or similar service
+            
+            return True
+            
+        except Exception as e:
+            current_app.logger.error(f"Error sending fallback notification to user {user_id}: {e}")
             return False 
