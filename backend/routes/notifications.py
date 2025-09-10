@@ -1,9 +1,38 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from backend.services.notifier import NotifierService
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+import base64
 from backend.services.security import SecurityService, AuditAction
 
 bp = Blueprint('notifications', __name__)
+
+@bp.route('/vapid-public-key')
+def get_vapid_public_key():
+    """Get VAPID public key for frontend"""
+    try:
+        vapid_public_key_pem = current_app.config.get('VAPID_PUBLIC_KEY')
+        if not vapid_public_key_pem:
+            return jsonify({'error': 'VAPID public key not configured'}), 500
+        
+        # Load the PEM public key
+        public_key = load_pem_public_key(vapid_public_key_pem.encode())
+        
+        # Get the raw public key bytes
+        public_key_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.X962,
+            format=serialization.PublicFormat.UncompressedPoint
+        )
+        
+        # Convert to base64url encoding (Web Push standard)
+        public_key_b64 = base64.urlsafe_b64encode(public_key_bytes).decode('utf-8').rstrip('=')
+        
+        return jsonify({'publicKey': public_key_b64})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting VAPID public key: {e}")
+        return jsonify({'error': 'Failed to get VAPID public key'}), 500
 
 @bp.route('/subscribe', methods=['POST'])
 @login_required

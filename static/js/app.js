@@ -128,9 +128,10 @@ async function initializePushNotifications() {
         }
         
         // Subscribe to push notifications
+        const vapidPublicKey = await getVapidPublicKey();
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(getVapidPublicKey())
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
         });
         
         // Send subscription to server
@@ -167,9 +168,16 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-function getVapidPublicKey() {
-    // This will be set from backend config
-    return 'BJrWx8xCvf_8kT2j3R3_7nqJ2x3kX4c2Pd4FVk1cJ5q_QH7_0LlCPT9gU8NZ_ZEt4QP8vP2N_YfXYt8aU0rN_E4';
+async function getVapidPublicKey() {
+    try {
+        const response = await fetch('/notifications/vapid-public-key');
+        const data = await response.json();
+        return data.publicKey;
+    } catch (error) {
+        console.error('Error getting VAPID public key:', error);
+        // Fallback key (should not be used in production)
+        return 'BJrWx8xCvf_8kT2j3R3_7nqJ2x3kX4c2Pd4FVk1cJ5q_QH7_0LlCPT9gU8NZ_ZEt4QP8vP2N_YfXYt8aU0rN_E4';
+    }
 }
 
 // Initialize app when DOM is loaded

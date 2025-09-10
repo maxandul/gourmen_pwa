@@ -3,6 +3,7 @@ import base64
 from datetime import datetime, timedelta
 from flask import current_app
 from backend.extensions import db
+from pywebpush import webpush, WebPushException
 
 class PushSubscription(db.Model):
     """Push subscription model for Web-Push notifications"""
@@ -191,16 +192,37 @@ class NotifierService:
     def _send_to_subscription(subscription, payload):
         """Send push notification to a specific subscription"""
         try:
-            # For now, just log the notification (would implement actual Web-Push here)
-            current_app.logger.info(f"Would send push to subscription {subscription.id}: {payload}")
+            # Prepare subscription data for pywebpush
+            subscription_data = {
+                'endpoint': subscription.endpoint,
+                'keys': {
+                    'p256dh': subscription.p256dh_key,
+                    'auth': subscription.auth_key
+                }
+            }
             
-            # TODO: Implement actual Web-Push protocol with VAPID
-            # This would involve:
-            # 1. Generate VAPID headers
-            # 2. Encrypt payload with p256dh and auth keys
-            # 3. Send POST request to subscription.endpoint
+            # Prepare VAPID data
+            vapid_private_key = current_app.config.get('VAPID_PRIVATE_KEY')
+            vapid_claims = current_app.config.get('VAPID_CLAIMS', {'sub': 'mailto:admin@gourmen.ch'})
             
+            # Send push notification using pywebpush
+            response = webpush(
+                subscription_info=subscription_data,
+                data=json.dumps(payload),
+                vapid_private_key=vapid_private_key,
+                vapid_claims=vapid_claims
+            )
+            
+            current_app.logger.info(f"Push notification sent to subscription {subscription.id}: {response.status_code}")
             return True
+            
+        except WebPushException as e:
+            current_app.logger.error(f"WebPush error for subscription {subscription.id}: {e}")
+            # If subscription is invalid, mark it for deletion
+            if e.response and e.response.status_code in [410, 404]:
+                current_app.logger.info(f"Subscription {subscription.id} is invalid, will be removed")
+                return False
+            return False
             
         except Exception as e:
             current_app.logger.error(f"Error sending to subscription {subscription.id}: {e}")
