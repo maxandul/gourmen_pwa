@@ -20,7 +20,6 @@ class PWA {
         this.setupNetworkStatus();
         this.setupNotifications();
         this.setupUpdateDetection();
-        this.showManualUpdateButton(); // Manueller Update-Button
         // this.showDebugInfo(); // Debug-Info anzeigen - auskommentiert
     }
 
@@ -72,14 +71,19 @@ class PWA {
                     
                     // Prüfe auf Updates
                     registration.addEventListener('updatefound', () => {
+                        console.log('🔄 Service Worker Update gefunden!');
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
                                 this.updateAvailable = true;
                                 this.showUpdateButton();
                             }
                         });
                     });
+                    
+                    // Prüfe sofort auf Updates beim Laden
+                    registration.update();
                 })
                 .catch(error => {
                     console.error('Service Worker Registrierung fehlgeschlagen:', error);
@@ -289,11 +293,29 @@ class PWA {
         
         updateBtn.addEventListener('click', () => this.updateApp());
         document.body.appendChild(updateBtn);
+        
+        // Auto-hide nach 30 Sekunden falls nicht geklickt
+        setTimeout(() => {
+            if (updateBtn.parentNode && !this.updateAvailable) {
+                updateBtn.remove();
+            }
+        }, 30000);
+    }
+    
+    hideUpdateButton() {
+        const updateBtn = document.getElementById('pwa-update-btn');
+        if (updateBtn) {
+            updateBtn.remove();
+        }
     }
 
     updateApp() {
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             console.log('🔄 Updating app...');
+            this.updateAvailable = false;
+            this.hideUpdateButton();
+            this.showToast('Update wird installiert...', 'info');
+            
             navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
             
             // Reload nach Update
@@ -303,7 +325,7 @@ class PWA {
         }
     }
     
-    // Manueller Update-Check
+    // Manueller Update-Check (nur für Debugging)
     checkForUpdates() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/service-worker.js')
@@ -319,24 +341,6 @@ class PWA {
                     this.showToast('Update-Check fehlgeschlagen', 'error');
                 });
         }
-    }
-    
-    // Manueller Update-Button (immer sichtbar)
-    showManualUpdateButton() {
-        const existingBtn = document.getElementById('manual-update-btn');
-        if (existingBtn) return;
-
-        const updateBtn = document.createElement('button');
-        updateBtn.id = 'manual-update-btn';
-        updateBtn.className = 'manual-update-btn';
-        updateBtn.innerHTML = `
-            <span style="display: flex; align-items: center; gap: 8px;">
-                🔄 Update prüfen
-            </span>
-        `;
-        
-        updateBtn.addEventListener('click', () => this.checkForUpdates());
-        document.body.appendChild(updateBtn);
     }
 
     updateNetworkStatus() {
@@ -586,8 +590,7 @@ const pwaStyles = `
 /* Verbesserte PWA Buttons */
 .pwa-install-btn,
 .notification-permission-btn,
-.pwa-update-btn,
-.manual-update-btn {
+.pwa-update-btn {
     position: fixed;
     bottom: 100px;
     left: 50%;
@@ -632,8 +635,7 @@ const pwaStyles = `
 
 .pwa-install-btn:hover,
 .notification-permission-btn:hover,
-.pwa-update-btn:hover,
-.manual-update-btn:hover {
+.pwa-update-btn:hover {
     background: linear-gradient(135deg, #e67a4d, #9a5543);
     transform: translateX(-50%) translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 105, 60, 0.4);
@@ -658,14 +660,6 @@ const pwaStyles = `
     background: linear-gradient(135deg, #e0a800, #e67e22);
 }
 
-.manual-update-btn {
-    bottom: 160px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-}
-
-.manual-update-btn:hover {
-    background: linear-gradient(135deg, #218838, #1ea085);
-}
 
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% {
