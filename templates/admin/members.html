@@ -62,39 +62,39 @@
                         {% if member.telefon %}
                         <p><strong>Telefon:</strong> {{ member.telefon }}</p>
                         {% endif %}
+                        {% if member.strasse or member.plz or member.ort %}
+                        <p><strong>Adresse:</strong>
+                            {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
+                            {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
+                        </p>
+                        {% endif %}
                         </div>
                     </div>
                     
-                    <!-- Adresse -->
-                    {% if member.strasse or member.plz or member.ort %}
-                    <div class="member-section">
-                        <h4>📍 Adresse</h4>
-                        {% if member.strasse %}
-                        <p><strong>Straße:</strong> {{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}</p>
-                        {% endif %}
-                        {% if member.plz or member.ort %}
-                        <p><strong>Ort:</strong> {% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}</p>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Funktion -->
+                    <!-- Vereinsdaten und Position -->
                     {% if member.funktion or member.beitrittsjahr %}
-                    <div class="member-section">
-                        <h4>🏢 Funktion</h4>
+                    <div class="card card-secondary variant-accent">
+                        <div class="card-header">
+                            <h3>🏢 Vereinsdaten und Position</h3>
+                        </div>
+                        <div class="card-body">
                         {% if member.funktion %}
-                        <p><strong>Position:</strong> {{ member.funktion.value }}</p>
+                        <p><strong>Funktion:</strong> {{ member.funktion.value }}</p>
                         {% endif %}
                         {% if member.beitrittsjahr %}
                         <p><strong>Beitritt:</strong> Seit {{ member.beitrittsjahr }}</p>
                         {% endif %}
+                        </div>
                     </div>
                     {% endif %}
                     
                     <!-- Körperliche Daten -->
-                    {% if member.koerpergroesse or member.koerpergewicht or member.schuhgroesse %}
-                    <div class="member-section">
-                        <h4>📏 Körperliche Daten</h4>
+                    {% if member.koerpergroesse or member.koerpergewicht or member.schuhgroesse or member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
+                    <div class="card card-secondary variant-warning">
+                        <div class="card-header">
+                            <h3>📏 Körperliche Daten</h3>
+                        </div>
+                        <div class="card-body">
                         {% if member.koerpergroesse %}
                         <p><strong>Größe:</strong> {{ member.koerpergroesse }} cm</p>
                         {% endif %}
@@ -104,13 +104,24 @@
                         {% if member.schuhgroesse %}
                         <p><strong>Schuhgröße:</strong> {{ member.schuhgroesse }}</p>
                         {% endif %}
+                        {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
+                        <p><strong>Kleidergrößen:</strong>
+                            {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
+                            {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
+                            {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
+                        </p>
+                        {% endif %}
+                        </div>
                     </div>
                     {% endif %}
                     
                     <!-- Präferenzen -->
-                    {% if member.zimmerwunsch or member.spirit_animal or member.fuehrerschein or member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                    <div class="member-section">
-                        <h4>⭐ Präferenzen</h4>
+                    {% if member.zimmerwunsch or member.spirit_animal or member.fuehrerschein %}
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>⭐ Präferenzen</h3>
+                        </div>
+                        <div class="card-body">
                         {% if member.zimmerwunsch %}
                         <p><strong>Zimmerwunsch:</strong> {{ member.zimmerwunsch }}</p>
                         {% endif %}
@@ -120,13 +131,7 @@
                         {% if member.fuehrerschein %}
                         <p><strong>Führerschein:</strong> {{ member.fuehrerschein }}</p>
                         {% endif %}
-                        {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                        <p><strong>Kleidergrößen:</strong>
-                            {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
-                            {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
-                            {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
-                        </p>
-                        {% endif %}
+                        </div>
                     </div>
                     {% endif %}
                 </div>
@@ -134,8 +139,8 @@
                 <!-- Aktionen -->
                 <div class="card-actions primary">
                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
-                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-outline">🔒 Sensible Daten</a>
-                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-outline">🔐 Sicherheit</a>
+                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-primary">🔒 Sensible Daten</a>
+                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-primary">🔐 Sicherheit</a>
                 </div>
             </div>
             {% endfor %}

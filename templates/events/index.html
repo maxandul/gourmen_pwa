@@ -8,7 +8,7 @@
         <h1>📅 Events</h1>
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
         <div class="page-actions">
-            <a href="{{ url_for('events.stats') }}" class="btn btn-outline">📊 Statistiken</a>
+            <a href="{{ url_for('events.stats') }}" class="btn btn-primary">📊 Statistiken</a>
             {% if current_user.is_admin %}
             <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">Neues Event</a>
             {% endif %}
@@ -67,7 +67,7 @@
                     {% endif %}
                     
                     {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
+                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
                     {% endif %}
                     </div>
                 </div>

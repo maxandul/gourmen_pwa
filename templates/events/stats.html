@@ -4,15 +4,18 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
+    <div class="page-header">
         <h1>📊 Event-Statistiken</h1>
-        <p class="event-info">
-            <strong>Übersicht über alle Events</strong>
-        </p>
-        <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+        <p class="page-subtitle">Übersicht über alle Events</p>
+        <div class="alert alert-warning" style="margin: 1rem 0; padding: 0.75rem; background-color: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 0.5rem; color: var(--warning-text);">
+            <strong>⚠️ Under Construction:</strong> Diese Seite befindet sich noch im Aufbau. Weitere Statistiken und Features werden in Zukunft hinzugefügt.
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('events.index') }}" class="btn btn-primary">← Zurück zu Events</a>
+        </div>
     </div>
-
-    <div class="stats-grid">
+    
+    <div class="page-content">
         <!-- Allgemeine Statistiken -->
         <div class="card">
             <div class="card-header">
@@ -43,6 +46,7 @@
                     </div>
                 </div>
             </div>
+        </div>
 
         <!-- BillBro Statistiken -->
         {% if total_billbro_events > 0 %}
@@ -84,57 +88,58 @@
                 <h2>🎯 Event-Typen Verteilung</h2>
             </div>
             <div class="card-body">
-            {% for event_type, count in event_types.items() %}
-            <div class="stats-item">
-                <span class="label">{{ event_type }}:</span>
-                <span class="value">{{ count }}</span>
+                <div class="card card-secondary variant-success">
+                    <div class="card-header">
+                        <h3>📊 Verteilung nach Typ</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for event_type, count in event_types.items() %}
+                        <div class="stats-item">
+                            <span class="label">{{ event_type }}:</span>
+                            <span class="value">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
-    </div>
 
-    <!-- Top Restaurants -->
-    {% if restaurants %}
-    <div class="card">
-        <div class="card-header">
-            <h2>🏆 Top Restaurants</h2>
+        <!-- Top Restaurants -->
+        {% if restaurants %}
+        <div class="card">
+            <div class="card-header">
+                <h2>🏆 Top Restaurants</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-warning">
+                    <div class="card-header">
+                        <h3>🍴 Beliebteste Restaurants</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="participants-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Restaurant</th>
+                                        <th>Besuche</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
+                                    <tr>
+                                        <td>{{ restaurant }}</td>
+                                        <td>{{ count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-        <div class="participants-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Restaurant</th>
-                        <th>Besuche</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
-                    <tr>
-                        <td>{{ restaurant }}</td>
-                        <td>{{ count }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- Platzhalter für zukünftige Statistiken -->
-    <div class="card">
-        <div class="card-header">
-            <h2>🔮 Zukünftige Statistiken</h2>
-        </div>
-        <div class="card-body">
-        <p>Hier werden weitere Statistiken angezeigt, wie:</p>
-        <ul>
-            <li>Beste Schätzer (wer am häufigsten richtig lag)</li>
-            <li>Trends über Zeit (teuerste/günstigste Events)</li>
-            <li>Vergleiche zwischen Jahren/Saisons</li>
-            <li>Beliebteste Küchen</li>
-            <li>Teilnahme-Trends</li>
-        </ul>
     </div>
 </div>
 {% endblock %}

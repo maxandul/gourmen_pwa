@@ -148,46 +148,51 @@
             <!-- Buttons am Ende der Haupt-Card -->
             <div class="card-actions primary">
                 {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
                 
                 <!-- RSVP Erinnerung Button für Organisator -->
                 {% if event.is_upcoming %}
-                <form method="POST" action="{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-outline" 
-                            onclick="return confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')">
-                        📧 RSVP-Erinnerung senden
-                    </button>
-                </form>
+                <button type="button" class="btn btn-primary" 
+                        onclick="if(confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')) { 
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}';
+                            const csrf = document.createElement('input');
+                            csrf.type = 'hidden';
+                            csrf.name = 'csrf_token';
+                            csrf.value = '{{ csrf_token() }}';
+                            form.appendChild(csrf);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }">
+                    📧 Erinnerung senden
+                </button>
                 {% endif %}
                 {% endif %}
                 
                 {% if current_user.is_admin and not event.is_past %}
-                <form method="POST" action="{{ url_for('events.delete', event_id=event.id) }}" style="display: inline;" id="delete-form-{{ event.id }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="button" class="btn btn-danger delete-event-btn btn-full-mobile" 
-                            data-event-id="{{ event.id }}" 
-                            data-event-title="{{ event.restaurant or event.event_typ.value }}">
-                        🗑️ Löschen
-                    </button>
-                </form>
+                <button type="button" class="btn btn-danger delete-event-btn" 
+                        data-event-id="{{ event.id }}" 
+                        data-event-title="{{ event.restaurant or event.event_typ.value }}">
+                    🗑️ Löschen
+                </button>
                 {% endif %}
                 
                 <!-- Rating Section -->
                 {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                 {% if user_participation and user_participation.teilnahme %}
                     {% if event.has_rating_from_participant(current_user.id) %}
-                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-outline">
+                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-primary">
                             <i class="fas fa-star"></i> Bewertung bearbeiten
                         </a>
                     {% else %}
                         <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn-primary">
-                            <i class="fas fa-star"></i> Event bewerten
+                            ⭐ Event bewerten
                         </a>
                     {% endif %}
                 {% endif %}
                 
-                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-outline">
+                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-primary">
                     <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
                 </a>
             </div>
@@ -204,11 +209,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const eventTitle = this.getAttribute('data-event-title');
             
             if (confirm('Möchtest du das Event "' + eventTitle + '" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-                // Submit the existing form
-                const form = document.getElementById('delete-form-' + eventId);
-                if (form) {
-                    form.submit();
-                }
+                // Create and submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url_for('events.delete', event_id=event.id) }}'.replace('{{ event.id }}', eventId);
+                
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = 'csrf_token';
+                csrf.value = '{{ csrf_token() }}';
+                form.appendChild(csrf);
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     });

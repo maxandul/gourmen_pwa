@@ -8,116 +8,164 @@
         <h1>➕ Neues Mitglied erstellen</h1>
         <p class="page-subtitle">Füge ein neues Mitglied zum Gourmen-Verein hinzu</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
+            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">← Zurück zur Mitgliederliste</a>
         </div>
     </div>
     
     <div class="page-content">
-        <form method="POST" class="form">
-            {{ form.hidden_tag() }}
-            
-            <div class="form-group">
-                {{ form.vorname.label }}
-                {{ form.vorname(class="form-control") }}
-                {% if form.vorname.errors %}
-                <div class="error">{{ form.vorname.errors[0] }}</div>
-                {% endif %}
+        <div class="card">
+            <div class="card-header">
+                <h2>➕ Neues Mitglied erstellen</h2>
             </div>
-            
-            <div class="form-group">
-                {{ form.nachname.label }}
-                {{ form.nachname(class="form-control") }}
-                {% if form.nachname.errors %}
-                <div class="error">{{ form.nachname.errors[0] }}</div>
-                {% endif %}
+            <div class="card-body">
+                <form method="POST" class="form">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Grunddaten -->
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>👤 Grunddaten</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.vorname.label }}
+                                {{ form.vorname(class="form-control") }}
+                                {% if form.vorname.errors %}
+                                <div class="error">{{ form.vorname.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.nachname.label }}
+                                {{ form.nachname(class="form-control") }}
+                                {% if form.nachname.errors %}
+                                <div class="error">{{ form.nachname.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.geburtsdatum.label }}
+                                {{ form.geburtsdatum(class="form-control", type="date") }}
+                                {% if form.geburtsdatum.errors %}
+                                <div class="error">{{ form.geburtsdatum.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.nationalitaet.label }}
+                                {{ form.nationalitaet(class="form-control") }}
+                                {% if form.nationalitaet.errors %}
+                                <div class="error">{{ form.nationalitaet.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Kontakt -->
+                    <div class="card card-secondary variant-success">
+                        <div class="card-header">
+                            <h3>📧 Kontakt</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.email.label }}
+                                {{ form.email(class="form-control", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}
+                                {% if form.email.errors %}
+                                <div class="error">{{ form.email.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.telefon.label }}
+                                {{ form.telefon(class="form-control") }}
+                                {% if form.telefon.errors %}
+                                <div class="error">{{ form.telefon.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Vereinsdaten und Position -->
+                    <div class="card card-secondary variant-accent">
+                        <div class="card-header">
+                            <h3>🏢 Vereinsdaten und Position</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.funktion.label }}
+                                {{ form.funktion(class="form-control") }}
+                                {% if form.funktion.errors %}
+                                <div class="error">{{ form.funktion.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.beitrittsjahr.label }}
+                                {{ form.beitrittsjahr(class="form-control") }}
+                                {% if form.beitrittsjahr.errors %}
+                                <div class="error">{{ form.beitrittsjahr.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.vorstandsmitglied.label }}
+                                {{ form.vorstandsmitglied() }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Präferenzen -->
+                    <div class="card card-secondary variant-warning">
+                        <div class="card-header">
+                            <h3>⭐ Präferenzen</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.fuehrerschein.label }}
+                                {{ form.fuehrerschein(class="form-control") }}
+                                {% if form.fuehrerschein.errors %}
+                                <div class="error">{{ form.fuehrerschein.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System-Einstellungen -->
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>⚙️ System-Einstellungen</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.password.label }}
+                                {{ form.password(class="form-control") }}
+                                {% if form.password.errors %}
+                                <div class="error">{{ form.password.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.role.label }}
+                                {{ form.role(class="form-control") }}
+                                {% if form.role.errors %}
+                                <div class="error">{{ form.role.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.is_active.label }}
+                                {{ form.is_active() }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions primary">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Abbrechen</a>
+                    </div>
+                </form>
             </div>
-            
-            <div class="form-group">
-                {{ form.email.label }}
-                {{ form.email(class="form-control", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}
-                {% if form.email.errors %}
-                <div class="error">{{ form.email.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.password.label }}
-                {{ form.password(class="form-control") }}
-                {% if form.password.errors %}
-                <div class="error">{{ form.password.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.role.label }}
-                {{ form.role(class="form-control") }}
-                {% if form.role.errors %}
-                <div class="error">{{ form.role.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.funktion.label }}
-                {{ form.funktion(class="form-control") }}
-                {% if form.funktion.errors %}
-                <div class="error">{{ form.funktion.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.beitrittsjahr.label }}
-                {{ form.beitrittsjahr(class="form-control") }}
-                {% if form.beitrittsjahr.errors %}
-                <div class="error">{{ form.beitrittsjahr.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.vorstandsmitglied.label }}
-                {{ form.vorstandsmitglied() }}
-            </div>
-            
-            <div class="form-group">
-                {{ form.telefon.label }}
-                {{ form.telefon(class="form-control") }}
-                {% if form.telefon.errors %}
-                <div class="error">{{ form.telefon.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.geburtsdatum.label }}
-                {{ form.geburtsdatum(class="form-control", type="date") }}
-                {% if form.geburtsdatum.errors %}
-                <div class="error">{{ form.geburtsdatum.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.nationalitaet.label }}
-                {{ form.nationalitaet(class="form-control") }}
-                {% if form.nationalitaet.errors %}
-                <div class="error">{{ form.nationalitaet.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                {{ form.is_active.label }}
-                {{ form.is_active() }}
-            </div>
-            
-            <div class="form-group">
-                {{ form.fuehrerschein.label }}
-                {{ form.fuehrerschein(class="form-control") }}
-                {% if form.fuehrerschein.errors %}
-                <div class="error">{{ form.fuehrerschein.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-actions">
-                {{ form.submit(class="btn btn-primary") }}
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %} 
