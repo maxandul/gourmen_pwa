@@ -3,9 +3,9 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.2.0';
-const STATIC_CACHE = 'gourmen-static-v1.2.0';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.2.0';
+const CACHE_NAME = 'gourmen-v1.3.0';
+const STATIC_CACHE = 'gourmen-static-v1.3.0';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.0';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [
@@ -100,8 +100,10 @@ self.addEventListener('message', (event) => {
     const { data } = event;
     
     if (data && data.type === 'SKIP_WAITING') {
+        console.log('Service Worker: Skip waiting requested');
         self.skipWaiting();
     } else if (data && data.type === 'CHECK_UPDATE') {
+        console.log('Service Worker: Update check requested');
         // Check for updates
         checkForUpdates();
     }

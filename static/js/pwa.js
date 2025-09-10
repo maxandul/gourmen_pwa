@@ -20,6 +20,7 @@ class PWA {
         this.setupNetworkStatus();
         this.setupNotifications();
         this.setupUpdateDetection();
+        
         // this.showDebugInfo(); // Debug-Info anzeigen - auskommentiert
     }
 
@@ -65,7 +66,7 @@ class PWA {
 
     setupServiceWorker() {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/service-worker.js')
+            navigator.serviceWorker.register('/static/sw.js')
                 .then(registration => {
                     console.log('Service Worker registriert:', registration);
                     
@@ -74,25 +75,33 @@ class PWA {
                         console.log('🔄 Service Worker Update gefunden!');
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
-                                this.updateAvailable = true;
-                                this.showUpdateButton();
+                            if (newWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
+                                    this.updateAvailable = true;
+                                    this.showUpdateButton();
+                                } else {
+                                    console.log('🔄 Service Worker installiert - App bereit für Offline-Nutzung');
+                                }
                             }
                         });
                     });
                     
                     // Prüfe sofort auf Updates beim Laden
                     registration.update();
+                    
+                    // Zusätzlicher Update-Check alle 5 Minuten
+                    setInterval(() => {
+                        registration.update();
+                    }, 300000); // 5 Minuten
                 })
                 .catch(error => {
                     console.error('Service Worker Registrierung fehlgeschlagen:', error);
-                    // Fallback: Zeige Info über Service Worker Problem
-                    // this.showToast('Service Worker konnte nicht registriert werden', 'warning');
+                    this.showToast('Service Worker konnte nicht registriert werden', 'warning');
                 });
         } else {
             console.log('Service Worker nicht unterstützt');
-            // this.showToast('Service Worker nicht unterstützt - PWA-Installation nicht möglich', 'warning');
+            this.showToast('Service Worker nicht unterstützt - PWA-Installation nicht möglich', 'warning');
         }
     }
 
@@ -118,17 +127,32 @@ class PWA {
     setupUpdateDetection() {
         // Prüfe regelmäßig auf Updates
         setInterval(() => {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                console.log('🔄 Checking for updates...');
-                navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                        console.log('🔄 Checking for updates...');
+                        registration.update();
+                    }
+                });
             }
-        }, 30000); // Alle 30 Sekunden für bessere Update-Erkennung
+        }, 60000); // Alle 60 Sekunden für bessere Update-Erkennung
         
         // Zusätzlicher Update-Check beim Seitenladen
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 console.log('🔄 Service Worker controller changed - reloading page');
                 window.location.reload();
+            });
+            
+            // Update-Check beim Fokus der Seite
+            window.addEventListener('focus', () => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistration().then(registration => {
+                        if (registration) {
+                            registration.update();
+                        }
+                    });
+                }
             });
         }
     }
@@ -287,19 +311,22 @@ class PWA {
         updateBtn.className = 'pwa-update-btn';
         updateBtn.innerHTML = `
             <span style="display: flex; align-items: center; gap: 8px;">
-                🔄 Update verfügbar
+                🔄 Update verfügbar - Jetzt installieren
             </span>
         `;
         
         updateBtn.addEventListener('click', () => this.updateApp());
         document.body.appendChild(updateBtn);
         
-        // Auto-hide nach 30 Sekunden falls nicht geklickt
+        // Zeige auch eine Toast-Benachrichtigung
+        this.showToast('🔄 Neues Update verfügbar! Klicke auf den Update-Button.', 'info');
+        
+        // Auto-hide nach 60 Sekunden falls nicht geklickt
         setTimeout(() => {
             if (updateBtn.parentNode && !this.updateAvailable) {
                 updateBtn.remove();
             }
-        }, 30000);
+        }, 60000);
     }
     
     hideUpdateButton() {
@@ -310,38 +337,54 @@ class PWA {
     }
 
     updateApp() {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        if ('serviceWorker' in navigator) {
             console.log('🔄 Updating app...');
             this.updateAvailable = false;
             this.hideUpdateButton();
             this.showToast('Update wird installiert...', 'info');
             
-            navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-            
-            // Reload nach Update
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration && registration.waiting) {
+                    // Sende Skip-Waiting Message an den wartenden Service Worker
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                } else if (navigator.serviceWorker.controller) {
+                    // Fallback: Sende Message an den aktuellen Controller
+                    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                }
+                
+                // Reload nach Update
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            });
         }
     }
     
-    // Manueller Update-Check (nur für Debugging)
+    // Manueller Update-Check für Benutzer (nur für Debugging/Admin)
     checkForUpdates() {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/service-worker.js')
-                .then(registration => {
+            this.showToast('🔄 Suche nach Updates...', 'info');
+            
+            navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration) {
                     console.log('🔄 Manual update check...');
                     return registration.update();
-                })
-                .then(() => {
-                    this.showToast('Update-Check durchgeführt', 'info');
-                })
-                .catch(error => {
-                    console.error('Update check failed:', error);
-                    this.showToast('Update-Check fehlgeschlagen', 'error');
-                });
+                } else {
+                    throw new Error('Keine Service Worker Registrierung gefunden');
+                }
+            })
+            .then(() => {
+                this.showToast('✅ Update-Check abgeschlossen', 'success');
+            })
+            .catch(error => {
+                console.error('Update check failed:', error);
+                this.showToast('❌ Update-Check fehlgeschlagen', 'error');
+            });
+        } else {
+            this.showToast('❌ Service Worker nicht unterstützt', 'error');
         }
     }
+    
 
     updateNetworkStatus() {
         const indicator = document.getElementById('network-status');
