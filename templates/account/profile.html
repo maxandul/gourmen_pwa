@@ -8,7 +8,7 @@
         <h1>👤 Mein Profil</h1>
         <p class="page-subtitle">Verwalte deine persönlichen Daten und Einstellungen</p>
         <div class="page-actions">
-            <a href="{{ url_for('account.sensitive_data') }}" class="btn btn-secondary">🔒 Sensible Daten</a>
+            <a href="{{ url_for('account.sensitive_data') }}" class="btn btn-outline">🔒 Sensible Daten</a>
         </div>
     </div>
     
@@ -246,7 +246,7 @@
                     {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
                     <p>✅ 2FA ist aktiviert</p>
                     <div class="actions">
-                        <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn-secondary">2FA deaktivieren</a>
+                        <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn-outline">2FA deaktivieren</a>
                     </div>
                     {% else %}
                     <p>❌ 2FA ist nicht aktiviert</p>

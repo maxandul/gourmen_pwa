@@ -79,9 +79,9 @@
             </div>
             <div class="user-actions">
                 {% if current_user.is_admin() %}
-                    <a href="{{ url_for('admin.members') }}" class="btn-admin">⚙️ Admin</a>
+                    <a href="{{ url_for('admin.members') }}" class="btn btn-header">⚙️ Admin</a>
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn-logout">🚪 Logout</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-header">🚪 Logout</a>
             </div>
         </div>
     </div>

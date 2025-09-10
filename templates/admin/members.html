@@ -134,8 +134,8 @@
                 <!-- Aktionen -->
                 <div class="card-actions primary">
                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
-                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-warning">🔒 Sensible Daten</a>
-                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-info">🔐 Sicherheit</a>
+                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-outline">🔒 Sensible Daten</a>
+                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-outline">🔐 Sicherheit</a>
                 </div>
             </div>
             {% endfor %}

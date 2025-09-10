@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="container">
-    <div class="header-section">
+    <div class="page-header">
         <h1>🏆 GGL Saison {{ season_year }}</h1>
-        <div class="nav-actions">
-            <a href="{{ url_for('ggl.index') }}" class="btn btn-secondary">← Zurück zur GGL</a>
+        <div class="page-actions">
+            <a href="{{ url_for('ggl.index') }}" class="btn btn-outline">← Zurück zur GGL</a>
         </div>
     </div>
     
@@ -92,20 +92,24 @@
     </div>
     
     {% if season_ranking|length > 0 %}
-    <div class="card season-summary">
-        <h4>📈 Saison-Übersicht</h4>
-        <div class="summary-stats">
-            <div class="summary-item">
-                <span class="label">Teilnehmer total:</span>
-                <span class="value">{{ season_ranking|length }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Höchste Punktzahl:</span>
-                <span class="value">{{ season_ranking[0].total_points }} ({{ season_ranking[0].member.display_name }})</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Durchschnittliche Teilnahme:</span>
-                <span class="value">{{ "%.1f"|format((season_ranking|sum(attribute='participation_count')) / season_ranking|length) }} Events</span>
+    <div class="card">
+        <div class="card-header">
+            <h2>📈 Saison-Übersicht</h2>
+        </div>
+        <div class="card-body">
+            <div class="summary-stats">
+                <div class="summary-item">
+                    <span class="label">Teilnehmer total:</span>
+                    <span class="value">{{ season_ranking|length }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Höchste Punktzahl:</span>
+                    <span class="value">{{ season_ranking[0].total_points }} ({{ season_ranking[0].member.display_name }})</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Durchschnittliche Teilnahme:</span>
+                    <span class="value">{{ "%.1f"|format((season_ranking|sum(attribute='participation_count')) / season_ranking|length) }} Events</span>
+                </div>
             </div>
         </div>
     </div>

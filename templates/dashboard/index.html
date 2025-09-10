@@ -48,40 +48,40 @@
                         
                         <!-- Buttons in der card-secondary -->
                         <div class="card-actions primary">
-                    <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
-                    
-                    <!-- RSVP-Status und Buttons -->
-                    {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if my_participation %}
-                        {% if my_participation.teilnahme %}
-                            <!-- Zugesagt - Button zum Absagen -->
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="teilnahme" value="false">
-                                <button type="submit" class="btn btn-warning">❌ Absagen</button>
-                            </form>
-                            <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
-                        {% else %}
-                            <!-- Abgesagt - Button zum Zusagen -->
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="teilnahme" value="true">
-                                <button type="submit" class="btn btn-success">✅ Zusagen</button>
-                            </form>
-                        {% endif %}
-                    {% else %}
-                        <!-- Noch keine Antwort - Beide Buttons anzeigen -->
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="teilnahme" value="true">
-                            <button type="submit" class="btn btn-success">✅ Zusagen</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="teilnahme" value="false">
-                            <button type="submit" class="btn btn-warning">❌ Absagen</button>
-                        </form>
-                    {% endif %}
+                            <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
+                            
+                            <!-- RSVP-Status und Buttons -->
+                            {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                            {% if my_participation %}
+                                {% if my_participation.teilnahme %}
+                                    <!-- Zugesagt - Button zum Absagen -->
+                                    <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="teilnahme" value="false">
+                                        <button type="submit" class="btn btn-danger">❌ Absagen</button>
+                                    </form>
+                                    <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
+                                {% else %}
+                                    <!-- Abgesagt - Button zum Zusagen -->
+                                    <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="teilnahme" value="true">
+                                        <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <!-- Noch keine Antwort - Beide Buttons anzeigen -->
+                                <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="teilnahme" value="true">
+                                    <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="teilnahme" value="false">
+                                    <button type="submit" class="btn btn-danger">❌ Absagen</button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                 
                 <!-- Button in der Haupt-Card -->
                 <div class="card-actions center">
-                    <a href="{{ url_for('ggl.index') }}" class="btn btn-secondary">GGL anzeigen</a>
+                    <a href="{{ url_for('ggl.index') }}" class="btn btn-outline">GGL anzeigen</a>
                 </div>
             </div>
         </div>

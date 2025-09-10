@@ -24,8 +24,8 @@
             
             <div class="print-section">
                 <button class="btn btn-primary" onclick="window.print()">🖨️ Drucken</button>
-                <button class="btn btn-secondary" onclick="copyAllCodes()">📋 Alle kopieren</button>
-                <button class="btn btn-info" onclick="showQRCode()">📱 QR-Code anzeigen</button>
+                <button class="btn btn-outline" onclick="copyAllCodes()">📋 Alle kopieren</button>
+                <button class="btn btn-outline" onclick="showQRCode()">📱 QR-Code anzeigen</button>
             </div>
             
             <div id="qr-code-section" style="display: none; text-align: center; margin: 20px 0;">
@@ -49,7 +49,7 @@
         <div class="actions">
             <button class="btn btn-success" onclick="confirmCodesSaved()">✅ Backup-Codes bestätigt</button>
             <a href="{{ url_for('account.profile') }}" class="btn btn-primary">Zum Profil</a>
-            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Zum Dashboard</a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline">Zum Dashboard</a>
         </div>
     </div>
 </div>

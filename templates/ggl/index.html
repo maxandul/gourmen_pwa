@@ -10,41 +10,40 @@
     </div>
     
     <div class="page-content">
-        <div class="ggl-overview">
         <div class="card">
             <div class="card-header">
                 <h2>🏆 Aktuelle Saison {{ current_season }}</h2>
             </div>
             <div class="card-body">
-            {% if user_stats %}
-            <div class="card card-secondary variant-accent">
-                <div class="card-header">
-                    <h3>📊 Deine Statistiken</h3>
+                {% if user_stats %}
+                <div class="card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>📊 Deine Statistiken</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-item">
+                            <span class="label">🎯 Deine Punkte:</span>
+                            <span class="value">{{ user_stats.total_points }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">📊 Events teilgenommen:</span>
+                            <span class="value">{{ user_stats.participation_count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">⭐ Durchschnitt:</span>
+                            <span class="value">{{ "%.1f"|format(user_stats.avg_points) }} Punkte</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="stat-item">
-                        <span class="label">🎯 Deine Punkte:</span>
-                        <span class="value">{{ user_stats.total_points }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">📊 Events teilgenommen:</span>
-                        <span class="value">{{ user_stats.participation_count }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">⭐ Durchschnitt:</span>
-                        <span class="value">{{ "%.1f"|format(user_stats.avg_points) }} Punkte</span>
-                    </div>
+                {% else %}
+                <p>Noch keine Teilnahme an BillBro-Events in dieser Saison.</p>
+                {% endif %}
+                
+                <div class="card-actions center">
+                    <a href="{{ url_for('ggl.season', season_year=current_season) }}" class="btn btn-primary">
+                        📈 Komplette Saison-Tabelle anzeigen
+                    </a>
                 </div>
-            </div>
-            {% else %}
-            <p>Noch keine Teilnahme an BillBro-Events in dieser Saison.</p>
-            {% endif %}
-            
-            <div class="card-actions center">
-                <a href="{{ url_for('ggl.season', season_year=current_season) }}" class="btn btn-primary">
-                    📈 Komplette Saison-Tabelle anzeigen
-                </a>
-            </div>
             </div>
         </div>
         
@@ -54,20 +53,19 @@
                 <h2>📚 Vergangene Saisons</h2>
             </div>
             <div class="card-body">
-            <div class="past-seasons">
-                {% for season in available_seasons %}
-                {% if season != current_season %}
-                <a href="{{ url_for('ggl.season', season_year=season) }}" class="season-link">
-                    <span class="season-year">{{ season }}</span>
-                    <span class="arrow">→</span>
-                </a>
-                {% endif %}
-                {% endfor %}
-            </div>
+                <div class="past-seasons">
+                    {% for season in available_seasons %}
+                    {% if season != current_season %}
+                    <a href="{{ url_for('ggl.season', season_year=season) }}" class="season-link">
+                        <span class="season-year">{{ season }}</span>
+                        <span class="arrow">→</span>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
         {% endif %}
-        </div>
     </div>
 </div>
 {% endblock %} 

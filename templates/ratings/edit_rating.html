@@ -10,7 +10,7 @@
             {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
         </p>
         <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">← Zurück zu Event</a>
         </div>
     </div>
     
@@ -118,7 +118,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Bewertung aktualisieren
                             </button>
-                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">
+                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">
                                 Abbrechen
                             </a>
                         </div>

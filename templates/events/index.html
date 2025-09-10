@@ -8,7 +8,7 @@
         <h1>📅 Events</h1>
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
         <div class="page-actions">
-            <a href="{{ url_for('events.stats') }}" class="btn btn-secondary">📊 Statistiken</a>
+            <a href="{{ url_for('events.stats') }}" class="btn btn-outline">📊 Statistiken</a>
             {% if current_user.is_admin %}
             <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">Neues Event</a>
             {% endif %}
@@ -67,7 +67,7 @@
                     {% endif %}
                     
                     {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
+                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
                     {% endif %}
                     </div>
                 </div>
@@ -86,9 +86,9 @@
             <div class="quick-actions">
             {% if current_user.is_admin %}
             <a href="{{ url_for('events.year_planning') }}" class="btn btn-primary">📅 Jahresplanung erstellen</a>
-            <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Archiv anzeigen</a>
+            <a href="{{ url_for('events.archive') }}" class="btn btn-outline">📚 Archiv anzeigen</a>
             {% else %}
-            <a href="{{ url_for('events.archive') }}" class="btn btn-secondary">📚 Vergangene Events</a>
+            <a href="{{ url_for('events.archive') }}" class="btn btn-outline">📚 Vergangene Events</a>
             {% endif %}
             </div>
         </div>

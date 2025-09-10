@@ -11,7 +11,7 @@
             {% if event.kueche %} • {{ event.kueche }}{% endif %}
         </p>
         <div class="page-actions">
-            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+            <a href="{{ url_for('events.index') }}" class="btn btn-outline">← Zurück zu Events</a>
         </div>
     </div>
     
@@ -79,10 +79,10 @@
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if participation and participation.teilnahme %}
                         <p>Du nimmst an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-warning">Absagen</button>
+                        <button type="submit" class="btn btn-danger">Absagen</button>
                         {% else %}
                         <p>Du nimmst nicht an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-primary">Zusagen</button>
+                        <button type="submit" class="btn btn-success">Zusagen</button>
                         {% endif %}
                     </form>
                     
@@ -148,7 +148,7 @@
             <!-- Buttons am Ende der Haupt-Card -->
             <div class="card-actions primary">
                 {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-secondary">Bearbeiten</a>
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
                 {% endif %}
                 
                 {% if current_user.is_admin and not event.is_past %}
@@ -166,7 +166,7 @@
                 {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                 {% if user_participation and user_participation.teilnahme %}
                     {% if event.has_rating_from_participant(current_user.id) %}
-                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-secondary">
+                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-outline">
                             <i class="fas fa-star"></i> Bewertung bearbeiten
                         </a>
                     {% else %}
@@ -176,7 +176,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-secondary">
+                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-outline">
                     <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
                 </a>
             </div>

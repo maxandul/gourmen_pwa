@@ -12,7 +12,7 @@
             {% if event.kueche %} • {{ event.kueche }}{% endif %}
         </p>
         <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event</a>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">← Zurück zu Event</a>
         </div>
     </div>
     
@@ -126,7 +126,7 @@
                     {% if not event.billbro_closed %}
                     <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-secondary">Schätzung ändern</button>
+                        <button type="submit" class="btn btn-outline">Schätzung ändern</button>
                     </form>
                     {% else %}
                     <p class="text-muted">BillBro ist abgeschlossen - Schätzung kann nicht mehr geändert werden</p>
@@ -200,7 +200,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-success">✅ Akzeptieren</button>
                         </form>
-                        <button type="button" class="btn btn-secondary" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
+                        <button type="button" class="btn btn-outline" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
                     </div>
                 </div>
 
@@ -245,7 +245,7 @@
                         <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" style="display: inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             {% if event.billbro_closed %}
-                            <button type="submit" class="btn btn-warning" onclick="return confirm('BillBro wieder öffnen?')">
+                            <button type="submit" class="btn btn-outline" onclick="return confirm('BillBro wieder öffnen?')">
                                 🔓 BillBro wieder öffnen
                             </button>
                             {% else %}
@@ -286,7 +286,7 @@
                 {% if not event.billbro_closed %}
                 <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-secondary">Schätzung ändern</button>
+                    <button type="submit" class="btn btn-outline">Schätzung ändern</button>
                 </form>
                 {% else %}
                 <p class="text-muted">BillBro ist abgeschlossen - Schätzung kann nicht mehr geändert werden</p>
