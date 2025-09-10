@@ -20,6 +20,7 @@ class PWA {
         this.setupNetworkStatus();
         this.setupNotifications();
         this.setupUpdateDetection();
+        this.showManualUpdateButton(); // Manueller Update-Button
         // this.showDebugInfo(); // Debug-Info anzeigen - auskommentiert
     }
 
@@ -114,9 +115,18 @@ class PWA {
         // Prüfe regelmäßig auf Updates
         setInterval(() => {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                console.log('🔄 Checking for updates...');
                 navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
             }
-        }, 60000); // Jede Minute
+        }, 30000); // Alle 30 Sekunden für bessere Update-Erkennung
+        
+        // Zusätzlicher Update-Check beim Seitenladen
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🔄 Service Worker controller changed - reloading page');
+                window.location.reload();
+            });
+        }
     }
 
     checkInstallation() {
@@ -283,11 +293,50 @@ class PWA {
 
     updateApp() {
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            console.log('🔄 Updating app...');
             navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
             
             // Reload nach Update
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
+    }
+    
+    // Manueller Update-Check
+    checkForUpdates() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js')
+                .then(registration => {
+                    console.log('🔄 Manual update check...');
+                    return registration.update();
+                })
+                .then(() => {
+                    this.showToast('Update-Check durchgeführt', 'info');
+                })
+                .catch(error => {
+                    console.error('Update check failed:', error);
+                    this.showToast('Update-Check fehlgeschlagen', 'error');
+                });
+        }
+    }
+    
+    // Manueller Update-Button (immer sichtbar)
+    showManualUpdateButton() {
+        const existingBtn = document.getElementById('manual-update-btn');
+        if (existingBtn) return;
+
+        const updateBtn = document.createElement('button');
+        updateBtn.id = 'manual-update-btn';
+        updateBtn.className = 'manual-update-btn';
+        updateBtn.innerHTML = `
+            <span style="display: flex; align-items: center; gap: 8px;">
+                🔄 Update prüfen
+            </span>
+        `;
+        
+        updateBtn.addEventListener('click', () => this.checkForUpdates());
+        document.body.appendChild(updateBtn);
     }
 
     updateNetworkStatus() {
@@ -537,7 +586,8 @@ const pwaStyles = `
 /* Verbesserte PWA Buttons */
 .pwa-install-btn,
 .notification-permission-btn,
-.pwa-update-btn {
+.pwa-update-btn,
+.manual-update-btn {
     position: fixed;
     bottom: 100px;
     left: 50%;
@@ -582,7 +632,8 @@ const pwaStyles = `
 
 .pwa-install-btn:hover,
 .notification-permission-btn:hover,
-.pwa-update-btn:hover {
+.pwa-update-btn:hover,
+.manual-update-btn:hover {
     background: linear-gradient(135deg, #e67a4d, #9a5543);
     transform: translateX(-50%) translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 105, 60, 0.4);
@@ -605,6 +656,15 @@ const pwaStyles = `
 
 .pwa-update-btn:hover {
     background: linear-gradient(135deg, #e0a800, #e67e22);
+}
+
+.manual-update-btn {
+    bottom: 160px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.manual-update-btn:hover {
+    background: linear-gradient(135deg, #218838, #1ea085);
 }
 
 @keyframes bounce {

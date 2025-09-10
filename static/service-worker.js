@@ -1,5 +1,5 @@
 // Service Worker für Gourmen PWA
-const CACHE_NAME = 'gourmen-v1';
+const CACHE_NAME = 'gourmen-v2'; // Version erhöht für Update-Test
 const urlsToCache = [
   '/',
   '/static/css/base.css',
@@ -8,10 +8,11 @@ const urlsToCache = [
 
 // Install event
 self.addEventListener('install', event => {
+  console.log('Service Worker: Install Event');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Service Worker: Opened cache', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
   );
@@ -21,11 +22,13 @@ self.addEventListener('install', event => {
 
 // Activate event
 self.addEventListener('activate', event => {
+  console.log('Service Worker: Activate Event');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Service Worker: Deleting old cache', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -34,6 +37,29 @@ self.addEventListener('activate', event => {
   );
   // Take control of all pages immediately
   return self.clients.claim();
+});
+
+// Message event für Update-Checks
+self.addEventListener('message', event => {
+  console.log('Service Worker: Message received', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Service Worker: Skip waiting requested');
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CHECK_UPDATE') {
+    console.log('Service Worker: Update check requested');
+    // Sende Update-Info an alle Clients
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'UPDATE_AVAILABLE',
+          version: CACHE_NAME
+        });
+      });
+    });
+  }
 });
 
 // Fetch event

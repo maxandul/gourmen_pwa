@@ -1279,10 +1279,9 @@ a:hover {
 }
 
 .user-bar-logo {
-    height: 32px;
+    height: 40px;
     width: auto;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 4px 8px;
+    /* Hintergrund entfernt für sauberes Design */
 }
 
 .user-section {
