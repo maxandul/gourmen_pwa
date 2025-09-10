@@ -89,7 +89,14 @@ def profile():
         form.ort.data = current_user.ort
         
         # Association data
-        form.funktion.data = current_user.funktion.value if current_user.funktion else Funktion.MEMBER.value
+        if current_user.funktion:
+            # Handle both Enum and string values (migration compatibility)
+            if hasattr(current_user.funktion, 'value'):
+                form.funktion.data = current_user.funktion.value
+            else:
+                form.funktion.data = str(current_user.funktion)
+        else:
+            form.funktion.data = Funktion.MEMBER.value
         form.beitrittsjahr.data = current_user.beitrittsjahr
         form.vorstandsmitglied.data = current_user.vorstandsmitglied
         
@@ -125,7 +132,11 @@ def profile():
         current_user.ort = form.ort.data
         
         # Association data
-        current_user.funktion = Funktion(form.funktion.data)
+        try:
+            current_user.funktion = Funktion(form.funktion.data)
+        except ValueError:
+            # Handle invalid function values gracefully
+            current_user.funktion = Funktion.MEMBER
         current_user.beitrittsjahr = form.beitrittsjahr.data
         current_user.vorstandsmitglied = form.vorstandsmitglied.data
         

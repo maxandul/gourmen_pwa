@@ -42,7 +42,7 @@ class Member(db.Model, UserMixin):
     passwort_hash = db.Column(db.String(255), nullable=False)
     
     # Association data
-    funktion = db.Column(db.String(50), default='MEMBER')
+    funktion = db.Column(db.Enum(Funktion), default=Funktion.MEMBER)
     vorstandsmitglied = db.Column(db.Boolean, default=False)
     beitrittsjahr = db.Column(db.Integer)
     
