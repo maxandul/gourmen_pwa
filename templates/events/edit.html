@@ -395,114 +395,130 @@ class PlacesAutocomplete {
         <h1>✏️ Event bearbeiten</h1>
         <p class="page-subtitle">{{ event.event_typ.value }} - {{ event.display_date }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-secondary">← Zurück zu Event-Details</a>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">← Zurück zu Event-Details</a>
         </div>
     </div>
     
     <div class="page-content">
-        <form method="POST" class="form">
-            {{ form.hidden_tag() }}
-            
-            <div class="form-group">
-                {{ form.datum.label }}
-                {{ form.datum(class="form-control", type="date") }}
-                {% if form.datum.errors %}
-                <div class="error">{{ form.datum.errors[0] }}</div>
-                {% endif %}
+        <div class="card">
+            <div class="card-header">
+                <h2>Event bearbeiten</h2>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    {{ form.event_typ.label }}
-                    {{ form.event_typ(class="form-control") }}
-                    {% if form.event_typ.errors %}
-                    <div class="error">{{ form.event_typ.errors[0] }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    {{ form.organisator_id.label }}
-                    {{ form.organisator_id(class="form-control") }}
-                    {% if form.organisator_id.errors %}
-                    <div class="error">{{ form.organisator_id.errors[0] }}</div>
-                    {% endif %}
+            <div class="card-body">
+                <form method="POST" class="form">
+                    {{ form.hidden_tag() }}
                     
-                </div>
-            </div>
-            
-            <!-- Restaurant Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>🍽️ Restaurant & Location</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        {{ form.restaurant.label }}
-                        {{ form.restaurant(class="form-control", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
-                        {% if form.restaurant.errors %}
-                        <div class="error">{{ form.restaurant.errors[0] }}</div>
-                        {% endif %}
-                        <small class="form-help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            {{ form.kueche.label }}
-                            {{ form.kueche(class="form-control", placeholder="z.B. Italienisch, Asiatisch") }}
-                            {% if form.kueche.errors %}
-                            <div class="error">{{ form.kueche.errors[0] }}</div>
-                            {% endif %}
+                    <!-- Grundlegende Event-Informationen -->
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>📋 Grundlegende Informationen</h3>
                         </div>
-                        
-                        <div class="form-group">
-                            {{ form.website.label }}
-                            {{ form.website(class="form-control", placeholder="https://...") }}
-                            {% if form.website.errors %}
-                            <div class="error">{{ form.website.errors[0] }}</div>
-                            {% endif %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.datum.label }}
+                                {{ form.datum(class="form-control", type="date") }}
+                                {% if form.datum.errors %}
+                                <div class="error">{{ form.datum.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ form.event_typ.label }}
+                                    {{ form.event_typ(class="form-control") }}
+                                    {% if form.event_typ.errors %}
+                                    <div class="error">{{ form.event_typ.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {{ form.organisator_id.label }}
+                                    {{ form.organisator_id(class="form-control") }}
+                                    {% if form.organisator_id.errors %}
+                                    <div class="error">{{ form.organisator_id.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Additional Info -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>📝 Zusätzliche Informationen</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        {{ form.notizen.label }}
-                        {{ form.notizen(class="form-control", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
-                        {% if form.notizen.errors %}
-                        <div class="error">{{ form.notizen.errors[0] }}</div>
-                        {% endif %}
+                    
+                    <!-- Restaurant & Location -->
+                    <div class="card card-secondary variant-accent">
+                        <div class="card-header">
+                            <h3>🍽️ Restaurant & Location</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.restaurant.label }}
+                                {{ form.restaurant(class="form-control", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
+                                {% if form.restaurant.errors %}
+                                <div class="error">{{ form.restaurant.errors[0] }}</div>
+                                {% endif %}
+                                <small class="form-help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ form.kueche.label }}
+                                    {{ form.kueche(class="form-control", placeholder="z.B. Italienisch, Asiatisch") }}
+                                    {% if form.kueche.errors %}
+                                    <div class="error">{{ form.kueche.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {{ form.website.label }}
+                                    {{ form.website(class="form-control", placeholder="https://...") }}
+                                    {% if form.website.errors %}
+                                    <div class="error">{{ form.website.errors[0] }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    
+                    <!-- Zusätzliche Informationen -->
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>📝 Zusätzliche Informationen</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                {{ form.notizen.label }}
+                                {{ form.notizen(class="form-control", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
+                                {% if form.notizen.errors %}
+                                <div class="error">{{ form.notizen.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden Google Places Fields -->
+                    <div style="display: none;">
+                        {{ form.place_id() }}
+                        {{ form.place_name() }}
+                        {{ form.place_address() }}
+                        {{ form.place_lat() }}
+                        {{ form.place_lng() }}
+                        {{ form.place_types() }}
+                        {{ form.place_website() }}
+                        {{ form.place_maps_url() }}
+                        {{ form.place_price_level() }}
+                        {{ form.place_street_number() }}
+                        {{ form.place_route() }}
+                        {{ form.place_postal_code() }}
+                        {{ form.place_locality() }}
+                        {{ form.place_country() }}
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="card-actions primary">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">Abbrechen</a>
+                    </div>
+                </form>
             </div>
-            
-            <!-- Hidden Google Places Fields -->
-            <div style="display: none;">
-                {{ form.place_id() }}
-                {{ form.place_name() }}
-                {{ form.place_address() }}
-                {{ form.place_lat() }}
-                {{ form.place_lng() }}
-                {{ form.place_types() }}
-                {{ form.place_website() }}
-                {{ form.place_maps_url() }}
-                {{ form.place_price_level() }}
-                {{ form.place_street_number() }}
-                {{ form.place_route() }}
-                {{ form.place_postal_code() }}
-                {{ form.place_locality() }}
-                {{ form.place_country() }}
-            </div>
-            
-            <div class="form-actions">
-                {{ form.submit(class="btn btn-primary") }}
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %} 

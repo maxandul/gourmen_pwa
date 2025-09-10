@@ -153,15 +153,57 @@ async function networkFirst(request, cacheName) {
             return cachedResponse;
         }
         
-        // Return offline page for navigation requests
+        // Return cached page for navigation requests instead of offline page
         if (request.mode === 'navigate') {
-            return caches.match('/offline');
+            const cachedResponse = await caches.match(request);
+            if (cachedResponse) {
+                return cachedResponse;
+            }
         }
         
-        return new Response('Offline - Keine Verbindung', {
+        // Fallback: Return a simple offline message
+        return new Response(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Offline - Gourmen</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body { 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        height: 100vh; 
+                        margin: 0; 
+                        background: #f5f5f5;
+                        text-align: center;
+                    }
+                    .offline-message {
+                        background: white;
+                        padding: 40px;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        max-width: 400px;
+                    }
+                    .offline-icon { font-size: 48px; margin-bottom: 20px; }
+                    h1 { color: #333; margin-bottom: 16px; }
+                    p { color: #666; line-height: 1.6; }
+                </style>
+            </head>
+            <body>
+                <div class="offline-message">
+                    <div class="offline-icon">📡</div>
+                    <h1>Keine Internetverbindung</h1>
+                    <p>Bitte überprüfe deine Internetverbindung und versuche es erneut.</p>
+                </div>
+            </body>
+            </html>
+        `, {
             status: 503,
             statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' }
+            headers: { 'Content-Type': 'text/html' }
         });
     }
 }

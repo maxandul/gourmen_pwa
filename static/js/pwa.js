@@ -44,13 +44,13 @@ class PWA {
         // Online/Offline Status
         window.addEventListener('online', () => {
             this.isOnline = true;
-            this.showToast('Verbindung wiederhergestellt', 'success');
+            this.showToast('🌐 Verbindung wiederhergestellt', 'success');
             this.updateNetworkStatus();
         });
 
         window.addEventListener('offline', () => {
             this.isOnline = false;
-            this.showToast('Keine Internetverbindung', 'warning');
+            this.showToast('📡 Keine Internetverbindung - Offline-Modus aktiv', 'warning', 8000);
             this.updateNetworkStatus();
         });
 
@@ -107,13 +107,8 @@ class PWA {
     }
 
     setupNetworkStatus() {
-        this.updateNetworkStatus();
-        
-        // Erstelle Network Status Indicator
-        const networkIndicator = document.createElement('div');
-        networkIndicator.id = 'network-status';
-        networkIndicator.className = 'network-indicator';
-        document.body.appendChild(networkIndicator);
+        // Network Status wird jetzt über Toasts angezeigt
+        // Kein permanenter Indicator mehr nötig
     }
 
     setupNotifications() {
@@ -390,21 +385,13 @@ class PWA {
     
 
     updateNetworkStatus() {
-        const indicator = document.getElementById('network-status');
-        if (!indicator) return;
-
-        if (this.isOnline) {
-            indicator.className = 'network-indicator online';
-            indicator.innerHTML = '🌐 Online';
-        } else {
-            indicator.className = 'network-indicator offline';
-            indicator.innerHTML = '📡 Offline';
-        }
+        // Network Status wird jetzt über Toasts angezeigt
+        // Diese Methode bleibt für Kompatibilität, macht aber nichts mehr
     }
 
-    showToast(message, type = 'info') {
-        // Entferne existierende Toasts
-        const existingToasts = document.querySelectorAll('.toast');
+    showToast(message, type = 'info', duration = 5000) {
+        // Entferne existierende Toasts des gleichen Typs
+        const existingToasts = document.querySelectorAll(`.toast.${type}`);
         existingToasts.forEach(toast => toast.remove());
 
         const toast = document.createElement('div');
@@ -416,13 +403,13 @@ class PWA {
 
         document.body.appendChild(toast);
 
-        // Auto-remove nach 5 Sekunden
+        // Auto-remove nach definierter Zeit
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
             }
-        }, 5000);
+        }, duration);
     }
 
     async sendNotification(title, body, options = {}) {
@@ -540,37 +527,8 @@ class PWA {
     }
 }
 
-// PWA CSS für Network Indicator
+// PWA CSS - Network Indicator entfernt, nur noch Toast-System
 const pwaStyles = `
-.network-indicator {
-    position: fixed;
-    top: 70px;
-    right: 16px;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    z-index: 1004;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.network-indicator.online {
-    background: rgba(40, 167, 69, 0.9);
-    color: white;
-}
-
-.network-indicator.offline {
-    background: rgba(220, 53, 69, 0.9);
-    color: white;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
 
 .toast-close {
     background: none;
@@ -587,40 +545,47 @@ const pwaStyles = `
     opacity: 1;
 }
 
-/* Toast Notifications */
+/* Toast Notifications - Einheitliches System */
 .toast {
     position: fixed;
     top: 20px;
     right: 20px;
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 16px 20px;
+    border-radius: 12px;
     color: white;
     font-weight: 500;
     z-index: 1005;
-    max-width: 300px;
+    max-width: 350px;
+    min-width: 280px;
     word-wrap: break-word;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.4s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .toast.info {
-    background: rgba(23, 162, 184, 0.9);
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.95), rgba(23, 162, 184, 0.85));
+    border-left: 4px solid #17a2b8;
 }
 
 .toast.success {
-    background: rgba(40, 167, 69, 0.9);
+    background: linear-gradient(135deg, rgba(113, 198, 166, 0.95), rgba(113, 198, 166, 0.85));
+    border-left: 4px solid #71c6a6;
 }
 
 .toast.warning {
-    background: rgba(255, 193, 7, 0.9);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 193, 7, 0.85));
     color: #1b232e;
+    border-left: 4px solid #ffc107;
 }
 
 .toast.error {
-    background: rgba(220, 53, 69, 0.9);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(220, 53, 69, 0.85));
+    border-left: 4px solid #dc3545;
 }
 
 @keyframes slideIn {
@@ -642,13 +607,13 @@ const pwaStyles = `
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #dc693c, #804539);
+    background: linear-gradient(135deg, #71c6a6, #5ba68a);
     color: white;
     border: none;
     padding: 12px 24px;
     border-radius: 25px;
     font-weight: 600;
-    box-shadow: 0 4px 15px rgba(220, 105, 60, 0.3);
+    box-shadow: 0 4px 15px rgba(113, 198, 166, 0.3);
     z-index: 1003;
     /* animation: bounce 2s infinite; */ /* Animation entfernt */
     cursor: pointer;
@@ -660,14 +625,14 @@ const pwaStyles = `
     position: fixed;
     top: 80px;
     right: 16px;
-    background: rgba(220, 105, 60, 0.9);
+    background: rgba(113, 198, 166, 0.9);
     color: white;
     border: none;
     padding: 8px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(220, 105, 60, 0.3);
+    box-shadow: 0 2px 8px rgba(113, 198, 166, 0.3);
     z-index: 1003;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -675,36 +640,36 @@ const pwaStyles = `
 }
 
 .pwa-install-btn-subtle:hover {
-    background: rgba(220, 105, 60, 1);
+    background: rgba(113, 198, 166, 1);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 105, 60, 0.4);
+    box-shadow: 0 4px 12px rgba(113, 198, 166, 0.4);
 }
 
 .pwa-install-btn:hover,
 .notification-permission-btn:hover,
 .pwa-update-btn:hover {
-    background: linear-gradient(135deg, #e67a4d, #9a5543);
+    background: linear-gradient(135deg, #8dd4b8, #71c6a6);
     transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(220, 105, 60, 0.4);
+    box-shadow: 0 6px 20px rgba(113, 198, 166, 0.4);
 }
 
 .notification-permission-btn {
     bottom: 160px;
-    background: linear-gradient(135deg, #17a2b8, #6f42c1);
+    background: linear-gradient(135deg, #17a2b8, #71c6a6);
 }
 
 .notification-permission-btn:hover {
-    background: linear-gradient(135deg, #1ea085, #8e44ad);
+    background: linear-gradient(135deg, #1ea085, #8dd4b8);
 }
 
 .pwa-update-btn {
     bottom: 220px;
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    background: linear-gradient(135deg, #ffc107, #71c6a6);
     color: #1b232e;
 }
 
 .pwa-update-btn:hover {
-    background: linear-gradient(135deg, #e0a800, #e67e22);
+    background: linear-gradient(135deg, #e0a800, #8dd4b8);
 }
 
 

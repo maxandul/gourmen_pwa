@@ -10,7 +10,7 @@
             {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
         </p>
         <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">← Zurück zu Event</a>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">← Zurück zu Event</a>
         </div>
     </div>
     

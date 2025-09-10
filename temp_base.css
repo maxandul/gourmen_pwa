@@ -1,16 +1,19 @@
-/* CSS Variables für das neue Farbschema - Dark Mode als Standard */
+﻿/* CSS Variables fÃ¼r das neue Farbschema - Dark Mode als Standard */
 :root {
     /* Hauptfarben */
     --primary-color: #1b232e;
     --secondary-color: #354e5e;
     --accent-color: #dc693c;
     --warm-color: #804539;
+    --mint-color: #71c6a6;
     
     /* Abgeleitete Farben */
     --primary-light: #2a3441;
     --secondary-light: #4a5d6e;
     --accent-light: #e67a4d;
     --warm-light: #9a5543;
+    --mint-light: #8dd4b8;
+    --mint-dark: #5ba68a;
     
     /* Dark Mode Farben als Standard */
     --text-primary: #ffffff;
@@ -35,6 +38,7 @@
     --icon-warning: #ffc107;
     --icon-error: #dc3545;
     --icon-info: #17a2b8;
+    --icon-mint: #71c6a6;
     
     /* Schatten */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -76,7 +80,7 @@ body {
     min-height: calc(100vh - 80px);
 }
 
-/* Container für bessere Abstände */
+/* Container fÃ¼r bessere AbstÃ¤nde */
 .container {
     padding: 20px 0;
 }
@@ -363,7 +367,7 @@ a:hover {
     box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 
-/* Legacy Support - wird später entfernt */
+/* Legacy Support - wird spÃ¤ter entfernt */
 .btn-secondary {
     background: var(--background-tertiary);
     color: var(--text-primary);
@@ -646,7 +650,7 @@ a:hover {
     margin-bottom: 24px; /* Mehr Abstand zwischen Form-Gruppen */
 }
 
-/* Form-Gruppen innerhalb von Cards haben zusätzlichen Abstand */
+/* Form-Gruppen innerhalb von Cards haben zusÃ¤tzlichen Abstand */
 .card .form-group:first-child {
     margin-top: 0;
 }
@@ -744,17 +748,17 @@ a:hover {
     padding: 24px; /* Mehr Padding in allen Richtungen */
 }
 
-/* Secondary Card System - für verschachtelte Cards */
+/* Secondary Card System - fÃ¼r verschachtelte Cards */
 .card-secondary {
     background: var(--background-secondary);
     border: 1px solid var(--background-tertiary);
     border-radius: var(--border-radius-lg);
-    margin: 0 8px; /* Weniger Einzug - näher an die äußere Card */
+    margin: 0 8px; /* Weniger Einzug - nÃ¤her an die Ã¤uÃŸere Card */
     box-shadow: none;
     transition: all var(--transition-normal);
 }
 
-/* Mobile-first: Bei größeren Bildschirmen mehr Einzug */
+/* Mobile-first: Bei grÃ¶ÃŸeren Bildschirmen mehr Einzug */
 @media (min-width: 768px) {
     .card-secondary {
         margin: 0 12px; /* Weniger Einzug auch auf Desktop */
@@ -764,7 +768,7 @@ a:hover {
 
 .card-secondary:hover {
     box-shadow: var(--shadow-sm);
-    transform: none; /* Keine Transformation für Secondary Cards */
+    transform: none; /* Keine Transformation fÃ¼r Secondary Cards */
 }
 
 .card-secondary .card-header {
@@ -784,7 +788,7 @@ a:hover {
     padding: 20px 16px; /* Weniger Padding links und rechts */
 }
 
-/* Alternative Styling für Secondary Cards */
+/* Alternative Styling fÃ¼r Secondary Cards */
 .card-secondary.variant-accent {
     border-left: 4px solid var(--accent-color);
     background: rgba(255, 140, 0, 0.05);
@@ -805,7 +809,7 @@ a:hover {
     background: rgba(255, 193, 7, 0.05);
 }
 
-/* Generalisiertes Button-System für Cards */
+/* Generalisiertes Button-System fÃ¼r Cards */
 .card-actions {
     margin-top: 16px;
     padding-top: 16px;
@@ -820,7 +824,7 @@ a:hover {
     margin: 0; /* Entfernt Standard-Margins */
 }
 
-/* Button-Container für verschiedene Kontexte */
+/* Button-Container fÃ¼r verschiedene Kontexte */
 .card-actions.primary {
     justify-content: flex-start;
 }
@@ -837,7 +841,7 @@ a:hover {
     justify-content: space-between;
 }
 
-/* Mobile Anpassungen für Button-Container */
+/* Mobile Anpassungen fÃ¼r Button-Container */
 @media (max-width: 768px) {
     .card-actions {
         flex-direction: column;
@@ -893,17 +897,17 @@ a:hover {
     padding-right: 24px;
 }
 
-/* Erste direkte Kinder haben zusätzliches Padding oben */
+/* Erste direkte Kinder haben zusÃ¤tzliches Padding oben */
 .card > *:first-child {
     padding-top: 24px;
 }
 
-/* Letzte direkte Kinder haben zusätzliches Padding unten */
+/* Letzte direkte Kinder haben zusÃ¤tzliches Padding unten */
 .card > *:last-child {
     padding-bottom: 24px;
 }
 
-/* Spezielle Behandlung für Listen und Grids innerhalb von Cards */
+/* Spezielle Behandlung fÃ¼r Listen und Grids innerhalb von Cards */
 .card .events-list,
 .card .participants-list,
 .card .ranking-list,
@@ -951,7 +955,7 @@ a:hover {
     padding-bottom: 0;
 }
 
-/* Spezielle Behandlung für Event-Aktionen */
+/* Spezielle Behandlung fÃ¼r Event-Aktionen */
 .card .event-actions {
     padding: 16px 24px;
     border-top: 1px solid var(--background-tertiary);
@@ -971,7 +975,7 @@ a:hover {
     margin-bottom: -24px;
 }
 
-/* Event-Buttons außerhalb von Cards (z.B. auf der Events-Übersicht) */
+/* Event-Buttons auÃŸerhalb von Cards (z.B. auf der Events-Ãœbersicht) */
 .event-actions {
     padding: 16px 0;
     display: flex;
@@ -981,7 +985,7 @@ a:hover {
     align-items: center;
 }
 
-/* Allgemeine Actions ohne Hintergrund - überschreibt die vorherige Regel */
+/* Allgemeine Actions ohne Hintergrund - Ã¼berschreibt die vorherige Regel */
 .card .actions {
     padding: 20px 0;
     display: flex;
@@ -993,23 +997,23 @@ a:hover {
     margin: 0; /* Keine negativen Margins */
 }
 
-/* Spezielle Behandlung für Welcome-Sections */
+/* Spezielle Behandlung fÃ¼r Welcome-Sections */
 .card .welcome-section {
     padding: 24px;
 }
 
-/* Spezielle Behandlung für Stats-Grids */
+/* Spezielle Behandlung fÃ¼r Stats-Grids */
 .card .stats-grid,
 .card .ggl-overview {
     padding: 24px;
 }
 
-/* Spezielle Behandlung für Form-Container */
+/* Spezielle Behandlung fÃ¼r Form-Container */
 .card .form-container {
     padding: 24px;
 }
 
-/* Spezielle Behandlung für 2FA-Templates */
+/* Spezielle Behandlung fÃ¼r 2FA-Templates */
 .card .setup-instructions,
 .card .security-info,
 .card .verification-info,
@@ -1023,7 +1027,7 @@ a:hover {
     border-radius: 0;
 }
 
-/* Verification step für 2FA-Einrichtung */
+/* Verification step fÃ¼r 2FA-Einrichtung */
 .card .verification-step {
     padding: 20px;
     margin: 20px 0;
@@ -1119,7 +1123,7 @@ a:hover {
     flex-wrap: wrap;
 }
 
-/* Spezielle Hintergrundfarben für 2FA-Sektionen - Dark Mode angepasst */
+/* Spezielle Hintergrundfarben fÃ¼r 2FA-Sektionen - Dark Mode angepasst */
 .card .verification-info {
     background: rgba(23, 162, 184, 0.1);
     border: 1px solid rgba(23, 162, 184, 0.3);
@@ -1173,7 +1177,7 @@ a:hover {
     margin: 8px 0;
 }
 
-/* Button-Styles für 2FA - Dark Mode angepasst */
+/* Button-Styles fÃ¼r 2FA - Dark Mode angepasst */
 .card .btn-outline {
     background: transparent;
     border: 1px solid var(--text-muted);
@@ -1187,7 +1191,7 @@ a:hover {
 
 /* Legacy .card .btn-danger - wird durch neue Definition ersetzt */
 
-/* Mobile Anpassungen für 2FA */
+/* Mobile Anpassungen fÃ¼r 2FA */
 @media (max-width: 768px) {
     .card .setup-instructions,
     .card .verification-step,
@@ -1240,14 +1244,14 @@ a:hover {
     }
 }
 
-/* Container für Cards mit Abstand */
+/* Container fÃ¼r Cards mit Abstand */
 .cards-container {
     display: flex;
     flex-direction: column;
     gap: 20px; /* Abstand zwischen Cards */
 }
 
-/* Grid Layout für Cards */
+/* Grid Layout fÃ¼r Cards */
 .cards-grid {
     display: grid;
     gap: 20px; /* Abstand zwischen Cards */
@@ -1265,7 +1269,7 @@ a:hover {
         margin-bottom: 16px;
     }
     
-    /* Reduziertes Padding auf mobilen Geräten */
+    /* Reduziertes Padding auf mobilen GerÃ¤ten */
     .card > * {
         padding-left: 16px;
         padding-right: 16px;
@@ -1362,7 +1366,7 @@ a:hover {
 .user-bar-logo {
     height: 40px;
     width: auto;
-    /* Hintergrund entfernt für sauberes Design */
+    /* Hintergrund entfernt fÃ¼r sauberes Design */
 }
 
 .user-section {
@@ -1596,7 +1600,7 @@ a:hover {
     grid-template-columns: repeat(3, 1fr);
 }
 
-/* Stats Grid für Dashboard */
+/* Stats Grid fÃ¼r Dashboard */
 .stats-grid {
     display: grid;
     gap: 20px;
@@ -1783,7 +1787,7 @@ a:hover {
         border-radius: var(--border-radius-lg); /* Border-radius beibehalten */
     }
     
-    /* Mehr Abstand zwischen Cards auf Mobile für bessere Lesbarkeit */
+    /* Mehr Abstand zwischen Cards auf Mobile fÃ¼r bessere Lesbarkeit */
     .card {
         margin-bottom: 24px; /* Mehr Abstand zwischen Cards */
     }
@@ -1880,7 +1884,7 @@ a:hover {
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, var(--accent-color), var(--warm-color));
+    background: linear-gradient(135deg, var(--mint-color), var(--mint-dark));
     color: white;
     border: none;
     padding: 12px 24px;
@@ -1894,7 +1898,7 @@ a:hover {
 .pwa-install-btn:hover,
 .notification-permission-btn:hover,
 .pwa-update-btn:hover {
-    background: linear-gradient(135deg, var(--accent-light), var(--warm-light));
+    background: linear-gradient(135deg, var(--mint-light), var(--mint-color));
     transform: translateX(-50%) translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
@@ -2434,9 +2438,9 @@ a:hover {
     }
 }
 
-/* Actions innerhalb von Cards - wird durch spezifischere Regeln überschrieben */
+/* Actions innerhalb von Cards - wird durch spezifischere Regeln Ã¼berschrieben */
 
-/* Spezielle Behandlung für Security-Sektionen im Profil */
+/* Spezielle Behandlung fÃ¼r Security-Sektionen im Profil */
 .card .security-section {
     padding: 20px 0;
     border-bottom: 1px solid var(--background-tertiary);
@@ -3134,5 +3138,6 @@ small {
     .landing-stats {
         grid-template-columns: 1fr;
     }
-}/* Cache busting - 09/10/2025 16:32:32 */
+}
 
+/* Cache busting - 09/10/2025 16:32:32 */

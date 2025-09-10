@@ -60,7 +60,4 @@ def health_db():
     except Exception as e:
         return jsonify({'status': 'error', 'database': 'disconnected', 'error': str(e)}), 503
 
-@bp.route('/offline')
-def offline():
-    """Offline page for PWA"""
-    return render_template('offline.html') 
+# Offline-Route entfernt - wird jetzt über Toast-System und Service Worker gehandhabt 
