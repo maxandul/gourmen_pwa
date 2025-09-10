@@ -38,6 +38,7 @@ class PWA {
             this.isInstalled = true;
             this.hideInstallButton();
             this.showToast('App erfolgreich installiert! 🎉', 'success');
+            console.log('🚀 App wurde erfolgreich installiert');
         });
 
         // Online/Offline Status
@@ -235,11 +236,13 @@ class PWA {
         }
 
         try {
+            this.showToast('App wird installiert...', 'info');
             this.deferredPrompt.prompt();
             const { outcome } = await this.deferredPrompt.userChoice;
             
             if (outcome === 'accepted') {
-                this.showToast('Installation gestartet...', 'info');
+                this.showToast('Installation läuft...', 'info');
+                // Warte auf das appinstalled Event für die finale Bestätigung
             } else {
                 this.showToast('Installation abgebrochen', 'warning');
             }
@@ -508,11 +511,12 @@ class PWA {
         // Manueller Install-Test
         if (this.deferredPrompt) {
             console.log('🚀 Manueller Install gestartet');
+            this.showToast('App wird installiert...', 'info');
             this.deferredPrompt.prompt();
             this.deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     console.log('✅ User hat Installation akzeptiert');
-                    this.showToast('Installation gestartet!', 'success');
+                    this.showToast('Installation läuft...', 'info');
                 } else {
                     console.log('❌ User hat Installation abgelehnt');
                     this.showToast('Installation abgebrochen', 'warning');
