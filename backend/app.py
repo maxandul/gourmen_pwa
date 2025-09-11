@@ -8,62 +8,79 @@ from backend.services.notifier import PushSubscription
 
 def create_app(config_name=None):
     """Application factory"""
-    if config_name is None:
-        config_name = os.environ.get('FLASK_ENV', 'development')
-    
-    app = Flask(__name__, template_folder='../templates', static_folder='../static')
-    app.config.from_object(config[config_name])
-    
-    # Ensure UTF-8 encoding
-    app.config['JSON_AS_ASCII'] = False
-    
-    # Initialize extensions
-    init_extensions(app)
-    
-    # Register blueprints
-    from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
-    
-    app.register_blueprint(public.bp)
-    app.register_blueprint(auth.bp, url_prefix='/auth')
-    app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
-    app.register_blueprint(events.bp, url_prefix='/events')
-    app.register_blueprint(billbro.bp, url_prefix='/billbro')
-    app.register_blueprint(stats.bp, url_prefix='/stats')
-    app.register_blueprint(ggl.bp, url_prefix='/ggl')
-    app.register_blueprint(account.bp, url_prefix='/account')
-    app.register_blueprint(admin.bp, url_prefix='/admin')
-    app.register_blueprint(docs.bp, url_prefix='/docs')
-    app.register_blueprint(notifications.bp, url_prefix='/notifications')
-    app.register_blueprint(ratings.bp, url_prefix='/ratings')
-    
-    # Register error handlers
-    register_error_handlers(app)
-    
-    # Register context processors
-    register_context_processors(app)
-    
-    # Add UTF-8 header to HTML responses only
-    @app.after_request
-    def after_request(response):
-        if response.content_type and response.content_type.startswith('text/html'):
-            response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        return response
-    
-    # Skip migrations since none exist and DB already has data
-    app.logger.info("Skipping migrations - no migration files found, DB already initialized")
-    
-    # Only initialize admin user if needed (on first request)
-    @app.before_first_request
-    def initialize_admin_user():
-        """Initialize admin user on first request"""
-        try:
-            init_admin_user(app)
-            app.logger.info("Admin user check completed")
-        except Exception as e:
-            app.logger.warning(f"Admin user initialization skipped: {e}")
-            pass
-    
-    return app
+    try:
+        if config_name is None:
+            config_name = os.environ.get('FLASK_ENV', 'development')
+        
+        app = Flask(__name__, template_folder='../templates', static_folder='../static')
+        app.config.from_object(config[config_name])
+        
+        # Ensure UTF-8 encoding
+        app.config['JSON_AS_ASCII'] = False
+        
+        # Initialize extensions
+        init_extensions(app)
+        
+        # Register blueprints
+        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
+        
+        app.register_blueprint(public.bp)
+        app.register_blueprint(auth.bp, url_prefix='/auth')
+        app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
+        app.register_blueprint(events.bp, url_prefix='/events')
+        app.register_blueprint(billbro.bp, url_prefix='/billbro')
+        app.register_blueprint(stats.bp, url_prefix='/stats')
+        app.register_blueprint(ggl.bp, url_prefix='/ggl')
+        app.register_blueprint(account.bp, url_prefix='/account')
+        app.register_blueprint(admin.bp, url_prefix='/admin')
+        app.register_blueprint(docs.bp, url_prefix='/docs')
+        app.register_blueprint(notifications.bp, url_prefix='/notifications')
+        app.register_blueprint(ratings.bp, url_prefix='/ratings')
+        
+        # Register error handlers
+        register_error_handlers(app)
+        
+        # Register context processors
+        register_context_processors(app)
+        
+        # Add UTF-8 header to HTML responses only
+        @app.after_request
+        def after_request(response):
+            if response.content_type and response.content_type.startswith('text/html'):
+                response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
+        
+        # Skip migrations since none exist and DB already has data
+        app.logger.info("App created successfully - skipping migrations")
+        
+        # Only initialize admin user if needed (on first request)
+        @app.before_first_request
+        def initialize_admin_user():
+            """Initialize admin user on first request"""
+            try:
+                init_admin_user(app)
+                app.logger.info("Admin user check completed")
+            except Exception as e:
+                app.logger.warning(f"Admin user initialization skipped: {e}")
+                pass
+        
+        app.logger.info("Flask app created and configured successfully")
+        return app
+        
+    except Exception as e:
+        # If app creation fails, create a minimal app for debugging
+        app = Flask(__name__)
+        app.logger.error(f"App creation failed: {e}")
+        
+        @app.route('/health')
+        def health():
+            return {'status': 'error', 'error': str(e)}, 500
+        
+        @app.route('/')
+        def index():
+            return f'<h1>App Error</h1><p>Error: {e}</p>'
+        
+        return app
 
 def register_error_handlers(app):
     """Register error handlers"""
