@@ -58,7 +58,8 @@ def health_db():
     """Database health check"""
     try:
         # Simple database query
-        db.session.execute('SELECT 1')
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
         return jsonify({'status': 'ok', 'database': 'connected'})
     except Exception as e:
         return jsonify({'status': 'error', 'database': 'disconnected', 'error': str(e)}), 503
