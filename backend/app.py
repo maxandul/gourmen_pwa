@@ -49,29 +49,17 @@ def create_app(config_name=None):
             response.headers['Content-Type'] = 'text/html; charset=utf-8'
         return response
     
-    # Initialize database and admin user if needed
-    with app.app_context():
-        try:
-            # Run migrations if needed (for Railway deployment)
-            from flask_migrate import upgrade
-            upgrade()
-            app.logger.info("Database migrations completed")
-        except Exception as e:
-            app.logger.warning(f"Migration check failed: {e}")
-            # Try to create tables manually if migrations fail
-            try:
-                from backend.extensions import db
-                db.create_all()
-                app.logger.info("Database tables created manually")
-            except Exception as create_error:
-                app.logger.error(f"Failed to create tables: {create_error}")
-                # Don't fail the app startup if database is not ready
-                pass
-        
+    # Skip migrations since none exist and DB already has data
+    app.logger.info("Skipping migrations - no migration files found, DB already initialized")
+    
+    # Only initialize admin user if needed (on first request)
+    @app.before_first_request
+    def initialize_admin_user():
+        """Initialize admin user on first request"""
         try:
             init_admin_user(app)
+            app.logger.info("Admin user check completed")
         except Exception as e:
-            # Tables don't exist yet, skip admin initialization
             app.logger.warning(f"Admin user initialization skipped: {e}")
             pass
     
