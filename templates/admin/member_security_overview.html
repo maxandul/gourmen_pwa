@@ -13,16 +13,12 @@
     </div>
     
     <div class="page-content">
+        <!-- Member Info -->
         <div class="card">
             <div class="card-header">
-                <h2>🔒 Sicherheitsübersicht</h2>
+                <h2>📋 Mitglied-Informationen</h2>
             </div>
             <div class="card-body">
-        
-        <div class="card-body">
-            <!-- Member Info -->
-            <div class="member-info">
-                <h3>📋 Mitglied-Informationen</h3>
                 <div class="info-grid">
                     <div class="info-item">
                         <strong>Name:</strong> {{ member.display_name }}
@@ -48,10 +44,14 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- 2FA Status -->
-            <div class="security-section">
-                <h3>🔐 2FA-Status</h3>
+        </div>
+        
+        <!-- 2FA Status -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔐 2FA-Status</h2>
+            </div>
+            <div class="card-body">
                 {% if mfa_data and mfa_data.is_totp_enabled %}
                     <div class="status-item status-enabled">
                         <span class="status-icon">✅</span>
@@ -90,10 +90,14 @@
                     </div>
                 {% endif %}
             </div>
-            
-            <!-- Recent Audit Events -->
-            <div class="security-section">
-                <h3>📊 Letzte Sicherheits-Events</h3>
+        </div>
+        
+        <!-- Recent Audit Events -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 Letzte Sicherheits-Events</h2>
+            </div>
+            <div class="card-body">
                 {% if recent_events %}
                     <div class="audit-events">
                         {% for event in recent_events %}
@@ -121,11 +125,15 @@
                     <p class="text-muted">Keine Sicherheits-Events gefunden.</p>
                 {% endif %}
             </div>
-            
-            <!-- Admin Actions -->
-            <div class="security-section">
-                <h3>⚙️ Admin-Aktionen</h3>
-                <div class="admin-actions">
+        </div>
+        
+        <!-- Admin Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚙️ Admin-Aktionen</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-actions">
                     <a href="{{ url_for('admin.reset_member_password', member_id=member.id) }}" 
                        class="btn btn-danger">
                         🔐 Passwort zurücksetzen
@@ -135,7 +143,7 @@
                         🔐 2FA zurücksetzen
                     </a>
                     <a href="{{ url_for('admin.members') }}" 
-                       class="btn btn-secondary">
+                       class="btn btn-outline">
                         ← Zurück zur Mitgliederliste
                     </a>
                 </div>
@@ -145,33 +153,16 @@
 </div>
 
 <style>
-.member-info {
-    background: rgba(23, 162, 184, 0.1);
-    border: 1px solid var(--info-color);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    margin-top: 15px;
 }
 
 .info-item {
     padding: 10px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: var(--border-radius-sm);
-}
-
-.security-section {
-    background: rgba(40, 167, 69, 0.1);
-    border: 1px solid var(--success-color);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 30px;
 }
 
 .status-item {
@@ -258,13 +249,6 @@
     font-size: 0.8em;
 }
 
-.admin-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
 .badge {
     padding: 4px 8px;
     border-radius: 4px;
@@ -291,9 +275,5 @@
     background: var(--info-color);
     color: white;
 }
-    </style>
-            </div>
-        </div>
-    </div>
-</div>
+</style>
 {% endblock %}

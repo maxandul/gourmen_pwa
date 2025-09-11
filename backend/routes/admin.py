@@ -449,6 +449,7 @@ def create_event():
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@require_step_up
 def reset_member_password(member_id):
     """Reset member password"""
     member = Member.query.get_or_404(member_id)
