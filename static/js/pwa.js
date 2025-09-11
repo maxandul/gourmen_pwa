@@ -97,7 +97,7 @@ class PWA {
                 console.log('🔄 Registriere neuen Service Worker...');
                 // Registriere SW vom Root-Pfad für vollen Scope
                 navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
+                .then(registration => {
                         console.log('✅ Service Worker erfolgreich registriert:', registration);
                         this.serviceWorkerRegistration = registration;
                         this.setupServiceWorkerEvents(registration);
@@ -151,26 +151,26 @@ class PWA {
     }
 
     setupServiceWorkerEvents(registration) {
-        // Prüfe auf Updates
-        registration.addEventListener('updatefound', () => {
-            console.log('🔄 Service Worker Update gefunden!');
-            const newWorker = registration.installing;
+                    // Prüfe auf Updates
+                    registration.addEventListener('updatefound', () => {
+                        console.log('🔄 Service Worker Update gefunden!');
+                        const newWorker = registration.installing;
             if (!newWorker) {
                 console.log('ℹ️ Kein installing-Worker vorhanden (evtl. bereits installiert)');
                 return;
             }
-            newWorker.addEventListener('statechange', () => {
+                        newWorker.addEventListener('statechange', () => {
                 if (!newWorker) return;
-                if (newWorker.state === 'installed') {
-                    if (navigator.serviceWorker.controller) {
-                        console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
-                        this.updateAvailable = true;
-                        this.showUpdateButton();
+                            if (newWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
+                                    this.updateAvailable = true;
+                                    this.showUpdateButton();
                         
                         // Zeige auch Toast-Benachrichtigung
                         this.showToast('🔄 Neues Update verfügbar! Klicke auf den Update-Button.', 'info', 8000);
-                    } else {
-                        console.log('🔄 Service Worker installiert - App bereit für Offline-Nutzung');
+                                } else {
+                                    console.log('🔄 Service Worker installiert - App bereit für Offline-Nutzung');
                         // Bei der ersten Installation warten wir auf die Aktivierung
                         if (newWorker.state === 'installed' && !navigator.serviceWorker.controller) {
                             console.log('🔄 Warte auf Service Worker Aktivierung...');
@@ -182,10 +182,10 @@ class PWA {
                                 }
                             }, 1000);
                         }
-                    }
-                }
-            });
-        });
+                                }
+                            }
+                        });
+                    });
     }
 
     setupNetworkStatus() {
@@ -208,7 +208,7 @@ class PWA {
             console.log('🔄 Service Worker bereit, starte automatische Update-Checks');
             
             // Prüfe regelmäßig auf Updates (alle 5 Minuten)
-            setInterval(() => {
+        setInterval(() => {
                 this.performAutomaticUpdateCheck();
             }, 300000); // 5 Minuten
             
@@ -240,7 +240,7 @@ class PWA {
         
         try {
             const registration = await navigator.serviceWorker.getRegistration();
-            if (registration) {
+                        if (registration) {
                 console.log('🔄 Automatischer Update-Check...');
                 await registration.update();
                 

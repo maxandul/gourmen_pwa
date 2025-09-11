@@ -65,11 +65,14 @@ def create_app(config_name=None):
                 app.logger.info("Database tables created manually")
             except Exception as create_error:
                 app.logger.error(f"Failed to create tables: {create_error}")
+                # Don't fail the app startup if database is not ready
+                pass
         
         try:
             init_admin_user(app)
-        except Exception:
+        except Exception as e:
             # Tables don't exist yet, skip admin initialization
+            app.logger.warning(f"Admin user initialization skipped: {e}")
             pass
     
     return app

@@ -68,9 +68,13 @@ def service_worker():
 
     This ensures the Service Worker controls the entire app (scope '/').
     """
-    response = send_from_directory(current_app.static_folder, 'sw.js', mimetype='application/javascript')
-    # Allow root scope for the service worker
-    response.headers['Service-Worker-Allowed'] = '/'
-    # Avoid aggressive caching during development
-    response.headers['Cache-Control'] = 'no-cache'
-    return response
+    try:
+        response = send_from_directory(current_app.static_folder, 'sw.js', mimetype='application/javascript')
+        # Allow root scope for the service worker
+        response.headers['Service-Worker-Allowed'] = '/'
+        # Avoid aggressive caching during development
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+    except Exception as e:
+        current_app.logger.error(f"Failed to serve service worker: {e}")
+        return jsonify({'error': 'Service Worker not found'}), 404
