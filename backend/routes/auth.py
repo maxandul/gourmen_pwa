@@ -462,10 +462,14 @@ def forgot_password():
             
             # Generate reset URL
             reset_url = url_for('auth.reset_password', token=token, _external=True)
-            
-            # In production, send email here
-            # For now, we'll just show the URL (remove this in production!)
-            flash(f'Reset-Link generiert: {reset_url}', 'info')
+
+            # Store the URL in session for display page
+            session['last_generated_reset_url'] = {
+                'url': reset_url,
+                'created_at': datetime.utcnow().isoformat()
+            }
+            # Also log to server logs for ops access (development fallback)
+            current_app.logger.info(f"Password reset link for {user.email}: {reset_url}")
             
             # Log audit event
             SecurityService.log_audit_event(
@@ -476,11 +480,21 @@ def forgot_password():
             # Don't reveal if email exists or not
             pass
         
-        # Always show success message to prevent email enumeration
-        flash('Falls die E-Mail-Adresse existiert, wurde ein Reset-Link gesendet', 'info')
-        return redirect(url_for('auth.login'))
+        # Always redirect to link display page to prevent enumeration and allow copy
+        return redirect(url_for('auth.show_reset_link'))
     
     return render_template('auth/forgot_password.html', form=form)
+
+@bp.route('/reset-link')
+def show_reset_link():
+    """Display the most recently generated password reset link stored in session.
+    This is a temporary helper to avoid email during development/deployment without mail server.
+    """
+    link_data = session.get('last_generated_reset_url')
+    if not link_data:
+        flash('Kein Reset-Link vorhanden. Bitte fordern Sie zuerst einen Link an.', 'info')
+        return redirect(url_for('auth.forgot_password'))
+    return render_template('auth/show_reset_link.html', reset_url=link_data.get('url'))
 
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -568,9 +582,13 @@ def request_2fa_reset():
                 # Generate reset URL
                 reset_url = url_for('auth.reset_2fa', token=token, _external=True)
                 
-                # In production, send email here
-                # For now, we'll just show the URL (remove this in production!)
-                flash(f'2FA Reset-Link generiert: {reset_url}', 'info')
+                # Store the URL in session for display page
+                session['last_generated_reset_url'] = {
+                    'url': reset_url,
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                # Also log to server logs for ops access (development fallback)
+                current_app.logger.info(f"2FA reset link for {user.email}: {reset_url}")
                 
                 # Log audit event
                 SecurityService.log_audit_event(
@@ -581,9 +599,8 @@ def request_2fa_reset():
                 # Don't reveal if 2FA is enabled or not
                 pass
         
-        # Always show success message to prevent enumeration
-        flash('Falls die E-Mail-Adresse existiert und 2FA aktiviert ist, wurde ein Reset-Link gesendet', 'info')
-        return redirect(url_for('auth.login'))
+        # Always redirect to link display page to allow copy without email
+        return redirect(url_for('auth.show_reset_link'))
     
     return render_template('auth/request_2fa_reset.html', form=form)
 

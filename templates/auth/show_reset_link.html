@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="card">
+    <h1>Passwort zurücksetzen</h1>
+    <p>Der Link wurde generiert. Du kannst ihn hier kopieren oder direkt öffnen.</p>
+
+    <div class="form-group">
+      <label for="resetLinkInput">Reset-Link</label>
+      <input id="resetLinkInput" class="form-control" type="text" readonly value="{{ reset_url }}" />
+    </div>
+
+    <div class="actions" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+      <button id="copyResetLinkBtn" class="btn btn-primary" type="button">Link kopieren</button>
+      <a href="{{ reset_url }}" class="btn">Jetzt öffnen</a>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+document.getElementById('copyResetLinkBtn')?.addEventListener('click', async () => {
+  const input = document.getElementById('resetLinkInput');
+  input.select();
+  input.setSelectionRange(0, 99999);
+  try {
+    await navigator.clipboard.writeText(input.value);
+    alert('Link kopiert');
+  } catch (e) {
+    alert('Kopieren nicht möglich. Bitte manuell markieren.');
+  }
+});
+</script>
+{% endblock %}
+
