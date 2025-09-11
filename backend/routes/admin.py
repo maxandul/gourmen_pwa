@@ -427,6 +427,7 @@ def create_event():
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@require_step_up
 def reset_member_password(member_id):
     """Reset member password"""
     member = Member.query.get_or_404(member_id)
@@ -436,9 +437,19 @@ def reset_member_password(member_id):
         if request.form.get('confirm') != 'RESET':
             flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
             return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
-        
-        # Generate new password
-        new_password = SecurityService.generate_secure_password()
+        # Read and validate new password
+        new_password = (request.form.get('new_password') or '').strip()
+        confirm_password = (request.form.get('confirm_password') or '').strip()
+        if not new_password or not confirm_password:
+            flash('Bitte neues Passwort und Bestätigung eingeben.', 'error')
+            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+        if new_password != confirm_password:
+            flash('Passwörter müssen übereinstimmen.', 'error')
+            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+        is_valid, message = SecurityService.validate_password_strength(new_password)
+        if not is_valid:
+            flash(message, 'error')
+            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
         
         # Update member password
         member.set_password(new_password)
@@ -450,13 +461,8 @@ def reset_member_password(member_id):
             extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
         )
         
-        # Store password in session for display
-        session['temp_password'] = {
-            'member_name': member.display_name,
-            'password': new_password,
-            'timestamp': datetime.utcnow().isoformat()
-        }
-        return redirect(url_for('admin.show_temp_password'))
+        flash('Passwort wurde gesetzt. Bitte informieren Sie das Mitglied.', 'success')
+        return redirect(url_for('admin.members'))
     
     return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
 
@@ -550,4 +556,555 @@ def show_temp_password():
     
     return render_template('admin/temp_password.html', 
                          member_name=temp_password_data['member_name'],
+                         password=temp_password_data['password']) 
+        
+
+        db.session.commit()
+
+        
+
+        SecurityService.log_audit_event(
+
+            AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
+
+        )
+
+        
+
+        flash('Mitglied erfolgreich bearbeitet', 'success')
+
+        return redirect(url_for('admin.members'))
+
+    
+
+    return render_template('admin/edit_member_enhanced.html', form=form, member=member)
+
+
+
+@bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST'])
+
+@login_required
+
+@admin_required
+
+@require_step_up
+
+def member_sensitive(member_id):
+
+    """View/edit member sensitive data"""
+
+    member = Member.query.get_or_404(member_id)
+
+    
+
+    from backend.models.member_sensitive import MemberSensitive
+
+    sensitive_data = MemberSensitive.query.filter_by(member_id=member_id).first()
+
+    
+
+    if request.method == 'GET':
+
+        if sensitive_data:
+
+            try:
+
+                data = SecurityService.decrypt_json(sensitive_data.payload_encrypted)
+
+            except Exception as e:
+
+                # If decryption fails, clear the corrupted data
+
+                flash('Sensible Daten waren beschädigt und wurden zurückgesetzt.', 'warning')
+
+                db.session.delete(sensitive_data)
+
+                db.session.commit()
+
+                data = {}
+
+        else:
+
+            data = {}
+
+        
+
+        SecurityService.log_audit_event(
+
+            AuditAction.READ_SENSITIVE_OTHERS, 'member_sensitive', member_id
+
+        )
+
+        
+
+        return render_template('admin/member_sensitive.html', member=member, data=data)
+
+    
+
+    elif request.method == 'POST':
+
+        data = {
+
+            'pass_nummer': request.form.get('pass_nummer'),
+
+            'pass_ausgestellt': request.form.get('pass_ausgestellt'),
+
+            'pass_ablauf': request.form.get('pass_ablauf'),
+
+            'id_nummer': request.form.get('id_nummer'),
+
+            'id_ausgestellt': request.form.get('id_ausgestellt'),
+
+            'id_ablauf': request.form.get('id_ablauf'),
+
+            'fuehrerschein': request.form.get('fuehrerschein'),
+
+            'allergien': request.form.get('allergien')
+
+        }
+
+        
+
+        encrypted_data = SecurityService.encrypt_json(data)
+
+        
+
+        if sensitive_data:
+
+            sensitive_data.payload_encrypted = encrypted_data
+
+        else:
+
+            sensitive_data = MemberSensitive(
+
+                member_id=member_id,
+
+                payload_encrypted=encrypted_data
+
+            )
+
+            db.session.add(sensitive_data)
+
+        
+
+        db.session.commit()
+
+        
+
+        SecurityService.log_audit_event(
+
+            AuditAction.UPDATE_SENSITIVE_OTHERS, 'member_sensitive', member_id
+
+        )
+
+        
+
+        flash('Sensible Daten erfolgreich gespeichert', 'success')
+
+        return redirect(url_for('admin.member_sensitive', member_id=member_id))
+
+
+
+@bp.route('/events/new', methods=['GET', 'POST'])
+
+@login_required
+
+@admin_required
+
+def create_event():
+
+    """Create new event"""
+
+    form = EventForm()
+
+    
+
+    # Populate organisator choices
+
+    form.organisator_id.choices = [(m.id, m.display_name) for m in Member.query.filter_by(is_active=True).all()]
+
+    
+
+    if form.validate_on_submit():
+
+        # Set event time to 23:59:59 of the selected date
+
+        from datetime import datetime, time
+
+        event_datetime = datetime.combine(form.datum.data, time(23, 59, 59))
+
+        
+
+        event = Event(
+
+            datum=event_datetime,
+
+            event_typ=EventType(form.event_typ.data),
+
+            organisator_id=form.organisator_id.data,
+
+            season=form.datum.data.year,
+
+            published=True
+
+        )
+
+        
+
+        # Set restaurant details
+
+        if form.restaurant.data:
+
+            event.restaurant = form.restaurant.data
+
+        if form.kueche.data:
+
+            event.kueche = form.kueche.data
+
+        if form.website.data:
+
+            event.website = form.website.data
+
+        if form.notizen.data:
+
+            event.notizen = form.notizen.data
+
+        
+
+        # Set Google Places data if available
+
+        if form.place_id.data or form.place_name.data or form.place_address.data:
+
+            event.place_id = form.place_id.data
+
+            event.place_name = form.place_name.data
+
+            event.place_address = form.place_address.data
+
+            event.place_lat = float(form.place_lat.data) if form.place_lat.data else None
+
+            event.place_lng = float(form.place_lng.data) if form.place_lng.data else None
+
+            event.place_types = json.loads(form.place_types.data) if form.place_types.data else None
+
+            event.place_website = form.place_website.data
+
+            event.place_maps_url = form.place_maps_url.data
+
+            event.place_price_level = int(form.place_price_level.data) if form.place_price_level.data else None
+
+            event.place_street_number = form.place_street_number.data
+
+            event.place_route = form.place_route.data
+
+            event.place_postal_code = form.place_postal_code.data
+
+            event.place_locality = form.place_locality.data
+
+            event.place_country = form.place_country.data
+
+        
+
+        db.session.add(event)
+
+        db.session.flush()  # Get event ID
+
+        
+
+        # Automatically add organizer as participant
+
+        from backend.models.participation import Participation
+
+        from datetime import datetime
+
+        organizer_participation = Participation(
+
+            member_id=event.organisator_id,
+
+            event_id=event.id,
+
+            teilnahme=True,
+
+            responded_at=datetime.utcnow()
+
+        )
+
+        db.session.add(organizer_participation)
+
+        
+
+        db.session.commit()
+
+        
+
+        SecurityService.log_audit_event(
+
+            AuditAction.ADMIN_CREATE_EVENT, 'event', event.id
+
+        )
+
+        
+
+        flash('Event erfolgreich erstellt! Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
+
+        return redirect(url_for('events.detail', event_id=event.id))
+
+    
+
+    return render_template('admin/create_event.html', form=form) 
+
+
+
+@bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
+
+@login_required
+
+@admin_required
+
+def reset_member_password(member_id):
+
+    """Reset member password"""
+
+    member = Member.query.get_or_404(member_id)
+
+    
+
+    if request.method == 'POST':
+
+        # Check confirmation
+
+        if request.form.get('confirm') != 'RESET':
+
+            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+
+            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+
+        
+
+        # Generate new password
+
+        new_password = SecurityService.generate_secure_password()
+
+        
+
+        # Update member password
+
+        member.set_password(new_password)
+
+        db.session.commit()
+
+        
+
+        # Log audit event
+
+        SecurityService.log_audit_event(
+
+            AuditAction.ADMIN_RESET_PASSWORD, 'member', member.id,
+
+            extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
+
+        )
+
+        
+
+        # Store password in session for display
+
+        session['temp_password'] = {
+
+            'member_name': member.display_name,
+
+            'password': new_password,
+
+            'timestamp': datetime.utcnow().isoformat()
+
+        }
+
+        return redirect(url_for('admin.show_temp_password'))
+
+    
+
+    return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+
+
+
+@bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST'])
+
+@login_required
+
+@admin_required
+
+@require_step_up
+
+def reset_member_2fa(member_id):
+
+    """Reset member 2FA"""
+
+    member = Member.query.get_or_404(member_id)
+
+    
+
+    if request.method == 'POST':
+
+        # Check confirmation
+
+        if request.form.get('confirm') != 'RESET':
+
+            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+
+            return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+
+        
+
+        # Get MFA data
+
+        mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
+
+        
+
+        if mfa_data and mfa_data.is_totp_enabled:
+
+            # Disable 2FA
+
+            mfa_data.is_totp_enabled = False
+
+            mfa_data.totp_secret_encrypted = None
+
+            mfa_data.activated_at = None
+
+            mfa_data.last_verified_at = None
+
+            
+
+            # Delete backup codes
+
+            MFABackupCode.query.filter_by(member_id=member.id).delete()
+
+            
+
+            db.session.commit()
+
+            
+
+            # Log audit event
+
+            SecurityService.log_audit_event(
+
+                AuditAction.ADMIN_RESET_2FA, 'member', member.id,
+
+                extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
+
+            )
+
+            
+
+            flash(f'2FA für {member.display_name} wurde zurückgesetzt.', 'success')
+
+        else:
+
+            flash(f'2FA für {member.display_name} war nicht aktiviert.', 'info')
+
+        
+
+        return redirect(url_for('admin.members'))
+
+    
+
+    return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+
+
+
+@bp.route('/members/<int:member_id>/security-overview')
+
+@login_required
+
+@admin_required
+
+def member_security_overview(member_id):
+
+    """Show member security overview"""
+
+    member = Member.query.get_or_404(member_id)
+
+    
+
+    # Get MFA data
+
+    mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
+
+    
+
+    # Get backup codes info
+
+    backup_codes = MFABackupCode.query.filter_by(member_id=member.id).all()
+
+    unused_backup_codes = [code for code in backup_codes if not code.is_used and not code.is_revoked]
+
+    
+
+    # Get recent audit events
+
+    recent_events = AuditEvent.query.filter_by(
+
+        actor_id=member.id
+
+    ).order_by(AuditEvent.at.desc()).limit(10).all()
+
+    
+
+    return render_template('admin/member_security_overview.html', 
+
+                         member=member, 
+
+                         mfa_data=mfa_data,
+
+                         unused_backup_codes=unused_backup_codes,
+
+                         recent_events=recent_events)
+
+
+
+@bp.route('/temp-password')
+
+@login_required
+
+@admin_required
+
+def show_temp_password():
+
+    """Show temporary password for admin"""
+
+    temp_password_data = session.get('temp_password')
+
+    if not temp_password_data:
+
+        flash('Kein temporäres Passwort verfügbar', 'error')
+
+        return redirect(url_for('admin.members'))
+
+    
+
+    # Check if password is not too old (5 minutes)
+
+    timestamp = datetime.fromisoformat(temp_password_data['timestamp'])
+
+    if datetime.utcnow() - timestamp > timedelta(minutes=5):
+
+        session.pop('temp_password', None)
+
+        flash('Temporäres Passwort ist abgelaufen', 'error')
+
+        return redirect(url_for('admin.members'))
+
+    
+
+    # Clear the temporary password from session after displaying
+
+    session.pop('temp_password', None)
+
+    
+
+    return render_template('admin/temp_password.html', 
+
+                         member_name=temp_password_data['member_name'],
+
                          password=temp_password_data['password']) 

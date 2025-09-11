@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from backend.extensions import db, limiter
-from backend.models.member import Member
+from backend.models.member import Member, Role
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
 from backend.services.security import SecurityService, AuditAction
@@ -437,53 +437,14 @@ def change_password():
     
     return render_template('auth/change_password.html', form=form)
 
-@bp.route('/forgot-password', methods=['GET', 'POST'])
+@bp.route('/forgot-password', methods=['GET'])
 @limiter.limit("3 per hour")
 def forgot_password():
-    """Forgot password - send reset link"""
+    """Forgot password - show admin contacts instead of sending email"""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
-    
-    form = ForgotPasswordForm()
-    
-    if form.validate_on_submit():
-        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
-        
-        if user:
-            # Generate reset token
-            token = secrets.token_urlsafe(32)
-            expires_at = datetime.utcnow() + timedelta(hours=1)
-            
-            # Store token in session (in production, use database or Redis)
-            session[f'reset_token_{token}'] = {
-                'user_id': user.id,
-                'expires_at': expires_at.isoformat()
-            }
-            
-            # Generate reset URL
-            reset_url = url_for('auth.reset_password', token=token, _external=True)
-
-            # Store the URL in session for display page
-            session['last_generated_reset_url'] = {
-                'url': reset_url,
-                'created_at': datetime.utcnow().isoformat()
-            }
-            # Also log to server logs for ops access (development fallback)
-            current_app.logger.info(f"Password reset link for {user.email}: {reset_url}")
-            
-            # Log audit event
-            SecurityService.log_audit_event(
-                AuditAction.REQUEST_PASSWORD_RESET, 'member', user.id,
-                extra_data={'ip': request.remote_addr}
-            )
-        else:
-            # Don't reveal if email exists or not
-            pass
-        
-        # Always redirect to link display page to prevent enumeration and allow copy
-        return redirect(url_for('auth.show_reset_link'))
-    
-    return render_template('auth/forgot_password.html', form=form)
+    admins = Member.query.filter_by(is_active=True).filter(Member.role == Role.ADMIN).all()
+    return render_template('auth/forgot_password.html', admins=admins)
 
 @bp.route('/reset-link')
 def show_reset_link():
@@ -508,9 +469,23 @@ def reset_password(token):
         flash('Ungültiger oder abgelaufener Reset-Link', 'error')
         return redirect(url_for('auth.login'))
     
-    # Check expiration
-    expires_at = datetime.fromisoformat(token_data['expires_at'])
-    if datetime.utcnow() > expires_at:
+    # Check expiration (support both iso string and unix timestamp)
+    import time
+    expires_valid = True
+    try:
+        if 'expires_at_ts' in token_data:
+            if int(time.time()) > int(token_data['expires_at_ts']):
+                expires_valid = False
+        elif 'expires_at' in token_data:
+            expires_at = datetime.fromisoformat(token_data['expires_at'])
+            if datetime.utcnow() > expires_at:
+                expires_valid = False
+        else:
+            expires_valid = False
+    except Exception:
+        expires_valid = False
+
+    if not expires_valid:
         session.pop(f'reset_token_{token}', None)
         flash('Reset-Link ist abgelaufen', 'error')
         return redirect(url_for('auth.login'))
