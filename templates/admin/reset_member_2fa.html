@@ -7,13 +7,13 @@
     <div class="card">
         <div class="card-header">
             <h1>🔐 2FA zurücksetzen</h1>
-            <p class="text-muted">Mitglied: {{ member.display_name }}</p>
+            <p class="text-muted">Mitglied: {{ member.display_name_with_spirit }}</p>
         </div>
         
         <div class="card-body">
             <div class="warning-box">
                 <h3>⚠️ Wichtiger Hinweis</h3>
-                <p>Sie sind dabei, die 2FA für <strong>{{ member.display_name }}</strong> zurückzusetzen.</p>
+                <p>Sie sind dabei, die 2FA für <strong>{{ member.display_name_with_spirit }}</strong> zurückzusetzen.</p>
                 <ul>
                     <li>Die 2FA wird komplett deaktiviert</li>
                     <li>Alle Backup-Codes werden gelöscht</li>
@@ -26,7 +26,7 @@
                 <h3>📋 Mitglied-Informationen</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <strong>Name:</strong> {{ member.display_name }}
+                        <strong>Name:</strong> {{ member.display_name_with_spirit }}
                     </div>
                     <div class="info-item">
                         <strong>E-Mail:</strong> {{ member.email }}

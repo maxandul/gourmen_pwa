@@ -32,7 +32,7 @@
                 </div>
                 <div class="card-body">
                     <p><strong>📅 Datum:</strong> {{ event.display_date }}</p>
-                    <p><strong>🍳 Organisator:</strong> {{ event.organisator.display_name }}</p>
+                    <p><strong>🍳 Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
                     {% if event.restaurant %}
                     <p><strong>🍴 Restaurant:</strong> {{ event.restaurant }}</p>
                     {% endif %}

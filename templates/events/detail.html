@@ -27,7 +27,7 @@
                 </div>
                 <div class="card-body">
                     <div class="event-basic-info">
-                        <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name }}</p>
+                        <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
                         <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
                     </div>
                     
@@ -117,7 +117,7 @@
                     <div class="participants-list">
                         {% for participation in participations %}
                         <div class="participant-item">
-                            <span class="member">{{ participation.member.display_name }}</span>
+                            <span class="member">{{ participation.member.display_name_with_spirit }}</span>
                             <span class="status">
                                 {% if participation.teilnahme %}
                                 ✅ Teilnehmer

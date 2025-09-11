@@ -75,7 +75,7 @@
         </a>
         <div class="user-section">
             <div class="user-info">
-                <span class="user-name">{% if current_user.spirit_animal %}{{ current_user.spirit_animal }}{% else %}👋{% endif %} {{ current_user.display_name }}</span>
+                <span class="user-name">{{ current_user.display_name_with_spirit }}</span>
             </div>
             <div class="user-actions">
                 {% if current_user.is_admin() %}

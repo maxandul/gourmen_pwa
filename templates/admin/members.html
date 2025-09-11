@@ -19,7 +19,7 @@
             {% for member in members %}
             <div class="member-card {% if not member.is_active %}inactive{% endif %}">
                 <div class="member-header">
-                    <h3 class="member-name">{{ member.display_name }}</h3>
+                    <h3 class="member-name">{{ member.display_name_with_spirit }}</h3>
                     <div class="member-status">
                         {% if member.role.value == 'ADMIN' %}
                         <span class="badge badge-admin">ADMIN</span>

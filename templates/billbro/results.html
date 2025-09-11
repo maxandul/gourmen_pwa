@@ -38,7 +38,7 @@
                     {% for participation in participations %}
                     <div class="ranking-item">
                         <span class="rank">{{ participation.rank }}.</span>
-                        <span class="member">{{ participation.member.display_name }}</span>
+                        <span class="member">{{ participation.member.display_name_with_spirit }}</span>
                         <span class="guess">{{ participation.display_guess }}</span>
                         <span class="diff">{{ participation.display_diff }}</span>
                         <span class="esstyp">{{ participation.esstyp.value if participation.esstyp else 'N/A' }}</span>

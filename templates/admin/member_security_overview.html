@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>🔒 Sicherheitsübersicht</h1>
-        <p class="page-subtitle">Mitglied: {{ member.display_name }}</p>
+        <p class="page-subtitle">Mitglied: {{ member.display_name_with_spirit }}</p>
         <div class="page-actions">
             <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
         </div>
@@ -21,7 +21,7 @@
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <strong>Name:</strong> {{ member.display_name }}
+                        <strong>Name:</strong> {{ member.display_name_with_spirit }}
                     </div>
                     <div class="info-item">
                         <strong>E-Mail:</strong> {{ member.email }}

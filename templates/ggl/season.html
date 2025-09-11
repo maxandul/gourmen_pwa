@@ -63,7 +63,7 @@
                         {% endif %}
                         <span class="rank-number">{{ entry.rank }}</span>
                     </div>
-                    <div class="member-name">{{ entry.member.display_name }}</div>
+                    <div class="member-name">{{ entry.member.display_name_with_spirit }}</div>
                 </div>
                 
                 <div class="ranking-stats">
@@ -104,7 +104,7 @@
                 </div>
                 <div class="summary-item">
                     <span class="label">Höchste Punktzahl:</span>
-                    <span class="value">{{ season_ranking[0].total_points }} ({{ season_ranking[0].member.display_name }})</span>
+                    <span class="value">{{ season_ranking[0].total_points }} ({{ season_ranking[0].member.display_name_with_spirit }})</span>
                 </div>
                 <div class="summary-item">
                     <span class="label">Durchschnittliche Teilnahme:</span>

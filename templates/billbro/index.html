@@ -53,7 +53,7 @@
                     {% for participation in event.participations %}
                     {% if participation.teilnahme %}
                     <div class="participant-item" data-member-id="{{ participation.member_id }}">
-                        <span class="member-name">{{ participation.member.display_name }}</span>
+                        <span class="member-name">{{ participation.member.display_name_with_spirit }}</span>
                         <span class="status">
                             {% if participation.has_guess %}
                             ✅ {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
@@ -66,7 +66,7 @@
                         <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}" style="display: inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-outline" 
-                                    onclick="return confirm('{{ participation.member.display_name }} ist nicht da?')">
+                                    onclick="return confirm('{{ participation.member.display_name_with_spirit }} ist nicht da?')">
                                 Nicht da
                             </button>
                         </form>
@@ -84,7 +84,7 @@
                     <div class="absent-list">
                         {% for participation in abgemeldete %}
                         <div class="absent-item">
-                            <span class="member-name">{{ participation.member.display_name }}</span>
+                            <span class="member-name">{{ participation.member.display_name_with_spirit }}</span>
                             <span class="status">Nicht da</span>
                             {% if not event.rechnungsbetrag_rappen %}
                             <!-- Nur vor BillBro-Start: Korrektur möglich -->

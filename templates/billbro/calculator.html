@@ -22,7 +22,7 @@
                 {% for participation in event.participations %}
                 {% if participation.teilnahme %}
                 <div class="participant-card">
-                    <h4>{{ participation.member.display_name }}</h4>
+                    <h4>{{ participation.member.display_name_with_spirit }}</h4>
                     
                     <form method="POST" action="{{ url_for('billbro.record_guess', event_id=event.id, member_id=participation.member_id) }}" class="guess-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

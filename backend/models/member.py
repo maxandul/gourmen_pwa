@@ -104,6 +104,14 @@ class Member(db.Model, UserMixin):
         """Get display name (rufname or full name)"""
         return self.rufname or self.full_name
     
+    @property
+    def display_name_with_spirit(self):
+        """Get display name with spirit animal prefix"""
+        name = self.display_name
+        if self.spirit_animal:
+            return f"{self.spirit_animal} {name}"
+        return name
+    
     def set_password(self, password):
         """Set password hash"""
         self.passwort_hash = generate_password_hash(password)

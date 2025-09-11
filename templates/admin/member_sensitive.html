@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Sensible Daten - {{ member.display_name }} - Admin{% endblock %}
+{% block title %}Sensible Daten - {{ member.display_name_with_spirit }} - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🔒 Sensible Daten: {{ member.display_name }}</h1>
+        <h1>🔒 Sensible Daten: {{ member.display_name_with_spirit }}</h1>
         <div class="page-actions">
             <a href="{{ url_for('admin.members') }}" class="btn btn-primary">← Zurück zur Mitgliederliste</a>
         </div>
