@@ -3,9 +3,9 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.0';
-const STATIC_CACHE = 'gourmen-static-v1.3.0';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.0';
+const CACHE_NAME = 'gourmen-v1.3.1';
+const STATIC_CACHE = 'gourmen-static-v1.3.1';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.1';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [
@@ -13,14 +13,10 @@ const STATIC_ASSETS = [
     '/static/css/base.css',
     '/static/js/pwa.js',
     '/static/manifest.json',
-    '/static/img/icon-192.png',
-    '/static/img/icon-512.png',
-    '/static/img/apple-touch-icon.png',
-    '/static/favicon.ico',
-    '/dashboard',
-    '/events',
-    '/ggl',
-    '/billbro'
+    '/static/img/pwa/icon-192.png',
+    '/static/img/pwa/icon-512.png',
+    '/static/img/pwa/apple-touch-icon.png',
+    '/static/favicon.ico'
 ];
 
 // API-Endpunkte die gecacht werden sollen
@@ -36,13 +32,20 @@ self.addEventListener('install', (event) => {
     console.log('Service Worker: Installing...');
     
     event.waitUntil(
-        Promise.all([
-            // Cache static assets
-            caches.open(STATIC_CACHE).then((cache) => {
-                console.log('Service Worker: Caching static assets');
-                return cache.addAll(STATIC_ASSETS);
-            })
-        ])
+        (async () => {
+            const cache = await caches.open(STATIC_CACHE);
+            console.log('Service Worker: Caching static assets');
+            await Promise.all(
+                STATIC_ASSETS.map(async (url) => {
+                    try {
+                        await cache.add(url);
+                    } catch (e) {
+                        // Schlucke Fehler einzelner Assets (z. B. 401/404), damit die Installation nicht komplett fehlschlägt
+                        console.warn('Service Worker: Asset konnte nicht gecacht werden:', url, e && e.message ? e.message : e);
+                    }
+                })
+            );
+        })()
     );
     
     // Warte auf vollständige Installation bevor skipWaiting
@@ -334,8 +337,8 @@ self.addEventListener('push', (event) => {
         const data = event.data.json();
         const options = {
             body: data.body,
-            icon: '/static/img/icon-192.png',
-            badge: '/static/img/icon-96.png',
+            icon: '/static/img/pwa/icon-192.png',
+            badge: '/static/img/pwa/icon-96.png',
             tag: 'gourmen-notification',
             data: data.data || {},
             actions: data.actions || [],

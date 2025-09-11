@@ -191,9 +191,9 @@
         // Check connection every 5 seconds
         setInterval(updateConnectionStatus, 5000);
         
-        // Service Worker registration
+        // Service Worker Registrierung (Root-Scope)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js')
+            navigator.serviceWorker.register('/sw.js')
                 .then(registration => {
                     console.log('Service Worker registered for offline page');
                 })
