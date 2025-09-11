@@ -1,13 +1,41 @@
 import os
 from datetime import timedelta
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
 
+def _normalize_database_url(raw_url: str | None) -> str:
+    """Normalize DATABASE_URL to use psycopg (v3) driver.
+
+    Converts e.g. postgres://... or postgresql://... to postgresql+psycopg://...
+    Keeps sqlite URLs unchanged.
+    """
+    if not raw_url:
+        return 'sqlite:///instance/gourmen_dev.db'
+
+    # Keep sqlite URIs as-is
+    if raw_url.startswith('sqlite:'):
+        return raw_url
+
+    # If already specifies a dialect+driver, keep if it's psycopg, else switch to psycopg
+    if raw_url.startswith('postgresql+'):  # e.g. postgresql+psycopg2, postgresql+psycopg
+        # Force psycopg (v3)
+        return raw_url.replace('postgresql+psycopg2', 'postgresql+psycopg')
+
+    # Handle common Heroku/Railway style URLs
+    if raw_url.startswith('postgres://'):
+        return 'postgresql+psycopg://' + raw_url[len('postgres://'):]
+    if raw_url.startswith('postgresql://'):
+        return 'postgresql+psycopg://' + raw_url[len('postgresql://'):]
+
+    return raw_url
+
+
 class Config:
     """Base configuration class"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-me'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///instance/gourmen_dev.db'
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(os.environ.get('DATABASE_URL'))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
