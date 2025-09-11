@@ -47,8 +47,11 @@ def landing():
 
 @bp.route('/health')
 def health():
-    """Basic health check"""
-    return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
+    """Basic health check - no DB access"""
+    try:
+        return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @bp.route('/health/db')
 def health_db():

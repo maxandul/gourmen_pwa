@@ -53,16 +53,8 @@ def create_app(config_name=None):
         # Skip migrations since none exist and DB already has data
         app.logger.info("App created successfully - skipping migrations")
         
-        # Only initialize admin user if needed (on first request)
-        @app.before_first_request
-        def initialize_admin_user():
-            """Initialize admin user on first request"""
-            try:
-                init_admin_user(app)
-                app.logger.info("Admin user check completed")
-            except Exception as e:
-                app.logger.warning(f"Admin user initialization skipped: {e}")
-                pass
+        # Admin user initialization will be done manually when needed
+        # No automatic initialization to avoid startup issues
         
         app.logger.info("Flask app created and configured successfully")
         return app
