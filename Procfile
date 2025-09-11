@@ -1,1 +1,1 @@
-web: gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=2 --timeout=120 --preload 
+web: gunicorn 'minimal_app:create_minimal_app()' --bind 0.0.0.0:$PORT --workers=2 --timeout=120 --preload 
