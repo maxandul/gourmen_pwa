@@ -49,17 +49,8 @@ def landing():
 def health():
     """Basic health check - no DB access"""
     try:
-        print("Health endpoint called")
-        return jsonify({
-            'status': 'ok', 
-            'timestamp': datetime.utcnow().isoformat(),
-            'app_loaded': True,
-            'blueprint_loaded': True
-        })
+        return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
     except Exception as e:
-        print(f"Health endpoint error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @bp.route('/health/db')

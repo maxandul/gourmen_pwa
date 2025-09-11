@@ -12,8 +12,7 @@ def create_app(config_name=None):
         if config_name is None:
             config_name = os.environ.get('FLASK_ENV', 'development')
         
-        print(f"Creating app with config: {config_name}")
-        print(f"Environment variables: FLASK_ENV={os.environ.get('FLASK_ENV')}, DATABASE_URL={'SET' if os.environ.get('DATABASE_URL') else 'NOT SET'}")
+        
         
         app = Flask(__name__, template_folder='../templates', static_folder='../static')
         app.config.from_object(config[config_name])
@@ -21,17 +20,11 @@ def create_app(config_name=None):
         # Ensure UTF-8 encoding
         app.config['JSON_AS_ASCII'] = False
         
-        print("Initializing extensions...")
         # Initialize extensions
         init_extensions(app)
-        print("Extensions initialized successfully")
         
         # Register blueprints
-        print("Importing blueprints...")
         from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
-        print("Blueprints imported successfully")
-        
-        print("Registering blueprints...")
         app.register_blueprint(public.bp)
         app.register_blueprint(auth.bp, url_prefix='/auth')
         app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
@@ -44,7 +37,6 @@ def create_app(config_name=None):
         app.register_blueprint(docs.bp, url_prefix='/docs')
         app.register_blueprint(notifications.bp, url_prefix='/notifications')
         app.register_blueprint(ratings.bp, url_prefix='/ratings')
-        print("Blueprints registered successfully")
         
         # Register error handlers
         register_error_handlers(app)
