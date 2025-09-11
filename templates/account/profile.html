@@ -235,6 +235,37 @@
             </div>
         </form>
         
+        <!-- PWA Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📱 App-Updates</h2>
+            </div>
+            <div class="card-body">
+                <div class="pwa-section">
+                    <h4>App-Update prüfen</h4>
+                    <p>Überprüfe, ob eine neue Version der App verfügbar ist und installiere sie manuell.</p>
+                    <div class="actions">
+                        <button id="manual-update-btn" class="btn btn-primary">
+                            <span class="btn-icon">🔄</span>
+                            <span class="btn-text">Nach Updates suchen</span>
+                        </button>
+                        <div id="update-status" class="update-status" style="display: none;">
+                            <span class="status-text"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pwa-section">
+                    <h4>App-Informationen</h4>
+                    <div class="app-info">
+                        <p><strong>Version:</strong> <span id="app-version">1.3.0</span></p>
+                        <p><strong>Installiert:</strong> <span id="app-installed">Prüfe...</span></p>
+                        <p><strong>Offline-Modus:</strong> <span id="offline-status">Verfügbar</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Security Section -->
         <div class="card">
             <div class="card-header">

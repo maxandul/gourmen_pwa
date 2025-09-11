@@ -41,12 +41,35 @@ self.addEventListener('install', (event) => {
             caches.open(STATIC_CACHE).then((cache) => {
                 console.log('Service Worker: Caching static assets');
                 return cache.addAll(STATIC_ASSETS);
-            }),
-            
-            // Skip waiting to activate immediately
-            self.skipWaiting()
+            })
         ])
     );
+    
+    // Warte auf vollständige Installation bevor skipWaiting
+    event.waitUntil(
+        new Promise((resolve) => {
+            setTimeout(() => {
+                // Nur skipWaiting wenn es ein Update ist, nicht bei der ersten Installation
+                if (self.registration.active) {
+                    console.log('Service Worker: Update detected, skipping waiting...');
+                    self.skipWaiting();
+                } else {
+                    console.log('Service Worker: First installation, not skipping waiting');
+                }
+                resolve();
+            }, 100);
+        })
+    );
+    
+    // Notify clients about new installation
+    self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'SW_INSTALLED',
+                data: { version: CACHE_NAME }
+            });
+        });
+    });
 });
 
 // Activate Event - Clean up old caches
@@ -106,6 +129,21 @@ self.addEventListener('message', (event) => {
         console.log('Service Worker: Update check requested');
         // Check for updates
         checkForUpdates();
+    } else if (data && data.type === 'FORCE_UPDATE') {
+        console.log('Service Worker: Force update requested');
+        // Force immediate update
+        self.skipWaiting();
+    } else if (data && data.type === 'GET_STATUS') {
+        console.log('Service Worker: Status requested');
+        // Send status back to client
+        event.ports[0].postMessage({
+            type: 'SW_STATUS',
+            data: {
+                state: self.registration.active ? 'active' : 'inactive',
+                scope: self.registration.scope,
+                updateViaCache: self.registration.updateViaCache
+            }
+        });
     }
 });
 
@@ -231,9 +269,35 @@ function isApiRequest(request) {
 async function checkForUpdates() {
     try {
         const registration = await self.registration;
+        console.log('Service Worker: Checking for updates...');
+        
+        // Force update check
         await registration.update();
+        
+        // Notify clients about update check completion
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'UPDATE_CHECK_COMPLETE',
+                data: { 
+                    hasUpdate: !!registration.waiting,
+                    version: CACHE_NAME
+                }
+            });
+        });
+        
+        console.log('Service Worker: Update check completed');
     } catch (error) {
         console.log('Update check failed:', error);
+        
+        // Notify clients about update check failure
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'UPDATE_CHECK_FAILED',
+                data: { error: error.message }
+            });
+        });
     }
 }
 

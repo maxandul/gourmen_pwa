@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, current_app, send_from_directory
 from backend.extensions import db
 from backend.models.event import Event
 from backend.models.member import Member
@@ -61,3 +61,16 @@ def health_db():
         return jsonify({'status': 'error', 'database': 'disconnected', 'error': str(e)}), 503
 
 # Offline-Route entfernt - wird jetzt über Toast-System und Service Worker gehandhabt 
+
+@bp.route('/sw.js')
+def service_worker():
+    """Serve the Service Worker from the root scope.
+
+    This ensures the Service Worker controls the entire app (scope '/').
+    """
+    response = send_from_directory(current_app.static_folder, 'sw.js', mimetype='application/javascript')
+    # Allow root scope for the service worker
+    response.headers['Service-Worker-Allowed'] = '/'
+    # Avoid aggressive caching during development
+    response.headers['Cache-Control'] = 'no-cache'
+    return response

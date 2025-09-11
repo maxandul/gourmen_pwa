@@ -109,9 +109,31 @@ async function initializePushNotifications() {
     }
     
     try {
-        // Register service worker
-        const registration = await navigator.serviceWorker.register('/static/sw.js');
-        console.log('Service Worker registered:', registration);
+        // Warte auf Service Worker Registrierung
+        let registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+            console.log('No service worker registration found - waiting for PWA initialization...');
+            // Warte bis zu 5 Sekunden auf Service Worker
+            for (let i = 0; i < 50; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                registration = await navigator.serviceWorker.getRegistration();
+                if (registration) break;
+            }
+            if (!registration) {
+                console.log('Service worker still not available after waiting');
+                return;
+            }
+        }
+        
+        console.log('Using existing Service Worker for push notifications:', registration);
+        
+        // Stelle sicher, dass der Service Worker aktiv ist, bevor wir subscriben
+        try {
+            await navigator.serviceWorker.ready;
+        } catch (_) {
+            console.log('Service worker ready() failed or timed out');
+            return;
+        }
         
         // Check if already subscribed
         const existingSubscription = await registration.pushManager.getSubscription();
