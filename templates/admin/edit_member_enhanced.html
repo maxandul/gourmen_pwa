@@ -4,12 +4,16 @@
 
 {% block content %}
 <div class="container">
-    <div class="welcome-section">
-        <h1>Mitglied bearbeiten: {{ member.display_name }}</h1>
-        <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">Zurück zur Übersicht</a>
+    <div class="page-header">
+        <h1>👤 Mitglied bearbeiten</h1>
+        <p class="page-subtitle">{{ member.display_name }}</p>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Zurück zur Übersicht</a>
+        </div>
     </div>
     
-    <form method="POST" class="member-form">
+    <div class="page-content">
+    <form method="POST" class="form">
         {{ form.hidden_tag() }}
         
         <div class="row">
@@ -17,7 +21,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">👤 Grunddaten</h5>
+                        <h2>👤 Grunddaten</h2>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -76,7 +80,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">📞 Kontaktdaten</h5>
+                        <h2>📞 Kontaktdaten</h2>
                     </div>
                     <div class="card-body">
                         <div class="form-group mb-3">
@@ -135,7 +139,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">🏛️ Vereinsdaten</h5>
+                        <h2>🏛️ Vereinsdaten</h2>
                     </div>
                     <div class="card-body">
                         <div class="form-group mb-3">
@@ -168,7 +172,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">📏 Körperliche Daten</h5>
+                        <h2>📏 Körperliche Daten</h2>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -201,7 +205,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">👕 Kleidergrössen</h5>
+                        <h2>👕 Kleidergrössen</h2>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -232,7 +236,7 @@
             <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">⚙️ Präferenzen & System</h5>
+                        <h2>⚙️ Präferenzen & System</h2>
                     </div>
                     <div class="card-body">
                         <div class="form-group mb-3">
@@ -267,36 +271,15 @@
             </div>
         </div>
         
-        <div class="text-center">
-            {{ form.submit(class="btn btn-primary btn-lg") }}
-                         <a href="{{ url_for('admin.members') }}" class="btn btn-secondary btn-lg">Abbrechen</a>
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Abbrechen</a>
         </div>
     </form>
+    </div>
 </div>
 
 <style>
-.member-form {
-    margin-top: 20px;
-}
-
-.card {
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.form-label {
-    font-weight: 600;
-    color: #495057;
-}
-
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
+/* nutzt die globalen Styles wie im Profil; spezifische Anpassungen minimiert */
 </style>
 {% endblock %}
