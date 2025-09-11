@@ -449,7 +449,6 @@ def create_event():
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required
 @admin_required
-@require_step_up
 def reset_member_password(member_id):
     """Reset member password"""
     member = Member.query.get_or_404(member_id)
@@ -459,19 +458,9 @@ def reset_member_password(member_id):
         if request.form.get('confirm') != 'RESET':
             flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
             return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
-        # Read and validate new password
-        new_password = (request.form.get('new_password') or '').strip()
-        confirm_password = (request.form.get('confirm_password') or '').strip()
-        if not new_password or not confirm_password:
-            flash('Bitte neues Passwort und Bestätigung eingeben.', 'error')
-            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
-        if new_password != confirm_password:
-            flash('Passwörter müssen übereinstimmen.', 'error')
-            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
-        is_valid, message = SecurityService.validate_password_strength(new_password)
-        if not is_valid:
-            flash(message, 'error')
-            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+        
+        # Generate new password
+        new_password = SecurityService.generate_secure_password()
         
         # Update member password
         member.set_password(new_password)
@@ -483,8 +472,13 @@ def reset_member_password(member_id):
             extra_data={'admin_id': current_user.id, 'ip': request.remote_addr}
         )
         
-        flash('Passwort wurde gesetzt. Bitte informieren Sie das Mitglied.', 'success')
-        return redirect(url_for('admin.members'))
+        # Store password in session for display
+        session['temp_password'] = {
+            'member_name': member.display_name,
+            'password': new_password,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        return redirect(url_for('admin.show_temp_password'))
     
     return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
 

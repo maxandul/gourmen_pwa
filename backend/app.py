@@ -23,6 +23,14 @@ def create_app(config_name=None):
         # Initialize extensions
         init_extensions(app)
         
+        # Test database connection
+        try:
+            with app.app_context():
+                db.engine.execute('SELECT 1')
+        except Exception as db_error:
+            app.logger.warning(f"Database connection test failed: {db_error}")
+            # Continue anyway - database might be available later
+        
         # Register blueprints
         from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
         app.register_blueprint(public.bp)
@@ -64,6 +72,8 @@ def create_app(config_name=None):
         # If app creation fails, create a minimal app for debugging
         app = Flask(__name__)
         app.logger.error(f"App creation failed: {e}")
+        import traceback
+        app.logger.error(f"Traceback: {traceback.format_exc()}")
         
         @app.route('/health')
         def health():
