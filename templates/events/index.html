@@ -31,13 +31,13 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <p><strong>📅 Datum:</strong> {{ event.display_date }}</p>
-                    <p><strong>🍳 Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
+                    <p><strong>📅 Datum:</strong><br>{{ event.display_date }}</p>
+                    <p><strong>👑 Organisator:</strong><br>{{ event.organisator.display_name_with_spirit }}</p>
                     {% if event.restaurant %}
-                    <p><strong>🍴 Restaurant:</strong> {{ event.restaurant }}</p>
+                    <p><strong>🏠 Restaurant:</strong><br>{{ event.restaurant }}</p>
                     {% endif %}
                     {% if event.kueche %}
-                    <p><strong>🌍 Küche:</strong> {{ event.kueche }}</p>
+                    <p><strong>🌍 Küche:</strong><br>{{ event.kueche }}</p>
                     {% endif %}
                     
                     <!-- Teilnahme-Status -->
@@ -56,19 +56,9 @@
                         👥 {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern
                     </p>
                     
-                    <!-- Buttons in der card-secondary -->
+                    <!-- Button in der card-secondary -->
                     <div class="card-actions primary">
-                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">Details & RSVP</a>
-                    
-                    <!-- BillBro Link für Teilnehmer und Organisatoren -->
-                    {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if my_participation and my_participation.teilnahme %}
-                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
-                    {% endif %}
-                    
-                    {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
-                    {% endif %}
+                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">🔍 Details</a>
                     </div>
                 </div>
             </div>

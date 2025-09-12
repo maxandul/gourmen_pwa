@@ -10,176 +10,177 @@
             {{ event.display_datetime }} - {{ event.restaurant or event.event_typ.value }}
         </p>
         <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">← Zurück zu Event</a>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">🔍 Zurück zu Event</a>
         </div>
     </div>
     
     <div class="page-content">
+        {% if average_ratings.count > 0 %}
+        <!-- Zusammenfassung Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 Zusammenfassung</h2>
+            </div>
+            <div class="card-body">
+                <div class="ratings-summary-grid">
+                    <div class="summary-item">
+                        <h3 class="summary-value">{{ average_ratings.overall }}</h3>
+                        <p class="summary-label">Gesamtbewertung</p>
+                        <div class="stars">
+                            {% for i in range(5) %}
+                                {% if i < average_ratings.overall %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">{{ average_ratings.count }} Bewertungen</small>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <h4 class="summary-value">{{ average_ratings.food }}</h4>
+                        <p class="summary-label">Essen</p>
+                        <div class="stars">
+                            {% for i in range(5) %}
+                                {% if i < average_ratings.food %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <h4 class="summary-value">{{ average_ratings.drinks }}</h4>
+                        <p class="summary-label">Getränke</p>
+                        <div class="stars">
+                            {% for i in range(5) %}
+                                {% if i < average_ratings.drinks %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <h4 class="summary-value">{{ average_ratings.service }}</h4>
+                        <p class="summary-label">Bedienung</p>
+                        <div class="stars">
+                            {% for i in range(5) %}
+                                {% if i < average_ratings.service %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alle Bewertungen Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⭐ Alle Bewertungen</h2>
+            </div>
+            <div class="card-body">
+                {% for rating in ratings %}
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>{{ rating.participant.full_name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>📅 Datum:</strong><br>{{ rating.created_at.strftime('%d.%m.%Y') }}</p>
+                        
+                        <div class="rating-scores">
+                            <div class="rating-category">
+                                <p><strong>🍽️ Essen:</strong><br>
+                                <div class="stars">
+                                    {% for i in range(5) %}
+                                        {% if i < rating.food_rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                </p>
+                            </div>
+                            <div class="rating-category">
+                                <p><strong>🥤 Getränke:</strong><br>
+                                <div class="stars">
+                                    {% for i in range(5) %}
+                                        {% if i < rating.drinks_rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                </p>
+                            </div>
+                            <div class="rating-category">
+                                <p><strong>👨‍🍳 Bedienung:</strong><br>
+                                <div class="stars">
+                                    {% for i in range(5) %}
+                                        {% if i < rating.service_rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {% if rating.highlights %}
+                        <p><strong>✨ Highlights:</strong><br>{{ rating.highlights }}</p>
+                        {% endif %}
+                        
+                        {% if current_user.id == rating.participant_id %}
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Bearbeiten
+                            </a>
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="deleteRating({{ event.id }})">
+                                <i class="fas fa-trash"></i> Löschen
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Keine Bewertungen Card -->
         <div class="card">
             <div class="card-header">
                 <h2>⭐ Bewertungen</h2>
             </div>
             <div class="card-body">
-                    {% if average_ratings.count > 0 %}
-                        <!-- Average Ratings Summary -->
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <h3 class="text-primary">{{ average_ratings.overall }}</h3>
-                                    <p class="mb-1"><strong>Gesamtbewertung</strong></p>
-                                    <div class="stars">
-                                        {% for i in range(5) %}
-                                            {% if i < average_ratings.overall %}
-                                                <i class="fas fa-star text-warning"></i>
-                                            {% else %}
-                                                <i class="far fa-star text-muted"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                    <small class="text-muted">{{ average_ratings.count }} Bewertungen</small>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <h4 class="text-success">{{ average_ratings.food }}</h4>
-                                    <p class="mb-1"><strong>Essen</strong></p>
-                                    <div class="stars">
-                                        {% for i in range(5) %}
-                                            {% if i < average_ratings.food %}
-                                                <i class="fas fa-star text-warning"></i>
-                                            {% else %}
-                                                <i class="far fa-star text-muted"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <h4 class="text-info">{{ average_ratings.drinks }}</h4>
-                                    <p class="mb-1"><strong>Getränke</strong></p>
-                                    <div class="stars">
-                                        {% for i in range(5) %}
-                                            {% if i < average_ratings.drinks %}
-                                                <i class="fas fa-star text-warning"></i>
-                                            {% else %}
-                                                <i class="far fa-star text-muted"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <h4 class="text-warning">{{ average_ratings.service }}</h4>
-                                    <p class="mb-1"><strong>Bedienung</strong></p>
-                                    <div class="stars">
-                                        {% for i in range(5) %}
-                                            {% if i < average_ratings.service %}
-                                                <i class="fas fa-star text-warning"></i>
-                                            {% else %}
-                                                <i class="far fa-star text-muted"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <hr>
-                        
-                        <!-- Individual Ratings -->
-                        <h4>Alle Bewertungen</h4>
-                        <div class="row">
-                            {% for rating in ratings %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="card-title mb-0">{{ rating.participant.full_name }}</h6>
-                                                <small class="text-muted">{{ rating.created_at.strftime('%d.%m.%Y') }}</small>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <small class="text-muted">Essen</small><br>
-                                                    <div class="stars">
-                                                        {% for i in range(5) %}
-                                                            {% if i < rating.food_rating %}
-                                                                <i class="fas fa-star text-warning"></i>
-                                                            {% else %}
-                                                                <i class="far fa-star text-muted"></i>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <small class="text-muted">Getränke</small><br>
-                                                    <div class="stars">
-                                                        {% for i in range(5) %}
-                                                            {% if i < rating.drinks_rating %}
-                                                                <i class="fas fa-star text-warning"></i>
-                                                            {% else %}
-                                                                <i class="far fa-star text-muted"></i>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <small class="text-muted">Bedienung</small><br>
-                                                    <div class="stars">
-                                                        {% for i in range(5) %}
-                                                            {% if i < rating.service_rating %}
-                                                                <i class="fas fa-star text-warning"></i>
-                                                            {% else %}
-                                                                <i class="far fa-star text-muted"></i>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            {% if rating.highlights %}
-                                                <div class="mt-2">
-                                                    <small class="text-muted">Highlights:</small><br>
-                                                    <em>{{ rating.highlights }}</em>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {% if current_user.id == rating.participant_id %}
-                                                <div class="mt-2">
-                                                    <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" 
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-edit"></i> Bearbeiten
-                                                    </a>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                            onclick="deleteRating({{ event.id }})">
-                                                        <i class="fas fa-trash"></i> Löschen
-                                                    </button>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                            <h4>Noch keine Bewertungen</h4>
-                            <p class="text-muted">Für dieses Event wurden noch keine Bewertungen abgegeben.</p>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="mt-4">
-                        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline">
-                            <i class="fas fa-arrow-left"></i> Zurück zum Event
-                        </a>
-                    </div>
+                <div class="text-center py-4">
+                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                    <h4>Noch keine Bewertungen</h4>
+                    <p class="text-muted">Für dieses Event wurden noch keine Bewertungen abgegeben.</p>
+                </div>
             </div>
+        </div>
+        {% endif %}
+        
+        <!-- Zurück Button -->
+        <div class="page-actions">
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">
+                🔍 Zurück zum Event
+            </a>
         </div>
     </div>
 </div>

@@ -27,42 +27,42 @@
                 </div>
                 <div class="card-body">
                     <div class="event-basic-info">
-                        <p><strong>👑 Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
-                        <p><strong>👥 Teilnehmer:</strong> {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
+                        <p><strong>👑 Organisator:</strong><br>{{ event.organisator.display_name_with_spirit }}</p>
+                        <p><strong>👥 Teilnehmer:</strong><br>{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
                     </div>
                     
                     {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
                     <div class="event-location-info">
                     {% if event.restaurant %}
-                    <p><strong>🏠 Restaurant:</strong> {{ event.restaurant }}</p>
+                    <p><strong>🏠 Restaurant:</strong><br>{{ event.restaurant }}</p>
                     {% endif %}
                     {% if event.place_maps_url %}
-                    <p><strong>📍 Adresse:</strong> 
+                    <p><strong>📍 Adresse:</strong><br>
                         <a href="{{ event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
                     </p>
                     {% endif %}
                     {% if event.kueche %}
-                    <p><strong>🌍 Küche:</strong> {{ event.kueche }}</p>
+                    <p><strong>🌍 Küche:</strong><br>{{ event.kueche }}</p>
                     {% elif event.place_types %}
-                    <p><strong>🌍 Küche:</strong> 
+                    <p><strong>🌍 Küche:</strong><br>
                         {% set cuisine_types = event.place_types|map('cuisine_type_mapper')|list %}
                         {{ cuisine_types|join(', ') if cuisine_types else 'Restaurant' }}
                     </p>
                     {% endif %}
                     {% if event.place_price_level %}
-                    <p><strong>💰 Preislevel:</strong> {{ '€' * event.place_price_level }}</p>
+                    <p><strong>💰 Preislevel:</strong><br>{{ '€' * event.place_price_level }}</p>
                     {% endif %}
                     {% if event.website %}
-                    <p><strong>🌐 Website:</strong> 
+                    <p><strong>🌐 Website:</strong><br>
                         <a href="{{ event.website }}" target="_blank" rel="noopener">{{ event.website }}</a>
                     </p>
                     {% elif event.place_website %}
-                    <p><strong>🌐 Website:</strong> 
+                    <p><strong>🌐 Website:</strong><br>
                         <a href="{{ event.place_website }}" target="_blank" rel="noopener">{{ event.place_website }}</a>
                     </p>
                     {% endif %}
                     {% if event.notizen %}
-                    <p><strong>📝 Notizen:</strong> {{ event.notizen }}</p>
+                    <p><strong>📝 Notizen:</strong><br>{{ event.notizen }}</p>
                     {% endif %}
                 </div>
                 {% endif %}

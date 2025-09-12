@@ -22,16 +22,16 @@
                         <h3>{{ next_event.event_typ.value }}</h3>
                     </div>
                     <div class="card-body">
-                        <p><strong>📅 Datum:</strong> {{ next_event.display_date }}</p>
-                        <p><strong>🍴 Restaurant:</strong> {{ next_event.restaurant or 'TBD' }}</p>
+                        <p><strong>📅 Datum:</strong><br>{{ next_event.display_date }}</p>
+                        <p><strong>🏠 Restaurant:</strong><br>{{ next_event.restaurant or 'TBD' }}</p>
                         {% if next_event.place_maps_url %}
-                        <p><strong>📍 Location:</strong> <a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener" class="maps-link">Auf Google Maps anzeigen</a></p>
+                        <p><strong>📍 Location:</strong><br><a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a></p>
                         {% endif %}
                         {% if next_event.organisator %}
-                        <p><strong>🍳 Organisator:</strong> {{ next_event.organisator.display_name_with_spirit }}</p>
+                        <p><strong>👑 Organisator:</strong><br>{{ next_event.organisator.display_name_with_spirit }}</p>
                         {% endif %}
                         {% if next_event.notizen %}
-                        <p><strong>📝 Notizen:</strong> {{ next_event.notizen }}</p>
+                        <p><strong>📝 Notizen:</strong><br>{{ next_event.notizen }}</p>
                         {% endif %}
                         
                         <!-- Teilnahme-Status -->
@@ -48,7 +48,7 @@
                         
                         <!-- Buttons in der card-secondary -->
                         <div class="card-actions primary">
-                            <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">Details anzeigen</a>
+                            <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn-primary">🔍 Details</a>
                             
                             <!-- RSVP-Status und Buttons -->
                             {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}

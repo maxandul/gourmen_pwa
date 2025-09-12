@@ -230,15 +230,15 @@ a:hover {
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #f44336, #ef5350);
-    color: white;
-    box-shadow: var(--shadow-sm);
+    background: linear-gradient(135deg, var(--warm-color), var(--accent-color)) !important;
+    color: white !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: linear-gradient(135deg, #e53935, #e57373);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #6b2c1f, var(--warm-color)) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
 }
 
 .btn-outline {
@@ -749,7 +749,7 @@ a:hover {
     background: var(--background-secondary);
     border: 1px solid var(--background-tertiary);
     border-radius: var(--border-radius-lg);
-    margin: 0 8px; /* Weniger Einzug - näher an die äußere Card */
+    margin: 0 4px !important; /* Weniger Einzug - näher an die äußere Card */
     box-shadow: none;
     transition: all var(--transition-normal);
 }
@@ -757,7 +757,7 @@ a:hover {
 /* Mobile-first: Bei größeren Bildschirmen mehr Einzug */
 @media (min-width: 768px) {
     .card-secondary {
-        margin: 0 12px; /* Weniger Einzug auch auf Desktop */
+        margin: 0 6px !important; /* Weniger Einzug auch auf Desktop */
     }
 }
 
@@ -916,7 +916,7 @@ a:hover {
 .card .participants-list .card-secondary,
 .card .ranking-list .card-secondary,
 .card .participants-grid .card-secondary {
-    margin: 0 -24px 16px -24px; /* Kompensiert das Padding der Liste + Abstand nach unten */
+    margin: 0 -24px 16px -24px !important; /* Kompensiert das Padding der Liste + Abstand nach unten */
 }
 
 /* Erste card-secondary in Listen hat keinen Abstand nach oben */
@@ -1291,7 +1291,7 @@ a:hover {
     .card .participants-list .card-secondary,
     .card .ranking-list .card-secondary,
     .card .participants-grid .card-secondary {
-        margin: 0 -16px 12px -16px; /* Kompensiert das mobile Padding der Liste + Abstand nach unten */
+        margin: 0 -16px 12px -16px !important; /* Kompensiert das mobile Padding der Liste + Abstand nach unten */
     }
     
     /* Erste card-secondary in Listen auf Mobile hat keinen Abstand nach oben */
@@ -1779,7 +1779,7 @@ a:hover {
     
     /* Secondary Cards auf Mobile anpassen */
     .card-secondary {
-        margin: 0 6px; /* Noch weniger Einzug auf sehr kleinen Bildschirmen */
+        margin: 0 2px !important; /* Minimaler Einzug auf sehr kleinen Bildschirmen */
         border-radius: var(--border-radius-lg); /* Border-radius beibehalten */
     }
     
@@ -3134,5 +3134,157 @@ small {
     .landing-stats {
         grid-template-columns: 1fr;
     }
-}/* Cache busting - 09/10/2025 16:32:32 */
+}/* Ratings Summary Grid */
+.ratings-summary-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-top: 20px;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 20px;
+    background: var(--background-secondary);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--background-tertiary);
+}
+
+.summary-value {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.summary-label {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Ratings Grid System */
+.ratings-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    margin-top: 20px;
+}
+
+.rating-item {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    transition: all var(--transition-normal);
+}
+
+.rating-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--background-tertiary);
+}
+
+.rating-author {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rating-date {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.rating-scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.rating-category {
+    text-align: center;
+}
+
+.rating-label {
+    color: var(--text-muted);
+    font-size: 14px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.rating-highlights {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--background-tertiary);
+}
+
+.rating-highlights .rating-label {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.rating-highlights em {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.rating-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--background-tertiary);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rating-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Mobile Responsive für Ratings */
+@media (max-width: 768px) {
+    .ratings-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .ratings-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .rating-scores {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .rating-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .rating-actions {
+        flex-direction: column;
+    }
+    
+    .rating-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Cache busting - 09/10/2025 16:32:32 */
 
