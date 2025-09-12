@@ -933,6 +933,7 @@ a:hover {
 .card .ranking-list .card-secondary,
 .card .participants-grid .card-secondary {
     margin: 0 -24px 16px -24px !important; /* Kompensiert das Padding der Liste + Abstand nach unten */
+    background: var(--background-secondary) !important; /* Überschreibt Varianten-Hintergrund */
 }
 
 /* Erste card-secondary in Listen hat keinen Abstand nach oben */
@@ -1308,6 +1309,7 @@ a:hover {
     .card .ranking-list .card-secondary,
     .card .participants-grid .card-secondary {
         margin: 0 -16px 12px -16px !important; /* Kompensiert das mobile Padding der Liste + Abstand nach unten */
+        background: var(--background-secondary) !important; /* Überschreibt Varianten-Hintergrund */
     }
     
     /* Erste card-secondary in Listen auf Mobile hat keinen Abstand nach oben */

@@ -19,10 +19,9 @@
             <div class="card-body">
                 <div class="card card-secondary variant-accent">
                     <div class="card-header">
-                        <h3>{{ next_event.event_typ.value }}</h3>
+                        <h3>{{ next_event.event_typ.value }} - {{ next_event.display_date }}</h3>
                     </div>
                     <div class="card-body">
-                        <p><strong>📅 Datum:</strong><br>{{ next_event.display_date }}</p>
                         <p><strong>🏠 Restaurant:</strong><br>{{ next_event.restaurant or 'TBD' }}</p>
                         {% if next_event.place_maps_url %}
                         <p><strong>📍 Location:</strong><br><a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a></p>
