@@ -79,10 +79,10 @@
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if participation and participation.teilnahme %}
                         <p>Du nimmst an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-danger">Absagen</button>
+                        <button type="submit" class="btn btn-danger">✖️ Absagen</button>
                         {% else %}
                         <p>Du nimmst nicht an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-success">Zusagen</button>
+                        <button type="submit" class="btn btn-success">✓ Zusagen</button>
                         {% endif %}
                     </form>
                     
@@ -120,14 +120,14 @@
                             <span class="member">{{ participation.member.display_name_with_spirit }}</span>
                             <span class="status">
                                 {% if participation.teilnahme %}
-                                ✅ Teilnehmer
+                                ✓ Teilnehmer
                                 {% if billbro_active and participation.has_guess %}
                                 <small>🍽️ Geschätzt</small>
                                 {% elif billbro_active %}
                                 <small>⏳ Wartet</small>
                                 {% endif %}
                                 {% else %}
-                                ❌ Nicht teilnehmend
+                                ✖️ Nicht teilnehmend
                                 {% endif %}
                             </span>
                         </div>

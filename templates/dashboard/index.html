@@ -58,7 +58,7 @@
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="teilnahme" value="false">
-                                        <button type="submit" class="btn btn-danger">❌ Absagen</button>
+                                        <button type="submit" class="btn btn-danger">✖️ Absagen</button>
                                     </form>
                                     <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
                                 {% else %}
@@ -66,7 +66,7 @@
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="teilnahme" value="true">
-                                        <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                                        <button type="submit" class="btn btn-success">✓ Zusagen</button>
                                     </form>
                                 {% endif %}
                             {% else %}
@@ -74,12 +74,12 @@
                                 <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="teilnahme" value="true">
-                                    <button type="submit" class="btn btn-success">✅ Zusagen</button>
+                                    <button type="submit" class="btn btn-success">✓ Zusagen</button>
                                 </form>
                                 <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="teilnahme" value="false">
-                                    <button type="submit" class="btn btn-danger">❌ Absagen</button>
+                                    <button type="submit" class="btn btn-danger">✖️ Absagen</button>
                                 </form>
                             {% endif %}
                         </div>

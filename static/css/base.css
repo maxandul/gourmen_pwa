@@ -233,12 +233,24 @@ a:hover {
     background: linear-gradient(135deg, var(--warm-color), var(--accent-color)) !important;
     color: white !important;
     box-shadow: var(--shadow-sm) !important;
+    border: none !important;
 }
 
 .btn-danger:hover:not(:disabled) {
     background: linear-gradient(135deg, #6b2c1f, var(--warm-color)) !important;
     box-shadow: var(--shadow-md) !important;
     transform: translateY(-1px) !important;
+    color: white !important;
+}
+
+.btn-danger:focus {
+    outline: 2px solid var(--accent-color) !important;
+    outline-offset: 2px !important;
+}
+
+.btn-danger:active {
+    background: linear-gradient(135deg, #5a1f17, #6b2c1f) !important;
+    transform: translateY(0) !important;
 }
 
 .btn-outline {
@@ -786,23 +798,27 @@ a:hover {
 
 /* Alternative Styling für Secondary Cards */
 .card-secondary.variant-accent {
-    border-left: 4px solid var(--accent-color);
-    background: rgba(255, 140, 0, 0.05);
+    border-left: 4px solid var(--accent-color) !important;
+    background: var(--background-secondary) !important;
+    border: 1px solid rgba(220, 105, 60, 0.2) !important;
 }
 
 .card-secondary.variant-info {
-    border-left: 4px solid #17a2b8;
-    background: rgba(23, 162, 184, 0.05);
+    border-left: 4px solid #17a2b8 !important;
+    background: var(--background-secondary) !important;
+    border: 1px solid rgba(23, 162, 184, 0.2) !important;
 }
 
 .card-secondary.variant-success {
-    border-left: 4px solid #28a745;
-    background: rgba(40, 167, 69, 0.05);
+    border-left: 4px solid #28a745 !important;
+    background: var(--background-secondary) !important;
+    border: 1px solid rgba(40, 167, 69, 0.2) !important;
 }
 
 .card-secondary.variant-warning {
-    border-left: 4px solid #ffc107;
-    background: rgba(255, 193, 7, 0.05);
+    border-left: 4px solid #ffc107 !important;
+    background: var(--background-secondary) !important;
+    border: 1px solid rgba(255, 193, 7, 0.2) !important;
 }
 
 /* Generalisiertes Button-System für Cards */
