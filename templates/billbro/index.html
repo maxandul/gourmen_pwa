@@ -26,6 +26,7 @@
             <h2>👨‍🍳 Organisator-Dashboard</h2>
         </div>
         <div class="card-body">
+        <div class="events-list">
         
         <!-- Anwesenheits-Check vor BillBro-Start -->
         {% if not event.rechnungsbetrag_rappen %}
@@ -200,8 +201,8 @@
                         <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
                         <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
                         <br>
-                        <p class="suggested-total"><strong>Vorgeschlagener Gesamtbetrag:</strong> {{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF 
-                            <small>(aufgerundet auf 10er)</small></p>
+                        <p class="suggested-total">Vorgeschlagener Gesamtbetrag:<br> <strong>{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</strong>
+                            <br><small>(aufgerundet auf 10er)</small></p>
                     </div>
                     
                     <!-- Action Buttons für automatischen Vorschlag -->
@@ -210,7 +211,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-success">✅ Akzeptieren</button>
                         </form>
-                        <button type="button" class="btn btn-outline" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
+                        <button type="button" class="btn btn-danger" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
                     </div>
                 </div>
 
@@ -226,7 +227,7 @@
                                    value="{{ event.gesamtbetrag_rappen / 100 if event.gesamtbetrag_rappen else '' }}"
                                    placeholder="z.B. {{ '%.0f'|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">Gesamtbetrag übernehmen</button>
+                        <button type="submit" class="btn btn-success">Gesamtbetrag übernehmen</button>
                     </form>
                 </div>
 
@@ -235,8 +236,8 @@
                 <div class="final-results">
                     <h5>✅ Finaler Gesamtbetrag:</h5>
                     <div class="bill-summary final">
-                        <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</p>
-                        <p><strong>Effektives Trinkgeld:</strong> {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF 
+                        <p><strong>Gesamtbetrag:</strong><br> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</p>
+                        <p><strong>Effektives Trinkgeld:<br></strong> {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF 
                             <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small></p>
                     </div>
                     
@@ -270,6 +271,7 @@
             </div>
         </div>
         {% endif %}
+        </div>
             </div>
         </div>
     </div>
