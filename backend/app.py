@@ -61,6 +61,9 @@ def create_app(config_name=None):
         if PUSH_NOTIFICATIONS_AVAILABLE:
             app.register_blueprint(push_notifications.bp)
             app.register_blueprint(cron.bp)
+            
+            # CSRF wird für Cron-Routes deaktiviert
+            
             app.logger.info("Push notifications and cron jobs enabled")
         else:
             app.logger.info("Push notifications and cron jobs disabled - VAPID keys not available")
