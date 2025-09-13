@@ -37,6 +37,7 @@ def main():
         timeout = 300  # Längerer Timeout für Cron-Jobs
         
         logger.info(f"Starting Gunicorn on port {port} with {workers} worker(s)")
+        logger.info(f"Environment variables: PORT={port}, FLASK_ENV={os.environ.get('FLASK_ENV')}")
         
         # Starte Gunicorn
         sys.argv = [
@@ -48,6 +49,7 @@ def main():
             '--access-logfile', '-',
             '--error-logfile', '-',
             '--log-level', 'info',
+            '--worker-class', 'sync',
             'backend.app:create_app()'
         ]
         
