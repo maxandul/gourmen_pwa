@@ -48,48 +48,56 @@ class VAPIDService:
     @staticmethod
     def get_vapid_public_key():
         """Holt den öffentlichen VAPID-Key für den Client"""
-        # Prüfe zuerst Umgebungsvariablen (für Produktion)
-        public_key = os.environ.get('VAPID_PUBLIC_KEY')
-        if public_key:
-            return public_key
-        
-        # Fallback: Prüfe ob bereits Keys existieren
-        private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
-        public_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_public.txt')
-        
-        if os.path.exists(public_key_file):
-            with open(public_key_file, 'r') as f:
-                return f.read().strip()
-        
-        # Generiere neue Keys (nur für Development)
-        keys = VAPIDService.generate_vapid_keys()
-        
-        # Speichere Keys nur in Development
-        with open(private_key_file, 'w') as f:
-            f.write(keys['private_key'])
-        
-        with open(public_key_file, 'w') as f:
-            f.write(keys['public_key'])
-        
-        return keys['public_key']
+        try:
+            # Prüfe zuerst Umgebungsvariablen (für Produktion)
+            public_key = os.environ.get('VAPID_PUBLIC_KEY')
+            if public_key:
+                return public_key
+            
+            # Fallback: Prüfe ob bereits Keys existieren
+            private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
+            public_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_public.txt')
+            
+            if os.path.exists(public_key_file):
+                with open(public_key_file, 'r') as f:
+                    return f.read().strip()
+            
+            # Generiere neue Keys (nur für Development)
+            keys = VAPIDService.generate_vapid_keys()
+            
+            # Speichere Keys nur in Development
+            with open(private_key_file, 'w') as f:
+                f.write(keys['private_key'])
+            
+            with open(public_key_file, 'w') as f:
+                f.write(keys['public_key'])
+            
+            return keys['public_key']
+            
+        except Exception as e:
+            raise Exception(f"VAPID public key not available: {e}")
     
     @staticmethod
     def get_vapid_private_key():
         """Holt den privaten VAPID-Key für den Server"""
-        # Prüfe zuerst Umgebungsvariablen (für Produktion)
-        private_key = os.environ.get('VAPID_PRIVATE_KEY')
-        if private_key:
-            return private_key
-        
-        # Fallback: Prüfe ob bereits Keys existieren
-        private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
-        
-        if os.path.exists(private_key_file):
+        try:
+            # Prüfe zuerst Umgebungsvariablen (für Produktion)
+            private_key = os.environ.get('VAPID_PRIVATE_KEY')
+            if private_key:
+                return private_key
+            
+            # Fallback: Prüfe ob bereits Keys existieren
+            private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
+            
+            if os.path.exists(private_key_file):
+                with open(private_key_file, 'r') as f:
+                    return f.read().strip()
+            
+            # Falls keine Keys existieren, generiere sie (nur für Development)
+            VAPIDService.get_vapid_public_key()  # Das generiert auch den private key
+            
             with open(private_key_file, 'r') as f:
                 return f.read().strip()
-        
-        # Falls keine Keys existieren, generiere sie (nur für Development)
-        VAPIDService.get_vapid_public_key()  # Das generiert auch den private key
-        
-        with open(private_key_file, 'r') as f:
-            return f.read().strip()
+                
+        except Exception as e:
+            raise Exception(f"VAPID private key not available: {e}")

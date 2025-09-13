@@ -33,8 +33,17 @@ def create_app(config_name=None):
         
         # Register blueprints
         from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
-        # Temporär deaktiviert - verursacht Import-Fehler:
-        # from backend.routes import push_notifications, cron
+        
+        # Push-Notification und Cron-Blueprints nur laden wenn VAPID-Keys verfügbar sind
+        try:
+            from backend.services.vapid_service import VAPIDService
+            # Teste ob VAPID-Keys verfügbar sind
+            VAPIDService.get_vapid_public_key()
+            from backend.routes import push_notifications, cron
+            PUSH_NOTIFICATIONS_AVAILABLE = True
+        except Exception as vapid_error:
+            app.logger.warning(f"VAPID keys not available, disabling push notifications: {vapid_error}")
+            PUSH_NOTIFICATIONS_AVAILABLE = False
         app.register_blueprint(public.bp)
         app.register_blueprint(auth.bp, url_prefix='/auth')
         app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
@@ -47,9 +56,14 @@ def create_app(config_name=None):
         app.register_blueprint(docs.bp, url_prefix='/docs')
         app.register_blueprint(notifications.bp, url_prefix='/notifications')
         app.register_blueprint(ratings.bp, url_prefix='/ratings')
-        # Temporär deaktiviert für Debugging:
-        # app.register_blueprint(push_notifications.bp)
-        # app.register_blueprint(cron.bp)
+        
+        # Registriere Push-Notification und Cron-Blueprints nur wenn verfügbar
+        if PUSH_NOTIFICATIONS_AVAILABLE:
+            app.register_blueprint(push_notifications.bp)
+            app.register_blueprint(cron.bp)
+            app.logger.info("Push notifications and cron jobs enabled")
+        else:
+            app.logger.info("Push notifications and cron jobs disabled - VAPID keys not available")
         
         # Register error handlers
         register_error_handlers(app)
