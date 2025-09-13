@@ -1,7 +1,7 @@
 {
   "name": "Gourmen",
   "short_name": "Gourmen",
-  "description": "Gourmen-Verein Webapp",
+  "description": "Gourmen-Verein Webapp - Verwaltung und Organisation",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#354e5e",
@@ -9,27 +9,29 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "id": "gourmen-pwa",
+  "categories": ["lifestyle", "productivity", "social"],
+  "lang": "de",
   "icons": [
     {
-      "src": "/static/img/logos/logo-square.png",
+      "src": "/static/img/pwa/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/img/logos/logo-square.png",
+      "src": "/static/img/pwa/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/img/logos/logo-square.png",
+      "src": "/static/img/pwa/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/static/img/logos/logo-square.png",
+      "src": "/static/img/pwa/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

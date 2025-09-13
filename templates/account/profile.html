@@ -235,32 +235,52 @@
             </div>
         </form>
         
-        <!-- PWA Section -->
+        <!-- Service Worker Info Section -->
         <div class="card">
             <div class="card-header">
-                <h2>📱 App-Updates</h2>
+                <h2>🔧 Service Worker Status</h2>
             </div>
             <div class="card-body">
                 <div class="pwa-section">
-                    <h4>App-Update prüfen</h4>
-                    <p>Überprüfe, ob eine neue Version der App verfügbar ist und installiere sie manuell.</p>
+                    <h4>Service Worker Diagnose</h4>
+                    <p>Überprüfe den Status des Service Workers und teste Push-Benachrichtigungen.</p>
                     <div class="actions">
-                        <button id="manual-update-btn" class="btn btn-primary">
-                            <span class="btn-icon">🔄</span>
-                            <span class="btn-text">Nach Updates suchen</span>
+                        <button id="sw-diagnose-btn" class="btn btn-info">
+                            <span class="btn-icon">🔍</span>
+                            <span class="btn-text">Service Worker prüfen</span>
                         </button>
-                        <div id="update-status" class="update-status" style="display: none;">
+                        <button id="sw-test-btn" class="btn btn-primary">
+                            <span class="btn-icon">🧪</span>
+                            <span class="btn-text">Push-Test</span>
+                        </button>
+                        <div id="sw-status" class="update-status" style="display: none;">
                             <span class="status-text"></span>
                         </div>
                     </div>
                 </div>
                 
                 <div class="pwa-section">
-                    <h4>App-Informationen</h4>
+                    <h4>Service Worker Informationen</h4>
                     <div class="app-info">
-                        <p><strong>Version:</strong> <span id="app-version">1.3.0</span></p>
-                        <p><strong>Installiert:</strong> <span id="app-installed">Prüfe...</span></p>
-                        <p><strong>Offline-Modus:</strong> <span id="offline-status">Verfügbar</span></p>
+                        <p><strong>Status:</strong> <span id="sw-registration-status">Prüfe...</span></p>
+                        <p><strong>Scope:</strong> <span id="sw-scope">-</span></p>
+                        <p><strong>Version:</strong> <span id="sw-version">v1.3.2</span></p>
+                        <p><strong>Push-Benachrichtigungen:</strong> <span id="push-status">Prüfe...</span></p>
+                    </div>
+                </div>
+                
+                <div class="pwa-section">
+                    <h4>Debug-Tools</h4>
+                    <p>Erweiterte Tools für die Service Worker Diagnose und Entwicklung.</p>
+                    <div class="actions">
+                        <button id="sw-cleanup-btn" class="btn btn-warning">
+                            <span class="btn-icon">🧹</span>
+                            <span class="btn-text">Service Worker zurücksetzen</span>
+                        </button>
+                        <button id="sw-force-register-btn" class="btn btn-outline">
+                            <span class="btn-icon">🔄</span>
+                            <span class="btn-text">Neu registrieren</span>
+                        </button>
                     </div>
                 </div>
             </div>

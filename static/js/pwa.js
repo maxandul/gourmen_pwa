@@ -22,6 +22,7 @@ class PWA {
         this.setupNotifications();
         this.setupUpdateDetection();
         this.setupManualUpdateButton();
+        this.setupServiceWorkerInfoCard();
         
         // Debug-Panel nur, wenn aktiviert
         const debugEnabled = (
@@ -96,7 +97,7 @@ class PWA {
                 // Keine Registration gefunden, registriere neuen Service Worker
                 console.log('🔄 Registriere neuen Service Worker...');
                 // Registriere SW vom Root-Pfad für vollen Scope
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/static/sw.js', { scope: '/' })
                 .then(registration => {
                         console.log('✅ Service Worker erfolgreich registriert:', registration);
                         this.serviceWorkerRegistration = registration;
@@ -137,7 +138,7 @@ class PWA {
                             console.log('🔧 Debug-Info für Service Worker Fehler:');
                             console.log('- URL:', window.location.href);
                             console.log('- Protocol:', window.location.protocol);
-                            console.log('- Service Worker File:', '/sw.js');
+                            console.log('- Service Worker File:', '/static/sw.js');
                             console.log('- Error Details:', error);
                         }
                     });
@@ -488,28 +489,265 @@ class PWA {
         }
     }
 
-    // Erweiterte manuelle Update-Funktionalität für Account-Seite
-    setupManualUpdateButton() {
-        const updateBtn = document.getElementById('manual-update-btn');
-        const updateStatus = document.getElementById('update-status');
-        const statusText = document.querySelector('#update-status .status-text');
+    // Service Worker Info Card Funktionalität
+    setupServiceWorkerInfoCard() {
+        // Prüfe ob wir auf der Profile-Seite sind
+        if (!document.getElementById('sw-diagnose-btn')) return;
         
-        if (!updateBtn) return;
-
         // App-Info aktualisieren
-        this.updateAppInfo();
-
-        // Warte auf Service Worker Registrierung
-        this.waitForServiceWorker().then(() => {
-            updateBtn.addEventListener('click', async () => {
-                await this.performManualUpdate(updateBtn, updateStatus, statusText);
+        this.updateServiceWorkerInfo();
+        
+        // Event Listeners für die neuen Buttons
+        this.setupServiceWorkerInfoButtons();
+    }
+    
+    setupServiceWorkerInfoButtons() {
+        // Diagnose Button
+        const diagnoseBtn = document.getElementById('sw-diagnose-btn');
+        if (diagnoseBtn) {
+            diagnoseBtn.addEventListener('click', () => {
+                this.performServiceWorkerDiagnosis();
             });
-        }).catch(() => {
-            // Service Worker nicht verfügbar - Button deaktivieren
-            updateBtn.disabled = true;
-            updateBtn.innerHTML = '<span class="btn-icon">❌</span><span class="btn-text">Service Worker nicht verfügbar</span>';
-            this.showUpdateStatus(updateStatus, statusText, 'Service Worker nicht unterstützt oder nicht verfügbar', 'error');
+        }
+        
+        // Push Test Button
+        const testBtn = document.getElementById('sw-test-btn');
+        if (testBtn) {
+            testBtn.addEventListener('click', () => {
+                if (window.testPushNotification) {
+                    window.testPushNotification();
+                } else {
+                    this.testPushNotification();
+                }
+            });
+        }
+        
+        // Cleanup Button
+        const cleanupBtn = document.getElementById('sw-cleanup-btn');
+        if (cleanupBtn) {
+            cleanupBtn.addEventListener('click', () => {
+                this.cleanupServiceWorker();
+            });
+        }
+        
+        // Force Register Button
+        const forceRegisterBtn = document.getElementById('sw-force-register-btn');
+        if (forceRegisterBtn) {
+            forceRegisterBtn.addEventListener('click', () => {
+                this.forceRegisterServiceWorker();
+            });
+        }
+    }
+    
+    async performServiceWorkerDiagnosis() {
+        const statusDiv = document.getElementById('sw-status');
+        const statusText = document.querySelector('#sw-status .status-text');
+        
+        try {
+            this.showUpdateStatus(statusDiv, statusText, 'Service Worker Diagnose läuft...', 'info');
+            
+            // Sammle Diagnose-Informationen
+            const diagnosis = await this.collectServiceWorkerDiagnosis();
+            
+            // Zeige Ergebnisse
+            this.showDiagnosisResults(diagnosis, statusDiv, statusText);
+            
+        } catch (error) {
+            console.error('Service Worker Diagnose fehlgeschlagen:', error);
+            this.showUpdateStatus(statusDiv, statusText, `Diagnose fehlgeschlagen: ${error.message}`, 'error');
+        }
+    }
+    
+    async collectServiceWorkerDiagnosis() {
+        const diagnosis = {
+            timestamp: new Date().toISOString(),
+            serviceWorkerSupported: 'serviceWorker' in navigator,
+            pushSupported: 'PushManager' in window,
+            notificationSupported: 'Notification' in window,
+            registrations: [],
+            errors: []
+        };
+        
+        if (!diagnosis.serviceWorkerSupported) {
+            diagnosis.errors.push('Service Worker wird nicht unterstützt');
+            return diagnosis;
+        }
+        
+        try {
+            // Prüfe alle Registrierungen
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            diagnosis.registrations = registrations.map(reg => ({
+                scope: reg.scope,
+                active: reg.active ? reg.active.state : 'none',
+                installing: reg.installing ? reg.installing.state : 'none',
+                waiting: reg.waiting ? reg.waiting.state : 'none'
+            }));
+            
+            // Prüfe Push-Berechtigung
+            if (diagnosis.notificationSupported) {
+                diagnosis.notificationPermission = Notification.permission;
+            }
+            
+        } catch (error) {
+            diagnosis.errors.push(`Fehler beim Sammeln der Diagnose: ${error.message}`);
+        }
+        
+        return diagnosis;
+    }
+    
+    showDiagnosisResults(diagnosis, statusDiv, statusText) {
+        let message = 'Service Worker Diagnose abgeschlossen:\n\n';
+        
+        message += `✅ Service Worker Support: ${diagnosis.serviceWorkerSupported ? 'JA' : 'NEIN'}\n`;
+        message += `✅ Push Support: ${diagnosis.pushSupported ? 'JA' : 'NEIN'}\n`;
+        message += `✅ Notification Support: ${diagnosis.notificationSupported ? 'JA' : 'NEIN'}\n\n`;
+        
+        message += `Registrierungen gefunden: ${diagnosis.registrations.length}\n`;
+        diagnosis.registrations.forEach((reg, index) => {
+            message += `  ${index + 1}. Scope: ${reg.scope}\n`;
+            message += `     Status: Active=${reg.active}, Installing=${reg.installing}, Waiting=${reg.waiting}\n`;
         });
+        
+        if (diagnosis.notificationPermission) {
+            message += `\nNotification Permission: ${diagnosis.notificationPermission}\n`;
+        }
+        
+        if (diagnosis.errors.length > 0) {
+            message += `\nFehler:\n`;
+            diagnosis.errors.forEach(error => message += `  - ${error}\n`);
+        }
+        
+        this.showUpdateStatus(statusDiv, statusText, message, diagnosis.errors.length > 0 ? 'error' : 'success');
+        
+        // Zeige auch in Konsole für Debugging
+        console.log('🔍 Service Worker Diagnose:', diagnosis);
+    }
+    
+    async testPushNotification() {
+        const statusDiv = document.getElementById('sw-status');
+        const statusText = document.querySelector('#sw-status .status-text');
+        
+        try {
+            this.showUpdateStatus(statusDiv, statusText, 'Push-Benachrichtigung wird gesendet...', 'info');
+            
+            if (!('Notification' in window)) {
+                throw new Error('Notifications werden nicht unterstützt');
+            }
+            
+            if (Notification.permission !== 'granted') {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    throw new Error('Notification-Berechtigung wurde verweigert');
+                }
+            }
+            
+            // Sende Test-Benachrichtigung
+            const notification = new Notification('Gourmen Test', {
+                body: 'Dies ist eine Test-Benachrichtigung vom Service Worker!',
+                icon: '/static/img/pwa/icon-192.png',
+                tag: 'gourmen-test'
+            });
+            
+            this.showUpdateStatus(statusDiv, statusText, 'Test-Benachrichtigung gesendet!', 'success');
+            
+            // Schließe Benachrichtigung nach 3 Sekunden
+            setTimeout(() => {
+                notification.close();
+            }, 3000);
+            
+        } catch (error) {
+            console.error('Push-Test fehlgeschlagen:', error);
+            this.showUpdateStatus(statusDiv, statusText, `Push-Test fehlgeschlagen: ${error.message}`, 'error');
+        }
+    }
+    
+    async cleanupServiceWorker() {
+        const statusDiv = document.getElementById('sw-status');
+        const statusText = document.querySelector('#sw-status .status-text');
+        
+        try {
+            this.showUpdateStatus(statusDiv, statusText, 'Service Worker wird zurückgesetzt...', 'info');
+            
+            // Verwende die bestehende Cleanup-Funktion
+            await this.cleanupAllSW();
+            
+            this.showUpdateStatus(statusDiv, statusText, 'Service Worker erfolgreich zurückgesetzt!', 'success');
+            
+            // Aktualisiere Info nach kurzer Verzögerung
+            setTimeout(() => {
+                this.updateServiceWorkerInfo();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Service Worker Cleanup fehlgeschlagen:', error);
+            this.showUpdateStatus(statusDiv, statusText, `Cleanup fehlgeschlagen: ${error.message}`, 'error');
+        }
+    }
+    
+    async forceRegisterServiceWorker() {
+        const statusDiv = document.getElementById('sw-status');
+        const statusText = document.querySelector('#sw-status .status-text');
+        
+        try {
+            this.showUpdateStatus(statusDiv, statusText, 'Service Worker wird neu registriert...', 'info');
+            
+            // Verwende die bestehende Force-Register-Funktion
+            await this.forceRegisterSW();
+            
+            this.showUpdateStatus(statusDiv, statusText, 'Service Worker erfolgreich neu registriert!', 'success');
+            
+            // Aktualisiere Info nach kurzer Verzögerung
+            setTimeout(() => {
+                this.updateServiceWorkerInfo();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Service Worker Force-Register fehlgeschlagen:', error);
+            this.showUpdateStatus(statusDiv, statusText, `Neu-Registrierung fehlgeschlagen: ${error.message}`, 'error');
+        }
+    }
+    
+    async updateServiceWorkerInfo() {
+        // Aktualisiere Service Worker Status
+        const statusSpan = document.getElementById('sw-registration-status');
+        const scopeSpan = document.getElementById('sw-scope');
+        const pushSpan = document.getElementById('push-status');
+        
+        if (statusSpan) {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration('/');
+                if (registration) {
+                    statusSpan.textContent = 'Registriert';
+                    statusSpan.className = 'status-available';
+                    
+                    if (scopeSpan) {
+                        scopeSpan.textContent = registration.scope;
+                    }
+                } else {
+                    statusSpan.textContent = 'Nicht registriert';
+                    statusSpan.className = 'status-unavailable';
+                    
+                    if (scopeSpan) {
+                        scopeSpan.textContent = '-';
+                    }
+                }
+            } catch (error) {
+                statusSpan.textContent = 'Fehler';
+                statusSpan.className = 'status-unavailable';
+            }
+        }
+        
+        // Aktualisiere Push-Status
+        if (pushSpan) {
+            if (!('Notification' in window)) {
+                pushSpan.textContent = 'Nicht unterstützt';
+                pushSpan.className = 'status-unavailable';
+            } else {
+                const permission = Notification.permission;
+                pushSpan.textContent = permission === 'granted' ? 'Aktiviert' : permission === 'denied' ? 'Verweigert' : 'Nicht erteilt';
+                pushSpan.className = permission === 'granted' ? 'status-available' : 'status-warning';
+            }
+        }
     }
 
     // Warte auf Service Worker Registrierung
@@ -518,9 +756,9 @@ class PWA {
             throw new Error('Service Worker nicht unterstützt');
         }
 
-        // Prüfe zuerst, ob bereits eine Registration existiert
+        // Prüfe zuerst, ob bereits eine Registration existiert (Root-Scope)
         try {
-            const existingRegistration = await navigator.serviceWorker.getRegistration();
+            const existingRegistration = await navigator.serviceWorker.getRegistration('/');
             if (existingRegistration) {
                 console.log('✅ Service Worker bereits registriert:', existingRegistration);
                 return existingRegistration;
@@ -532,7 +770,7 @@ class PWA {
         // Warte bis zu 10 Sekunden auf Service Worker (erhöht von 5 Sekunden)
         for (let i = 0; i < 100; i++) {
             try {
-                const registration = await navigator.serviceWorker.getRegistration();
+                const registration = await navigator.serviceWorker.getRegistration('/');
                 if (registration) {
                     console.log('✅ Service Worker gefunden:', registration);
                     return registration;
@@ -949,7 +1187,7 @@ class PWA {
 
             // Versuche neue Registrierung
             console.log('🔄 Versuche Service Worker Registrierung...');
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             this.showToast('✅ Service Worker erfolgreich registriert', 'success');
             
@@ -978,7 +1216,7 @@ class PWA {
             console.log('- URL:', window.location.href);
             console.log('- Protocol:', window.location.protocol);
             console.log('- Hostname:', window.location.hostname);
-            console.log('- Service Worker Path:', '/sw.js');
+            console.log('- Service Worker Path:', '/static/sw.js');
             console.log('- Full Error:', error);
         }
         
@@ -1002,7 +1240,7 @@ class PWA {
             
             // Registriere neuen Service Worker
             console.log('🔄 Registriere neuen Service Worker...');
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             
             this.serviceWorkerRegistration = registration;
@@ -1271,7 +1509,7 @@ class PWA {
             
             // Registriere neuen Service Worker
             console.log('🔄 Registriere neuen Service Worker...');
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             
             this.serviceWorkerRegistration = registration;
@@ -1674,8 +1912,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Gourmen PWA initialisiert');
     console.log('App Info:', pwa.getAppInfo());
     
-    // Globale PWA-Referenz für Debugging
+    // Globale PWA-Referenz für Debugging und andere Skripte
     window.gourmenPWA = pwa;
+    
+    // Globale Service Worker-Referenz für app.js
+    window.gourmenServiceWorker = pwa.serviceWorkerRegistration;
     
     // Manueller Test des Install-Prompts (für Debugging)
     setTimeout(() => {

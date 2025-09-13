@@ -3,16 +3,20 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.1';
-const STATIC_CACHE = 'gourmen-static-v1.3.1';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.1';
+const CACHE_NAME = 'gourmen-v1.3.2';
+const STATIC_CACHE = 'gourmen-static-v1.3.2';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.2';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [
     '/',
     '/static/css/base.css',
     '/static/js/pwa.js',
+    '/static/js/app.js',
     '/static/manifest.json',
+    '/static/img/pwa/icon-16.png',
+    '/static/img/pwa/icon-32.png',
+    '/static/img/pwa/icon-96.png',
     '/static/img/pwa/icon-192.png',
     '/static/img/pwa/icon-512.png',
     '/static/img/pwa/apple-touch-icon.png',
@@ -35,32 +39,47 @@ self.addEventListener('install', (event) => {
         (async () => {
             const cache = await caches.open(STATIC_CACHE);
             console.log('Service Worker: Caching static assets');
-            await Promise.all(
-                STATIC_ASSETS.map(async (url) => {
-                    try {
-                        await cache.add(url);
-                    } catch (e) {
-                        // Schlucke Fehler einzelner Assets (z. B. 401/404), damit die Installation nicht komplett fehlschlägt
-                        console.warn('Service Worker: Asset konnte nicht gecacht werden:', url, e && e.message ? e.message : e);
+            
+            // Cache assets mit besseren Fehlerbehandlung für Apple-Geräte
+            const cachePromises = STATIC_ASSETS.map(async (url) => {
+                try {
+                    const response = await fetch(url, {
+                        cache: 'no-cache', // Verhindert Cache-Probleme auf iOS
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        await cache.put(url, response);
+                        console.log('Service Worker: Cached successfully:', url);
+                    } else {
+                        console.warn('Service Worker: Failed to cache (HTTP error):', url, response.status);
                     }
-                })
-            );
+                } catch (e) {
+                    // Schlucke Fehler einzelner Assets (z. B. 401/404), damit die Installation nicht komplett fehlschlägt
+                    console.warn('Service Worker: Asset konnte nicht gecacht werden:', url, e && e.message ? e.message : e);
+                }
+            });
+            
+            await Promise.allSettled(cachePromises);
+            console.log('Service Worker: Static assets caching completed');
         })()
     );
     
-    // Warte auf vollständige Installation bevor skipWaiting
+    // Apple Safari kompatibler skipWaiting
     event.waitUntil(
         new Promise((resolve) => {
+            // Verzögerung für bessere Safari-Kompatibilität
             setTimeout(() => {
-                // Nur skipWaiting wenn es ein Update ist, nicht bei der ersten Installation
                 if (self.registration.active) {
                     console.log('Service Worker: Update detected, skipping waiting...');
                     self.skipWaiting();
                 } else {
-                    console.log('Service Worker: First installation, not skipping waiting');
+                    console.log('Service Worker: First installation, activating immediately');
+                    // Bei der ersten Installation sofort aktivieren
+                    self.skipWaiting();
                 }
                 resolve();
-            }, 100);
+            }, 200);
         })
     );
     
@@ -69,7 +88,10 @@ self.addEventListener('install', (event) => {
         clients.forEach(client => {
             client.postMessage({
                 type: 'SW_INSTALLED',
-                data: { version: CACHE_NAME }
+                data: { 
+                    version: CACHE_NAME,
+                    userAgent: self.navigator?.userAgent || 'unknown'
+                }
             });
         });
     });
@@ -150,6 +172,126 @@ self.addEventListener('message', (event) => {
     }
 });
 
+// Push Event - Handle Push Notifications
+self.addEventListener('push', (event) => {
+    console.log('Service Worker: Push notification received:', event);
+    
+    if (!event.data) {
+        console.log('Service Worker: Push event has no data');
+        return;
+    }
+    
+    try {
+        const data = event.data.json();
+        console.log('Service Worker: Push data:', data);
+        
+        // Standard Push-Benachrichtigung
+        const options = {
+            body: data.body,
+            icon: data.icon || '/static/img/pwa/icon-192.png',
+            badge: data.badge || '/static/img/pwa/icon-96.png',
+            tag: data.tag || 'gourmen-notification',
+            data: data.data || {},
+            actions: data.actions || [
+                {
+                    action: 'view',
+                    title: 'Anzeigen'
+                },
+                {
+                    action: 'close',
+                    title: 'Schließen'
+                }
+            ],
+            requireInteraction: true,
+            vibrate: [200, 100, 200]
+        };
+        
+        event.waitUntil(
+            self.registration.showNotification(data.title || 'Gourmen', options)
+        );
+        
+    } catch (error) {
+        console.error('Service Worker: Error processing push notification:', error);
+        
+        // Fallback notification
+        const fallbackOptions = {
+            body: 'Neue Nachricht von Gourmen',
+            icon: '/static/img/pwa/icon-192.png',
+            badge: '/static/img/pwa/icon-96.png',
+            tag: 'gourmen-fallback'
+        };
+        
+        event.waitUntil(
+            self.registration.showNotification('Gourmen', fallbackOptions)
+        );
+    }
+});
+
+// Notification Click Event - Handle Deep Links
+self.addEventListener('notificationclick', (event) => {
+    console.log('Service Worker: Notification clicked:', event);
+    
+    event.notification.close();
+    
+    const data = event.notification.data || {};
+    const action = event.action;
+    
+    let url = '/';
+    
+    // Bestimme URL basierend auf Notification-Daten
+    if (data.url) {
+        url = data.url;
+    } else if (data.event_id) {
+        url = `/events/${data.event_id}`;
+    } else if (data.type === 'event_participation_reminder' || data.type === 'event_organizer_reminder') {
+        url = `/events/${data.event_id}`;
+    }
+    
+    // Handle Actions
+    if (action === 'view' || action === 'view_event') {
+        // Öffne Event-Detail-Seite
+        if (data.event_id) {
+            url = `/events/${data.event_id}`;
+        }
+    } else if (action === 'close') {
+        // Nur schließen, nichts öffnen
+        return;
+    }
+    
+    console.log('Service Worker: Opening URL:', url);
+    
+    // Öffne URL in neuem Tab oder fokussiere bestehenden Tab
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+            // Prüfe ob bereits ein Tab mit der URL offen ist
+            for (const client of clientList) {
+                if (client.url.includes(url) && 'focus' in client) {
+                    console.log('Service Worker: Focusing existing tab:', client.url);
+                    return client.focus();
+                }
+            }
+            
+            // Öffne neuen Tab
+            if (clients.openWindow) {
+                console.log('Service Worker: Opening new window:', url);
+                return clients.openWindow(url);
+            }
+        })
+    );
+});
+
+// Background Sync Event (für zukünftige Offline-Funktionen)
+self.addEventListener('sync', (event) => {
+    console.log('Service Worker: Background sync:', event.tag);
+    
+    if (event.tag === 'background-sync') {
+        event.waitUntil(
+            // Hier könnten Offline-Aktionen synchronisiert werden
+            Promise.resolve()
+        );
+    }
+});
+
 // Cache First Strategy
 async function cacheFirst(request, cacheName) {
     try {
@@ -178,38 +320,57 @@ async function cacheFirst(request, cacheName) {
 // Network First Strategy
 async function networkFirst(request, cacheName) {
     try {
-        const networkResponse = await fetch(request);
+        // Apple Safari kompatible Fetch-Optionen
+        const fetchOptions = {
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        };
+        
+        const networkResponse = await fetch(request, fetchOptions);
         
         if (networkResponse.ok) {
             const cache = await caches.open(cacheName);
-            cache.put(request, networkResponse.clone());
+            // Klone Response für Cache, da Safari manchmal Probleme mit bereits gelesenen Responses hat
+            const responseClone = networkResponse.clone();
+            try {
+                await cache.put(request, responseClone);
+            } catch (cacheError) {
+                console.warn('Service Worker: Could not cache response:', cacheError);
+            }
         }
         
         return networkResponse;
     } catch (error) {
         console.log('Network failed, trying cache:', error);
         
+        // Prüfe zuerst im Cache
         const cachedResponse = await caches.match(request);
         if (cachedResponse) {
+            console.log('Service Worker: Serving from cache:', request.url);
             return cachedResponse;
         }
         
-        // Return cached page for navigation requests instead of offline page
+        // Für Navigations-Requests, versuche die Startseite aus dem Cache
         if (request.mode === 'navigate') {
-            const cachedResponse = await caches.match(request);
-            if (cachedResponse) {
-                return cachedResponse;
+            const homePageResponse = await caches.match('/');
+            if (homePageResponse) {
+                console.log('Service Worker: Serving home page from cache for navigation request');
+                return homePageResponse;
             }
         }
         
         // Fallback: Return a simple offline message
         return new Response(`
             <!DOCTYPE html>
-            <html>
+            <html lang="de">
             <head>
                 <title>Offline - Gourmen</title>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta name="theme-color" content="#354e5e">
                 <style>
                     body { 
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -218,19 +379,37 @@ async function networkFirst(request, cacheName) {
                         justify-content: center; 
                         height: 100vh; 
                         margin: 0; 
-                        background: #f5f5f5;
+                        background: linear-gradient(135deg, #354e5e, #2c3e50);
+                        color: white;
                         text-align: center;
                     }
                     .offline-message {
-                        background: white;
+                        background: rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(10px);
                         padding: 40px;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        border-radius: 20px;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
                         max-width: 400px;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
                     }
-                    .offline-icon { font-size: 48px; margin-bottom: 20px; }
-                    h1 { color: #333; margin-bottom: 16px; }
-                    p { color: #666; line-height: 1.6; }
+                    .offline-icon { font-size: 64px; margin-bottom: 20px; }
+                    h1 { margin-bottom: 16px; font-weight: 600; }
+                    p { line-height: 1.6; opacity: 0.9; }
+                    .retry-btn {
+                        background: rgba(113, 198, 166, 0.8);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 25px;
+                        margin-top: 20px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                    }
+                    .retry-btn:hover {
+                        background: rgba(113, 198, 166, 1);
+                        transform: translateY(-2px);
+                    }
                 </style>
             </head>
             <body>
@@ -238,13 +417,17 @@ async function networkFirst(request, cacheName) {
                     <div class="offline-icon">📡</div>
                     <h1>Keine Internetverbindung</h1>
                     <p>Bitte überprüfe deine Internetverbindung und versuche es erneut.</p>
+                    <button class="retry-btn" onclick="window.location.reload()">Erneut versuchen</button>
                 </div>
             </body>
             </html>
         `, {
             status: 503,
             statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/html' }
+            headers: { 
+                'Content-Type': 'text/html; charset=utf-8',
+                'Cache-Control': 'no-cache'
+            }
         });
     }
 }

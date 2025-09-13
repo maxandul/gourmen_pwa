@@ -13,8 +13,69 @@ from backend.models.participation import Participation, Esstyp
 from backend.models.member import Member, Role
 from backend.services.places import PlacesService
 from backend.services.notifier import NotifierService
+from backend.services.push_notifications import PushNotificationService
 
 bp = Blueprint('events', __name__)
+
+# Push Notification API Routes
+@bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET'])
+@login_required
+def get_participation_stats(event_id):
+    """Get participation statistics for an event"""
+    try:
+        event = Event.query.get_or_404(event_id)
+        
+        # Nur Organisator oder Admin kann Statistiken sehen
+        if current_user.id != event.organisator_id and not current_user.is_admin():
+            return jsonify({'error': 'Keine Berechtigung'}), 403
+        
+        stats = PushNotificationService.get_event_participation_stats(event_id)
+        return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/events/<int:event_id>/send-reminders', methods=['POST'])
+@login_required
+def send_participation_reminders(event_id):
+    """Send participation reminders to members who haven't responded"""
+    try:
+        event = Event.query.get_or_404(event_id)
+        
+        # Nur Organisator oder Admin kann Erinnerungen senden
+        if current_user.id != event.organisator_id and not current_user.is_admin():
+            return jsonify({'error': 'Keine Berechtigung'}), 403
+        
+        result = PushNotificationService.send_participation_reminder_to_members(event_id)
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/events/<int:event_id>/send-organizer-reminder', methods=['POST'])
+@login_required
+def send_organizer_reminder(event_id):
+    """Send reminder to event organizer"""
+    try:
+        event = Event.query.get_or_404(event_id)
+        
+        # Nur Admin kann Organisator-Erinnerungen senden
+        if not current_user.is_admin():
+            return jsonify({'error': 'Keine Berechtigung'}), 403
+        
+        success = PushNotificationService.send_event_reminder_to_organizer(event_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Erinnerung an Organisator gesendet'}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Erinnerung konnte nicht gesendet werden'}), 400
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 class EventForm(FlaskForm):
     datum = DateField('Datum', validators=[DataRequired()])
