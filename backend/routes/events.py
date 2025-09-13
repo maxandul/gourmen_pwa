@@ -13,8 +13,7 @@ from backend.models.participation import Participation, Esstyp
 from backend.models.member import Member, Role
 from backend.services.places import PlacesService
 from backend.services.notifier import NotifierService
-# Temporär deaktiviert bis Tabellenstruktur korrekt ist:
-# from backend.services.push_notifications import PushNotificationService
+from backend.services.push_notifications import PushNotificationService
 
 bp = Blueprint('events', __name__)
 
@@ -30,9 +29,7 @@ def get_participation_stats(event_id):
         if current_user.id != event.organisator_id and not current_user.is_admin():
             return jsonify({'error': 'Keine Berechtigung'}), 403
         
-        # Temporär deaktiviert bis Tabellenstruktur korrekt ist:
-        # stats = PushNotificationService.get_event_participation_stats(event_id)
-        stats = {'error': 'Push notifications temporarily disabled'}
+        stats = PushNotificationService.get_event_participation_stats(event_id)
         return jsonify(stats)
         
     except Exception as e:
@@ -49,9 +46,7 @@ def send_participation_reminders(event_id):
         if current_user.id != event.organisator_id and not current_user.is_admin():
             return jsonify({'error': 'Keine Berechtigung'}), 403
         
-        # Temporär deaktiviert bis Tabellenstruktur korrekt ist:
-        # result = PushNotificationService.send_participation_reminder_to_members(event_id)
-        result = {'success': False, 'message': 'Push notifications temporarily disabled'}
+        result = PushNotificationService.send_participation_reminder_to_members(event_id)
         
         if result['success']:
             return jsonify(result), 200
@@ -72,9 +67,7 @@ def send_organizer_reminder(event_id):
         if not current_user.is_admin():
             return jsonify({'error': 'Keine Berechtigung'}), 403
         
-        # Temporär deaktiviert bis Tabellenstruktur korrekt ist:
-        # success = PushNotificationService.send_event_reminder_to_organizer(event_id)
-        success = False
+        success = PushNotificationService.send_event_reminder_to_organizer(event_id)
         
         if success:
             return jsonify({'success': True, 'message': 'Erinnerung an Organisator gesendet'}), 200
