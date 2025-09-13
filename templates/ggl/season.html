@@ -46,11 +46,11 @@
             <h2>📊 Saison-Punktetabelle</h2>
         </div>
         <div class="card-body">
+        <div class="events-list">
         
         {% if season_ranking %}
-        <div class="ranking-grid">
-            {% for entry in season_ranking %}
-            <div class="ranking-card {% if entry.member_id == current_user.id %}current-user{% endif %}">
+        {% for entry in season_ranking %}
+        <div class="card card-secondary variant-info {% if entry.member_id == current_user.id %}current-user{% endif %}">
                 <div class="ranking-header">
                     <div class="rank-section">
                         {% if entry.rank <= 3 %}
@@ -80,15 +80,15 @@
                         <span class="stat-value">{{ "%.1f"|format(entry.avg_points) }}</span>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
         </div>
+        {% endfor %}
         {% else %}
         <div class="no-data">
             <p>Noch keine Daten für Saison {{ season_year }} verfügbar.</p>
             <p>Sobald BillBro-Events abgehalten werden, erscheinen hier die Ergebnisse.</p>
         </div>
         {% endif %}
+        </div>
     </div>
     
     {% if season_ranking|length > 0 %}
@@ -272,29 +272,9 @@ td:nth-child(5) {
     color: #333;
 }
 
-/* Ranking Grid - Mobile-First */
-.ranking-grid {
-    display: grid;
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.ranking-card {
-    background: var(--background-primary);
-    border: 1px solid var(--background-tertiary);
-    border-radius: var(--border-radius-lg);
-    padding: 20px;
-    transition: all var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-}
-
-.ranking-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-.ranking-card.current-user {
-    background: rgba(76, 175, 80, 0.1);
+/* Ranking Cards - now using card-secondary */
+.card-secondary.current-user {
+    background: rgba(76, 175, 80, 0.1) !important;
     border-left: 4px solid var(--success-color);
     font-weight: bold;
 }
@@ -386,12 +366,6 @@ td:nth-child(5) {
     
     .ranking-stats .stat-value {
         align-self: flex-end;
-    }
-}
-
-@media (min-width: 768px) {
-    .ranking-grid {
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     }
 }
 </style>
