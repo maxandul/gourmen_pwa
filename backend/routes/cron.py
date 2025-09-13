@@ -5,15 +5,15 @@ Einfache HTTP-Endpunkte für automatische Aufgaben
 
 from flask import Blueprint, request, jsonify, current_app
 from backend.services.cron_service import CronService
-from flask_wtf.csrf import exempt
 import logging
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('cron', __name__)
 
+# CSRF wird für Cron-Routes deaktiviert
+
 @bp.route('/cron/3-week-reminders', methods=['POST'])
-@exempt
 def cron_3_week_reminders():
     """
     Cron-Job Endpoint für 3-Wochen-Erinnerungen
@@ -42,7 +42,6 @@ def cron_3_week_reminders():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/cron/cleanup-subscriptions', methods=['POST'])
-@exempt
 def cron_cleanup_subscriptions():
     """
     Cron-Job Endpoint für Subscription Cleanup
@@ -88,7 +87,6 @@ def cron_status():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/cron/test', methods=['POST'])
-@exempt
 def cron_test():
     """
     Test Endpoint für Cron-Jobs (nur für Development)

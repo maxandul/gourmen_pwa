@@ -68,6 +68,7 @@ class Config:
     # CSRF settings
     WTF_CSRF_TIME_LIMIT = 3600  # 1 hour instead of default 1 hour
     WTF_CSRF_SSL_STRICT = False
+    WTF_CSRF_EXEMPT_LIST = ['cron.3_week_reminders', 'cron.cleanup_subscriptions', 'cron.cron_test']
     
     # Admin initialization
     INIT_ADMIN_EMAIL = os.environ.get('INIT_ADMIN_EMAIL', 'admin@gourmen.ch')
