@@ -1,0 +1,22 @@
+[1mdiff --git a/backend/app.py b/backend/app.py[m
+[1mindex e7790b8..e073cff 100644[m
+[1m--- a/backend/app.py[m
+[1m+++ b/backend/app.py[m
+[36m@@ -32,7 +32,7 @@[m [mdef create_app(config_name=None):[m
+             # Continue anyway - database might be available later[m
+         [m
+         # Register blueprints[m
+[31m-        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings[m
+[32m+[m[32m        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings, push_notifications, cron[m
+         app.register_blueprint(public.bp)[m
+         app.register_blueprint(auth.bp, url_prefix='/auth')[m
+         app.register_blueprint(dashboard.bp, url_prefix='/dashboard')[m
+[36m@@ -45,6 +45,8 @@[m [mdef create_app(config_name=None):[m
+         app.register_blueprint(docs.bp, url_prefix='/docs')[m
+         app.register_blueprint(notifications.bp, url_prefix='/notifications')[m
+         app.register_blueprint(ratings.bp, url_prefix='/ratings')[m
+[32m+[m[32m        app.register_blueprint(push_notifications.bp)[m
+[32m+[m[32m        app.register_blueprint(cron.bp)[m
+         [m
+         # Register error handlers[m
+         register_error_handlers(app)[m

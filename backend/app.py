@@ -33,7 +33,7 @@ def create_app(config_name=None):
         
         # Register blueprints
         from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
-        # Temporär deaktiviert für Debugging:
+        # Temporär deaktiviert - verursacht Import-Fehler:
         # from backend.routes import push_notifications, cron
         app.register_blueprint(public.bp)
         app.register_blueprint(auth.bp, url_prefix='/auth')
