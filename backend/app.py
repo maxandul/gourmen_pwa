@@ -32,7 +32,9 @@ def create_app(config_name=None):
             # Continue anyway - database might be available later
         
         # Register blueprints
-        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings, push_notifications, cron
+        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, admin, docs, notifications, ratings
+        # Temporär deaktiviert für Debugging:
+        # from backend.routes import push_notifications, cron
         app.register_blueprint(public.bp)
         app.register_blueprint(auth.bp, url_prefix='/auth')
         app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
@@ -45,8 +47,9 @@ def create_app(config_name=None):
         app.register_blueprint(docs.bp, url_prefix='/docs')
         app.register_blueprint(notifications.bp, url_prefix='/notifications')
         app.register_blueprint(ratings.bp, url_prefix='/ratings')
-        app.register_blueprint(push_notifications.bp)
-        app.register_blueprint(cron.bp)
+        # Temporär deaktiviert für Debugging:
+        # app.register_blueprint(push_notifications.bp)
+        # app.register_blueprint(cron.bp)
         
         # Register error handlers
         register_error_handlers(app)
