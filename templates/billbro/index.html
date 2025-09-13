@@ -199,7 +199,8 @@
                     <div class="bill-summary">
                         <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
                         <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
-                        <p><strong>Vorgeschlagener Gesamtbetrag:</strong> {{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF 
+                        <br>
+                        <p class="suggested-total"><strong>Vorgeschlagener Gesamtbetrag:</strong> {{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF 
                             <small>(aufgerundet auf 10er)</small></p>
                     </div>
                     

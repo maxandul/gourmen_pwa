@@ -3304,5 +3304,13 @@ small {
     }
 }
 
+/* BillBro suggested total highlighting */
+.suggested-total {
+    font-size: 1.2em;
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-top: 0.5em;
+}
+
 /* Cache busting - 09/10/2025 16:32:32 */
 

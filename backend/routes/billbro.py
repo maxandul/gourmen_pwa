@@ -12,6 +12,10 @@ from backend.services.ggl_rules import GGLService
 from backend.services.security import SecurityService, AuditAction
 from backend.services.notifier import NotifierService
 
+def round_to_5_rappen(amount_rappen):
+    """Round amount to nearest 5 Rappen (Swiss currency rule)"""
+    return int(round(amount_rappen / 5) * 5)
+
 def calculate_weighted_shares(event, gesamtbetrag_rappen):
     """Calculate weighted shares for BillBro participants"""
     sparsam_count = 0
@@ -37,17 +41,17 @@ def calculate_weighted_shares(event, gesamtbetrag_rappen):
         
         # Calculate shares based on weights
         if sparsam_count > 0:
-            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen * event.billbro_sparsam_weight / weighted_total)
+            event.betrag_sparsam_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_sparsam_weight / weighted_total)
         else:
             event.betrag_sparsam_rappen = None
             
         if normal_count > 0:
-            event.betrag_normal_rappen = int(gesamtbetrag_rappen * event.billbro_normal_weight / weighted_total)
+            event.betrag_normal_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_normal_weight / weighted_total)
         else:
             event.betrag_normal_rappen = None
             
         if allin_count > 0:
-            event.betrag_allin_rappen = int(gesamtbetrag_rappen * event.billbro_allin_weight / weighted_total)
+            event.betrag_allin_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_allin_weight / weighted_total)
         else:
             event.betrag_allin_rappen = None
         
@@ -242,13 +246,8 @@ def enter_bill(event_id):
             participation.guess_bill_amount_rappen - rechnungsbetrag_rappen
         )
     
-    # Sort by difference for ranking
-    participations.sort(key=lambda p: p.diff_amount_rappen)
-    for i, participation in enumerate(participations, 1):
-        participation.rank = i
-        db.session.add(participation)
-    
-    db.session.commit()
+    # Use GGLService to calculate proper rankings and points
+    GGLService.calculate_event_points(event_id)
     
     # Log audit event
     SecurityService.log_audit_event(
@@ -548,11 +547,49 @@ def share_whatsapp(event_id):
             message += f"{participation.guess_bill_amount_rappen / 100:.2f} CHF "
             message += f"(±{participation.diff_amount_rappen / 100:.2f} CHF)\n"
     
-    # Add individual shares
+    # Add individual shares with participant details
     message += f"\n💸 Anteile pro Person:\n"
-    message += f"Sparsam: {event.betrag_sparsam_rappen / 100:.2f} CHF\n" if event.betrag_sparsam_rappen else "Sparsam: Nicht berechnet\n"
-    message += f"Normal: {event.betrag_normal_rappen / 100:.2f} CHF\n" if event.betrag_normal_rappen else "Normal: Nicht berechnet\n"
-    message += f"All-In: {event.betrag_allin_rappen / 100:.2f} CHF\n" if event.betrag_allin_rappen else "All-In: Nicht berechnet\n"
+
+    # Get all participating members grouped by esstyp
+    sparsam_participants = []
+    normal_participants = []
+    allin_participants = []
+
+    for participation in event.participations:
+        if participation.teilnahme and participation.esstyp:
+            member_info = ""
+            if participation.member.spirit_animal:
+                member_info += f"{participation.member.spirit_animal} "
+            member_info += f"{participation.member.rufname or participation.member.vorname}"
+            
+            if participation.esstyp == Esstyp.SPARSAM:
+                sparsam_participants.append(member_info)
+            elif participation.esstyp == Esstyp.NORMAL:
+                normal_participants.append(member_info)
+            elif participation.esstyp == Esstyp.ALLIN:
+                allin_participants.append(member_info)
+
+    # Add shares with participant lists
+    if event.betrag_sparsam_rappen and sparsam_participants:
+        message += f"Sparsam: {event.betrag_sparsam_rappen / 100:.2f} CHF\n"
+        for participant in sparsam_participants:
+            message += f"  • {participant}\n"
+    else:
+        message += "Sparsam: Nicht berechnet\n"
+
+    if event.betrag_normal_rappen and normal_participants:
+        message += f"Normal: {event.betrag_normal_rappen / 100:.2f} CHF\n"
+        for participant in normal_participants:
+            message += f"  • {participant}\n"
+    else:
+        message += "Normal: Nicht berechnet\n"
+
+    if event.betrag_allin_rappen and allin_participants:
+        message += f"All-In: {event.betrag_allin_rappen / 100:.2f} CHF\n"
+        for participant in allin_participants:
+            message += f"  • {participant}\n"
+    else:
+        message += "All-In: Nicht berechnet\n"
     
     # Encode for WhatsApp
     import urllib.parse
