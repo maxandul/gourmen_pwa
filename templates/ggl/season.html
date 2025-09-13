@@ -12,31 +12,32 @@
     </div>
     
     {% if user_stats %}
-    <div class="card user-summary">
+    <div class="card">
         <div class="card-header">
-            <h2>🎯 Deine Saison-Statistik</h2>
+            <h2>📊 Deine Performance</h2>
         </div>
         <div class="card-body">
-        <div class="stats-grid">
-            <div class="stat-box">
-                <span class="stat-value">{{ user_stats.total_points }}</span>
-                <span class="stat-label">Gesamt-Punkte</span>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-value">{{ user_stats.total_points }}</span>
+                    <span class="stat-label">Gesamt-Punkte</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">{{ user_stats.participation_count }}</span>
+                    <span class="stat-label">Events</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">{{ "%.1f"|format(user_stats.avg_points) }}</span>
+                    <span class="stat-label">⌀ Punkte</span>
+                </div>
+                {% set user_rank = season_ranking|selectattr('member_id', 'equalto', user_stats.member_id)|first %}
+                {% if user_rank %}
+                <div class="stat-box">
+                    <span class="stat-value">{{ user_rank.rank }}</span>
+                    <span class="stat-label">Rang</span>
+                </div>
+                {% endif %}
             </div>
-            <div class="stat-box">
-                <span class="stat-value">{{ user_stats.participation_count }}</span>
-                <span class="stat-label">Events</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-value">{{ "%.1f"|format(user_stats.avg_points) }}</span>
-                <span class="stat-label">⌀ Punkte</span>
-            </div>
-            {% set user_rank = season_ranking|selectattr('member_id', 'equalto', user_stats.member_id)|first %}
-            {% if user_rank %}
-            <div class="stat-box">
-                <span class="stat-value">{{ user_rank.rank }}</span>
-                <span class="stat-label">Rang</span>
-            </div>
-            {% endif %}
         </div>
     </div>
     {% endif %}
@@ -46,55 +47,57 @@
             <h2>📊 Saison-Punktetabelle</h2>
         </div>
         <div class="card-body">
-        <div class="events-list">
-        
-        {% if season_ranking %}
-        {% for entry in season_ranking %}
-        <div class="card card-secondary variant-info {% if entry.member_id == current_user.id %}current-user{% endif %}">
-                <div class="ranking-header">
-                    <div class="rank-section">
-                        {% if entry.rank <= 3 %}
-                        <span class="medal">
-                            {% if entry.rank == 1 %}🥇
-                            {% elif entry.rank == 2 %}🥈
-                            {% elif entry.rank == 3 %}🥉
+            <div class="events-list">
+                {% if season_ranking %}
+                {% for entry in season_ranking %}
+                <div class="card card-secondary variant-info {% if entry.member_id == current_user.id %}current-user{% endif %}">
+                    <div class="card-header">
+                        <h3>
+                            {% if entry.rank <= 3 %}
+                                {% if entry.rank == 1 %}🥇
+                                {% elif entry.rank == 2 %}🥈
+                                {% elif entry.rank == 3 %}🥉
+                                {% endif %}
                             {% endif %}
-                        </span>
-                        {% endif %}
-                        <span class="rank-number">{{ entry.rank }}</span>
+                            {{ entry.rank }}. {{ entry.member.display_name_with_spirit }}
+                        </h3>
                     </div>
-                    <div class="member-name">{{ entry.member.display_name_with_spirit }}</div>
+                    <div class="card-body">
+                        <div class="ranking-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Punkte:</span>
+                                <span class="stat-value">{{ entry.total_points }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Events:</span>
+                                <span class="stat-value">{{ entry.participation_count }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⌀ Punkte:</span>
+                                <span class="stat-value">{{ "%.1f"|format(entry.avg_points) }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="ranking-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Punkte:</span>
-                        <span class="stat-value">{{ entry.total_points }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Events:</span>
-                        <span class="stat-value">{{ entry.participation_count }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">⌀ Punkte:</span>
-                        <span class="stat-value">{{ "%.1f"|format(entry.avg_points) }}</span>
+                {% endfor %}
+                {% else %}
+                <div class="card card-secondary variant-info">
+                    <div class="card-body">
+                        <div class="no-data">
+                            <p>Noch keine Daten für Saison {{ season_year }} verfügbar.</p>
+                            <p>Sobald BillBro-Events abgehalten werden, erscheinen hier die Ergebnisse.</p>
+                        </div>
                     </div>
                 </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div class="no-data">
-            <p>Noch keine Daten für Saison {{ season_year }} verfügbar.</p>
-            <p>Sobald BillBro-Events abgehalten werden, erscheinen hier die Ergebnisse.</p>
-        </div>
-        {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
     
     {% if season_ranking|length > 0 %}
     <div class="card">
         <div class="card-header">
-            <h2>📈 Saison-Übersicht</h2>
+            <h2>📊 Saison-Statistiken</h2>
         </div>
         <div class="card-body">
             <div class="summary-stats">
@@ -184,10 +187,6 @@
 }
 
 /* Season Page Styles */
-.user-summary {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    border: 1px solid #2196f3;
-}
 
 .stats-grid {
     display: grid;
@@ -279,39 +278,6 @@ td:nth-child(5) {
     font-weight: bold;
 }
 
-.ranking-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--background-tertiary);
-}
-
-.rank-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.rank-number {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--accent-color);
-    min-width: 30px;
-}
-
-.medal {
-    font-size: 20px;
-}
-
-.member-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    text-align: right;
-}
-
 .ranking-stats {
     display: grid;
     gap: 12px;
@@ -347,16 +313,6 @@ td:nth-child(5) {
         font-size: 20px;
     }
     
-    .ranking-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .member-name {
-        text-align: left;
-        font-size: 16px;
-    }
     
     .ranking-stats .stat-item {
         flex-direction: column;
