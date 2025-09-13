@@ -69,6 +69,11 @@ def create_app(config_name=None):
         def test():
             return {'status': 'ok', 'message': 'App is running successfully'}
         
+        # Healthcheck endpoint für Railway
+        @app.route('/health')
+        def health():
+            return {'status': 'healthy', 'message': 'App is healthy'}, 200
+        
         # Skip migrations since none exist and DB already has data
         app.logger.info("App created successfully - skipping migrations")
         
