@@ -3,23 +3,10 @@ import base64
 from datetime import datetime, timedelta
 from flask import current_app
 from backend.extensions import db
+from backend.models.push_subscription import PushSubscription
 from pywebpush import webpush, WebPushException
 
-class PushSubscription(db.Model):
-    """Push subscription model for Web-Push notifications"""
-    __tablename__ = 'push_subscriptions'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    member_id = db.Column(db.Integer, db.ForeignKey('members.id', ondelete='CASCADE'), 
-                         nullable=False, index=True)
-    endpoint = db.Column(db.Text, nullable=False)
-    p256dh_key = db.Column(db.String(255), nullable=False)
-    auth_key = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    last_used_at = db.Column(db.DateTime)
-    
-    def __repr__(self):
-        return f'<PushSubscription {self.member_id}>'
+# PushSubscription Model wurde nach backend/models/push_subscription.py verschoben
 
 class NotifierService:
     """Notification service for PWA/Web-Push"""

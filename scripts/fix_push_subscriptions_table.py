@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+y#!/usr/bin/env python3
 """
 Script to fix push_subscriptions table schema on Railway
 Adds missing columns if they don't exist
