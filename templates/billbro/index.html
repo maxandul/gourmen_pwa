@@ -201,7 +201,7 @@
                         <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
                         <p><strong>Trinkgeld (7%):</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
                         <br>
-                        <p class="suggested-total">Vorgeschlagener Gesamtbetrag:<br> <strong>{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</strong>
+                        <p><strong>Vorgeschlagener Gesamtbetrag:</strong> <span class="suggested-total">{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</span>
                             <br><small>(aufgerundet auf 10er)</small></p>
                     </div>
                     
@@ -209,7 +209,7 @@
                     <div class="action-buttons">
                         <form method="POST" action="{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}" style="display: inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-success">✅ Akzeptieren</button>
+                            <button type="submit" class="btn btn-success" style="min-width: 200px;">✅ Akzeptieren</button>
                         </form>
                         <button type="button" class="btn btn-danger" onclick="showManualOverride()">✏️ Gesamtbetrag anpassen</button>
                     </div>

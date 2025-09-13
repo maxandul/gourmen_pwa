@@ -3309,7 +3309,12 @@ small {
     font-size: 1.2em;
     color: var(--accent-color);
     font-weight: bold;
-    margin-top: 0.5em;
+}
+
+/* Button styles - success and danger should have bold text */
+.btn-success,
+.btn-danger {
+    font-weight: bold;
 }
 
 /* Cache busting - 09/10/2025 16:32:32 */
