@@ -493,7 +493,7 @@ class PWA {
     setupServiceWorkerInfoCard() {
         // Prüfe ob wir auf der Profile-Seite sind
         if (!document.getElementById('sw-diagnose-btn')) return;
-        
+
         // App-Info aktualisieren
         this.updateServiceWorkerInfo();
         

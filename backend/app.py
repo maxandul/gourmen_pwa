@@ -4,7 +4,7 @@ from backend.extensions import db
 from backend.config import config
 from backend.extensions import init_extensions
 from backend.models import member, member_sensitive, member_mfa, mfa_backup_code, event, participation, document, audit_event
-from backend.services.notifier import PushSubscription
+# PushSubscription Model wird über backend.models importiert wenn benötigt
 
 def create_app(config_name=None):
     """Application factory"""
