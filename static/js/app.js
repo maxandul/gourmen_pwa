@@ -150,7 +150,7 @@ async function initializePushNotifications() {
         if (!serverStatus.subscribed) {
             console.log('Not subscribed to push notifications yet');
             // Zeige Button zum Aktivieren
-            showPushNotificationButton(registration, vapidPublicKey);
+            // showPushNotificationButton(registration, vapidPublicKey); // Deaktiviert - Push-Buttons entfernt
         } else {
             console.log('Already subscribed to push notifications:', serverStatus);
             // Prüfe ob Browser-Subscription noch existiert
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (isAuthenticated) {
         initializePushNotifications();
-        setupEventPushNotifications();
+        // setupEventPushNotifications(); // Deaktiviert - Push-Benachrichtigungen entfernt
     }
 });
 

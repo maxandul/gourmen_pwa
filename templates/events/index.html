@@ -29,18 +29,18 @@
                 </div>
                 <div class="card-body">
                     <div class="stats-item">
-                        <span class="label">👑 Organisator:</span>
+                        <span class="label">Organisator:</span>
                         <span class="value">{{ event.organisator.display_name_with_spirit }}</span>
                     </div>
                     {% if event.restaurant %}
                     <div class="stats-item">
-                        <span class="label">🏠 Restaurant:</span>
+                        <span class="label">Restaurant:</span>
                         <span class="value">{{ event.restaurant }}</span>
                     </div>
                     {% endif %}
                     {% if event.kueche %}
                     <div class="stats-item">
-                        <span class="label">🌍 Küche:</span>
+                        <span class="label">Küche:</span>
                         <span class="value">{{ event.kueche }}</span>
                     </div>
                     {% endif %}
@@ -63,7 +63,7 @@
                     </div>
                     
                     <div class="stats-item">
-                        <span class="label">👥 Teilnehmer:</span>
+                        <span class="label">Teilnehmer:</span>
                         <span class="value">{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</span>
                     </div>
                     
