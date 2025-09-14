@@ -12,16 +12,21 @@ def index():
     # Get current season
     current_season = GGLService.get_current_season()
     
-    # Get available seasons
+    # Get available seasons (only past and current, no future seasons)
     available_seasons = GGLService.get_available_seasons()
+    available_seasons = [season for season in available_seasons if season <= current_season]
     
-    # Get user's stats for current season
-    user_stats = GGLService.get_member_season_stats(current_user.id, current_season)
+    # Get user's stats for each season
+    season_stats = {}
+    for season in available_seasons:
+        stats = GGLService.get_member_season_stats(current_user.id, season)
+        if stats:
+            season_stats[season] = stats
     
     return render_template('ggl/index.html',
                          current_season=current_season,
                          available_seasons=available_seasons,
-                         user_stats=user_stats)
+                         season_stats=season_stats)
 
 @bp.route('/season/<int:season_year>')
 @login_required

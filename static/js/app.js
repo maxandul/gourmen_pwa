@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const isAuthenticated = document.body.hasAttribute('data-authenticated');
     
     if (isAuthenticated) {
-        initializePushNotifications();
+        // initializePushNotifications(); // Deaktiviert - Push-Benachrichtigungen entfernt
         // setupEventPushNotifications(); // Deaktiviert - Push-Benachrichtigungen entfernt
     }
 });

@@ -10,62 +10,42 @@
     </div>
     
     <div class="page-content">
+        {% for season in available_seasons %}
         <div class="card">
             <div class="card-header">
-                <h2>🏆 Aktuelle Saison {{ current_season }}</h2>
+                <h2>📅 {{ season }}</h2>
             </div>
             <div class="card-body">
-                {% if user_stats %}
-                <div class="card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>📊 Deine Statistiken</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stat-item">
-                            <span class="label">🎯 Deine Punkte:</span>
-                            <span class="value">{{ user_stats.total_points }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="label">📊 Events teilgenommen:</span>
-                            <span class="value">{{ user_stats.participation_count }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="label">⭐ Durchschnitt:</span>
-                            <span class="value">{{ "%.1f"|format(user_stats.avg_points) }} Punkte</span>
-                        </div>
-                    </div>
+                {% if season_stats[season] %}
+                {% set stats = season_stats[season] %}
+                <div class="stats-item">
+                    <span class="label">Dein Rang:</span>
+                    <span class="value">{{ stats.rank or 'N/A' }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Deine Punkte:</span>
+                    <span class="value">{{ stats.total_points or 0 }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">⊘ Differenz:</span>
+                    <span class="value">{{ "%.1f"|format(stats.avg_diff_rappen / 100) }} CHF</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Anzahl Events:</span>
+                    <span class="value">{{ stats.participation_count }}/{{ stats.total_events_in_season }}</span>
+                </div>
+                
+                <div class="card-actions center">
+                    <a href="{{ url_for('ggl.season', season_year=season) }}" class="btn btn-primary">
+                        📈 Saisontabelle anzeigen
+                    </a>
                 </div>
                 {% else %}
                 <p>Noch keine Teilnahme an BillBro-Events in dieser Saison.</p>
                 {% endif %}
-                
-                <div class="card-actions center">
-                    <a href="{{ url_for('ggl.season', season_year=current_season) }}" class="btn btn-primary">
-                        📈 Komplette Saison-Tabelle anzeigen
-                    </a>
-                </div>
             </div>
         </div>
-        
-        {% if available_seasons|length > 1 %}
-        <div class="card">
-            <div class="card-header">
-                <h2>📚 Vergangene Saisons</h2>
-            </div>
-            <div class="card-body">
-                <div class="past-seasons">
-                    {% for season in available_seasons %}
-                    {% if season != current_season %}
-                    <a href="{{ url_for('ggl.season', season_year=season) }}" class="season-link">
-                        <span class="season-year">{{ season }}</span>
-                        <span class="arrow">→</span>
-                    </a>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
+        {% endfor %}
     </div>
 </div>
 {% endblock %} 
