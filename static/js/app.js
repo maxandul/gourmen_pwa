@@ -341,7 +341,6 @@ function addEventPushButtons() {
     // Suche nach Event-Detail-Seiten und füge Push-Buttons hinzu
     const eventId = getEventIdFromUrl();
     if (eventId) {
-        addParticipationStatsButton(eventId);
         addReminderButtons(eventId);
     }
 }
@@ -353,23 +352,6 @@ function getEventIdFromUrl() {
     return match ? parseInt(match[1]) : null;
 }
 
-function addParticipationStatsButton(eventId) {
-    // Prüfe ob Button bereits existiert
-    if (document.getElementById('participation-stats-btn')) return;
-    
-    // Erstelle Button für Teilnahme-Statistiken
-    const statsBtn = document.createElement('button');
-    statsBtn.id = 'participation-stats-btn';
-    statsBtn.className = 'btn btn-info';
-    statsBtn.innerHTML = '<span class="btn-icon">📊</span><span class="btn-text">Teilnahme-Statistiken</span>';
-    statsBtn.onclick = () => showParticipationStats(eventId);
-    
-    // Füge Button zur Event-Actions hinzu
-    const actionsContainer = document.querySelector('.event-actions') || document.querySelector('.card-actions');
-    if (actionsContainer) {
-        actionsContainer.appendChild(statsBtn);
-    }
-}
 
 function addReminderButtons(eventId) {
     // Prüfe ob Buttons bereits existieren
@@ -409,38 +391,6 @@ function addReminderButtons(eventId) {
     }
 }
 
-async function showParticipationStats(eventId) {
-    try {
-        setLoadingState('participation-stats-btn', true);
-        
-        const response = await fetch(`/api/events/${eventId}/participation-stats`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const stats = await response.json();
-        
-        if (stats.error) {
-            throw new Error(stats.error);
-        }
-        
-        // Zeige Statistiken in einem Modal oder Toast
-        showStatsModal(stats);
-        
-    } catch (error) {
-        console.error('Error fetching participation stats:', error);
-        showToast(`Fehler beim Laden der Statistiken: ${error.message}`, 'error');
-    } finally {
-        setLoadingState('participation-stats-btn', false);
-    }
-}
 
 async function sendParticipationReminders(eventId) {
     try {
@@ -449,7 +399,8 @@ async function sendParticipationReminders(eventId) {
             return;
         }
         
-        setLoadingState('send-reminders-btn', true);
+        const reminderBtn = document.getElementById('send-reminders-btn');
+        setLoadingState(reminderBtn, true);
         
         const response = await fetch(`/api/events/${eventId}/send-reminders`, {
             method: 'POST',
@@ -475,155 +426,15 @@ async function sendParticipationReminders(eventId) {
         console.error('Error sending reminders:', error);
         showToast(`❌ Fehler beim Senden der Push-Erinnerungen: ${error.message}`, 'error');
     } finally {
-        setLoadingState('send-reminders-btn', false);
+        const reminderBtn = document.getElementById('send-reminders-btn');
+        setLoadingState(reminderBtn, false);
     }
 }
 
-function showStatsModal(stats) {
-    // Erstelle Modal für Statistiken
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📊 Teilnahme-Statistiken</h3>
-                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value">${stats.total_members}</div>
-                        <div class="stat-label">Gesamt Mitglieder</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value stat-success">${stats.participated}</div>
-                        <div class="stat-label">Teilnehmen</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value stat-danger">${stats.declined}</div>
-                        <div class="stat-label">Absagen</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value stat-warning">${stats.no_response}</div>
-                        <div class="stat-label">Keine Antwort</div>
-                    </div>
-                </div>
-                <div class="participation-rate">
-                    <div class="rate-label">Teilnahme-Rate:</div>
-                    <div class="rate-value">${stats.participation_rate}%</div>
-                </div>
-                <div class="event-info">
-                    <strong>${stats.event_name}</strong><br>
-                    <small>${stats.event_date}</small>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Füge Styles hinzu
-    const style = document.createElement('style');
-    style.textContent = `
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .modal-body {
-            padding: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .stat-item {
-            text-align: center;
-            padding: 16px;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #354e5e;
-        }
-        .stat-success { color: #71c6a6; }
-        .stat-danger { color: #dc3545; }
-        .stat-warning { color: #ffc107; }
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-        .participation-rate {
-            text-align: center;
-            padding: 16px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            margin-bottom: 16px;
-        }
-        .rate-label {
-            font-size: 14px;
-            color: #666;
-        }
-        .rate-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1976d2;
-        }
-        .event-info {
-            text-align: center;
-            padding: 12px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            color: #666;
-        }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(modal);
-    
-    // Schließe Modal bei Klick außerhalb
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
-}
 
 // Export functions for global use
 window.showToast = showToast;
 window.setLoadingState = setLoadingState;
-window.showParticipationStats = showParticipationStats;
 window.sendParticipationReminders = sendParticipationReminders;
 window.testPushNotification = testPushNotification;
 

@@ -263,10 +263,14 @@ def detail(event_id):
     # Get all participations for this event
     participations = Participation.query.filter_by(event_id=event_id).all()
     
+    # Get all active members for complete overview
+    all_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
+    
     return render_template('events/detail.html', 
                          event=event, 
                          participation=participation,
-                         participations=participations)
+                         participations=participations,
+                         all_members=all_members)
 
 @bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])
 @login_required

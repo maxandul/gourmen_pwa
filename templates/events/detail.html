@@ -12,192 +12,182 @@
         </p>
         <div class="page-actions">
             <a href="{{ url_for('events.index') }}" class="btn btn-primary">← Zurück zu Events</a>
+            {% if current_user.is_admin or event.organisator_id == current_user.id %}
+            <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
+            {% endif %}
         </div>
     </div>
     
     <div class="page-content">
+        <!-- Event-Informationen -->
         <div class="card">
             <div class="card-header">
-                <h2>Event-Details</h2>
+                <h2>📋 Event-Informationen</h2>
             </div>
             <div class="card-body">
-            <div class="events-list">
-            <div class="card card-secondary variant-info">
-                <div class="card-header">
-                    <h3>📋 Event-Informationen</h3>
+                <div class="event-basic-info">
+                    <p><strong>👑 Organisator:</strong><br>{{ event.organisator.display_name_with_spirit }}</p>
+                    <p><strong>👥 Teilnehmer:</strong><br>{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
                 </div>
-                <div class="card-body">
-                    <div class="event-basic-info">
-                        <p><strong>👑 Organisator:</strong><br>{{ event.organisator.display_name_with_spirit }}</p>
-                        <p><strong>👥 Teilnehmer:</strong><br>{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</p>
-                    </div>
-                    
-                    {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
-                    <div class="event-location-info">
-                    {% if event.restaurant %}
-                    <p><strong>🏠 Restaurant:</strong><br>{{ event.restaurant }}</p>
-                    {% endif %}
-                    {% if event.place_maps_url %}
-                    <p><strong>📍 Adresse:</strong><br>
-                        <a href="{{ event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
-                    </p>
-                    {% endif %}
-                    {% if event.kueche %}
-                    <p><strong>🌍 Küche:</strong><br>{{ event.kueche }}</p>
-                    {% elif event.place_types %}
-                    <p><strong>🌍 Küche:</strong><br>
-                        {% set cuisine_types = event.place_types|map('cuisine_type_mapper')|list %}
-                        {{ cuisine_types|join(', ') if cuisine_types else 'Restaurant' }}
-                    </p>
-                    {% endif %}
-                    {% if event.place_price_level %}
-                    <p><strong>💰 Preislevel:</strong><br>{{ '€' * event.place_price_level }}</p>
-                    {% endif %}
-                    {% if event.website %}
-                    <p><strong>🌐 Website:</strong><br>
-                        <a href="{{ event.website }}" target="_blank" rel="noopener">{{ event.website }}</a>
-                    </p>
-                    {% elif event.place_website %}
-                    <p><strong>🌐 Website:</strong><br>
-                        <a href="{{ event.place_website }}" target="_blank" rel="noopener">{{ event.place_website }}</a>
-                    </p>
-                    {% endif %}
-                    {% if event.notizen %}
-                    <p><strong>📝 Notizen:</strong><br>{{ event.notizen }}</p>
-                    {% endif %}
-                </div>
+                
+                {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
+                <div class="event-location-info">
+                {% if event.restaurant %}
+                <p><strong>🏠 Restaurant:</strong><br>{{ event.restaurant }}</p>
                 {% endif %}
-                </div>
-            </div>
-            
-            <!-- Deine Teilnahme als card-secondary -->
-            <div class="card card-secondary variant-accent">
-                <div class="card-header">
-                    <h3>📝 Deine Teilnahme</h3>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        {% if participation and participation.teilnahme %}
-                        <p>Du nimmst an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-danger">✖️ Absagen</button>
-                        {% else %}
-                        <p>Du nimmst nicht an diesem Event teil.</p>
-                        <button type="submit" class="btn btn-success">✓ Zusagen</button>
-                        {% endif %}
-                    </form>
-                    
-                    <!-- BillBro Link für Teilnehmer -->
-                    {% if participation and participation.teilnahme %}
-                    <div class="billbro-link">
-                        <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
-                            🍽️ Zu BillBro
-                        </a>
-                        {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
-                        {% if billbro_active %}
-                            {% if participation.has_guess %}
-                            <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
-                            {% else %}
-                            <p><small>Du hast noch nicht geschätzt</small></p>
-                            {% endif %}
-                        {% else %}
-                            <p><small>BillBro noch nicht gestartet</small></p>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Teilnehmer-Übersicht als card-secondary -->
-            {% if participations %}
-            <div class="card card-secondary variant-info">
-                <div class="card-header">
-                    <h3>👥 Teilnehmer-Übersicht</h3>
-                </div>
-                <div class="card-body">
-                    <div class="participants-list">
-                        {% for participation in participations %}
-                        <div class="participant-item">
-                            <span class="member">{{ participation.member.display_name_with_spirit }}</span>
-                            <span class="status">
-                                {% if participation.teilnahme %}
-                                ✓ Teilnehmer
-                                {% if billbro_active and participation.has_guess %}
-                                <small>🍽️ Geschätzt</small>
-                                {% elif billbro_active %}
-                                <small>⏳ Wartet</small>
-                                {% endif %}
-                                {% else %}
-                                ✖️ Nicht teilnehmend
-                                {% endif %}
-                            </span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    {% if billbro_active %}
-                    <div class="billbro-summary">
-                        {% set participating = participations|selectattr('teilnahme', 'equalto', True)|list %}
-                        {% set with_guesses = participating|selectattr('has_guess')|list %}
-                        <p><strong>BillBro Status:</strong> {{ with_guesses|length }} / {{ participating|length }} haben geschätzt</p>
-                    </div>
-                    {% endif %}
-                </div>
+                {% if event.place_maps_url %}
+                <p><strong>📍 Adresse:</strong><br>
+                    <a href="{{ event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
+                </p>
+                {% endif %}
+                {% if event.kueche %}
+                <p><strong>🌍 Küche:</strong><br>{{ event.kueche }}</p>
+                {% elif event.place_types %}
+                <p><strong>🌍 Küche:</strong><br>
+                    {% set cuisine_types = event.place_types|map('cuisine_type_mapper')|list %}
+                    {{ cuisine_types|join(', ') if cuisine_types else 'Restaurant' }}
+                </p>
+                {% endif %}
+                {% if event.place_price_level %}
+                <p><strong>💰 Preislevel:</strong><br>{{ '€' * event.place_price_level }}</p>
+                {% endif %}
+                {% if event.website %}
+                <p><strong>🌐 Website:</strong><br>
+                    <a href="{{ event.website }}" target="_blank" rel="noopener">{{ event.website }}</a>
+                </p>
+                {% elif event.place_website %}
+                <p><strong>🌐 Website:</strong><br>
+                    <a href="{{ event.place_website }}" target="_blank" rel="noopener">{{ event.place_website }}</a>
+                </p>
+                {% endif %}
+                {% if event.notizen %}
+                <p><strong>📝 Notizen:</strong><br>{{ event.notizen }}</p>
+                {% endif %}
             </div>
             {% endif %}
-            
-            <!-- Buttons am Ende der Haupt-Card -->
-            <div class="card-actions primary">
-                {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
-                
-                <!-- RSVP Erinnerung Button für Organisator -->
-                {% if event.is_upcoming %}
-                <button type="button" class="btn btn-primary" 
-                        onclick="if(confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')) { 
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = '{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}';
-                            const csrf = document.createElement('input');
-                            csrf.type = 'hidden';
-                            csrf.name = 'csrf_token';
-                            csrf.value = '{{ csrf_token() }}';
-                            form.appendChild(csrf);
-                            document.body.appendChild(form);
-                            form.submit();
-                        }">
-                    📧 Erinnerung senden
-                </button>
-                {% endif %}
-                {% endif %}
-                
-                {% if current_user.is_admin and not event.is_past %}
-                <button type="button" class="btn btn-danger delete-event-btn" 
-                        data-event-id="{{ event.id }}" 
-                        data-event-title="{{ event.restaurant or event.event_typ.value }}">
-                    🗑️ Löschen
-                </button>
-                {% endif %}
-                
-                <!-- Rating Section -->
-                {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                {% if user_participation and user_participation.teilnahme %}
-                    {% if event.has_rating_from_participant(current_user.id) %}
-                        <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-primary">
-                            <i class="fas fa-star"></i> Bewertung bearbeiten
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn-primary">
-                            ⭐ Event bewerten
-                        </a>
-                    {% endif %}
-                {% endif %}
-                
-                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-primary">
-                    <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
-                </a>
             </div>
         </div>
+        
+        <!-- Deine Teilnahme -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 Deine Teilnahme</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if participation and participation.teilnahme %}
+                    <p>Du nimmst an diesem Event teil.</p>
+                    <button type="submit" class="btn btn-danger">✖️ Absagen</button>
+                    {% else %}
+                    <p>Du nimmst nicht an diesem Event teil.</p>
+                    <button type="submit" class="btn btn-success">✓ Zusagen</button>
+                    {% endif %}
+                </form>
+                
+                <!-- BillBro Link für Teilnehmer -->
+                {% if participation and participation.teilnahme %}
+                <div class="billbro-link">
+                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
+                        🍽️ Zu BillBro
+                    </a>
+                    {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
+                    {% if billbro_active %}
+                        {% if participation.has_guess %}
+                        <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
+                        {% else %}
+                        <p><small>Du hast noch nicht geschätzt</small></p>
+                        {% endif %}
+                    {% else %}
+                        <p><small>BillBro noch nicht gestartet</small></p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Teilnehmer-Übersicht -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👥 Teilnehmer-Übersicht</h2>
+            </div>
+            <div class="card-body">
+                <div class="participants-list">
+                    {% for member in all_members %}
+                    {% set member_participation = participations|selectattr('member_id', 'equalto', member.id)|first %}
+                    <div class="participant-item">
+                        <span class="member">{{ member.display_name_with_spirit }}</span>
+                        <span class="status">
+                            {% if member_participation %}
+                                {% if member_participation.teilnahme %}
+                                    <span class="participation-status confirmed">✅ Teilnehmer</span>
+                                    {% if billbro_active and member_participation.has_guess %}
+                                    <small>🍽️ Geschätzt</small>
+                                    {% elif billbro_active %}
+                                    <small>⏳ Wartet</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="participation-status declined">❌ Absage</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="participation-status pending">⏳ Keine Antwort</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Buttons außerhalb der Cards -->
+        <div class="page-actions">
+            <!-- RSVP Erinnerung Button für Organisator -->
+            {% if current_user.is_admin or event.organisator_id == current_user.id %}
+            {% if event.is_upcoming %}
+            <button type="button" class="btn btn-primary" 
+                    onclick="if(confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')) { 
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}';
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = 'csrf_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        form.appendChild(csrf);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }">
+                📧 Erinnerung senden
+            </button>
+            {% endif %}
+            {% endif %}
+            
+            {% if current_user.is_admin and not event.is_past %}
+            <button type="button" class="btn btn-danger delete-event-btn" 
+                    data-event-id="{{ event.id }}" 
+                    data-event-title="{{ event.restaurant or event.event_typ.value }}">
+                🗑️ Löschen
+            </button>
+            {% endif %}
+            
+            <!-- Rating Section -->
+            {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+            {% if user_participation and user_participation.teilnahme %}
+                {% if event.has_rating_from_participant(current_user.id) %}
+                    <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn-primary">
+                        <i class="fas fa-star"></i> Bewertung bearbeiten
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn-primary">
+                        ⭐ Event bewerten
+                    </a>
+                {% endif %}
+            {% endif %}
+            
+            <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn-primary">
+                <i class="fas fa-chart-bar"></i> Bewertungen anzeigen
+            </a>
         </div>
     </div>
 </div>
