@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
             colorIndex++;
             
             const dataset = {
-                label: '[' + member.spirit_animal + '] ' + member.display_name,
+                label: member.spirit_animal + ' ' + member.display_name,
                 data: memberData.cumulative_points,
                 borderColor: color,
                 backgroundColor: color + '20', // 20% opacity
@@ -482,6 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const activeElements = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
                     
                     if (activeElements.length > 0) {
+                        // Prevent default click behavior
+                        event.native.preventDefault();
+                        
                         // Toggle tooltip visibility
                         const tooltip = chart.tooltip;
                         const currentActive = tooltip.getActiveElements();
@@ -489,11 +492,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (currentActive.length > 0) {
                             // Hide tooltip if already showing
                             tooltip.setActiveElements([], {x: 0, y: 0});
+                            chart.update('none');
                         } else {
                             // Show tooltip for clicked element
                             tooltip.setActiveElements(activeElements, {x: event.x, y: event.y});
+                            chart.update('none');
                         }
-                        chart.update('none');
                     }
                 }
             },
@@ -510,7 +514,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
                 tooltip: {
-                    enabled: !isMobile, // Disable hover tooltips on mobile
+                    enabled: true, // Enable tooltips for both desktop and mobile
+                    external: isMobile ? function(context) {
+                        // Custom tooltip handling for mobile
+                        return false; // Let Chart.js handle it
+                    } : undefined,
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleColor: '#fff',
                     bodyColor: '#fff',
@@ -595,7 +603,8 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             elements: {
                 point: {
-                    hoverBackgroundColor: isMobile ? undefined : '#fff'
+                    hoverBackgroundColor: isMobile ? undefined : '#fff',
+                    hoverBorderColor: isMobile ? undefined : undefined
                 }
             }
         }

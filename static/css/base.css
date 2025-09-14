@@ -1696,7 +1696,7 @@ a:hover {
 
 /* Alle stats-item Werte sollen orange sein (außer Links) */
 .stats-item .value {
-    font-weight: bold;
+    font-weight: normal;
     color: var(--accent-color);
 }
 
