@@ -9,9 +9,7 @@
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
         <div class="page-actions">
             <a href="{{ url_for('events.stats') }}" class="btn btn-primary">📊 Statistiken</a>
-            {% if current_user.is_admin %}
-            <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">Neues Event</a>
-            {% endif %}
+            <a href="{{ url_for('events.archive') }}" class="btn btn-primary">📚 Archiv anzeigen</a>
         </div>
     </div>
     
@@ -71,12 +69,10 @@
             <h2>📋 Event-Planung</h2>
         </div>
         <div class="card-body">
-            <div class="quick-actions">
+            <div class="quick-actions quick-actions-mobile-stack">
             {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">➕ Neues Event</a>
             <a href="{{ url_for('events.year_planning') }}" class="btn btn-primary">📅 Jahresplanung erstellen</a>
-            <a href="{{ url_for('events.archive') }}" class="btn btn-outline">📚 Archiv anzeigen</a>
-            {% else %}
-            <a href="{{ url_for('events.archive') }}" class="btn btn-outline">📚 Vergangene Events</a>
             {% endif %}
             </div>
         </div>

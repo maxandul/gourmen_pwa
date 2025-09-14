@@ -341,6 +341,17 @@ a:hover {
     .btn-group form {
         width: 100%;
     }
+    
+    /* Spezielle mobile Stack-Funktionalität für Event-Planung */
+    .quick-actions-mobile-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    .quick-actions-mobile-stack .btn {
+        width: 100% !important;
+    }
 }
 
 /* ===== SPECIAL BUTTONS ===== */

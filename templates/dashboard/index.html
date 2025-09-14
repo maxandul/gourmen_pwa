@@ -88,6 +88,32 @@
         </div>
         {% endif %}
         
+        {% if latest_bill_event and latest_bill_participation %}
+        <div class="card">
+            <div class="card-header">
+                <h2>💸 Deine letzte Rechnung</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>{{ latest_bill_event.event_typ.value }} - {{ latest_bill_event.display_date }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>🏠 Restaurant:</strong><br>{{ latest_bill_event.restaurant or 'Nicht angegeben' }}</p>
+                        <p><strong>🍽️ Esstyp:</strong><br>{{ latest_bill_participation.esstyp.value if latest_bill_participation.esstyp else 'Nicht angegeben' }}</p>
+                        <p><strong>💰 Dein Anteil:</strong><br>{{ "%.2f"|format(latest_bill_participation.calculated_share_rappen / 100) }} CHF</p>
+                        
+                        <!-- Button in der card-secondary -->
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('events.detail', event_id=latest_bill_event.id) }}" class="btn btn-primary">🔍 Event-Details</a>
+                            <a href="{{ url_for('billbro.index', event_id=latest_bill_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <div class="card">
             <div class="card-header">
                 <h2>🏆 GGL Rangliste</h2>

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from backend.models.event import Event
+from backend.models.participation import Participation
 from backend.services.ggl_rules import GGLService
 from datetime import datetime, timedelta
 
@@ -22,9 +23,26 @@ def index():
     current_season = GGLService.get_current_season()
     ggl_stats = GGLService.get_member_season_stats(current_user.id, current_season)
     
+    # Get latest event with bill for current user
+    latest_bill_event = Event.query.join(Participation).filter(
+        Participation.member_id == current_user.id,
+        Participation.calculated_share_rappen.isnot(None),
+        Participation.calculated_share_rappen > 0
+    ).order_by(Event.datum.desc()).first()
+    
+    # Get participation details for the latest bill event
+    latest_bill_participation = None
+    if latest_bill_event:
+        latest_bill_participation = Participation.query.filter_by(
+            member_id=current_user.id,
+            event_id=latest_bill_event.id
+        ).first()
+    
     return render_template('dashboard/index.html', 
                          next_event=next_event, 
                          ggl_stats=ggl_stats,
-                         current_season=current_season)
+                         current_season=current_season,
+                         latest_bill_event=latest_bill_event,
+                         latest_bill_participation=latest_bill_participation)
 
  

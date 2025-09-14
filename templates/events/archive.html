@@ -6,7 +6,7 @@
 <div class="container">
     <div class="welcome-section">
         <h1>Event-Archiv</h1>
-        <a href="{{ url_for('events.index') }}" class="btn btn-outline">← Zurück zu aktuellen Events</a>
+        <a href="{{ url_for('events.index') }}" class="btn btn-primary">← Zurück zu aktuellen Events</a>
     </div>
     
     <div class="filter-section">
@@ -47,9 +47,9 @@
                 </div>
                 
                 <div class="card-actions primary">
-                <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">Details</a>
+                <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">🔍 Details</a>
                 {% if current_user.is_admin or event.organisator_id == current_user.id %}
-                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-outline">Bearbeiten</a>
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
                 {% endif %}
                 </div>
             </div>
