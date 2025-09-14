@@ -94,25 +94,17 @@
         </div>
     </div>
     
-    {% if season_ranking|length > 0 %}
+    {% if progression_data.events|length > 0 %}
     <div class="card">
         <div class="card-header">
-            <h2>📊 Saison-Statistiken</h2>
+            <h2>📈 Performance-Verlauf</h2>
         </div>
         <div class="card-body">
-            <div class="summary-stats">
-                <div class="summary-item">
-                    <span class="label">Teilnehmer total:</span>
-                    <span class="value">{{ season_ranking|length }}</span>
+            <div class="chart-scroll-container">
+                <div class="chart-container">
+                    <canvas id="progressionChart" width="400" height="200"></canvas>
                 </div>
-                <div class="summary-item">
-                    <span class="label">Höchste Punktzahl:</span>
-                    <span class="value">{{ season_ranking[0].total_points }} ({{ season_ranking[0].member.display_name_with_spirit }})</span>
-                </div>
-                <div class="summary-item">
-                    <span class="label">Durchschnittliche Teilnahme:</span>
-                    <span class="value">{{ "%.1f"|format((season_ranking|sum(attribute='participation_count')) / season_ranking|length) }} Events</span>
-                </div>
+                <div id="chartLabels" class="chart-labels"></div>
             </div>
         </div>
     </div>
@@ -324,5 +316,346 @@ td:nth-child(5) {
         align-self: flex-end;
     }
 }
+
+/* Chart Container Styles */
+.chart-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 20px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.chart-container {
+    position: relative;
+    height: 500px;
+    min-width: 600px;
+    flex-shrink: 0;
+}
+
+.chart-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 12px;
+}
+
+.chart-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.chart-legend-rank {
+    font-weight: bold;
+    color: #333;
+    min-width: 20px;
+}
+
+.chart-legend-animal {
+    color: #333;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 450px;
+    }
+    
+    .chart-scroll-container {
+        /* Will be set dynamically by JavaScript for >4 events */
+    }
+}
+
+.chart-info {
+    text-align: center;
+    margin-top: 10px;
+    color: var(--text-muted);
+}
 </style>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we have progression data
+    {% if progression_data.events|length > 0 %}
+    
+    // Prepare chart data
+    const events = [
+        {% for event in progression_data.events %}
+        "{{ event.datum.strftime('%b') }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    const members = {{ progression_data.members|map(attribute='id')|list|tojson }};
+    const progressionData = {{ progression_data.progression_data|tojson }};
+    
+    // Member colors - different color for each member
+    const memberColors = [
+        '#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+        '#F8C471', '#FF9F43', '#10AC84', '#EE5A24', '#0984E3'
+    ];
+    
+    // Sort members by total points (descending)
+    const sortedMembers = members.slice().sort((a, b) => {
+        const aData = progressionData[a];
+        const bData = progressionData[b];
+        const aTotal = aData.cumulative_points[aData.cumulative_points.length - 1] || 0;
+        const bTotal = bData.cumulative_points[bData.cumulative_points.length - 1] || 0;
+        return bTotal - aTotal;
+    });
+    
+    // Prepare datasets for Chart.js
+    const datasets = [];
+    let currentUserDataset = null;
+    let colorIndex = 0;
+    
+    sortedMembers.forEach(memberId => {
+        const memberData = progressionData[memberId];
+        if (memberData && memberData.member) {
+            const member = memberData.member;
+            const isCurrentUser = memberId === {{ current_user.id }};
+            
+            // Get color for member (different color for each member)
+            const color = memberColors[colorIndex % memberColors.length];
+            colorIndex++;
+            
+            const dataset = {
+                label: member.spirit_animal,
+                data: memberData.cumulative_points,
+                borderColor: color,
+                backgroundColor: color + '20', // 20% opacity
+                borderWidth: isCurrentUser ? 3 : 2,
+                pointRadius: isCurrentUser ? 8 : 6,
+                pointHoverRadius: isCurrentUser ? 10 : 8,
+                tension: 0.1,
+                spanGaps: false, // Don't connect points across null values
+                pointBackgroundColor: color,
+                pointBorderColor: color,
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: color,
+                pointHoverBorderColor: color
+            };
+            
+            if (isCurrentUser) {
+                currentUserDataset = dataset;
+            } else {
+                datasets.push(dataset);
+            }
+        }
+    });
+    
+    // Add current user dataset last (so it appears on top)
+    if (currentUserDataset) {
+        datasets.push(currentUserDataset);
+    }
+    
+    // Register datalabels plugin
+    Chart.register(ChartDataLabels);
+    
+    // Calculate proper dimensions for mobile
+    const eventCount = events.length;
+    const isMobile = window.innerWidth <= 768;
+    const containerWidth = isMobile && eventCount > 4 ? eventCount * 120 : '100%';
+    
+    // Chart configuration
+    const ctx = document.getElementById('progressionChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: events,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: isMobile && eventCount > 4 ? 0.8 : 1.2,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            // Mobile optimizations
+            onHover: function(event, elements) {
+                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
+        plugins: {
+            legend: {
+                display: false
+            },
+            layout: {
+                padding: {
+                    left: 2,
+                    right: 2,
+                    top: 20,
+                    bottom: 20
+                }
+            },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#666',
+                    borderWidth: 1,
+                    cornerRadius: 6,
+                    displayColors: false,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 12,
+                    callbacks: {
+                        title: function(context) {
+                            return 'Event: ' + context[0].label;
+                        },
+                        label: function(context) {
+                            const spiritAnimal = context.dataset.label;
+                            const points = context.parsed.y;
+                            
+                            return [
+                                spiritAnimal,
+                                'Punkte: ' + points
+                            ];
+                        }
+                    }
+                },
+                datalabels: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Events',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    offset: false,
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    },
+                    // Add padding to the right for labels
+                    offset: true
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Kumulative Punkte',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    },
+                    beginAtZero: true,
+                    grid: {
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    },
+                    // Add padding to the top for labels
+                    offset: true
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: '#fff'
+                }
+            }
+        }
+    });
+    
+    // Create custom labels on the right side
+    createChartLabels(chart, datasets);
+    
+    function createChartLabels(chart, datasets) {
+        const labelsContainer = document.getElementById('chartLabels');
+        labelsContainer.innerHTML = '';
+        
+        // Sort datasets by their last data point value (descending)
+        const sortedDatasets = datasets.slice().sort((a, b) => {
+            const aLastValue = a.data[a.data.length - 1] || 0;
+            const bLastValue = b.data[b.data.length - 1] || 0;
+            return bLastValue - aLastValue;
+        });
+        
+        sortedDatasets.forEach((dataset, index) => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'chart-legend-item';
+            
+            const colorDot = document.createElement('div');
+            colorDot.className = 'chart-legend-dot';
+            colorDot.style.backgroundColor = dataset.borderColor;
+            
+            const rankSpan = document.createElement('span');
+            rankSpan.className = 'chart-legend-rank';
+            rankSpan.textContent = (index + 1) + '.';
+            
+            const spiritAnimalSpan = document.createElement('span');
+            spiritAnimalSpan.className = 'chart-legend-animal';
+            spiritAnimalSpan.textContent = dataset.label;
+            
+            legendItem.appendChild(colorDot);
+            legendItem.appendChild(rankSpan);
+            legendItem.appendChild(spiritAnimalSpan);
+            labelsContainer.appendChild(legendItem);
+        });
+    }
+    
+    // Always make scrollable and add extra space for legend
+    setTimeout(() => {
+        const scrollContainer = document.querySelector('.chart-scroll-container');
+        const chartContainer = document.querySelector('.chart-container');
+        
+        // Set chart container to fixed width with extra space for legend
+        const totalWidth = containerWidth + 160; // Extra 160px for legend
+        chartContainer.style.width = totalWidth + 'px';
+        chartContainer.style.minWidth = totalWidth + 'px';
+        
+        // Ensure scroll container is always scrollable
+        scrollContainer.style.overflowX = 'auto';
+        scrollContainer.style.overflowY = 'hidden';
+        
+        // Resize chart to match new container size
+        chart.resize();
+    }, 100);
+    
+    {% endif %}
+});
+</script>
 {% endblock %}
