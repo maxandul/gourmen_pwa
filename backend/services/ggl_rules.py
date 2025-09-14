@@ -143,6 +143,12 @@ class GGLService:
         total_diff = sum(p.diff_amount_rappen for p in participations if p.diff_amount_rappen is not None)
         avg_diff = total_diff / participation_count if participation_count > 0 else 0
         
+        # Get total number of events in the season
+        total_events_in_season = Event.query.filter(
+            Event.season == season_year,
+            Event.published == True
+        ).count()
+        
         return {
             'member_id': member_id,
             'season': season_year,
@@ -150,7 +156,8 @@ class GGLService:
             'participation_count': participation_count,
             'avg_points': avg_points,
             'avg_diff_rappen': avg_diff,
-            'events_ranked': len([p for p in participations if p.points is not None])
+            'events_ranked': len([p for p in participations if p.points is not None]),
+            'total_events_in_season': total_events_in_season
         }
     
     @staticmethod

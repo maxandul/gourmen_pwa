@@ -119,7 +119,6 @@
                 <h2>🏆 GGL Rangliste</h2>
             </div>
             <div class="card-body">
-                {% if ggl_stats %}
                 <div class="card card-secondary variant-info">
                     <div class="card-header">
                         <h3>📊 Deine GGL-Statistiken</h3>
@@ -127,22 +126,23 @@
                     <div class="card-body">
                         <div class="stats-item">
                             <span class="label">Aktuelle Saison:</span>
-                            <span class="value">{{ ggl_stats.current_season }}</span>
+                            <span class="value">{{ ggl_stats.season }}</span>
                         </div>
                         <div class="stats-item">
                             <span class="label">Deine Punkte:</span>
-                            <span class="value">{{ ggl_stats.points }}</span>
+                            <span class="value">{{ ggl_stats.points or 0 }}</span>
                         </div>
                         <div class="stats-item">
                             <span class="label">Dein Rang:</span>
-                            <span class="value">{{ ggl_stats.rank }}</span>
+                            <span class="value">{{ ggl_stats.rank or 'N/A' }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Anzahl Events:</span>
+                            <span class="value">{{ ggl_stats.participation_count }}/{{ ggl_stats.total_events_in_season }}</span>
                         </div>
                         
                     </div>
                 </div>
-                {% else %}
-                <p>Noch keine GGL-Daten verfügbar.</p>
-                {% endif %}
                 
                 <!-- Button in der Haupt-Card -->
                 <div class="card-actions center">

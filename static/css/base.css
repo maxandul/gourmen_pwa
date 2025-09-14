@@ -1691,9 +1691,33 @@ a:hover {
     color: var(--text-secondary);
 }
 
-.stats-item .value {
-    font-weight: 600;
-    color: var(--text-primary);
+.card-secondary .stats-item .value {
+    font-weight: normal !important;
+    color: var(--accent-color) !important;
+}
+
+/* Generelles Style für card-secondary mit feinen Linien zwischen Zeilen */
+.card-secondary .card-body > p,
+.card-secondary .card-body > div:not(.card-actions):not(.btn-group):not(.stats-item) {
+    padding: 12px 0 !important;
+    border-bottom: 1px solid var(--background-tertiary) !important;
+    margin: 0 !important;
+}
+
+.card-secondary .card-body > p:last-child,
+.card-secondary .card-body > div:not(.card-actions):not(.btn-group):not(.stats-item):last-child {
+    border-bottom: none !important;
+}
+
+/* Spezielle Behandlung für stats-item in card-secondary */
+.card-secondary .stats-item {
+    border-bottom: 1px solid var(--background-tertiary) !important;
+    padding: 12px 0 !important;
+    margin: 0 !important;
+}
+
+.card-secondary .stats-item:last-child {
+    border-bottom: none !important;
 }
 
 /* Participants Table */

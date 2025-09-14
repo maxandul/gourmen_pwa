@@ -23,6 +23,29 @@ def index():
     current_season = GGLService.get_current_season()
     ggl_stats = GGLService.get_member_season_stats(current_user.id, current_season)
     
+    # If user has GGL stats, calculate their rank
+    if ggl_stats:
+        season_ranking = GGLService.get_season_ranking(current_season)
+        user_rank = None
+        for i, member_stats in enumerate(season_ranking):
+            if member_stats['member_id'] == current_user.id:
+                user_rank = i + 1
+                break
+        
+        # Add rank and points to ggl_stats
+        ggl_stats['rank'] = user_rank
+        ggl_stats['points'] = ggl_stats['total_points']
+    else:
+        # If no GGL stats, create empty stats for display
+        ggl_stats = {
+            'season': current_season,
+            'total_points': 0,
+            'participation_count': 0,
+            'total_events_in_season': 0,
+            'rank': None,
+            'points': 0
+        }
+    
     # Get latest event with bill for current user
     latest_bill_event = Event.query.join(Participation).filter(
         Participation.member_id == current_user.id,
