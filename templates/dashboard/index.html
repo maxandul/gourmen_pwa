@@ -22,28 +22,45 @@
                         <h3>{{ next_event.event_typ.value }} - {{ next_event.display_date }}</h3>
                     </div>
                     <div class="card-body">
-                        <p><strong>🏠 Restaurant:</strong><br>{{ next_event.restaurant or 'TBD' }}</p>
+                        <div class="stats-item">
+                            <span class="label">Restaurant:</span>
+                            <span class="value">{{ next_event.restaurant or 'TBD' }}</span>
+                        </div>
                         {% if next_event.place_maps_url %}
-                        <p><strong>📍 Location:</strong><br><a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a></p>
+                        <div class="stats-item">
+                            <span class="label">Location:</span>
+                            <span class="value"><a href="{{ next_event.place_maps_url }}" target="_blank" rel="noopener">Auf Google Maps anzeigen</a></span>
+                        </div>
                         {% endif %}
                         {% if next_event.organisator %}
-                        <p><strong>👑 Organisator:</strong><br>{{ next_event.organisator.display_name_with_spirit }}</p>
+                        <div class="stats-item">
+                            <span class="label">Organisator:</span>
+                            <span class="value">{{ next_event.organisator.display_name_with_spirit }}</span>
+                        </div>
                         {% endif %}
                         {% if next_event.notizen %}
-                        <p><strong>📝 Notizen:</strong><br>{{ next_event.notizen }}</p>
+                        <div class="stats-item">
+                            <span class="label">Notizen:</span>
+                            <span class="value">{{ next_event.notizen }}</span>
+                        </div>
                         {% endif %}
                         
                         <!-- Teilnahme-Status -->
                         {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                        {% if my_participation %}
-                            {% if my_participation.teilnahme %}
-                            <p class="participation-status confirmed"><strong>✅ Status:</strong> Du nimmst teil</p>
-                            {% else %}
-                            <p class="participation-status declined"><strong>❌ Status:</strong> Du nimmst nicht teil</p>
-                            {% endif %}
-                        {% else %}
-                        <p class="participation-status pending"><strong>⏳ Status:</strong> Noch keine Antwort</p>
-                        {% endif %}
+                        <div class="stats-item">
+                            <span class="label">Status:</span>
+                            <span class="value">
+                                {% if my_participation %}
+                                    {% if my_participation.teilnahme %}
+                                        <span class="participation-status confirmed">✅ Du nimmst teil</span>
+                                    {% else %}
+                                        <span class="participation-status declined">❌ Du nimmst nicht teil</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="participation-status pending">⏳ Noch keine Antwort</span>
+                                {% endif %}
+                            </span>
+                        </div>
                         
                         <!-- Buttons in der card-secondary -->
                         <div class="card-actions primary">
@@ -99,9 +116,18 @@
                         <h3>{{ latest_bill_event.event_typ.value }} - {{ latest_bill_event.display_date }}</h3>
                     </div>
                     <div class="card-body">
-                        <p><strong>🏠 Restaurant:</strong><br>{{ latest_bill_event.restaurant or 'Nicht angegeben' }}</p>
-                        <p><strong>🍽️ Esstyp:</strong><br>{{ latest_bill_participation.esstyp.value if latest_bill_participation.esstyp else 'Nicht angegeben' }}</p>
-                        <p><strong>💰 Dein Anteil:</strong><br>{{ "%.2f"|format(latest_bill_participation.calculated_share_rappen / 100) }} CHF</p>
+                        <div class="stats-item">
+                            <span class="label">Restaurant:</span>
+                            <span class="value">{{ latest_bill_event.restaurant or 'Nicht angegeben' }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Esstyp:</span>
+                            <span class="value">{{ latest_bill_participation.esstyp.value if latest_bill_participation.esstyp else 'Nicht angegeben' }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Dein Anteil:</span>
+                            <span class="value">{{ "%.2f"|format(latest_bill_participation.calculated_share_rappen / 100) }} CHF</span>
+                        </div>
                         
                         <!-- Button in der card-secondary -->
                         <div class="card-actions primary">

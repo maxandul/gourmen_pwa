@@ -28,29 +28,44 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <p><strong>👑 Organisator:</strong><br>{{ event.organisator.display_name_with_spirit }}</p>
+                    <div class="stats-item">
+                        <span class="label">👑 Organisator:</span>
+                        <span class="value">{{ event.organisator.display_name_with_spirit }}</span>
+                    </div>
                     {% if event.restaurant %}
-                    <p><strong>🏠 Restaurant:</strong><br>{{ event.restaurant }}</p>
+                    <div class="stats-item">
+                        <span class="label">🏠 Restaurant:</span>
+                        <span class="value">{{ event.restaurant }}</span>
+                    </div>
                     {% endif %}
                     {% if event.kueche %}
-                    <p><strong>🌍 Küche:</strong><br>{{ event.kueche }}</p>
+                    <div class="stats-item">
+                        <span class="label">🌍 Küche:</span>
+                        <span class="value">{{ event.kueche }}</span>
+                    </div>
                     {% endif %}
                     
                     <!-- Teilnahme-Status -->
                     {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if my_participation %}
-                        {% if my_participation.teilnahme %}
-                        <p class="participation-status confirmed">✅ Du nimmst teil</p>
-                        {% else %}
-                        <p class="participation-status declined">❌ Du nimmst nicht teil</p>
-                        {% endif %}
-                    {% else %}
-                    <p class="participation-status pending">⏳ Keine Antwort</p>
-                    {% endif %}
+                    <div class="stats-item">
+                        <span class="label">Status:</span>
+                        <span class="value">
+                            {% if my_participation %}
+                                {% if my_participation.teilnahme %}
+                                    <span class="participation-status confirmed">✅ Du nimmst teil</span>
+                                {% else %}
+                                    <span class="participation-status declined">❌ Du nimmst nicht teil</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="participation-status pending">⏳ Keine Antwort</span>
+                            {% endif %}
+                        </span>
+                    </div>
                     
-                    <p class="participants-count">
-                        👥 {{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern
-                    </p>
+                    <div class="stats-item">
+                        <span class="label">👥 Teilnehmer:</span>
+                        <span class="value">{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</span>
+                    </div>
                     
                     <!-- Button in der card-secondary -->
                     <div class="card-actions primary">
