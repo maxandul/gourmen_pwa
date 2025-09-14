@@ -5,12 +5,15 @@
     --secondary-color: #354e5e;
     --accent-color: #dc693c;
     --warm-color: #804539;
+    --turquoise-color: #73c8a8;
     
     /* Abgeleitete Farben */
     --primary-light: #2a3441;
     --secondary-light: #4a5d6e;
     --accent-light: #e67a4d;
     --warm-light: #9a5543;
+    --turquoise-light: #8dd4b8;
+    --turquoise-dark: #5bb898;
     
     /* Dark Mode Farben als Standard */
     --text-primary: #ffffff;
@@ -218,13 +221,13 @@ a:hover {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    background: linear-gradient(135deg, #2e7d32, #4caf50);
     color: white;
     box-shadow: var(--shadow-sm);
 }
 
 .btn-success:hover:not(:disabled) {
-    background: linear-gradient(135deg, #43a047, #5cb85c);
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
@@ -1688,7 +1691,7 @@ a:hover {
 
 .stats-item .label {
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--turquoise-color);
 }
 
 .card-secondary .stats-item .value {

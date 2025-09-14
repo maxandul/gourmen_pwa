@@ -33,19 +33,17 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        <div class="ranking-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Punkte:</span>
-                                <span class="stat-value">{{ entry.total_points }}</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Events:</span>
-                                <span class="stat-value">{{ entry.participation_count }}</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">⌀ Punkte:</span>
-                                <span class="stat-value">{{ "%.1f"|format(entry.avg_points) }}</span>
-                            </div>
+                        <div class="stats-item">
+                            <span class="label">Punkte:</span>
+                            <span class="value">{{ entry.total_points }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Events:</span>
+                            <span class="value">{{ entry.participation_count }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">⌀ Punkte:</span>
+                            <span class="value">{{ "%.1f"|format(entry.avg_points) }}</span>
                         </div>
                     </div>
                 </div>
