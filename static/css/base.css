@@ -1694,6 +1694,12 @@ a:hover {
     color: var(--text-primary); /* Weiß statt türkis */
 }
 
+/* Alle stats-item Werte sollen orange sein (außer Links) */
+.stats-item .value {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
 .card-secondary .stats-item .value {
     font-weight: normal !important;
     color: var(--accent-color) !important;

@@ -106,10 +106,7 @@
     color: #666;
 }
 
-.stat-item .value {
-    font-weight: bold;
-    color: #2196f3;
-}
+/* .stat-item .value styles moved to global base.css */
 
 .season-actions {
     margin-top: 20px;
@@ -142,7 +139,7 @@
 }
 
 .arrow {
-    color: #2196f3;
+    color: var(--accent-color); /* Orange statt blau */
     font-weight: bold;
 }
 
@@ -167,7 +164,7 @@
     display: block;
     font-size: 24px;
     font-weight: bold;
-    color: #2196f3;
+    color: var(--accent-color); /* Orange statt blau */
     margin-bottom: 5px;
 }
 
@@ -410,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
             colorIndex++;
             
             const dataset = {
-                label: member.display_name + ' (' + member.spirit_animal + ')',
+                label: '[' + member.spirit_animal + '] ' + member.display_name,
                 data: memberData.cumulative_points,
                 borderColor: color,
                 backgroundColor: color + '20', // 20% opacity
@@ -487,12 +484,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (activeElements.length > 0) {
                         // Toggle tooltip visibility
                         const tooltip = chart.tooltip;
-                        if (tooltip.getActiveElements().length > 0) {
+                        const currentActive = tooltip.getActiveElements();
+                        
+                        if (currentActive.length > 0) {
                             // Hide tooltip if already showing
                             tooltip.setActiveElements([], {x: 0, y: 0});
                         } else {
                             // Show tooltip for clicked element
-                            tooltip.setActiveElements(activeElements, event);
+                            tooltip.setActiveElements(activeElements, {x: event.x, y: event.y});
                         }
                         chart.update('none');
                     }
@@ -596,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             elements: {
                 point: {
-                    hoverBackgroundColor: '#fff'
+                    hoverBackgroundColor: isMobile ? undefined : '#fff'
                 }
             }
         }
