@@ -298,7 +298,7 @@ td:nth-child(5) {
 .chart-container {
     position: relative;
     height: 500px;
-    min-width: 600px;
+    min-width: 400px; /* Reduced minimum width for better mobile experience */
     flex-shrink: 0;
 }
 
@@ -307,7 +307,7 @@ td:nth-child(5) {
     flex-direction: column;
     gap: 8px;
     pointer-events: none;
-    min-width: 120px;
+    min-width: 150px; /* Increased for longer names */
     flex-shrink: 0;
 }
 
@@ -338,6 +338,8 @@ td:nth-child(5) {
 
 .chart-legend-animal {
     color: #333;
+    font-size: 11px;
+    line-height: 1.2;
 }
 
 /* Mobile optimizations */
@@ -408,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
             colorIndex++;
             
             const dataset = {
-                label: member.spirit_animal,
+                label: member.display_name + ' (' + member.spirit_animal + ')',
                 data: memberData.cumulative_points,
                 borderColor: color,
                 backgroundColor: color + '20', // 20% opacity
@@ -440,10 +442,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register datalabels plugin
     Chart.register(ChartDataLabels);
     
-    // Calculate proper dimensions for mobile
+    // Calculate proper dimensions for mobile and desktop
     const eventCount = events.length;
     const isMobile = window.innerWidth <= 768;
-    const containerWidth = isMobile && eventCount > 4 ? eventCount * 120 : '100%';
+    
+    // Calculate flexible container width based on event count
+    let containerWidth;
+    if (isMobile) {
+        // Mobile: minimum 100px per event, but at least 400px total
+        containerWidth = Math.max(400, eventCount * 100);
+    } else {
+        // Desktop: minimum 150px per event, but at least 600px total
+        containerWidth = Math.max(600, eventCount * 150);
+    }
     
     // Chart configuration
     const ctx = document.getElementById('progressionChart').getContext('2d');
@@ -461,9 +472,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 intersect: false,
                 mode: 'index'
             },
-            // Mobile optimizations
+            // Mobile optimizations - disable hover tooltips on mobile
             onHover: function(event, elements) {
-                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                if (isMobile) {
+                    event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                }
+            },
+            // Click handler for mobile tooltips
+            onClick: function(event, elements) {
+                if (isMobile) {
+                    const chart = this;
+                    const activeElements = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
+                    
+                    if (activeElements.length > 0) {
+                        // Toggle tooltip visibility
+                        const tooltip = chart.tooltip;
+                        if (tooltip.getActiveElements().length > 0) {
+                            // Hide tooltip if already showing
+                            tooltip.setActiveElements([], {x: 0, y: 0});
+                        } else {
+                            // Show tooltip for clicked element
+                            tooltip.setActiveElements(activeElements, event);
+                        }
+                        chart.update('none');
+                    }
+                }
             },
         plugins: {
             legend: {
@@ -478,6 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
                 tooltip: {
+                    enabled: !isMobile, // Disable hover tooltips on mobile
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleColor: '#fff',
                     bodyColor: '#fff',
@@ -498,11 +532,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             return 'Event: ' + context[0].label;
                         },
                         label: function(context) {
-                            const spiritAnimal = context.dataset.label;
+                            const fullLabel = context.dataset.label;
                             const points = context.parsed.y;
                             
                             return [
-                                spiritAnimal,
+                                fullLabel,
                                 'Punkte: ' + points
                             ];
                         }
@@ -610,8 +644,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const scrollContainer = document.querySelector('.chart-scroll-container');
         const chartContainer = document.querySelector('.chart-container');
         
-        // Set chart container to fixed width with extra space for legend
-        const totalWidth = containerWidth + 160; // Extra 160px for legend
+        // Set chart container to calculated width with extra space for legend
+        const totalWidth = containerWidth + 180; // Extra 180px for legend (increased for longer names)
         chartContainer.style.width = totalWidth + 'px';
         chartContainer.style.minWidth = totalWidth + 'px';
         

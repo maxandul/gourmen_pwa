@@ -1691,12 +1691,23 @@ a:hover {
 
 .stats-item .label {
     font-weight: 500;
-    color: var(--turquoise-color);
+    color: var(--text-primary); /* Weiß statt türkis */
 }
 
 .card-secondary .stats-item .value {
     font-weight: normal !important;
     color: var(--accent-color) !important;
+}
+
+/* Links in stats-item values sollen türkis sein */
+.stats-item .value a {
+    color: var(--turquoise-color) !important;
+    text-decoration: none;
+}
+
+.stats-item .value a:hover {
+    color: var(--turquoise-light) !important;
+    text-decoration: underline;
 }
 
 /* Generelles Style für card-secondary mit feinen Linien zwischen Zeilen */
