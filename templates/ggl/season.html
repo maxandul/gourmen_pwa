@@ -7,40 +7,10 @@
     <div class="page-header">
         <h1>🏆 GGL Saison {{ season_year }}</h1>
         <div class="page-actions">
-            <a href="{{ url_for('ggl.index') }}" class="btn btn-outline">← Zurück zur GGL</a>
+            <a href="{{ url_for('ggl.index') }}" class="btn btn-primary">← Zurück zur GGL</a>
         </div>
     </div>
     
-    {% if user_stats %}
-    <div class="card">
-        <div class="card-header">
-            <h2>📊 Deine Performance</h2>
-        </div>
-        <div class="card-body">
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="stat-value">{{ user_stats.total_points }}</span>
-                    <span class="stat-label">Gesamt-Punkte</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-value">{{ user_stats.participation_count }}</span>
-                    <span class="stat-label">Events</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-value">{{ "%.1f"|format(user_stats.avg_points) }}</span>
-                    <span class="stat-label">⌀ Punkte</span>
-                </div>
-                {% set user_rank = season_ranking|selectattr('member_id', 'equalto', user_stats.member_id)|first %}
-                {% if user_rank %}
-                <div class="stat-box">
-                    <span class="stat-value">{{ user_rank.rank }}</span>
-                    <span class="stat-label">Rang</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
     
     <div class="card">
         <div class="card-header">

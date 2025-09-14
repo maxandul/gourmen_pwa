@@ -116,18 +116,14 @@
         
         <div class="card">
             <div class="card-header">
-                <h2>🏆 GGL Rangliste</h2>
+                <h2>🏆 Gourmen Guessing League (GGL)</h2>
             </div>
             <div class="card-body">
                 <div class="card card-secondary variant-info">
                     <div class="card-header">
-                        <h3>📊 Deine GGL-Statistiken</h3>
+                        <h3>📊 Saison {{ ggl_stats.season }}</h3>
                     </div>
                     <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Aktuelle Saison:</span>
-                            <span class="value">{{ ggl_stats.season }}</span>
-                        </div>
                         <div class="stats-item">
                             <span class="label">Deine Punkte:</span>
                             <span class="value">{{ ggl_stats.points or 0 }}</span>
@@ -146,7 +142,7 @@
                 
                 <!-- Button in der Haupt-Card -->
                 <div class="card-actions center">
-                    <a href="{{ url_for('ggl.index') }}" class="btn btn-primary">GGL anzeigen</a>
+                    <a href="{{ url_for('ggl.season', season_year=ggl_stats.season) }}" class="btn btn-primary">📈 Saisontabelle anzeigen</a>
                 </div>
             </div>
         </div>
