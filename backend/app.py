@@ -3,6 +3,7 @@ from flask import Flask, render_template
 from backend.extensions import db
 from backend.config import config
 from backend.extensions import init_extensions
+from sqlalchemy import text
 from backend.models import member, member_sensitive, member_mfa, mfa_backup_code, event, participation, document, audit_event
 # PushSubscription Model wird über backend.models importiert wenn benötigt
 
@@ -26,7 +27,8 @@ def create_app(config_name=None):
         # Test database connection
         try:
             with app.app_context():
-                db.engine.execute('SELECT 1')
+                with db.engine.connect() as connection:
+                    connection.execute(text('SELECT 1'))
         except Exception as db_error:
             app.logger.warning(f"Database connection test failed: {db_error}")
             # Continue anyway - database might be available later
