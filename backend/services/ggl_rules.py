@@ -163,4 +163,139 @@ class GGLService:
     def get_available_seasons():
         """Get list of available seasons"""
         seasons = db.session.query(Event.season).distinct().order_by(Event.season.desc()).all()
-        return [season[0] for season in seasons] 
+        return [season[0] for season in seasons]
+    
+    @staticmethod
+    def get_season_progression_data(season_year):
+        """Get season progression data for chart visualization"""
+        # Get all events in the season, ordered by date
+        all_events = Event.query.filter_by(season=season_year).order_by(Event.datum).all()
+        
+        if not all_events:
+            return {
+                'events': [],
+                'members': [],
+                'progression_data': {}
+            }
+        
+        # Filter events that have points awarded
+        events_with_points = []
+        for event in all_events:
+            participations = Participation.query.filter_by(
+                event_id=event.id,
+                teilnahme=True
+            ).filter(
+                Participation.guess_bill_amount_rappen.isnot(None)
+            ).all()
+            
+            valid_participations = [p for p in participations if p.points is not None]
+            if valid_participations:
+                events_with_points.append(event)
+        
+        if not events_with_points:
+            return {
+                'events': [],
+                'members': [],
+                'progression_data': {}
+            }
+        
+        # Get all members who participated in at least one event with points
+        member_ids = set()
+        for event in events_with_points:
+            participations = Participation.query.filter_by(
+                event_id=event.id,
+                teilnahme=True
+            ).filter(
+                Participation.guess_bill_amount_rappen.isnot(None)
+            ).all()
+            
+            for participation in participations:
+                if participation.points is not None:
+                    member_ids.add(participation.member_id)
+        
+        # Get member details
+        from backend.models.member import Member
+        members = Member.query.filter(Member.id.in_(member_ids)).all()
+        
+        # Build progression data
+        progression_data = {}
+        for member in members:
+            progression_data[member.id] = {
+                'member': member,
+                'cumulative_points': [],
+                'ranks': []
+            }
+        
+        # Calculate cumulative points and ranks for each event with points
+        for event in events_with_points:
+            # Get participations for this event
+            participations = Participation.query.filter_by(
+                event_id=event.id,
+                teilnahme=True
+            ).filter(
+                Participation.guess_bill_amount_rappen.isnot(None)
+            ).all()
+            
+            # Filter participations with points
+            valid_participations = [p for p in participations if p.points is not None]
+            
+            # Sort by points (descending) to calculate ranks
+            sorted_participations = sorted(valid_participations, key=lambda p: p.points, reverse=True)
+            
+            # Calculate ranks
+            ranks = {}
+            current_rank = 1
+            for i, participation in enumerate(sorted_participations):
+                if i > 0 and participation.points < sorted_participations[i-1].points:
+                    current_rank = i + 1
+                ranks[participation.member_id] = current_rank
+            
+            # Update progression data
+            for member_id in member_ids:
+                if member_id in ranks:
+                    # Member participated in this event
+                    current_points = next(p.points for p in valid_participations if p.member_id == member_id)
+                    previous_total = progression_data[member_id]['cumulative_points'][-1] if progression_data[member_id]['cumulative_points'] else 0
+                    # Handle None values from previous events
+                    if previous_total is None:
+                        previous_total = 0
+                    new_total = previous_total + current_points
+                    
+                    progression_data[member_id]['cumulative_points'].append(new_total)
+                    progression_data[member_id]['ranks'].append(ranks[member_id])
+                else:
+                    # Member didn't participate in this event - keep previous total
+                    previous_total = progression_data[member_id]['cumulative_points'][-1] if progression_data[member_id]['cumulative_points'] else 0
+                    if previous_total is None:
+                        previous_total = 0
+                    
+                    progression_data[member_id]['cumulative_points'].append(previous_total)
+                    progression_data[member_id]['ranks'].append(None)
+        
+        # Convert members to serializable format
+        serializable_members = []
+        for member in members:
+            serializable_members.append({
+                'id': member.id,
+                'display_name': member.display_name,
+                'spirit_animal': member.spirit_animal
+            })
+        
+        # Convert progression data to serializable format
+        serializable_progression_data = {}
+        for member_id, data in progression_data.items():
+            serializable_progression_data[member_id] = {
+                'member': {
+                    'id': data['member'].id,
+                    'display_name': data['member'].display_name,
+                    'spirit_animal': data['member'].spirit_animal
+                },
+                'cumulative_points': data['cumulative_points'],
+                'ranks': data['ranks']
+            }
+        
+        return {
+            'events': events_with_points,
+            'members': serializable_members,
+            'progression_data': serializable_progression_data
+        } 

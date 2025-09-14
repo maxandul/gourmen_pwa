@@ -286,88 +286,117 @@ def edit(event_id):
     form.organisator_id.choices = [(m.id, m.display_name) for m in active_members]
     
     if form.validate_on_submit():
-        old_organizer_id = event.organisator_id
-        new_organizer_id = form.organisator_id.data
-        
-        event.datum = form.datum.data
-        event.event_typ = EventType(form.event_typ.data)
-        event.organisator_id = new_organizer_id
-        event.season = event.datum.year
-        
-        # Set restaurant details
-        if form.restaurant.data:
-            event.restaurant = form.restaurant.data
-        if form.kueche.data:
-            event.kueche = form.kueche.data
-        if form.website.data:
-            event.website = form.website.data
-        if form.notizen.data:
-            event.notizen = form.notizen.data
-        
-        # Set Google Places data if available
-        if form.place_id.data or form.place_name.data or form.place_address.data:
-            event.place_id = form.place_id.data
-            event.place_name = form.place_name.data
-            event.place_address = form.place_address.data
-            event.place_lat = float(form.place_lat.data) if form.place_lat.data else None
-            event.place_lng = float(form.place_lng.data) if form.place_lng.data else None
-            event.place_types = json.loads(form.place_types.data) if form.place_types.data else None
-            event.place_website = form.place_website.data
-            event.place_maps_url = form.place_maps_url.data
-            event.place_price_level = int(form.place_price_level.data) if form.place_price_level.data else None
-            event.place_street_number = form.place_street_number.data
-            event.place_route = form.place_route.data
-            event.place_postal_code = form.place_postal_code.data
-            event.place_locality = form.place_locality.data
-            event.place_country = form.place_country.data
-        
-        # Handle organizer change and participation updates
-        if old_organizer_id != new_organizer_id:
-            # Remove old organizer from participants (they are usually unavailable)
-            old_organizer_participation = Participation.query.filter_by(
-                member_id=old_organizer_id,
-                event_id=event.id
-            ).first()
+        try:
+            old_organizer_id = event.organisator_id
+            new_organizer_id = form.organisator_id.data
             
-            if old_organizer_participation:
-                db.session.delete(old_organizer_participation)
+            event.datum = form.datum.data
+            event.event_typ = EventType(form.event_typ.data)
+            event.organisator_id = new_organizer_id
+            event.season = event.datum.year
             
-            # Add new organizer as participant (if not already participating)
-            new_organizer_participation = Participation.query.filter_by(
-                member_id=new_organizer_id,
-                event_id=event.id
-            ).first()
+            # Set restaurant details
+            if form.restaurant.data:
+                event.restaurant = form.restaurant.data
+            if form.kueche.data:
+                event.kueche = form.kueche.data
+            if form.website.data:
+                event.website = form.website.data
+            if form.notizen.data:
+                event.notizen = form.notizen.data
             
-            if not new_organizer_participation:
-                new_organizer_participation = Participation(
+            # Set Google Places data if available
+            if form.place_id.data or form.place_name.data or form.place_address.data:
+                event.place_id = form.place_id.data
+                event.place_name = form.place_name.data
+                event.place_address = form.place_address.data
+                
+                # Safe conversion for latitude
+                try:
+                    event.place_lat = float(form.place_lat.data) if form.place_lat.data else None
+                except (ValueError, TypeError):
+                    event.place_lat = None
+                
+                # Safe conversion for longitude
+                try:
+                    event.place_lng = float(form.place_lng.data) if form.place_lng.data else None
+                except (ValueError, TypeError):
+                    event.place_lng = None
+                
+                # Safe JSON parsing for place types
+                try:
+                    event.place_types = json.loads(form.place_types.data) if form.place_types.data else None
+                except (json.JSONDecodeError, TypeError):
+                    event.place_types = None
+                
+                event.place_website = form.place_website.data
+                event.place_maps_url = form.place_maps_url.data
+                
+                # Safe conversion for price level
+                try:
+                    event.place_price_level = int(form.place_price_level.data) if form.place_price_level.data else None
+                except (ValueError, TypeError):
+                    event.place_price_level = None
+                
+                event.place_street_number = form.place_street_number.data
+                event.place_route = form.place_route.data
+                event.place_postal_code = form.place_postal_code.data
+                event.place_locality = form.place_locality.data
+                event.place_country = form.place_country.data
+            
+            # Handle organizer change and participation updates
+            if old_organizer_id != new_organizer_id:
+                # Remove old organizer from participants (they are usually unavailable)
+                old_organizer_participation = Participation.query.filter_by(
+                    member_id=old_organizer_id,
+                    event_id=event.id
+                ).first()
+                
+                if old_organizer_participation:
+                    db.session.delete(old_organizer_participation)
+                
+                # Add new organizer as participant (if not already participating)
+                new_organizer_participation = Participation.query.filter_by(
                     member_id=new_organizer_id,
-                    event_id=event.id,
-                    teilnahme=True,
-                    responded_at=datetime.utcnow()
+                    event_id=event.id
+                ).first()
+                
+                if not new_organizer_participation:
+                    new_organizer_participation = Participation(
+                        member_id=new_organizer_id,
+                        event_id=event.id,
+                        teilnahme=True,
+                        responded_at=datetime.utcnow()
+                    )
+                    db.session.add(new_organizer_participation)
+            
+            db.session.commit()
+            
+            # Log organizer change if it happened
+            if old_organizer_id != new_organizer_id:
+                from backend.services.security import SecurityService, AuditAction
+                old_organizer = Member.query.get(old_organizer_id)
+                new_organizer = Member.query.get(new_organizer_id)
+                SecurityService.log_audit_event(
+                    AuditAction.EVENT_ORGANIZER_CHANGED, 'event', event.id,
+                    extra_data={
+                        'old_organizer_id': old_organizer_id,
+                        'new_organizer_id': new_organizer_id,
+                        'old_organizer_name': old_organizer.display_name if old_organizer else 'Unbekannt',
+                        'new_organizer_name': new_organizer.display_name if new_organizer else 'Unbekannt'
+                    }
                 )
-                db.session.add(new_organizer_participation)
-        
-        db.session.commit()
-        
-        # Log organizer change if it happened
-        if old_organizer_id != new_organizer_id:
-            from backend.services.security import SecurityService, AuditAction
-            old_organizer = Member.query.get(old_organizer_id)
-            new_organizer = Member.query.get(new_organizer_id)
-            SecurityService.log_audit_event(
-                AuditAction.EVENT_ORGANIZER_CHANGED, 'event', event.id,
-                extra_data={
-                    'old_organizer_id': old_organizer_id,
-                    'new_organizer_id': new_organizer_id,
-                    'old_organizer_name': old_organizer.display_name if old_organizer else 'Unbekannt',
-                    'new_organizer_name': new_organizer.display_name if new_organizer else 'Unbekannt'
-                }
-            )
-            flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}. Alter Organisator als Teilnehmer entfernt, neuer Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
-        else:
-            flash('Event erfolgreich bearbeitet', 'success')
-        
-        return redirect(url_for('events.detail', event_id=event_id))
+                flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}. Alter Organisator als Teilnehmer entfernt, neuer Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
+            else:
+                flash('Event erfolgreich bearbeitet', 'success')
+            
+            return redirect(url_for('events.detail', event_id=event_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Error updating event {event_id}: {str(e)}')
+            flash(f'Fehler beim Speichern des Events: {str(e)}', 'error')
+            return render_template('events/edit.html', form=form, event=event)
     
     return render_template('events/edit.html', form=form, event=event)
 

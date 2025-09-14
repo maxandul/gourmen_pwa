@@ -38,7 +38,11 @@ def season(season_year):
     # Get user's stats for this season
     user_stats = GGLService.get_member_season_stats(current_user.id, season_year)
     
+    # Get progression data for chart
+    progression_data = GGLService.get_season_progression_data(season_year)
+    
     return render_template('ggl/season.html',
                          season_year=season_year,
                          season_ranking=season_ranking,
-                         user_stats=user_stats) 
+                         user_stats=user_stats,
+                         progression_data=progression_data) 
