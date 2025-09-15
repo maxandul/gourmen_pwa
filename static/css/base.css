@@ -256,6 +256,32 @@ a:hover {
     transform: translateY(0) !important;
 }
 
+/* BillBro Button - türkis, weicher Verlauf */
+
+/* BillBro: dunkler Start links, weicher Verlauf nach rechts */
+.btn-billbro {
+    background: linear-gradient(135deg, #2e7d6b, var(--turquoise-dark) 40%, var(--turquoise-color));
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+    border: none;
+}
+
+.btn-billbro:hover:not(:disabled) {
+    background: linear-gradient(135deg, #257061, var(--turquoise-dark) 40%, var(--turquoise-light));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.btn-billbro:focus {
+    outline: 2px solid var(--turquoise-light);
+    outline-offset: 2px;
+}
+
+.btn-billbro:active {
+    transform: translateY(0);
+}
+
 .btn-outline {
     background: transparent;
     border: 2px solid var(--border-color);

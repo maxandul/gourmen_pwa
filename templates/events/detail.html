@@ -108,7 +108,7 @@
                 <!-- BillBro Link für Teilnehmer -->
                 {% if participation and participation.teilnahme %}
                 <div class="billbro-link">
-                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-primary">
+                    <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-billbro">
                         🧾 BillBro
                     </a>
                     {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
