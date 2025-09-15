@@ -316,6 +316,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- Logout Action unten auf der Profilseite -->
+        <div class="page-actions" style="margin-top: 16px;">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">🚪 Logout</a>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -66,7 +66,7 @@ class NotifierService:
             return False
         
         title = "BillBro gestartet!"
-        message = f"🍽️ BillBro für {event.restaurant or event.event_typ.value} ist gestartet. Jetzt schätzen!"
+        message = f"🧾 BillBro für {event.restaurant or event.event_typ.value} ist gestartet. Jetzt schätzen!"
         
         data = {
             'type': 'billbro_start',

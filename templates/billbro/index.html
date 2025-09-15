@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🍽️ BillBro - Restaurant-Rechner</h1>
+        <h1>🧾 BillBro - Restaurant-Rechner</h1>
         <p class="page-subtitle">
             {{ event.event_typ.value }} am {{ event.display_date }}
             {% if event.restaurant %} • {{ event.restaurant }}{% endif %}
@@ -44,7 +44,7 @@
         <div class="card card-secondary variant-info">
             <div class="card-header">
                 {% if event.rechnungsbetrag_rappen %}
-                <h3>🍽️ BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h3>
+                <h3>🧾 BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h3>
                 {% else %}
                 <h3>Angemeldete Personen ({{ event.get_participation_count() }} anwesend)</h3>
                 {% endif %}

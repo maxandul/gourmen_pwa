@@ -1705,6 +1705,36 @@ a:hover {
     color: var(--accent-color) !important;
 }
 
+/* Mitglieder-Verwaltung: Werte in card-secondary rechtsbündig und orange */
+.member-content .card-secondary .card-body p {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    color: var(--accent-color); /* Werte orange */
+}
+
+/* Labels (links) in Weiß lassen */
+.member-content .card-secondary .card-body p > strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Links in den Werten weiterhin türkis */
+.member-content .card-secondary .card-body p a {
+    color: var(--turquoise-color) !important;
+    text-decoration: none;
+}
+.member-content .card-secondary .card-body p a:hover {
+    color: var(--turquoise-light) !important;
+    text-decoration: underline;
+}
+
+/* Zusätzlicher Abstand zwischen den Secondary-Cards in der Mitglieder-Verwaltung */
+.member-content .card-secondary {
+    margin-bottom: 12px !important;
+}
+
 /* Links in stats-item values sollen türkis sein */
 .stats-item .value a {
     color: var(--turquoise-color) !important;

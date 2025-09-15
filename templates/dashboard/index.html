@@ -76,7 +76,7 @@
                                         <input type="hidden" name="teilnahme" value="false">
                                         <button type="submit" class="btn btn-danger">✖️ Absagen</button>
                                     </form>
-                                    <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
+                                    <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn-primary">🧾 BillBro</a>
                                 {% else %}
                                     <!-- Abgesagt - Button zum Zusagen -->
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
@@ -132,7 +132,7 @@
                         <!-- Button in der card-secondary -->
                         <div class="card-actions primary">
                             <a href="{{ url_for('events.detail', event_id=latest_bill_event.id) }}" class="btn btn-primary">🔍 Event-Details</a>
-                            <a href="{{ url_for('billbro.index', event_id=latest_bill_event.id) }}" class="btn btn-primary">🍽️ BillBro</a>
+                            <a href="{{ url_for('billbro.index', event_id=latest_bill_event.id) }}" class="btn btn-primary">🧾 BillBro</a>
                         </div>
                     </div>
                 </div>
