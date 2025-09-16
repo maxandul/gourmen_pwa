@@ -5,11 +5,9 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🧾 BillBro - Restaurant-Rechner</h1>
+        <h1>🧾 BillBro</h1>
         <p class="page-subtitle">
-            {{ event.event_typ.value }} am {{ event.display_date }}
-            {% if event.restaurant %} • {{ event.restaurant }}{% endif %}
-            {% if event.kueche %} • {{ event.kueche }}{% endif %}
+            {% if event.restaurant %}{{ event.restaurant }} • {% endif %}{{ event.display_date }}
         </p>
         <div class="page-actions">
             <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">← Zurück zu Event</a>
@@ -23,7 +21,7 @@
     <!-- Organisator-View -->
     <div class="card">
         <div class="card-header">
-            <h2>👨‍🍳 Organisator-Dashboard</h2>
+            <h2>Organisator-Dashboard</h2>
         </div>
         <div class="card-body">
         <div class="events-list">
@@ -32,7 +30,7 @@
         {% if not event.rechnungsbetrag_rappen %}
         <div class="card card-secondary variant-warning">
             <div class="card-header">
-                <h3>✅ Anwesenheits-Check</h3>
+                <h3>Anwesenheits-Check</h3>
             </div>
             <div class="card-body">
                 <p>Wer ist wirklich da? Korrekturen vor BillBro-Start.</p>
@@ -44,7 +42,7 @@
         <div class="card card-secondary variant-info">
             <div class="card-header">
                 {% if event.rechnungsbetrag_rappen %}
-                <h3>🧾 BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h3>
+                <h3>BillBro Schätzungen ({{ event.get_participation_count() }} Teilnehmer)</h3>
                 {% else %}
                 <h3>Angemeldete Personen ({{ event.get_participation_count() }} anwesend)</h3>
                 {% endif %}
@@ -111,7 +109,7 @@
         <!-- Organisator eigene Schätzung -->
         <div class="card card-secondary variant-accent">
             <div class="card-header">
-                <h3>🎯 Deine eigene Schätzung</h3>
+                <h3>Deine eigene Schätzung</h3>
             </div>
             <div class="card-body">
                 {% set organizer_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
@@ -171,7 +169,7 @@
         <!-- Rechnungsbetrag eingeben -->
         <div class="card card-secondary variant-info">
             <div class="card-header">
-                <h3>💰 Rechnungsbetrag eingeben</h3>
+                <h3>Rechnungsbetrag eingeben</h3>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('billbro.enter_bill', event_id=event.id) }}" class="bill-form">
@@ -191,7 +189,7 @@
         <!-- Ergebnisse anzeigen -->
         <div class="card card-secondary variant-accent">
             <div class="card-header">
-                <h3>📊 Berechnete Ergebnisse</h3>
+                <h3>Berechnete Ergebnisse</h3>
             </div>
             <div class="card-body">
                 <!-- Automatischer Vorschlag -->
@@ -280,7 +278,7 @@
     <!-- Teilnehmer-View -->
     <div class="card">
         <div class="card-header">
-            <h2>🎯 Deine Schätzung</h2>
+            <h2>Deine Schätzung</h2>
         </div>
         <div class="card-body">
         
@@ -288,7 +286,7 @@
         <!-- Bereits geschätzt -->
         <div class="card card-secondary variant-info">
             <div class="card-header">
-                <h3>✅ Deine aktuelle Schätzung</h3>
+                <h3>Deine aktuelle Schätzung</h3>
             </div>
             <div class="card-body">
                 <p><strong>Deine Schätzung:</strong> {{ participation.display_guess }}</p>
@@ -314,7 +312,7 @@
         {% if not event.billbro_closed %}
         <div class="card card-secondary variant-accent">
             <div class="card-header">
-                <h3>🎯 Neue Schätzung abgeben</h3>
+                <h3>Neue Schätzung abgeben</h3>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="guess-form">
@@ -345,7 +343,7 @@
         {% else %}
         <div class="card card-secondary variant-warning">
             <div class="card-header">
-                <h3>🔒 BillBro abgeschlossen</h3>
+                <h3>BillBro abgeschlossen</h3>
             </div>
             <div class="card-body">
                 <p class="text-muted">BillBro ist abgeschlossen - keine neuen Schätzungen möglich</p>
@@ -360,13 +358,13 @@
     {% if event.rechnungsbetrag_rappen %}
     <div class="card">
         <div class="card-header">
-            <h2>📊 BillBro Ergebnisse</h2>
+            <h2>BillBro Ergebnisse</h2>
         </div>
         <div class="card-body">
         
         <div class="card card-secondary variant-info">
             <div class="card-header">
-                <h3>💰 Rechnungsübersicht</h3>
+                <h3>Rechnungsübersicht</h3>
             </div>
             <div class="card-body">
                 <div class="bill-summary">
@@ -380,7 +378,7 @@
         {% if event.gesamtbetrag_rappen %}
         <div class="card card-secondary variant-accent">
             <div class="card-header">
-                <h3>👤 Dein Anteil</h3>
+                <h3>Dein Anteil</h3>
             </div>
             <div class="card-body">
                 {% if participation.esstyp %}
@@ -401,7 +399,7 @@
         
         <div class="card card-secondary variant-info">
             <div class="card-header">
-                <h3>📋 Alle Anteile</h3>
+                <h3>Alle Anteile</h3>
             </div>
             <div class="card-body">
                 <div class="share-amounts">
