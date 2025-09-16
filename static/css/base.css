@@ -1525,6 +1525,18 @@ a:hover {
     font-weight: 500;
 }
 
+/* Bottom nav: keine Unterstreichung bei Klick/Hover/Focus */
+.bottom-nav .nav-item,
+.bottom-nav .nav-item:hover,
+.bottom-nav .nav-item:focus,
+.bottom-nav .nav-item:active {
+    text-decoration: none !important;
+}
+
+.bottom-nav .nav-item * {
+    text-decoration: none !important;
+}
+
 /* Flash Messages */
 .flash-messages {
     position: fixed;
