@@ -308,12 +308,23 @@
                 <h3>Deine aktuelle Schätzung</h3>
             </div>
             <div class="card-body">
-                <p><strong>Deine Schätzung:</strong> {{ participation.display_guess }}</p>
-                <p><strong>Ess-Typ:</strong> {{ participation.esstyp.value if participation.esstyp else 'Nicht gewählt' }}</p>
-                
+                <div class="stats-item">
+                    <span class="label">Deine Schätzung:</span>
+                    <span class="value">{{ participation.display_guess }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Ess-Typ:</span>
+                    <span class="value">{{ participation.esstyp.value if participation.esstyp else 'Nicht gewählt' }}</span>
+                </div>
                 {% if event.rechnungsbetrag_rappen %}
-                <p><strong>Differenz:</strong> {{ participation.display_diff }}</p>
-                <p><strong>Rang:</strong> {{ participation.rank }}. Platz</p>
+                <div class="stats-item">
+                    <span class="label">Differenz:</span>
+                    <span class="value">{{ participation.display_diff }}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="label">Rang:</span>
+                    <span class="value">{{ participation.rank }}. Platz</span>
+                </div>
                 {% endif %}
                 
                 {% if not event.billbro_closed %}
@@ -387,9 +398,18 @@
             </div>
             <div class="card-body">
                 <div class="bill-summary">
-                    <p><strong>Rechnungsbetrag:</strong> {{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</p>
-                    <p><strong>Trinkgeld:</strong> {{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</p>
-                    <p><strong>Gesamtbetrag:</strong> {{ "%.2f"|format(event.gesamtbetrag_rappen / 100) if event.gesamtbetrag_rappen else "Noch nicht festgelegt" }} CHF</p>
+                    <div class="stats-item">
+                        <span class="label">Rechnungsbetrag:</span>
+                        <span class="value">{{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="label">Trinkgeld:</span>
+                        <span class="value">{{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="label">Gesamtbetrag:</span>
+                        <span class="value">{{ "%.2f"|format(event.gesamtbetrag_rappen / 100) if event.gesamtbetrag_rappen else "Noch nicht festgelegt" }} CHF</span>
+                    </div>
                 </div>
             </div>
         </div>
