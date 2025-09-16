@@ -185,7 +185,7 @@ def results(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check permissions (organizer or admin)
-    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Keine Berechtigung für Ergebnisse', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
@@ -210,7 +210,7 @@ def enter_bill(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Rechnungsbetrag eingeben', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -268,7 +268,7 @@ def start_session(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann BillBro starten', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -306,7 +306,7 @@ def send_reminder(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann Erinnerungen senden', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -348,7 +348,7 @@ def set_total(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -439,7 +439,7 @@ def accept_suggested_total(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -633,7 +633,7 @@ def record_guess(event_id, member_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann Schätzungen eingeben', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -693,7 +693,7 @@ def calculator(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Rechner verwenden', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
@@ -706,7 +706,7 @@ def export_pdf(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check permissions (organizer or admin)
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Keine Berechtigung für PDF-Export', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
@@ -730,7 +730,7 @@ def mark_absent(event_id, member_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann Teilnehmer abmelden', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -775,7 +775,7 @@ def mark_present(event_id, member_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann Teilnehmer anmelden', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -813,7 +813,7 @@ def toggle_billbro_status(event_id):
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
+    if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann BillBro-Status ändern', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     

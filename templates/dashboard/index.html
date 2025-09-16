@@ -19,7 +19,7 @@
             <div class="card-body">
                 <div class="card card-secondary variant-accent">
                     <div class="card-header">
-                        <h3>{{ next_event.event_typ.value }} - {{ next_event.display_date }}</h3>
+                        <h3>{{ next_event.event_typ.value|event_type_emoji }} - {{ next_event.display_date }}</h3>
                     </div>
                     <div class="card-body">
                         <div class="stats-item">
@@ -113,7 +113,7 @@
             <div class="card-body">
                 <div class="card card-secondary variant-info">
                     <div class="card-header">
-                        <h3>{{ latest_bill_event.event_typ.value }} - {{ latest_bill_event.display_date }}</h3>
+                        <h3>{{ latest_bill_event.event_typ.value|event_type_emoji }} - {{ latest_bill_event.display_date }}</h3>
                     </div>
                     <div class="card-body">
                         <div class="stats-item">

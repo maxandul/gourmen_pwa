@@ -182,6 +182,17 @@ def register_context_processors(app):
             'bistro': 'Bistro'
         }
         return cuisine_map.get(place_type, place_type.replace('_', ' ').title())
+    
+    @app.template_filter('event_type_emoji')
+    def event_type_emoji(event_type_value):
+        """Add emoji prefix to event type"""
+        emoji_map = {
+            'MONATSESSEN': '🍽️',
+            'GENERALVERSAMMLUNG': '🏛️',
+            'AUSFLUG': '🧳'
+        }
+        emoji = emoji_map.get(event_type_value, '')
+        return f"{emoji} {event_type_value}" if emoji else event_type_value
 
 def init_admin_user(app):
     """Initialize admin user if it doesn't exist"""

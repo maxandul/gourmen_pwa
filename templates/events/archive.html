@@ -28,7 +28,7 @@
         {% for event in events.items %}
         <div class="card">
             <div class="card-header">
-                <h2>{{ event.event_typ.value }} - {{ event.display_date }}</h2>
+                <h2>{{ event.event_typ.value|event_type_emoji }} - {{ event.display_date }}</h2>
             </div>
             <div class="card-body">
                 <div class="card card-secondary variant-info">

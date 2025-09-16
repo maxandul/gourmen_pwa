@@ -19,7 +19,7 @@
     <div class="page-content">
 
     <!-- DEBUG: current_user.id={{ current_user.id }}, event.organisator_id={{ event.organisator_id }}, is_admin={{ current_user.is_admin() }} -->
-    {% if current_user.is_admin() or event.organisator_id == current_user.id %}
+    {% if event.organisator_id == current_user.id %}
     <!-- Organisator-View -->
     <div class="card">
         <div class="card-header">
