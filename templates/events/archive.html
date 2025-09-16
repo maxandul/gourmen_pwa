@@ -37,12 +37,21 @@
                     </div>
                     <div class="card-body">
                         {% if event.restaurant %}
-                        <p><strong>Restaurant:</strong> {{ event.restaurant }}</p>
+                        <div class="stats-item">
+                            <span class="label">Restaurant:</span>
+                            <span class="value">{{ event.restaurant }}</span>
+                        </div>
                         {% endif %}
                         {% if event.kueche %}
-                        <p><strong>Küche:</strong> {{ event.kueche }}</p>
+                        <div class="stats-item">
+                            <span class="label">Küche:</span>
+                            <span class="value">{{ event.kueche }}</span>
+                        </div>
                         {% endif %}
-                        <p><strong>Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
+                        <div class="stats-item">
+                            <span class="label">Organisator:</span>
+                            <span class="value">{{ event.organisator.display_name_with_spirit }}</span>
+                        </div>
                         {% if event.notizen %}
                         <div class="stats-item stats-item-notes">
                             <span class="label">Notizen:</span>
