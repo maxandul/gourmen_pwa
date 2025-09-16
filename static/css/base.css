@@ -3430,6 +3430,19 @@ small {
 }
 
 /* Cache busting - 09/16/2025 11:45:00 */
+/* Notes alignment in stats-item */
+.stats-item-notes {
+    align-items: flex-start;
+}
+
+.stats-item-notes .label {
+    padding-top: 2px;
+}
+
+.stats-item-notes .value {
+    text-align: right;
+    white-space: pre-wrap;
+}
 
 /* ===============================
    Mobile Touch-Feedback entfernen

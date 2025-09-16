@@ -43,6 +43,9 @@
                         <p><strong>Küche:</strong> {{ event.kueche }}</p>
                         {% endif %}
                         <p><strong>Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
+                        {% if event.notizen %}
+                        <p class="text-right" style="color: var(--accent-color);"><strong style="color: var(--text-primary);">Notizen:</strong> {{ event.notizen }}</p>
+                        {% endif %}
                     </div>
                 </div>
                 
