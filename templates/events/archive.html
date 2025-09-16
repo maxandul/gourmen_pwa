@@ -44,7 +44,10 @@
                         {% endif %}
                         <p><strong>Organisator:</strong> {{ event.organisator.display_name_with_spirit }}</p>
                         {% if event.notizen %}
-                        <p class="text-right" style="color: var(--accent-color);"><strong style="color: var(--text-primary);">Notizen:</strong> {{ event.notizen }}</p>
+                        <div class="stats-item stats-item-notes">
+                            <span class="label">Notizen:</span>
+                            <span class="value">{{ event.notizen }}</span>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
