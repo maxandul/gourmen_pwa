@@ -282,6 +282,7 @@ a:hover {
     transform: translateY(0);
 }
 
+
 .btn-outline {
     background: transparent;
     border: 2px solid var(--border-color);
@@ -3428,5 +3429,22 @@ small {
     font-weight: bold;
 }
 
-/* Cache busting - 09/10/2025 16:32:32 */
+/* Cache busting - 09/16/2025 11:45:00 */
+
+/* ===============================
+   Mobile Touch-Feedback entfernen
+   =============================== */
+/* Entfernt das blaue Tap-Highlight auf iOS/Safari/Chrome */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Verhindert langes Touch-Kontextmenü auf iOS für klickbare Elemente */
+a, button, .btn, .nav-item { -webkit-touch-callout: none; }
+
+/* Behalte sichtbaren Fokus NUR für Tastatur (Barrierefreiheit) */
+.btn:focus:not(:focus-visible) { outline: none; }
+.btn-danger:focus:not(:focus-visible) { outline: none !important; }
+.btn-billbro:focus:not(:focus-visible) { outline: none; }
+
+/* Generischer sichtbarer Fokus für Tastaturbedienung (falls vom Element nicht überschrieben) */
+:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
 
