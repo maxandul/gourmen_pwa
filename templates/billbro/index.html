@@ -48,55 +48,46 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <div class="participants-list">
-                    {% for participation in event.participations %}
-                    {% if participation.teilnahme %}
-                    <div class="participant-item" data-member-id="{{ participation.member_id }}">
-                        <span class="member-name">{{ participation.member.display_name_with_spirit }}</span>
-                        <span class="status">
-                            {% if participation.has_guess %}
-                            ✅ {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
-                            {% else %}
-                            ⏳ Wartet auf Schätzung
-                            {% endif %}
-                        </span>
+                {% for participation in event.participations %}
+                {% if participation.teilnahme %}
+                <div class="stats-item" data-member-id="{{ participation.member_id }}">
+                    <span class="label">{{ participation.member.display_name_with_spirit }}</span>
+                    <span class="value">
+                        {% if participation.has_guess %}
+                            {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
+                        {% else %}
+                            Wartet auf Schätzung
+                        {% endif %}
                         {% if not event.rechnungsbetrag_rappen %}
-                        <!-- Nur vor BillBro-Start: Abmelde-Button -->
-                        <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}" style="display: inline;">
+                        <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}" style="display: inline; margin-left: 8px;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-outline" 
-                                    onclick="return confirm('{{ participation.member.display_name_with_spirit }} ist nicht da?')">
-                                Nicht da
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('{{ participation.member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
                         </form>
                         {% endif %}
-                    </div>
-                    {% endif %}
-                    {% endfor %}
+                    </span>
                 </div>
+                {% endif %}
+                {% endfor %}
                 
                 <!-- Abgemeldete/Nicht anwesende Personen -->
                 {% set abgemeldete = event.participations|selectattr('teilnahme', 'equalto', False)|list %}
                 {% if abgemeldete %}
                 <div class="absent-members">
-                    <h5>❌ Nicht anwesend ({{ abgemeldete|length }})</h5>
-                    <div class="absent-list">
-                        {% for participation in abgemeldete %}
-                        <div class="absent-item">
-                            <span class="member-name">{{ participation.member.display_name_with_spirit }}</span>
-                            <span class="status">Nicht da</span>
+                    <h5>Nicht anwesend ({{ abgemeldete|length }})</h5>
+                    {% for participation in abgemeldete %}
+                    <div class="stats-item">
+                        <span class="label">{{ participation.member.display_name_with_spirit }}</span>
+                        <span class="value">
+                            Nicht da
                             {% if not event.rechnungsbetrag_rappen %}
-                            <!-- Nur vor BillBro-Start: Korrektur möglich -->
-                            <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=participation.member_id) }}" style="display: inline;">
+                            <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=participation.member_id) }}" style="display: inline; margin-left: 8px;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    Doch da
-                                </button>
+                                <button type="submit" class="btn btn-sm btn-success">Doch da</button>
                             </form>
                             {% endif %}
-                        </div>
-                        {% endfor %}
+                        </span>
                     </div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 
