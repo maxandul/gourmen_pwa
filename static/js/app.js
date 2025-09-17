@@ -6,6 +6,15 @@
 // CSRF Token für AJAX requests
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+// Helper, um CSRF Token konsistent zu liefern
+function getCSRFToken() {
+    // Bevorzugt global gecachten Wert
+    if (csrfToken) return csrfToken;
+    // Fallback: erneut aus dem DOM lesen
+    const meta = document.querySelector("meta[name='csrf-token']");
+    return meta?.getAttribute('content') || '';
+}
+
 // Toast message function
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
