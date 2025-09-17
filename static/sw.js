@@ -3,9 +3,9 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.2';
-const STATIC_CACHE = 'gourmen-static-v1.3.2';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.2';
+const CACHE_NAME = 'gourmen-v1.3.3';
+const STATIC_CACHE = 'gourmen-static-v1.3.3';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.3';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [
@@ -173,122 +173,62 @@ self.addEventListener('message', (event) => {
 });
 
 // Push Event - Handle Push Notifications
+// Konsolidierter Push-Handler
 self.addEventListener('push', (event) => {
-    console.log('Service Worker: Push notification received:', event);
-    
-    if (!event.data) {
-        console.log('Service Worker: Push event has no data');
-        return;
-    }
-    
     try {
+        if (!event.data) return;
         const data = event.data.json();
-        console.log('Service Worker: Push data:', data);
-        
-        // Standard Push-Benachrichtigung
         const options = {
             body: data.body,
             icon: data.icon || '/static/img/pwa/icon-192.png',
             badge: data.badge || '/static/img/pwa/icon-96.png',
             tag: data.tag || 'gourmen-notification',
             data: data.data || {},
-            actions: data.actions || [
-                {
-                    action: 'view',
-                    title: 'Anzeigen'
-                },
-                {
-                    action: 'close',
-                    title: 'Schließen'
-                }
-            ],
-            requireInteraction: true,
-            vibrate: [200, 100, 200]
+            actions: data.actions || [],
+            requireInteraction: data.requireInteraction ?? true,
+            vibrate: data.vibrate || [200, 100, 200],
+            silent: data.silent || false
         };
-        
-        event.waitUntil(
-            self.registration.showNotification(data.title || 'Gourmen', options)
-        );
-        
+        event.waitUntil(self.registration.showNotification(data.title || 'Gourmen', options));
     } catch (error) {
         console.error('Service Worker: Error processing push notification:', error);
-        
-        // Fallback notification
-        const fallbackOptions = {
+        event.waitUntil(self.registration.showNotification('Gourmen', {
             body: 'Neue Nachricht von Gourmen',
             icon: '/static/img/pwa/icon-192.png',
             badge: '/static/img/pwa/icon-96.png',
             tag: 'gourmen-fallback'
-        };
-        
-        event.waitUntil(
-            self.registration.showNotification('Gourmen', fallbackOptions)
-        );
+        }));
     }
 });
 
 // Notification Click Event - Handle Deep Links
+// Konsolidierter Notification-Click-Handler
 self.addEventListener('notificationclick', (event) => {
-    console.log('Service Worker: Notification clicked:', event);
-    
     event.notification.close();
-    
     const data = event.notification.data || {};
     const action = event.action;
-    
-    let url = '/';
-    
-    // Bestimme URL basierend auf Notification-Daten
-    if (data.url) {
-        url = data.url;
-    } else if (data.event_id) {
-        url = `/events/${data.event_id}`;
-    } else if (data.type === 'event_participation_reminder' || data.type === 'event_organizer_reminder') {
+    let url = data.url || (data.event_id ? `/events/${data.event_id}` : '/');
+    if (action === 'close') return;
+    if ((action === 'view' || action === 'view_event') && data.event_id) {
         url = `/events/${data.event_id}`;
     }
-    
-    // Handle Actions
-    if (action === 'view' || action === 'view_event') {
-        // Öffne Event-Detail-Seite
-        if (data.event_id) {
-            url = `/events/${data.event_id}`;
-        }
-    } else if (action === 'close') {
-        // Nur schließen, nichts öffnen
-        return;
-    }
-    
-    console.log('Service Worker: Opening URL:', url);
-    
-    // Öffne URL in neuem Tab oder fokussiere bestehenden Tab
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-            // Prüfe ob bereits ein Tab mit der URL offen ist
             for (const client of clientList) {
                 if (client.url.includes(url) && 'focus' in client) {
-                    console.log('Service Worker: Focusing existing tab:', client.url);
                     return client.focus();
                 }
             }
-            
-            // Öffne neuen Tab
-            if (clients.openWindow) {
-                console.log('Service Worker: Opening new window:', url);
-                return clients.openWindow(url);
-            }
+            if (clients.openWindow) return clients.openWindow(url);
         })
     );
 });
 
 // Background Sync Event (für zukünftige Offline-Funktionen)
+// Konsolidierter Background-Sync-Handler
 self.addEventListener('sync', (event) => {
-    console.log('Service Worker: Background sync:', event.tag);
-    
     if (event.tag === 'background-sync') {
-        event.waitUntil(
-            // Hier könnten Offline-Aktionen synchronisiert werden
-            Promise.resolve()
-        );
+        event.waitUntil(Promise.resolve());
     }
 });
 
@@ -487,12 +427,7 @@ async function checkForUpdates() {
     }
 }
 
-// Background Sync (if supported)
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'background-sync') {
-        event.waitUntil(doBackgroundSync());
-    }
-});
+// Entfernt doppelte sync-Registrierung (bereits oben konsolidiert)
 
 async function doBackgroundSync() {
     try {

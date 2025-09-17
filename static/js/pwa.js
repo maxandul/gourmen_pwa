@@ -97,7 +97,7 @@ class PWA {
                 // Keine Registration gefunden, registriere neuen Service Worker
                 console.log('🔄 Registriere neuen Service Worker...');
                 // Registriere SW vom Root-Pfad für vollen Scope
-                navigator.serviceWorker.register('/static/sw.js', { scope: '/' })
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
                 .then(registration => {
                         console.log('✅ Service Worker erfolgreich registriert:', registration);
                         this.serviceWorkerRegistration = registration;
@@ -138,7 +138,7 @@ class PWA {
                             console.log('🔧 Debug-Info für Service Worker Fehler:');
                             console.log('- URL:', window.location.href);
                             console.log('- Protocol:', window.location.protocol);
-                            console.log('- Service Worker File:', '/static/sw.js');
+                            console.log('- Service Worker File:', '/sw.js');
                             console.log('- Error Details:', error);
                         }
                     });
@@ -996,8 +996,8 @@ class PWA {
         }
 
         const defaultOptions = {
-            icon: '/static/img/icon-192.png',
-            badge: '/static/img/icon-96.png',
+            icon: '/static/img/pwa/icon-192.png',
+            badge: '/static/img/pwa/icon-96.png',
             tag: 'gourmen-notification',
             requireInteraction: false,
             ...options
