@@ -3437,6 +3437,42 @@ small {
     font-weight: bold;
 }
 
+/* BillBro – Hervorgehobene Box für vorgeschlagenen Gesamtbetrag */
+.suggested-total-card {
+    background: rgba(245, 247, 250);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    margin: 16px 0;
+}
+
+.suggested-total-card .suggested-total-label {
+    display: block;
+    font-weight: 700;
+    color: #111111;
+    text-align: center;
+}
+
+.suggested-total-card .suggested-total-value {
+    display: block;
+    margin-top: 8px;
+    font-weight: 800;
+    color: var(--accent-color);
+    font-size: 24px;
+}
+
+@media (max-width: 768px) {
+    .suggested-total-card {
+        padding: 16px;
+        margin: 12px 0;
+    }
+    .suggested-total-card .suggested-total-value {
+        font-size: 22px;
+    }
+}
+
 /* Button styles - success and danger should have bold text */
 .btn-success,
 .btn-danger {

@@ -11,7 +11,8 @@
         </p>
         <div class="page-actions">
             <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">← Zurück zu Event</a>
-        
+        </div>
+    </div>
     
     <div class="page-content">
 
@@ -197,11 +198,11 @@
                             <span class="label">Trinkgeld (7%):</span>
                             <span class="value">{{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Vorgeschlagener Gesamtbetrag:</span>
-                            <span class="value suggested-total">{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</span>
+                        <div class="suggested-total-card">
+                            <span class="suggested-total-label">Vorschlag Gesamtbetrag:</span>
+                            <span class="suggested-total-value">{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</span>
+                            <small>(aufgerundet auf 10er)</small>
                         </div>
-                        <small>(aufgerundet auf 10er)</small>
                         
                         <div class="card-actions">
                             <form method="POST" action="{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}">
@@ -400,12 +401,10 @@
         </div>
         {% endif %}
         {% endif %}
-        </div>
-    </div>
-    
-    <!-- Ergebnisse für Teilnehmer -->
-    {% if event.rechnungsbetrag_rappen %}
-    <div class="card">
+        
+        <!-- Ergebnisse für Teilnehmer -->
+        {% if event.rechnungsbetrag_rappen %}
+        <div class="card">
         <div class="card-header">
             <h2>🧮 BillBro Ergebnisse</h2>
         </div>
@@ -509,9 +508,8 @@
         </div>
         {% endif %}
         </div>
-    </div>
-    {% endif %}
-    {% endif %}
+        {% endif %}
+        {% endif %}
     </div>
 </div>
 
