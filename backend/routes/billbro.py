@@ -178,28 +178,7 @@ def compute(event_id):
     flash('Schätzung gespeichert', 'success')
     return redirect(url_for('billbro.index', event_id=event_id))
 
-@bp.route('/<int:event_id>/results')
-@login_required
-def results(event_id):
-    """Show BillBro results"""
-    event = Event.query.get_or_404(event_id)
-    
-    # Check permissions (organizer or admin)
-    if not (event.organisator_id == current_user.id):
-        flash('Keine Berechtigung für Ergebnisse', 'error')
-        return redirect(url_for('events.detail', event_id=event_id))
-    
-    # Get all participations with guesses
-    participations = Participation.query.filter_by(
-        event_id=event_id,
-        teilnahme=True
-    ).filter(
-        Participation.guess_bill_amount_rappen.isnot(None)
-    ).order_by(Participation.diff_amount_rappen.asc()).all()
-    
-    return render_template('billbro/results.html', 
-                         event=event, 
-                         participations=participations)
+# Ergebnisse-Seite entfernt; Rangliste wird direkt in BillBro angezeigt
 
 # Import here to avoid circular imports
 

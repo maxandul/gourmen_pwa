@@ -124,17 +124,7 @@ body {
     flex-wrap: wrap;
 }
 
-/* Card mit orangem Streifen (wie bei Events) */
-.card {
-    background: var(--background-primary);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--background-tertiary);
-    transition: all var(--transition-normal);
-    overflow: hidden;
-    margin-bottom: 20px;
-    border-left: 4px solid var(--accent-color); /* Oranger Streifen */
-}
+/* Card mit orangem Streifen (wie bei Events) - ENTFERNT, wird durch die allgemeine .card Regel ersetzt */
 
 .card:last-child {
     margin-bottom: 0;
@@ -283,7 +273,7 @@ a:hover {
 }
 
 
-.btn-outline {
+ .btn-outline {
     background: transparent;
     border: 2px solid var(--border-color);
     color: var(--text-primary);
@@ -766,6 +756,7 @@ a:hover {
     padding: 24px 24px 20px 24px; /* Mehr Padding oben und seitlich */
     border-bottom: 1px solid var(--background-tertiary);
     background: var(--background-secondary); /* Dark Mode Hintergrund */
+    text-align: left; /* Header linksbündig */
     /* border-left entfernt - Cards haben bereits den orangen Streifen */
 }
 
@@ -802,7 +793,7 @@ a:hover {
     background: var(--background-secondary);
     border: 1px solid var(--background-tertiary);
     border-radius: var(--border-radius-lg);
-    margin: 0 4px !important; /* Weniger Einzug - näher an die äußere Card */
+    margin: 0 4px 16px 4px !important; /* Weniger Einzug - näher an die äußere Card + Abstand nach unten */
     box-shadow: none;
     transition: all var(--transition-normal);
 }
@@ -810,7 +801,7 @@ a:hover {
 /* Mobile-first: Bei größeren Bildschirmen mehr Einzug */
 @media (min-width: 768px) {
     .card-secondary {
-        margin: 0 6px !important; /* Weniger Einzug auch auf Desktop */
+        margin: 0 6px 16px 6px !important; /* Weniger Einzug auch auf Desktop + Abstand nach unten */
     }
 }
 
@@ -820,10 +811,21 @@ a:hover {
     transform: none; /* Keine Transformation für Secondary Cards */
 }
 
+/* Letzte card-secondary hat keinen Abstand nach unten */
+.card-secondary:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Card-secondary in card-body haben normales Padding (nicht die Listen-Regeln) */
+.card .card-body .card-secondary {
+    margin: 0 0 16px 0 !important; /* Nur Abstand nach unten, keine negativen Margins */
+}
+
 .card-secondary .card-header {
     background: var(--background-tertiary);
     border-bottom: 1px solid var(--background-quaternary);
     padding: 16px 20px 12px 20px;
+    text-align: left; /* Header linksbündig */
 }
 
 .card-secondary .card-header h3 {
@@ -834,7 +836,7 @@ a:hover {
 }
 
 .card-secondary .card-body {
-    padding: 20px 16px; /* Weniger Padding links und rechts */
+    padding: 20px; /* Einheitliches Padding für alle card-secondary */
 }
 
 /* Alternative Styling für Secondary Cards */
@@ -1921,7 +1923,7 @@ a:hover {
     
     /* Secondary Cards auf Mobile anpassen */
     .card-secondary {
-        margin: 0 2px !important; /* Minimaler Einzug auf sehr kleinen Bildschirmen */
+        margin: 0 2px 16px 2px !important; /* Minimaler Einzug auf sehr kleinen Bildschirmen + Abstand nach unten */
         border-radius: var(--border-radius-lg); /* Border-radius beibehalten */
     }
     
