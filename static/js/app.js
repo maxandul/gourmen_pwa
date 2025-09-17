@@ -19,24 +19,93 @@ function getCSRFToken() {
 // und von anderen Skripten wie pwa.js referenziert werden kann.
 window.getCSRFToken = getCSRFToken;
 
-// Toast message function
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <span>${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+// Top-Banner Notification System
+function showToast(message, type = 'info', options = {}) {
+    const {
+        timeout = 5000,
+        icon = getDefaultIcon(type),
+        persistent = false
+    } = options;
+
+    const container = document.getElementById('top-notifications');
+    if (!container) {
+        console.error('Top notifications container not found');
+        return;
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `top-notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${icon}</span>
+            <span class="notification-message">${message}</span>
+        </div>
+        <button class="notification-close" onclick="removeTopNotification(this.parentElement.parentElement)">×</button>
     `;
 
-    document.body.appendChild(toast);
+    // Füge die Notification zum Container hinzu
+    container.appendChild(notification);
 
-    // Auto-remove nach 5 Sekunden
+    // Aktualisiere die Position der Flash-Messages
+    updateFlashMessagesPosition();
+
+    // Auto-remove nach timeout (außer bei persistent)
+    if (!persistent && timeout > 0) {
+        setTimeout(() => {
+            removeTopNotification(notification);
+        }, timeout);
+    }
+
+    return notification;
+}
+
+// Hilfsfunktion für Standard-Icons
+function getDefaultIcon(type) {
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    return icons[type] || icons.info;
+}
+
+// Entfernt eine Top-Notification mit Animation
+function removeTopNotification(notification) {
+    if (!notification || !notification.parentNode) return;
+
+    // Animation für das Ausblenden
+    notification.style.animation = 'slideOutUp 0.3s ease forwards';
+    
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
+        if (notification.parentNode) {
+            notification.remove();
+            // Aktualisiere die Position der Flash-Messages nach dem Entfernen
+            updateFlashMessagesPosition();
         }
-    }, 5000);
+    }, 300);
+}
+
+// Aktualisiert die Position der Flash-Messages basierend auf der Anzahl der Top-Banner
+function updateFlashMessagesPosition() {
+    const container = document.getElementById('top-notifications');
+    const flashMessages = document.querySelector('.flash-messages');
+    
+    if (!container || !flashMessages) return;
+
+    const notifications = container.querySelectorAll('.top-notification');
+    const totalHeight = Array.from(notifications).reduce((height, notification) => {
+        return height + notification.offsetHeight;
+    }, 0);
+
+    // Setze den Top-Offset für Flash-Messages
+    flashMessages.style.top = `${70 + totalHeight}px`;
+}
+
+// Legacy Toast Support - leitet an Top-Banner weiter
+function showLegacyToast(message, type = 'info') {
+    console.warn('showLegacyToast is deprecated, use showToast instead');
+    return showToast(message, type);
 }
 
 // Loading state management
@@ -57,9 +126,16 @@ function initializeFlashMessages() {
     flashMessages.forEach(message => {
         setTimeout(() => {
             message.style.opacity = '0';
-            setTimeout(() => message.remove(), 300);
+            setTimeout(() => {
+                message.remove();
+                // Aktualisiere die Position der Flash-Messages nach dem Entfernen
+                updateFlashMessagesPosition();
+            }, 300);
         }, 5000);
     });
+    
+    // Initiale Position der Flash-Messages setzen
+    updateFlashMessagesPosition();
 }
 
 // Star Rating System
@@ -476,6 +552,8 @@ async function sendParticipationReminders(eventId) {
 
 // Export functions for global use
 window.showToast = showToast;
+window.removeTopNotification = removeTopNotification;
+window.updateFlashMessagesPosition = updateFlashMessagesPosition;
 window.setLoadingState = setLoadingState;
 window.sendParticipationReminders = sendParticipationReminders;
 window.testPushNotification = testPushNotification;

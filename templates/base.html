@@ -84,6 +84,9 @@
     <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
 </head>
 <body {% if current_user.is_authenticated %}data-authenticated="true"{% endif %}>
+    <!-- Top Notifications Container -->
+    <div id="top-notifications" class="top-notifications"></div>
+    
     <!-- Main Content -->
     <main class="main-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -143,8 +146,7 @@
     </nav>
     {% endif %}
     
-    <!-- Toast Messages -->
-    <div id="toast-container"></div>
+    <!-- Toast Messages werden jetzt über Top-Banner angezeigt -->
     
     <!-- JavaScript wird über app.js geladen -->
     

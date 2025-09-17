@@ -1539,7 +1539,7 @@ a:hover {
     text-decoration: none !important;
 }
 
-/* Flash Messages */
+/* Flash Messages - Angepasst für Top-Banner */
 .flash-messages {
     position: fixed;
     top: 70px;
@@ -1548,6 +1548,8 @@ a:hover {
     z-index: 1001;
     max-width: 400px;
     width: 100%;
+    /* Dynamischer Top-Offset basierend auf Anzahl der Top-Banner */
+    transition: top var(--transition-normal);
 }
 
 .flash-message {
@@ -1594,7 +1596,126 @@ a:hover {
     opacity: 1;
 }
 
-/* Toast Notifications */
+/* Top Notifications - Gestapelte Banner am oberen Bildschirmrand */
+.top-notifications {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1002;
+    pointer-events: none; /* Container selbst ist nicht klickbar */
+}
+
+.top-notification {
+    position: relative;
+    width: 100%;
+    padding: 16px 20px;
+    color: white;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto; /* Banner selbst ist klickbar */
+    animation: slideInDown 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-notification.success {
+    background: linear-gradient(135deg, var(--success-color), #20c997);
+}
+
+.top-notification.error {
+    background: linear-gradient(135deg, var(--error-color), #e74c3c);
+}
+
+.top-notification.warning {
+    background: linear-gradient(135deg, var(--warning-color), #fd7e14);
+    color: var(--text-primary);
+}
+
+.top-notification.info {
+    background: linear-gradient(135deg, var(--info-color), #6f42c1);
+}
+
+.top-notification .notification-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-notification .notification-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.top-notification .notification-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.top-notification .notification-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+    padding: 4px;
+    border-radius: var(--border-radius-sm);
+    flex-shrink: 0;
+}
+
+.top-notification .notification-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Animation für das Einblenden von oben */
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Animation für das Ausblenden */
+@keyframes slideOutUp {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+
+/* Mobile Anpassungen für Top-Banner */
+@media (max-width: 768px) {
+    .top-notification {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .top-notification .notification-icon {
+        font-size: 16px;
+    }
+    
+    .top-notification .notification-close {
+        font-size: 18px;
+        padding: 2px;
+    }
+}
+
+/* Legacy Toast Support - wird durch Top-Banner ersetzt */
 .toast {
     position: fixed;
     bottom: 100px;
