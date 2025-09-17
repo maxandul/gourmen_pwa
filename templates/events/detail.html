@@ -111,15 +111,10 @@
                     <a href="{{ url_for('billbro.index', event_id=event.id) }}" class="btn btn-billbro">
                         🧾 BillBro
                     </a>
-                    {% set billbro_active = event.rechnungsbetrag_rappen or event.participations|selectattr('guess_bill_amount_rappen')|list %}
-                    {% if billbro_active %}
-                        {% if participation.has_guess %}
-                        <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
-                        {% else %}
-                        <p><small>Du hast noch nicht geschätzt</small></p>
-                        {% endif %}
+                    {% if participation.has_guess %}
+                    <p><small>Du hast geschätzt: {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})</small></p>
                     {% else %}
-                        <p><small>BillBro noch nicht gestartet</small></p>
+                    <p><small>Du hast noch nicht geschätzt</small></p>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -159,7 +154,7 @@
             {% if current_user.is_admin or event.organisator_id == current_user.id %}
             {% if event.is_upcoming %}
             <button type="button" class="btn btn-primary" 
-                    onclick="if(confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')) { 
+                    onclick="if(confirm('RSVP-Erinnerung an alle Mitglieder senden, die noch nicht geantwortet haben?\\n\\nHinweis: Safari/iOS-Benutzer erhalten E-Mail-Benachrichtigungen.')) { 
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = '{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}';

@@ -20,65 +20,91 @@
     {% if event.organisator_id == current_user.id %}
     <!-- Organisator-View -->
     
-    <!-- Anwesenheits-Check vor BillBro-Start -->
-    {% if not event.rechnungsbetrag_rappen %}
+    <!-- Anwesenheits-Check -->
     <div class="card">
             <div class="card-header">
                 <h2>⚠️ Anwesenheits-Check</h2>
             </div>
             <div class="card-body">
-                <p>Wer ist wirklich da? Korrekturen vor BillBro-Start.</p>
+                <p>Wer ist wirklich da? Korrekturen vor Rechnungsbetrag-Eingabe.</p>
             </div>
         </div>
-        {% endif %}
         
     <!-- Teilnehmer-Übersicht -->
     <div class="card">
             <div class="card-header">
-                <h2>{% if event.rechnungsbetrag_rappen %}🎰 Alle Schätzungen ({{ event.get_participation_count() }} Teilnehmer){% else %}🎰 Alle Schätzungen ({{ event.get_participation_count() }} anwesend){% endif %}</h2>
+                <h2>🎰 Alle Schätzungen</h2>
             </div>
             <div class="card-body">
-                {% for participation in event.participations %}
-                {% if participation.teilnahme %}
-                <div class="stats-item" data-member-id="{{ participation.member_id }}">
-                    <span class="label">{{ participation.member.display_name_with_spirit }}</span>
-                    <span class="value">
-                        {% if participation.has_guess %}
-                            {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
-                        {% else %}
-                            Wartet auf Schätzung
-                        {% endif %}
-                        {% if not event.rechnungsbetrag_rappen %}
-                        <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('{{ participation.member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
-                        </form>
-                        {% endif %}
-                    </span>
-                </div>
-                {% endif %}
-                {% endfor %}
-                
-                <!-- Abgemeldete/Nicht anwesende Personen -->
-                {% set abgemeldete = event.participations|selectattr('teilnahme', 'equalto', False)|list %}
-                {% if abgemeldete %}
-                <div class="absent-members">
-                    <h5>Nicht anwesend ({{ abgemeldete|length }})</h5>
-                    {% for participation in abgemeldete %}
-                    <div class="stats-item">
-                        <span class="label">{{ participation.member.display_name_with_spirit }}</span>
+                {% if is_organizer and all_members %}
+                    <!-- Organisator-View: Alle Mitglieder anzeigen -->
+                    {% for member in all_members %}
+                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
+                    <div class="stats-item" data-member-id="{{ member.id }}">
+                        <span class="label">{{ member.display_name_with_spirit }}</span>
                         <span class="value">
-                            Nicht da
-                            {% if not event.rechnungsbetrag_rappen %}
-                            <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=participation.member_id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-success">Doch da</button>
-                            </form>
+                            {% if member_participation %}
+                                {% if member_participation.teilnahme %}
+                                    {% if member_participation.has_guess %}
+                                        {{ member_participation.display_guess }} ({{ member_participation.esstyp.value if member_participation.esstyp else 'N/A' }})
+                                    {% else %}
+                                        Wartet auf Schätzung
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
+                                    </form>
+                                {% else %}
+                                    Nicht da
+                                    <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=member.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Doch da</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Keine Antwort</span>
+                                <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=member.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-success">Anwesend</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
+                                </form>
                             {% endif %}
                         </span>
                     </div>
                     {% endfor %}
-                </div>
+                {% else %}
+                    <!-- Teilnehmer-View: Nur antwortende Mitglieder -->
+                    {% for participation in event.participations %}
+                    <div class="stats-item" data-member-id="{{ participation.member_id }}">
+                        <span class="label">{{ participation.member.display_name_with_spirit }}</span>
+                        <span class="value">
+                            {% if participation.teilnahme %}
+                                {% if participation.has_guess %}
+                                    {{ participation.display_guess }} ({{ participation.esstyp.value if participation.esstyp else 'N/A' }})
+                                {% else %}
+                                    Wartet auf Schätzung
+                                {% endif %}
+                                {% if is_organizer %}
+                                <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=participation.member_id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('{{ participation.member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
+                                </form>
+                                {% endif %}
+                            {% else %}
+                                Nicht da
+                                {% if is_organizer %}
+                                <form method="POST" action="{{ url_for('billbro.mark_present', event_id=event.id, member_id=participation.member_id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-success">Doch da</button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
                 {% endif %}
                 
                 <!-- Erinnerungen senden - ENTFERNT -->

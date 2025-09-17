@@ -89,21 +89,32 @@ def index():
     
     event = Event.query.get_or_404(event_id)
     
-    # Check if user is participating
+    # Check if user is participating or is organizer
     participation = Participation.query.filter_by(
         member_id=current_user.id,
         event_id=event_id
     ).first()
     
-    if not participation or not participation.teilnahme:
+    # Allow organizer to access BillBro even if not participating
+    is_organizer = event.organisator_id == current_user.id
+    
+    if not participation and not is_organizer:
         flash('Sie nehmen nicht an diesem Event teil', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
+    
+    # For organizer view, get all active members for attendance check
+    all_members = []
+    if is_organizer:
+        from backend.models.member import Member
+        all_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
     
     form = BillBroForm()
     
     return render_template('billbro/index.html', 
                          event=event, 
                          participation=participation,
+                         all_members=all_members,
+                         is_organizer=is_organizer,
                          form=form,
                          Esstyp=Esstyp)
 
@@ -718,9 +729,16 @@ def mark_absent(event_id, member_id):
         event_id=event_id
     ).first()
     
+    # Create participation record if it doesn't exist
     if not participation:
-        flash('Teilnehmer nicht gefunden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        from backend.models.member import Member
+        member = Member.query.get_or_404(member_id)
+        participation = Participation(
+            member_id=member_id,
+            event_id=event_id,
+            teilnahme=False
+        )
+        db.session.add(participation)
     
     # Mark as absent
     participation.teilnahme = False
@@ -744,7 +762,7 @@ def mark_absent(event_id, member_id):
         }
     )
     
-    flash(f'{participation.member.display_name} als abwesend markiert', 'success')
+    flash(f'{participation.member.display_name} als nicht anwesend markiert', 'success')
     return redirect(url_for('billbro.index', event_id=event_id))
 
 @bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST'])
@@ -763,9 +781,16 @@ def mark_present(event_id, member_id):
         event_id=event_id
     ).first()
     
+    # Create participation record if it doesn't exist
     if not participation:
-        flash('Teilnehmer nicht gefunden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        from backend.models.member import Member
+        member = Member.query.get_or_404(member_id)
+        participation = Participation(
+            member_id=member_id,
+            event_id=event_id,
+            teilnahme=True
+        )
+        db.session.add(participation)
     
     # Mark as present
     participation.teilnahme = True
