@@ -1187,7 +1187,7 @@ class PWA {
 
             // Versuche neue Registrierung
             console.log('🔄 Versuche Service Worker Registrierung...');
-            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             this.showToast('✅ Service Worker erfolgreich registriert', 'success');
             
@@ -1240,7 +1240,7 @@ class PWA {
             
             // Registriere neuen Service Worker
             console.log('🔄 Registriere neuen Service Worker...');
-            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             
             this.serviceWorkerRegistration = registration;
@@ -1509,7 +1509,7 @@ class PWA {
             
             // Registriere neuen Service Worker
             console.log('🔄 Registriere neuen Service Worker...');
-            const registration = await navigator.serviceWorker.register('/static/sw.js', { scope: '/' });
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             
             this.serviceWorkerRegistration = registration;

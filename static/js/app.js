@@ -149,8 +149,22 @@ async function initializePushNotifications() {
         const serverStatus = await getPushSubscriptionStatus();
         if (!serverStatus.subscribed) {
             console.log('Not subscribed to push notifications yet');
-            // Zeige Button zum Aktivieren
-            // showPushNotificationButton(registration, vapidPublicKey); // Deaktiviert - Push-Buttons entfernt
+            // Button per UI vorhanden (Account-Seite). Klick-Handler jetzt registrieren.
+            const enableBtn = document.getElementById('enable-push-btn');
+            if (enableBtn) {
+                enableBtn.addEventListener('click', async () => {
+                    enableBtn.disabled = true;
+                    enableBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Aktiviere...</span>';
+                    const ok = await subscribeToPushNotifications(registration, vapidPublicKey);
+                    if (!ok) {
+                        enableBtn.disabled = false;
+                        enableBtn.innerHTML = '<span class="btn-icon">🔔</span><span class="btn-text">Benachrichtigungen aktivieren</span>';
+                    } else {
+                        // Erfolg: Button ausblenden
+                        enableBtn.remove();
+                    }
+                });
+            }
         } else {
             console.log('Already subscribed to push notifications:', serverStatus);
             // Prüfe ob Browser-Subscription noch existiert
@@ -159,6 +173,9 @@ async function initializePushNotifications() {
                 console.log('Browser subscription lost, re-subscribing...');
                 await subscribeToPushNotifications(registration, vapidPublicKey);
             }
+            // Falls bereits subscribed, Button ausblenden
+            const enableBtn = document.getElementById('enable-push-btn');
+            if (enableBtn) enableBtn.remove();
         }
         
     } catch (error) {

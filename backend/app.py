@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template
+from flask import send_from_directory, make_response
 from backend.extensions import db
 from backend.config import config
 from backend.extensions import init_extensions
@@ -75,6 +76,18 @@ def create_app(config_name=None):
         
         # Register context processors
         register_context_processors(app)
+
+        # Serve Service Worker from origin root with proper headers
+        @app.route('/sw.js')
+        def service_worker():
+            static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
+            response = make_response(send_from_directory(static_dir, 'sw.js'))
+            response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+            # Ensure the service worker can control the entire origin
+            response.headers['Service-Worker-Allowed'] = '/'
+            # Avoid caching to allow timely updates
+            response.headers['Cache-Control'] = 'no-cache'
+            return response
         
         # Add UTF-8 header to HTML responses only
         @app.after_request

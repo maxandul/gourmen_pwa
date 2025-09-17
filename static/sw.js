@@ -3,9 +3,9 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.3';
-const STATIC_CACHE = 'gourmen-static-v1.3.3';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.3';
+const CACHE_NAME = 'gourmen-v1.3.4';
+const STATIC_CACHE = 'gourmen-static-v1.3.4';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.4';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [
@@ -174,6 +174,7 @@ self.addEventListener('message', (event) => {
 
 // Push Event - Handle Push Notifications
 // Konsolidierter Push-Handler
+// Konsolidierter Push-Handler (dedupliziert)
 self.addEventListener('push', (event) => {
     try {
         if (!event.data) return;
@@ -185,7 +186,7 @@ self.addEventListener('push', (event) => {
             tag: data.tag || 'gourmen-notification',
             data: data.data || {},
             actions: data.actions || [],
-            requireInteraction: data.requireInteraction ?? true,
+            requireInteraction: data.requireInteraction ?? false,
             vibrate: data.vibrate || [200, 100, 200],
             silent: data.silent || false
         };
@@ -203,6 +204,7 @@ self.addEventListener('push', (event) => {
 
 // Notification Click Event - Handle Deep Links
 // Konsolidierter Notification-Click-Handler
+// Konsolidierter Notification-Click-Handler (dedupliziert)
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     const data = event.notification.data || {};
@@ -450,60 +452,13 @@ async function doBackgroundSync() {
 }
 
 // Push Notifications (if supported)
-self.addEventListener('push', (event) => {
-    if (event.data) {
-        const data = event.data.json();
-        const options = {
-            body: data.body,
-            icon: '/static/img/pwa/icon-192.png',
-            badge: '/static/img/pwa/icon-96.png',
-            tag: 'gourmen-notification',
-            data: data.data || {},
-            actions: data.actions || [],
-            requireInteraction: data.requireInteraction || false,
-            silent: data.silent || false
-        };
-        
-        event.waitUntil(
-            self.registration.showNotification(data.title, options)
-        );
-    }
-});
+// Entfernt: zweiter Push-Listener war doppelt
 
 // Notification Click
-self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-    
-    if (event.action) {
-        // Handle notification actions
-        handleNotificationAction(event.action, event.notification.data);
-    } else {
-        // Default action - open app
-        event.waitUntil(
-            self.clients.matchAll().then((clients) => {
-                if (clients.length > 0) {
-                    clients[0].focus();
-                } else {
-                    self.clients.openWindow('/');
-                }
-            })
-        );
-    }
-});
+// Entfernt: zweiter Notification-Click-Listener war doppelt
 
 // Handle notification actions
-function handleNotificationAction(action, data) {
-    switch (action) {
-        case 'view_event':
-            self.clients.openWindow(`/events/${data.eventId}`);
-            break;
-        case 'view_dashboard':
-            self.clients.openWindow('/dashboard');
-            break;
-        default:
-            self.clients.openWindow('/');
-    }
-}
+// Entfernt: separate Action-Handler-Funktion, Logik ist im konsolidierten Click-Handler
 
 // Error handling
 self.addEventListener('error', (event) => {
