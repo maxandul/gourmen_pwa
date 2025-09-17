@@ -15,6 +15,10 @@ function getCSRFToken() {
     return meta?.getAttribute('content') || '';
 }
 
+// Stelle sicher, dass die Funktion global verfügbar ist (PWA/installed context)
+// und von anderen Skripten wie pwa.js referenziert werden kann.
+window.getCSRFToken = getCSRFToken;
+
 // Toast message function
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
