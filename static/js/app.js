@@ -227,7 +227,10 @@ async function getPushSubscriptionStatus() {
     try {
         const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
         const headers = csrf ? { 'X-CSRFToken': csrf } : {};
-        const response = await fetch('/api/push/subscription-status', { headers });
+        const response = await fetch('/api/push/subscription-status', {
+            headers,
+            credentials: 'same-origin'
+        });
         return await response.json();
     } catch (error) {
         console.error('Error getting push subscription status:', error);
@@ -257,13 +260,19 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
                 'Content-Type': 'application/json',
                 ...(csrf ? { 'X-CSRFToken': csrf } : {})
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 subscription: subscription.toJSON()
             })
         });
         
         if (!response.ok) {
-            throw new Error(`Failed to register subscription: ${response.statusText}`);
+            let details = '';
+            try {
+                const err = await response.json();
+                details = err?.error || JSON.stringify(err);
+            } catch (_) {}
+            throw new Error(`Failed to register subscription: HTTP ${response.status} ${response.statusText} ${details}`);
         }
         
         const result = await response.json();
@@ -323,7 +332,8 @@ async function testPushNotification() {
             headers: {
                 'Content-Type': 'application/json',
                 ...(csrf ? { 'X-CSRFToken': csrf } : {})
-            }
+            },
+            credentials: 'same-origin'
         });
         
         const result = await response.json();
