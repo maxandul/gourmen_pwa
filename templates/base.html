@@ -70,15 +70,15 @@
     <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-320x568.png') }}">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/ratings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}?v=1.3.4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ratings.css') }}?v=1.3.4">
 
     <!-- Custom Head Block -->
     {% block head %}{% endblock %}
     
     <!-- PWA Scripts -->
-    <script src="{{ url_for('static', filename='js/pwa.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/pwa.js') }}?v=1.3.4" defer></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.3.4" defer></script>
     
     <!-- CSRF Token for AJAX -->
     {% if csrf_token %}

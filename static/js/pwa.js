@@ -21,7 +21,10 @@ class PWA {
         this.setupNetworkStatus();
         this.setupNotifications();
         this.setupUpdateDetection();
-        this.setupManualUpdateButton();
+        // Optionaler Button für manuelle Updates (derzeit nicht genutzt)
+        if (typeof this.setupManualUpdateButton === 'function') {
+            this.setupManualUpdateButton();
+        }
         this.setupServiceWorkerInfoCard();
         
         // Debug-Panel nur, wenn aktiviert
@@ -88,9 +91,33 @@ class PWA {
             // Prüfe zuerst, ob bereits eine Registration existiert
             navigator.serviceWorker.getRegistrations().then(existingRegistrations => {
                 if (existingRegistrations.length > 0) {
-                    console.log('✅ Service Worker bereits registriert:', existingRegistrations[0]);
-                    this.serviceWorkerRegistration = existingRegistrations[0];
-                    this.setupServiceWorkerEvents(existingRegistrations[0]);
+                    // Bevorzugt Root-Scope
+                    const originRoot = window.location.origin + '/';
+                    let rootReg = existingRegistrations.find(reg => reg.scope === originRoot);
+                    if (rootReg) {
+                        console.log('✅ Service Worker bereits registriert (Root-Scope):', rootReg);
+                        this.serviceWorkerRegistration = rootReg;
+                        this.setupServiceWorkerEvents(rootReg);
+                        return;
+                    }
+                    // Migration: vorhandene Registrierungen haben keinen Root-Scope → re-registrieren auf /sw.js
+                    console.log('⚠️ Gefundene Service Worker haben keinen Root-Scope. Migriere auf /sw.js ...');
+                    Promise.all(existingRegistrations.map(r => r.unregister()))
+                        .then(() => new Promise(res => setTimeout(res, 500)))
+                        .then(() => navigator.serviceWorker.register('/sw.js', { scope: '/' }))
+                        .then(registration => {
+                            console.log('✅ Service Worker erfolgreich auf Root-Scope migriert:', registration);
+                            this.serviceWorkerRegistration = registration;
+                            this.setupServiceWorkerEvents(registration);
+                            setTimeout(() => {
+                                console.log('🔄 Initialer Update-Check...');
+                                this.checkForUpdates();
+                            }, 1000);
+                        })
+                        .catch(error => {
+                            console.error('❌ Migration auf Root-Scope fehlgeschlagen:', error);
+                            this.showToast('Service Worker Migration fehlgeschlagen: ' + error.message, 'error');
+                        });
                     return;
                 }
                 
