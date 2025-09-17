@@ -442,12 +442,14 @@ async function sendParticipationReminders(eventId) {
         const reminderBtn = document.getElementById('send-reminders-btn');
         setLoadingState(reminderBtn, true);
         
+        const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
         const response = await fetch(`/api/events/${eventId}/send-reminders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            }
+                ...(csrf ? { 'X-CSRFToken': csrf } : {})
+            },
+            credentials: 'same-origin'
         });
         
         if (!response.ok) {
