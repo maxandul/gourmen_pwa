@@ -225,11 +225,9 @@ async function getVAPIDPublicKey() {
 
 async function getPushSubscriptionStatus() {
     try {
-        const response = await fetch('/api/push/subscription-status', {
-            headers: {
-                'X-CSRFToken': getCSRFToken()
-            }
-        });
+        const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
+        const headers = csrf ? { 'X-CSRFToken': csrf } : {};
+        const response = await fetch('/api/push/subscription-status', { headers });
         return await response.json();
     } catch (error) {
         console.error('Error getting push subscription status:', error);
@@ -252,11 +250,12 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
         });
         
         // Send subscription to server
+        const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
         const response = await fetch('/api/push/subscribe', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                ...(csrf ? { 'X-CSRFToken': csrf } : {})
             },
             body: JSON.stringify({
                 subscription: subscription.toJSON()
@@ -318,11 +317,12 @@ function showPushNotificationButton(registration, vapidPublicKey) {
 
 async function testPushNotification() {
     try {
+        const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
         const response = await fetch('/api/push/test', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                ...(csrf ? { 'X-CSRFToken': csrf } : {})
             }
         });
         
