@@ -84,6 +84,9 @@ class VAPIDService:
             # Prüfe zuerst Umgebungsvariablen (für Produktion)
             private_key = os.environ.get('VAPID_PRIVATE_KEY')
             if private_key:
+                # Normalize escaped newlines (Railway/Heroku style)
+                if '\\n' in private_key and '-----BEGIN' in private_key:
+                    private_key = private_key.replace('\\n', '\n')
                 return private_key
             
             # Fallback: Prüfe ob bereits Keys existieren
