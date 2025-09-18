@@ -148,6 +148,7 @@ def test_push_notification():
         }
         
         sent_count = 0
+        deactivated = 0
         for subscription in subscriptions:
             result = PushNotificationService.send_push_notification(subscription.subscription_data, payload, return_error_details=True)
             if (isinstance(result, dict) and result.get('success')) or result is True:
@@ -155,12 +156,23 @@ def test_push_notification():
                 sent_count += 1
             else:
                 logger.warning(f"Push send failed for endpoint {subscription.endpoint[:50]}... result={result}")
+                # Deaktiviere offensichtlich ungültige Subscriptions (404/410 Gone)
+                try:
+                    status = result.get('status') if isinstance(result, dict) else None
+                    if status in (404, 410):
+                        subscription.is_active = False
+                        deactivated += 1
+                except Exception:
+                    pass
+        from backend.extensions import db
+        db.session.commit()
         
         return jsonify({
             'success': True,
             'message': f'Test notification sent to {sent_count}/{len(subscriptions)} devices',
             'sent_count': sent_count,
-            'total_subscriptions': len(subscriptions)
+            'total_subscriptions': len(subscriptions),
+            'deactivated': deactivated
         })
         
     except Exception as e:
