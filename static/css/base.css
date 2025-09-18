@@ -1599,11 +1599,22 @@ a:hover {
 /* Top Notifications - Gestapelte Banner am oberen Bildschirmrand */
 .top-notifications {
     position: fixed;
-    top: 0;
+    top: 60px; /* unter der festen user-bar */
     left: 0;
     right: 0;
     z-index: 1002;
     pointer-events: none; /* Container selbst ist nicht klickbar */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-height: 45vh; /* nie den ganzen Screen überdecken */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Wenn kein User eingeloggt ist (keine user-bar), dann oben bündig */
+body:not([data-authenticated]) .top-notifications {
+    top: 0;
 }
 
 .top-notification {
@@ -1620,6 +1631,10 @@ a:hover {
     justify-content: space-between;
     gap: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+    overflow: hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .top-notification.success {
