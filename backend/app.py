@@ -109,8 +109,8 @@ def create_app(config_name=None):
         app.logger.error(f"Traceback: {traceback.format_exc()}")
         
         @app.route('/health')
-        def health():
-            return {'status': 'error', 'error': str(e)}, 500
+        def health_error():
+            return {'status': 'error', 'error': 'App creation failed'}, 500
         
         @app.route('/')
         def index():
