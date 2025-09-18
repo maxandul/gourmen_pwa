@@ -27,13 +27,13 @@ class PushNotificationService:
     """Service für echte Push-Benachrichtigungen über das Betriebssystem"""
     
     @staticmethod
-    def send_push_notification(subscription_data: Dict, payload: Dict) -> bool:
+    def send_push_notification(subscription_data: Dict, payload: Dict, return_error_details: bool = False):
         """
         Sendet eine echte Push-Benachrichtigung über das Betriebssystem
         """
         if not WEBPUSH_AVAILABLE:
             logger.error("pywebpush not available - cannot send push notifications")
-            return False
+            return {'success': False, 'error': 'pywebpush not available'} if return_error_details else False
         
         try:
             # VAPID-Keys holen
@@ -41,7 +41,7 @@ class PushNotificationService:
             vapid_public_key = VAPIDService.get_vapid_public_key()
             
             # Push-Benachrichtigung senden
-            webpush(
+            result = webpush(
                 subscription_info=subscription_data,
                 data=json.dumps(payload),
                 vapid_private_key=vapid_private_key,
@@ -51,14 +51,22 @@ class PushNotificationService:
             )
             
             logger.info(f"Push notification sent successfully to {subscription_data['endpoint'][:50]}...")
-            return True
+            return {'success': True} if return_error_details else True
             
         except WebPushException as e:
-            logger.error(f"WebPush error: {e}")
-            return False
+            status = None
+            body = None
+            try:
+                status = getattr(e.response, 'status_code', None)
+                body = e.response.json() if hasattr(e.response, 'json') else getattr(e.response, 'content', None)
+            except Exception:
+                pass
+            logger.error(f"WebPush error: status={status} detail={body} exc={e}")
+            return ({'success': False, 'status': status, 'error': str(e), 'detail': body}
+                    if return_error_details else False)
         except Exception as e:
             logger.error(f"Unexpected error sending push notification: {e}")
-            return False
+            return {'success': False, 'error': str(e)} if return_error_details else False
     
     @staticmethod
     def send_event_reminder_to_organizer(event_id: int) -> bool:

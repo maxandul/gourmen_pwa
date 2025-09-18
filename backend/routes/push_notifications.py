@@ -148,10 +148,13 @@ def test_push_notification():
         }
         
         sent_count = 0
-        for subscription in subscriptions:
-            if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                subscription.mark_used()
-                sent_count += 1
+    for subscription in subscriptions:
+        result = PushNotificationService.send_push_notification(subscription.subscription_data, payload, return_error_details=True)
+        if (isinstance(result, dict) and result.get('success')) or result is True:
+            subscription.mark_used()
+            sent_count += 1
+        else:
+            logger.warning(f"Push send failed for endpoint {subscription.endpoint[:50]}... result={result}")
         
         return jsonify({
             'success': True,
