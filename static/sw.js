@@ -128,6 +128,11 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
     
+    // Ignore non-HTTP(S) schemes (e.g., chrome-extension://)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return;
+    }
+
     // Skip non-GET requests
     if (request.method !== 'GET') {
         return;
@@ -237,6 +242,11 @@ self.addEventListener('sync', (event) => {
 // Cache First Strategy
 async function cacheFirst(request, cacheName) {
     try {
+        // Only handle HTTP(S)
+        const reqUrl = new URL(request.url);
+        if (reqUrl.protocol !== 'http:' && reqUrl.protocol !== 'https:') {
+            return fetch(request);
+        }
         const cachedResponse = await caches.match(request);
         if (cachedResponse) {
             return cachedResponse;
@@ -245,7 +255,11 @@ async function cacheFirst(request, cacheName) {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
             const cache = await caches.open(cacheName);
-            cache.put(request, networkResponse.clone());
+            try {
+                await cache.put(request, networkResponse.clone());
+            } catch (_) {
+                // Ignore caching failures for unsupported schemes
+            }
         }
         
         return networkResponse;
