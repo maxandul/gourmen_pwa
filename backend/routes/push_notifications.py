@@ -101,6 +101,7 @@ def get_subscription_status():
             member_id=current_user.id,
             is_active=True
         ).all()
+        logger.info(f"Found {len(subscriptions)} active subscriptions for member {current_user.id}")
         
         return jsonify({
             'subscribed': len(subscriptions) > 0,
@@ -150,6 +151,7 @@ def test_push_notification():
         sent_count = 0
         deactivated = 0
         for subscription in subscriptions:
+            logger.info(f"Sending push to endpoint: {subscription.endpoint[:60]}...")
             result = PushNotificationService.send_push_notification(subscription.subscription_data, payload, return_error_details=True)
             if (isinstance(result, dict) and result.get('success')) or result is True:
                 subscription.mark_used()
