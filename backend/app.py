@@ -35,7 +35,7 @@ def create_app(config_name=None):
             # Continue anyway - database might be available later
         
         # Register blueprints
-        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, member, admin, docs, notifications, ratings, migrate
+        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, account, member, admin, docs, notifications, ratings, migrate, test_migrate
         
         # Push-Notification und Cron-Blueprints registrieren (Fehler werden in den Endpoints gehandhabt)
         from backend.routes import push_notifications, cron
@@ -53,6 +53,7 @@ def create_app(config_name=None):
         app.register_blueprint(notifications.bp, url_prefix='/notifications')
         app.register_blueprint(ratings.bp, url_prefix='/ratings')
         app.register_blueprint(migrate.migrate_bp, url_prefix='/admin')
+        app.register_blueprint(test_migrate.test_migrate_bp, url_prefix='/test')
         
         # Registriere Push-Notification und Cron-Blueprints immer
         app.register_blueprint(push_notifications.bp)
