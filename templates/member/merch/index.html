@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Merch-Shop - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>🛍️ Merch-Shop</h1>
+        <p class="page-subtitle">Gourmen Merchandise bestellen</p>
+        <div class="page-actions">
+            <a href="{{ url_for('member.index') }}" class="btn btn-outline">← Zurück zur Übersicht</a>
+            <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Neue Bestellung</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <!-- Verfügbare Artikel Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📦 Verfügbare Artikel</h2>
+            </div>
+            <div class="card-body">
+                {% if articles %}
+                    {% for article in articles %}
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>{{ article.name }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-item">
+                                <span class="label">Beschreibung:</span>
+                                <span class="value">{{ article.description }}</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Basispreis:</span>
+                                <span class="value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Verfügbare Varianten:</span>
+                                <span class="value">{{ article.variants|length }} Farb-/Größen-Kombinationen</span>
+                            </div>
+                            
+                            <div class="card-actions primary">
+                                <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Bestellen</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card card-secondary variant-warning">
+                        <div class="card-header">
+                            <h3>Keine Artikel verfügbar</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Meine Bestellungen Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 Meine Bestellungen</h2>
+            </div>
+            <div class="card-body">
+                {% if orders %}
+                    {% for order in orders %}
+                    <div class="card card-secondary variant-accent">
+                        <div class="card-header">
+                            <h3>Bestellung #{{ order.order_number }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-item">
+                                <span class="label">Status:</span>
+                                <span class="value">
+                                    {% if order.status.value == 'BESTELLT' %}
+                                        🟡 {{ order.status_display }}
+                                    {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                                        🔵 {{ order.status_display }}
+                                    {% elif order.status.value == 'GELIEFERT' %}
+                                        🟢 {{ order.status_display }}
+                                    {% else %}
+                                        {{ order.status_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Gesamtbetrag:</span>
+                                <span class="value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Bestellt am:</span>
+                                <span class="value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Artikel:</span>
+                                <span class="value">{{ order.get_item_count() }} Stück</span>
+                            </div>
+                            
+                            <div class="card-actions primary">
+                                <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn-primary">🔍 Details anzeigen</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>Noch keine Bestellungen</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
+                            <div class="card-actions primary">
+                                <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Erste Bestellung aufgeben</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Schnellzugriff Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚡ Schnellzugriff</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>🚀 Häufige Aktionen</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Neue Bestellung</a>
+                            <a href="{{ url_for('member.merch_orders') }}" class="btn btn-outline">📋 Alle Bestellungen</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

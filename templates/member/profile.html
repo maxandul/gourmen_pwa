@@ -1,0 +1,246 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Profil - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>👤 Mein Profil</h1>
+        <p class="page-subtitle">Verwalte deine persönlichen Daten und Einstellungen</p>
+        <div class="page-actions">
+            <a href="{{ url_for('member.sensitive_data') }}" class="btn btn-primary">🔒 Sensible Daten</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <form method="POST" class="form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Personal Data Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>👤 Persönliche Daten</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.vorname.label }}
+                            {{ form.vorname(class="form-control") }}
+                            {% if form.vorname.errors %}
+                            <div class="error">{{ form.vorname.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.nachname.label }}
+                            {{ form.nachname(class="form-control") }}
+                            {% if form.nachname.errors %}
+                            <div class="error">{{ form.nachname.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.rufname.label }}
+                            {{ form.rufname(class="form-control") }}
+                            {% if form.rufname.errors %}
+                            <div class="error">{{ form.rufname.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.email.label }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                            <div class="error">{{ form.email.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.telefon.label }}
+                            {{ form.telefon(class="form-control") }}
+                            {% if form.telefon.errors %}
+                            <div class="error">{{ form.telefon.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.geburtsdatum.label }}
+                            {{ form.geburtsdatum(class="form-control", type="date") }}
+                            {% if form.geburtsdatum.errors %}
+                            <div class="error">{{ form.geburtsdatum.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.nationalitaet.label }}
+                        {{ form.nationalitaet(class="form-control") }}
+                        {% if form.nationalitaet.errors %}
+                        <div class="error">{{ form.nationalitaet.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Address Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📍 Adresse</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.strasse.label }}
+                            {{ form.strasse(class="form-control") }}
+                            {% if form.strasse.errors %}
+                            <div class="error">{{ form.strasse.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.hausnummer.label }}
+                            {{ form.hausnummer(class="form-control") }}
+                            {% if form.hausnummer.errors %}
+                            <div class="error">{{ form.hausnummer.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.plz.label }}
+                            {{ form.plz(class="form-control") }}
+                            {% if form.plz.errors %}
+                            <div class="error">{{ form.plz.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.ort.label }}
+                            {{ form.ort(class="form-control") }}
+                            {% if form.ort.errors %}
+                            <div class="error">{{ form.ort.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Physical Data Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📏 Körperliche Daten</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.koerpergroesse.label }}
+                            {{ form.koerpergroesse(class="form-control") }}
+                            {% if form.koerpergroesse.errors %}
+                            <div class="error">{{ form.koerpergroesse.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.koerpergewicht.label }}
+                            {{ form.koerpergewicht(class="form-control") }}
+                            {% if form.koerpergewicht.errors %}
+                            <div class="error">{{ form.koerpergewicht.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.schuhgroesse.label }}
+                        {{ form.schuhgroesse(class="form-control") }}
+                        {% if form.schuhgroesse.errors %}
+                        <div class="error">{{ form.schuhgroesse.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Clothing Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>👕 Kleidergrößen</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.kleider_oberteil.label }}
+                            {{ form.kleider_oberteil(class="form-control") }}
+                            {% if form.kleider_oberteil.errors %}
+                            <div class="error">{{ form.kleider_oberteil.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.kleider_hosen.label }}
+                            {{ form.kleider_hosen(class="form-control") }}
+                            {% if form.kleider_hosen.errors %}
+                            <div class="error">{{ form.kleider_hosen.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.kleider_cap.label }}
+                        {{ form.kleider_cap(class="form-control") }}
+                        {% if form.kleider_cap.errors %}
+                        <div class="error">{{ form.kleider_cap.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preferences Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>⭐ Präferenzen</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.zimmerwunsch.label }}
+                        {{ form.zimmerwunsch(class="form-control") }}
+                        {% if form.zimmerwunsch.errors %}
+                        <div class="error">{{ form.zimmerwunsch.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.spirit_animal.label }}
+                        {{ form.spirit_animal(class="form-control") }}
+                        {% if form.spirit_animal.errors %}
+                        <div class="error">{{ form.spirit_animal.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.fuehrerschein.label }}
+                        {{ form.fuehrerschein(class="form-control") }}
+                        {% if form.fuehrerschein.errors %}
+                        <div class="error">{{ form.fuehrerschein.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+        
+
+        <!-- Logout Action unten auf der Profilseite -->
+        <div class="page-actions" style="margin-top: 16px;">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">🚪 Logout</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

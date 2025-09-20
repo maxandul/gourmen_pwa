@@ -185,7 +185,7 @@
         </div>
 
     <!-- Rechnungsbetrag eingeben -->
-    <div class="card">
+    <div class="card" id="rechnungsbetrag-section">
             <div class="card-header">
                 <h2>✍️ Rechnungsbetrag eingeben</h2>
             </div>
@@ -205,7 +205,7 @@
 
         {% if event.rechnungsbetrag_rappen %}
     <!-- Ergebnisse anzeigen -->
-    <div class="card">
+    <div class="card" id="ergebnisse-section">
             <div class="card-header">
                 <h2>🧮 Berechnete Ergebnisse</h2>
             </div>
@@ -240,7 +240,7 @@
                         
                         <!-- Manuelle Anpassung (versteckt) -->
                         <div id="manualOverride" style="display: none; margin-top: 12px;">
-                            <h5>Gesamtbetrag anpassen</h5>
+                            <h5 id="manual-override-section">Gesamtbetrag anpassen</h5>
                             <form method="POST" action="{{ url_for('billbro.set_total', event_id=event.id) }}" class="total-form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="form-group">
@@ -543,8 +543,32 @@
 function showManualOverride() {
     document.getElementById('manualOverride').style.display = 'block';
     // Scroll to the manual override section
-    document.getElementById('manualOverride').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(function() {
+        document.getElementById('manual-override-section').scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }, 50);
 }
+
+// Auto-scroll to specific section based on URL parameter
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const scrollTo = urlParams.get('scroll_to');
+    
+    if (scrollTo) {
+        // Small delay to ensure page is fully loaded
+        setTimeout(function() {
+            const element = document.getElementById(scrollTo);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }, 100);
+    }
+});
 </script>
 {% endblock %}
 

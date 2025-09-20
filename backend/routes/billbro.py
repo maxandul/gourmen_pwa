@@ -249,7 +249,7 @@ def enter_bill(event_id):
     )
     
     flash('Rechnungsbetrag eingegeben - bitte Gesamtbetrag bestätigen oder anpassen', 'info')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
 
 @bp.route('/<int:event_id>/start_session', methods=['POST'])
 @login_required
@@ -420,7 +420,7 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
 
 @bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])
 @login_required
@@ -499,7 +499,7 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
 
 @bp.route('/<int:event_id>/share_whatsapp')
 @login_required

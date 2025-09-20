@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Merch bestellen - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>🛒 Merch bestellen</h1>
+        <p class="page-subtitle">Wähle deine gewünschten Artikel aus</p>
+        <div class="page-actions">
+            <a href="{{ url_for('member.merch') }}" class="btn btn-outline">← Zurück zum Shop</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <form method="POST" class="form" id="merch-order-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            {% if articles %}
+                {% for article in articles %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ article.name }}</h2>
+                        <p class="card-subtitle">{{ article.description }}</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="article-selection">
+                            <div class="form-group">
+                                <label for="color_{{ article.id }}">Farbe:</label>
+                                <select id="color_{{ article.id }}" 
+                                        name="color_{{ article.id }}" 
+                                        class="form-control color-select"
+                                        data-article-id="{{ article.id }}">
+                                    <option value="">Farbe wählen</option>
+                                    {% for color in article.available_colors %}
+                                    <option value="{{ color }}">{{ color }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="size_{{ article.id }}">Größe:</label>
+                                <select id="size_{{ article.id }}" 
+                                        name="size_{{ article.id }}" 
+                                        class="form-control size-select"
+                                        data-article-id="{{ article.id }}"
+                                        disabled>
+                                    <option value="">Zuerst Farbe wählen</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quantity_{{ article.id }}">Anzahl:</label>
+                                <input type="number" 
+                                       id="quantity_{{ article.id }}" 
+                                       name="quantity_{{ article.id }}" 
+                                       min="0" 
+                                       max="10" 
+                                       value="0" 
+                                       class="form-control quantity-input"
+                                       data-article-id="{{ article.id }}"
+                                       disabled>
+                            </div>
+                            
+                            <div class="price-display" id="price_{{ article.id }}" style="display: none;">
+                                <span class="label">Preis:</span>
+                                <span class="value price-value">0.00 CHF</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Bestellzusammenfassung -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📋 Bestellzusammenfassung</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="order-summary">
+                            <div class="stats-item">
+                                <span class="label">Ausgewählte Artikel:</span>
+                                <span class="value" id="selected-items">0</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Gesamtbetrag:</span>
+                                <span class="value" id="total-price">0.00 CHF</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="submit-order-btn" disabled>
+                                🛒 Bestellung aufgeben
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Keine Artikel verfügbar</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="card card-secondary variant-warning">
+                            <div class="card-header">
+                                <h3>Derzeit keine Artikel</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                                <div class="card-actions primary">
+                                    <a href="{{ url_for('member.merch') }}" class="btn btn-outline">← Zurück zum Shop</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorSelects = document.querySelectorAll('.color-select');
+    const sizeSelects = document.querySelectorAll('.size-select');
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    const selectedItemsSpan = document.getElementById('selected-items');
+    const totalPriceSpan = document.getElementById('total-price');
+    const submitBtn = document.getElementById('submit-order-btn');
+    
+    // Varianten-Daten für JavaScript
+    const variantsData = {
+        {% for article in articles %}
+        {{ article.id }}: {
+            {% for variant in article.variants %}
+            "{{ variant.color }}_{{ variant.size }}": {
+                id: {{ variant.id }},
+                price: {{ variant.member_price_rappen }},
+                color: "{{ variant.color }}",
+                size: "{{ variant.size }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    
+    function updateSizeOptions(articleId, selectedColor) {
+        const sizeSelect = document.getElementById(`size_${articleId}`);
+        const quantityInput = document.getElementById(`quantity_${articleId}`);
+        const priceDisplay = document.getElementById(`price_${articleId}`);
+        
+        // Clear existing options
+        sizeSelect.innerHTML = '<option value="">Größe wählen</option>';
+        sizeSelect.disabled = true;
+        quantityInput.disabled = true;
+        priceDisplay.style.display = 'none';
+        
+        if (selectedColor) {
+            const articleVariants = variantsData[articleId];
+            const availableSizes = new Set();
+            
+            // Find available sizes for selected color
+            Object.values(articleVariants).forEach(variant => {
+                if (variant.color === selectedColor) {
+                    availableSizes.add(variant.size);
+                }
+            });
+            
+            // Populate size options
+            availableSizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+            
+            sizeSelect.disabled = false;
+        }
+    }
+    
+    function updatePriceAndQuantity(articleId, selectedColor, selectedSize) {
+        const quantityInput = document.getElementById(`quantity_${articleId}`);
+        const priceDisplay = document.getElementById(`price_${articleId}`);
+        const priceValue = priceDisplay.querySelector('.price-value');
+        
+        if (selectedColor && selectedSize) {
+            const articleVariants = variantsData[articleId];
+            const variantKey = `${selectedColor}_${selectedSize}`;
+            const variant = articleVariants[variantKey];
+            
+            if (variant) {
+                priceValue.textContent = (variant.price / 100).toFixed(2) + ' CHF';
+                priceDisplay.style.display = 'block';
+                quantityInput.disabled = false;
+                quantityInput.dataset.variantId = variant.id;
+                quantityInput.dataset.price = variant.price;
+            }
+        } else {
+            priceDisplay.style.display = 'none';
+            quantityInput.disabled = true;
+            quantityInput.value = 0;
+        }
+        
+        updateOrderSummary();
+    }
+    
+    function updateOrderSummary() {
+        let totalItems = 0;
+        let totalPrice = 0;
+        
+        quantityInputs.forEach(input => {
+            if (!input.disabled) {
+                const quantity = parseInt(input.value) || 0;
+                const price = parseInt(input.dataset.price) || 0;
+                
+                totalItems += quantity;
+                totalPrice += quantity * price;
+            }
+        });
+        
+        selectedItemsSpan.textContent = totalItems;
+        totalPriceSpan.textContent = (totalPrice / 100).toFixed(2) + ' CHF';
+        
+        // Enable/disable submit button
+        submitBtn.disabled = totalItems === 0;
+    }
+    
+    // Event listeners
+    colorSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const articleId = this.dataset.articleId;
+            const selectedColor = this.value;
+            updateSizeOptions(articleId, selectedColor);
+        });
+    });
+    
+    sizeSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const articleId = this.dataset.articleId;
+            const colorSelect = document.getElementById(`color_${articleId}`);
+            const selectedColor = colorSelect.value;
+            const selectedSize = this.value;
+            updatePriceAndQuantity(articleId, selectedColor, selectedSize);
+        });
+    });
+    
+    quantityInputs.forEach(input => {
+        input.addEventListener('change', updateOrderSummary);
+        input.addEventListener('input', updateOrderSummary);
+    });
+    
+    // Initial update
+    updateOrderSummary();
+});
+</script>
+
+<style>
+.article-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.form-control {
+    padding: 10px 12px;
+    border: 1px solid var(--background-tertiary);
+    border-radius: var(--border-radius-sm);
+    background: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.form-control:disabled {
+    background: var(--background-tertiary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.price-display {
+    background: var(--background-secondary);
+    padding: 15px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--background-tertiary);
+    margin-top: 10px;
+}
+
+.price-display .label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-right: 10px;
+}
+
+.price-display .value {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 18px;
+}
+
+#order-summary {
+    background: var(--background-secondary);
+    padding: 20px;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .article-selection {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %}

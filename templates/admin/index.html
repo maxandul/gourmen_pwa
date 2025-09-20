@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>⚙️ Admin-Bereich</h1>
+        <p class="page-subtitle">Verwaltung und Systemsteuerung</p>
+    </div>
+    
+    <div class="page-content">
+        <!-- Mitgliederverwaltung Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👥 Mitgliederverwaltung</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>👤 Mitglieder verwalten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Aktive Mitglieder:</span>
+                            <span class="value">{{ members_count or 0 }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Admins:</span>
+                            <span class="value">{{ admins_count or 0 }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Letzte Aktivität:</span>
+                            <span class="value">Heute</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">👥 Mitglieder verwalten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Merch-Verwaltung Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🛍️ Merch-Verwaltung</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>📦 Merch-Shop verwalten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Verfügbare Artikel:</span>
+                            <span class="value">T-Shirt, Hoodie</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Offene Bestellungen:</span>
+                            <span class="value">0</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Gesamtumsatz:</span>
+                            <span class="value">0.00 CHF</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('admin.merch') }}" class="btn btn-primary">🛍️ Merch verwalten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event-Verwaltung Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📅 Event-Verwaltung</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-success">
+                    <div class="card-header">
+                        <h3>🎉 Events verwalten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Kommende Events:</span>
+                            <span class="value">{{ upcoming_events_count or 0 }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Diese Saison:</span>
+                            <span class="value">{{ current_season_events or 0 }}</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('events.index') }}" class="btn btn-primary">📅 Events verwalten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System-Status Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔧 System-Status</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📊 System-Übersicht</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Datenbank:</span>
+                            <span class="value">✅ Online</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Service Worker:</span>
+                            <span class="value">✅ Aktiv</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Push-Notifications:</span>
+                            <span class="value">✅ Verfügbar</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('docs.index') }}" class="btn btn-outline">🔍 System-Status</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sicherheit Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔒 Sicherheit</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-warning">
+                    <div class="card-header">
+                        <h3>🛡️ Sicherheits-Übersicht</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Audit-Events:</span>
+                            <span class="value">{{ audit_events_count or 0 }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Letzte Prüfung:</span>
+                            <span class="value">Heute</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('admin.members') }}" class="btn btn-warning">🔍 Audit-Log</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Schnellzugriff Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚡ Schnellzugriff</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>🚀 Häufige Aktionen</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">➕ Neues Mitglied</a>
+                            <a href="{{ url_for('events.index') }}" class="btn btn-primary">📅 Neues Event</a>
+                            <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-primary">🛍️ Neuer Artikel</a>
+                            <a href="{{ url_for('docs.index') }}" class="btn btn-outline">💾 Backup</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

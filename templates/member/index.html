@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Member - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>👤 Member-Bereich</h1>
+        <p class="page-subtitle">Willkommen, {{ current_user.display_name_with_spirit }}!</p>
+    </div>
+    
+    <div class="page-content">
+        <!-- Persönliche Daten Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👤 Persönliche Daten</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📝 Profil verwalten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Name:</span>
+                            <span class="value">{{ current_user.display_name_with_spirit }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">E-Mail:</span>
+                            <span class="value">{{ current_user.email }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Funktion:</span>
+                            <span class="value">{{ current_user.funktion.value if current_user.funktion else 'Member' }}</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('member.profile') }}" class="btn btn-primary">✏️ Profil bearbeiten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sicherheit Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔒 Sicherheit & 2FA</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>🛡️ Sicherheitseinstellungen</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">2FA Status:</span>
+                            <span class="value">
+                                {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
+                                    ✅ Aktiviert
+                                {% else %}
+                                    ❌ Nicht aktiviert
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Letzte Passwort-Änderung:</span>
+                            <span class="value">
+                                {% if current_user.password_changed_at %}
+                                    {{ current_user.password_changed_at.strftime('%d.%m.%Y') }}
+                                {% else %}
+                                    Nie geändert
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('member.security') }}" class="btn btn-primary">🔐 Sicherheit verwalten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Merch-Bereich Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🛍️ Merch-Bestellungen</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📦 Meine letzte Bestellung</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if last_order %}
+                        <div class="stats-item">
+                            <span class="label">Bestellnummer:</span>
+                            <span class="value">{{ last_order.order_number }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Status:</span>
+                            <span class="value">
+                                {% if last_order.status.value == 'BESTELLT' %}
+                                    🟡 Bestellt
+                                {% elif last_order.status.value == 'WIRD_GELIEFERT' %}
+                                    🚚 Wird geliefert
+                                {% elif last_order.status.value == 'GELIEFERT' %}
+                                    ✅ Geliefert
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Bestelldatum:</span>
+                            <span class="value">{{ last_order.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% else %}
+                        <div class="stats-item">
+                            <span class="label">Keine Bestellungen:</span>
+                            <span class="value">Noch keine Bestellungen aufgegeben</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('member.merch') }}" class="btn btn-primary">🛒 Merch-Shop</a>
+                            {% if last_order %}
+                            <a href="{{ url_for('member.merch_orders') }}" class="btn btn-outline">📋 Alle Bestellungen</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technische Einstellungen Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚙️ Technische Einstellungen</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>🔧 Service Worker & PWA</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Service Worker:</span>
+                            <span class="value">Aktiv</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Push-Benachrichtigungen:</span>
+                            <span class="value">Verfügbar</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('member.technical') }}" class="btn btn-primary">⚙️ Technische Einstellungen</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sensible Daten Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔐 Sensible Daten</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-warning">
+                    <div class="card-header">
+                        <h3>🛡️ Verschlüsselte Daten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Zugriff:</span>
+                            <span class="value">Step-Up-Authentifizierung erforderlich</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <a href="{{ url_for('member.sensitive_data') }}" class="btn btn-warning">🔒 Sensible Daten verwalten</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

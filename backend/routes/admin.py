@@ -30,6 +30,13 @@ def admin_required(f):
     
     return decorated_function
 
+@bp.route('/')
+@login_required
+@admin_required
+def index():
+    """Admin dashboard overview"""
+    return render_template('admin/index.html')
+
 class MemberForm(FlaskForm):
     # Basic info
     vorname = StringField('Vorname', validators=[DataRequired()])
@@ -573,4 +580,172 @@ def show_temp_password():
     
     return render_template('admin/temp_password.html', 
                          member_name=temp_password_data['member_name'],
-                         password=temp_password_data['password']) 
+                         password=temp_password_data['password'])
+
+# Admin Merch Routes
+@bp.route('/merch')
+@login_required
+@admin_required
+def merch():
+    """Admin merch overview"""
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    
+    # Get statistics
+    total_articles = MerchArticle.query.count()
+    active_articles = MerchArticle.query.filter_by(is_active=True).count()
+    total_orders = MerchOrder.query.count()
+    pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).count()
+    in_progress_orders = MerchOrder.query.filter_by(status=OrderStatus.WIRD_GELIEFERT).count()
+    delivered_orders = MerchOrder.query.filter_by(status=OrderStatus.GELIEFERT).count()
+    
+    # Get recent orders
+    recent_orders = MerchOrder.query.order_by(MerchOrder.created_at.desc()).limit(5).all()
+    
+    return render_template('admin/merch/index.html', 
+                         total_articles=total_articles,
+                         active_articles=active_articles,
+                         total_orders=total_orders,
+                         pending_orders=pending_orders,
+                         in_progress_orders=in_progress_orders,
+                         delivered_orders=delivered_orders,
+                         recent_orders=recent_orders)
+
+@bp.route('/merch/orders')
+@login_required
+@admin_required
+def merch_orders():
+    """Admin merch orders management"""
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    
+    # Get filter parameters
+    status_filter = request.args.get('status')
+    search = request.args.get('search', '')
+    
+    # Build query
+    query = MerchOrder.query
+    
+    if status_filter:
+        query = query.filter_by(status=OrderStatus(status_filter))
+    
+    if search:
+        query = query.join(Member).filter(
+            (Member.vorname.contains(search)) |
+            (Member.nachname.contains(search)) |
+            (Member.email.contains(search)) |
+            (MerchOrder.order_number.contains(search))
+        )
+    
+    orders = query.order_by(MerchOrder.created_at.desc()).all()
+    
+    return render_template('admin/merch/orders.html', 
+                         orders=orders, 
+                         status_filter=status_filter,
+                         search=search)
+
+@bp.route('/merch/orders/<int:order_id>')
+@login_required
+@admin_required
+def merch_order_detail(order_id):
+    """Admin order detail"""
+    from backend.models.merch_order import MerchOrder
+    
+    order = MerchOrder.query.get_or_404(order_id)
+    
+    return render_template('admin/merch/order_detail.html', order=order)
+
+@bp.route('/merch/orders/<int:order_id>/status', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def update_order_status(order_id):
+    """Update order status"""
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    
+    print(f"DEBUG: Route reached - Order ID: {order_id}, Method: {request.method}")
+    
+    if request.method == 'POST':
+        try:
+            order = MerchOrder.query.get_or_404(order_id)
+            new_status = request.form.get('status')
+            
+            print(f"DEBUG: Order ID: {order_id}, New Status: {new_status}")
+            print(f"DEBUG: Request method: {request.method}")
+            print(f"DEBUG: Request form: {dict(request.form)}")
+            
+            if new_status in [status.value for status in OrderStatus]:
+                old_status = order.status.value
+                order.status = OrderStatus(new_status)
+                
+                if new_status == OrderStatus.GELIEFERT.value:
+                    order.delivered_at = datetime.utcnow()
+                
+                db.session.commit()
+                
+                flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
+            else:
+                flash('Ungültiger Status', 'error')
+                
+        except Exception as e:
+            print(f"DEBUG: Error in update_order_status: {str(e)}")
+            flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
+        
+        return redirect(url_for('admin.merch_order_detail', order_id=order_id))
+    
+    # GET request - just redirect back
+    return redirect(url_for('admin.merch_order_detail', order_id=order_id))
+
+@bp.route('/merch/orders/<int:order_id>/status-update', methods=['POST'])
+@login_required
+@admin_required
+def update_order_status_alt(order_id):
+    """Alternative update order status route"""
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    
+    try:
+        order = MerchOrder.query.get_or_404(order_id)
+        new_status = request.form.get('status')
+        
+        print(f"DEBUG ALT: Order ID: {order_id}, New Status: {new_status}")
+        
+        if new_status in [status.value for status in OrderStatus]:
+            old_status = order.status.value
+            order.status = OrderStatus(new_status)
+            
+            if new_status == OrderStatus.GELIEFERT.value:
+                order.delivered_at = datetime.utcnow()
+            
+            db.session.commit()
+            
+            flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
+        else:
+            flash('Ungültiger Status', 'error')
+            
+    except Exception as e:
+        print(f"DEBUG ALT: Error in update_order_status: {str(e)}")
+        flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.merch_order_detail', order_id=order_id))
+
+@bp.route('/merch/articles')
+@login_required
+@admin_required
+def merch_articles():
+    """Admin merch articles management"""
+    from backend.models.merch_article import MerchArticle
+    
+    articles = MerchArticle.query.order_by(MerchArticle.created_at.desc()).all()
+    
+    return render_template('admin/merch/articles.html', articles=articles)
+
+@bp.route('/merch/articles/<int:article_id>')
+@login_required
+@admin_required
+def merch_article_detail(article_id):
+    """Admin article detail"""
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
+    
+    article = MerchArticle.query.get_or_404(article_id)
+    variants = MerchVariant.query.filter_by(article_id=article_id).all()
+    
+    return render_template('admin/merch/article_detail.html', article=article, variants=variants) 

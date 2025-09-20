@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Technische Einstellungen - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>⚙️ Technische Einstellungen</h1>
+        <p class="page-subtitle">Service Worker, PWA und technische Diagnose</p>
+        <div class="page-actions">
+            <a href="{{ url_for('member.index') }}" class="btn btn-outline">← Zurück zur Übersicht</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <!-- Service Worker Status Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔧 Service Worker Status</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📊 Diagnose-Informationen</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="app-info">
+                            <p><strong>Status:</strong> <span id="sw-registration-status">Prüfe...</span></p>
+                            <p><strong>Scope:</strong> <span id="sw-scope">-</span></p>
+                            <p><strong>Version:</strong> <span id="sw-version">v1.3.4</span></p>
+                            <p><strong>Push-Benachrichtigungen:</strong> <span id="push-status">Prüfe...</span></p>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <button id="sw-diagnose-btn" class="btn btn-info">
+                                <span class="btn-icon">🔍</span>
+                                <span class="btn-text">Service Worker prüfen</span>
+                            </button>
+                            <button id="sw-test-btn" class="btn btn-primary">
+                                <span class="btn-icon">🧪</span>
+                                <span class="btn-text">Push-Test</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Push-Benachrichtigungen Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔔 Push-Benachrichtigungen</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>📱 Benachrichtigungen verwalten</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Status:</span>
+                            <span class="value" id="notification-status">Prüfe...</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Berechtigung:</span>
+                            <span class="value" id="permission-status">Prüfe...</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <button id="enable-push-btn" class="btn btn-primary">
+                                <span class="btn-icon">🔔</span>
+                                <span class="btn-text">Benachrichtigungen aktivieren</span>
+                            </button>
+                            <button id="test-notification-btn" class="btn btn-outline">
+                                <span class="btn-icon">🧪</span>
+                                <span class="btn-text">Test senden</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PWA-Status Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📱 PWA-Status</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-success">
+                    <div class="card-header">
+                        <h3>🚀 Progressive Web App</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Installiert:</span>
+                            <span class="value" id="pwa-installed">Prüfe...</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Offline-Modus:</span>
+                            <span class="value" id="offline-status">Prüfe...</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Cache-Status:</span>
+                            <span class="value" id="cache-status">Prüfe...</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <button id="install-pwa-btn" class="btn btn-primary">
+                                <span class="btn-icon">📱</span>
+                                <span class="btn-text">PWA installieren</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug-Tools Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🛠️ Debug-Tools</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-warning">
+                    <div class="card-header">
+                        <h3>🔧 Erweiterte Tools</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Erweiterte Tools für die Service Worker Diagnose und Entwicklung.</p>
+                        
+                        <div class="card-actions primary">
+                            <button id="sw-cleanup-btn" class="btn btn-warning">
+                                <span class="btn-icon">🧹</span>
+                                <span class="btn-text">Service Worker zurücksetzen</span>
+                            </button>
+                            <button id="sw-force-register-btn" class="btn btn-outline">
+                                <span class="btn-icon">🔄</span>
+                                <span class="btn-text">Neu registrieren</span>
+                            </button>
+                            <button id="clear-cache-btn" class="btn btn-outline">
+                                <span class="btn-icon">🗑️</span>
+                                <span class="btn-text">Cache leeren</span>
+                            </button>
+                        </div>
+                        
+                        <div id="sw-status" class="update-status" style="display: none;">
+                            <span class="status-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Browser-Informationen Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🌐 Browser-Informationen</h2>
+            </div>
+            <div class="card-body">
+                <div class="card card-secondary variant-info">
+                    <div class="card-header">
+                        <h3>📊 System-Info</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">User Agent:</span>
+                            <span class="value" id="user-agent">-</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Online-Status:</span>
+                            <span class="value" id="online-status">Prüfe...</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Service Worker Support:</span>
+                            <span class="value" id="sw-support">Prüfe...</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">Push API Support:</span>
+                            <span class="value" id="push-support">Prüfe...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Service Worker Status prüfen
+    function checkServiceWorkerStatus() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(function(registration) {
+                if (registration) {
+                    document.getElementById('sw-registration-status').textContent = 'Aktiv';
+                    document.getElementById('sw-scope').textContent = registration.scope;
+                } else {
+                    document.getElementById('sw-registration-status').textContent = 'Nicht registriert';
+                }
+            });
+        } else {
+            document.getElementById('sw-registration-status').textContent = 'Nicht unterstützt';
+        }
+    }
+    
+    // Push-Status prüfen
+    function checkPushStatus() {
+        if ('Notification' in window) {
+            document.getElementById('notification-status').textContent = 'Verfügbar';
+            document.getElementById('permission-status').textContent = Notification.permission;
+        } else {
+            document.getElementById('notification-status').textContent = 'Nicht unterstützt';
+        }
+    }
+    
+    // PWA-Status prüfen
+    function checkPWAStatus() {
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+            document.getElementById('pwa-installed').textContent = 'Ja';
+        } else {
+            document.getElementById('pwa-installed').textContent = 'Nein';
+        }
+        
+        document.getElementById('offline-status').textContent = navigator.onLine ? 'Online' : 'Offline';
+    }
+    
+    // Browser-Info sammeln
+    function collectBrowserInfo() {
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('online-status').textContent = navigator.onLine ? 'Online' : 'Offline';
+        document.getElementById('sw-support').textContent = 'serviceWorker' in navigator ? 'Ja' : 'Nein';
+        document.getElementById('push-support').textContent = 'PushManager' in window ? 'Ja' : 'Nein';
+    }
+    
+    // Event Listeners
+    document.getElementById('sw-diagnose-btn').addEventListener('click', checkServiceWorkerStatus);
+    document.getElementById('enable-push-btn').addEventListener('click', function() {
+        if ('Notification' in window) {
+            Notification.requestPermission().then(function(permission) {
+                document.getElementById('permission-status').textContent = permission;
+            });
+        }
+    });
+    
+    document.getElementById('sw-cleanup-btn').addEventListener('click', function() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                registrations.forEach(function(registration) {
+                    registration.unregister();
+                });
+                location.reload();
+            });
+        }
+    });
+    
+    // Initiale Prüfungen
+    checkServiceWorkerStatus();
+    checkPushStatus();
+    checkPWAStatus();
+    collectBrowserInfo();
+    
+    // Online-Status überwachen
+    window.addEventListener('online', function() {
+        document.getElementById('online-status').textContent = 'Online';
+    });
+    
+    window.addEventListener('offline', function() {
+        document.getElementById('online-status').textContent = 'Offline';
+    });
+});
+</script>
+{% endblock %}
