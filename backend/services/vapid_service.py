@@ -52,6 +52,7 @@ class VAPIDService:
             # 1. Prüfe zuerst Umgebungsvariablen (PRIMÄR für Production)
             public_key = os.environ.get('VAPID_PUBLIC_KEY')
             if public_key:
+                print(f"🔑 VAPID_PUBLIC_KEY empfangen: {public_key[:50]}... (Länge: {len(public_key)} Zeichen)")
                 return public_key.strip()
             
             # 2. Prüfe ob in Production (NICHT automatisch generieren!)
@@ -101,9 +102,21 @@ class VAPIDService:
             # 1. Prüfe zuerst Umgebungsvariablen (PRIMÄR für Production)
             private_key = os.environ.get('VAPID_PRIVATE_KEY')
             if private_key:
-                # Normalize escaped newlines (Railway/Heroku style)
-                if '\\n' in private_key and '-----BEGIN' in private_key:
+                # Debug: Zeige ersten Teil des Keys
+                print(f"🔐 VAPID_PRIVATE_KEY empfangen (erste 100 Zeichen): {private_key[:100]}")
+                print(f"🔍 Enthält \\n: {'\\n' in private_key}, Enthält echte Newlines: {chr(10) in private_key}")
+                
+                # Normalisierung: Versuche verschiedene Formate
+                # Fall 1: Literal \n (zwei Zeichen: Backslash + n)
+                if '\\n' in private_key:
                     private_key = private_key.replace('\\n', '\n')
+                    print("✅ Ersetzte \\\\n durch Newlines")
+                
+                # Validierung: Key sollte mehrere Zeilen haben
+                if '\n' not in private_key and '-----BEGIN' in private_key:
+                    raise Exception("VAPID_PRIVATE_KEY scheint keine Newlines zu haben! Setze als eine Zeile mit \\n")
+                
+                print(f"✅ VAPID_PRIVATE_KEY erfolgreich geladen (Länge: {len(private_key)} Zeichen)")
                 return private_key.strip()
             
             # 2. Prüfe ob in Production (NICHT automatisch generieren!)
