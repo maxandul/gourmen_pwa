@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.name }} - Details - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>📦 {{ article.name }}</h1>
+        <p class="page-subtitle">Artikel-Details und Varianten</p>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.edit_merch_article', article_id=article.id) }}" class="btn btn-primary">✏️ Artikel bearbeiten</a>
+            <a href="{{ url_for('admin.create_merch_variant', article_id=article.id) }}" class="btn btn-primary">➕ Neue Variante</a>
+            <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-outline">← Zurück zur Liste</a>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <!-- Artikel-Informationen -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Artikel-Informationen</h2>
+                <div class="status-badge-container">
+                    {% if article.is_active %}
+                        <span class="status-badge status-active">✅ Aktiv</span>
+                    {% else %}
+                        <span class="status-badge status-inactive">❌ Inaktiv</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="article-details">
+                    <div class="detail-item">
+                        <span class="label">Name:</span>
+                        <span class="value">{{ article.name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Beschreibung:</span>
+                        <span class="value">{{ article.description or 'Keine Beschreibung' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Basis-Lieferantenpreis:</span>
+                        <span class="value">{{ "%.2f"|format(article.base_supplier_price_chf) }} CHF</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Basis-Mitgliederpreis:</span>
+                        <span class="value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Basis-Gewinn:</span>
+                        <span class="value profit">{{ "%.2f"|format(article.base_profit_chf) }} CHF</span>
+                    </div>
+                    {% if article.image_url %}
+                    <div class="detail-item">
+                        <span class="label">Bild-URL:</span>
+                        <span class="value"><a href="{{ article.image_url }}" target="_blank">{{ article.image_url }}</a></span>
+                    </div>
+                    {% endif %}
+                    <div class="detail-item">
+                        <span class="label">Erstellt am:</span>
+                        <span class="value">{{ article.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Aktualisiert am:</span>
+                        <span class="value">{{ article.updated_at.strftime('%d.%m.%Y %H:%M') if article.updated_at else '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Varianten -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Varianten ({{ variants|length }})</h2>
+                <a href="{{ url_for('admin.create_merch_variant', article_id=article.id) }}" class="btn btn-primary">➕ Neue Variante</a>
+            </div>
+            <div class="card-body">
+                {% if variants %}
+                    <div class="variants-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Farbe</th>
+                                    <th>Größe</th>
+                                    <th>Lieferantenpreis</th>
+                                    <th>Mitgliederpreis</th>
+                                    <th>Gewinn</th>
+                                    <th>Erstellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant in variants %}
+                                <tr class="{{ 'inactive-row' if not variant.is_active else '' }}">
+                                    <td>
+                                        {% if variant.is_active %}
+                                            <span class="status-icon active">✅</span>
+                                        {% else %}
+                                            <span class="status-icon inactive">❌</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ variant.color }}</strong></td>
+                                    <td>{{ variant.size }}</td>
+                                    <td>{{ "%.2f"|format(variant.supplier_price_chf) }} CHF</td>
+                                    <td class="price-highlight">{{ "%.2f"|format(variant.member_price_chf) }} CHF</td>
+                                    <td class="profit-highlight">+{{ "%.2f"|format(variant.profit_chf) }} CHF</td>
+                                    <td>{{ variant.created_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_merch_variant', variant_id=variant.id) }}" class="btn btn-sm btn-outline">✏️ Bearbeiten</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>🚫 Noch keine Varianten vorhanden</p>
+                        <p class="empty-state-hint">Erstellen Sie Varianten mit verschiedenen Farben und Größen, um den Artikel bestellbar zu machen.</p>
+                        <a href="{{ url_for('admin.create_merch_variant', article_id=article.id) }}" class="btn btn-primary">➕ Erste Variante erstellen</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Schnellübersicht -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 Schnellübersicht</h2>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Aktive Varianten</div>
+                        <div class="stat-value">{{ variants|selectattr('is_active')|list|length }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Verfügbare Farben</div>
+                        <div class="stat-value">{{ variants|map(attribute='color')|unique|list|length }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Verfügbare Größen</div>
+                        <div class="stat-value">{{ variants|map(attribute='size')|unique|list|length }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ø Gewinn/Variante</div>
+                        <div class="stat-value profit">
+                            {% if variants %}
+                                {{ "%.2f"|format((variants|sum(attribute='profit_rappen') / variants|length) / 100) }} CHF
+                            {% else %}
+                                0.00 CHF
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-badge-container {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.status-active {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+
+.status-inactive {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.article-details {
+    display: grid;
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.detail-item .label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 200px;
+}
+
+.detail-item .value {
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.detail-item .value.profit {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.detail-item .value a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.detail-item .value a:hover {
+    text-decoration: underline;
+}
+
+.variants-table {
+    overflow-x: auto;
+}
+
+.variants-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.variants-table th {
+    text-align: left;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.variants-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.variants-table tr:hover {
+    background: var(--bg-secondary);
+}
+
+.variants-table tr.inactive-row {
+    opacity: 0.6;
+}
+
+.status-icon.active {
+    color: var(--success-color);
+}
+
+.status-icon.inactive {
+    color: var(--error-color);
+}
+
+.price-highlight {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.profit-highlight {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state p {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.empty-state-hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.stat-value.profit {
+    color: var(--success-color);
+}
+
+@media (max-width: 768px) {
+    .detail-item {
+        flex-direction: column;
+    }
+    
+    .detail-item .label {
+        min-width: unset;
+        margin-bottom: 0.25rem;
+    }
+    
+    .variants-table {
+        font-size: 0.875rem;
+    }
+    
+    .variants-table th,
+    .variants-table td {
+        padding: 8px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+{% endblock %}
+
