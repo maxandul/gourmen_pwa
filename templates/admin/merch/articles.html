@@ -8,6 +8,7 @@
         <h1>📦 Artikelverwaltung</h1>
         <p class="page-subtitle">Merch-Artikel und Varianten verwalten</p>
         <div class="page-actions">
+            <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn-primary">➕ Neuer Artikel</a>
             <a href="{{ url_for('admin.merch') }}" class="btn btn-outline">← Zurück zur Übersicht</a>
         </div>
     </div>
@@ -100,7 +101,7 @@
                         <div class="card-body">
                             <p>Es wurden noch keine Merch-Artikel erstellt.</p>
                             <div class="card-actions primary">
-                                <a href="#" class="btn btn-primary">➕ Neuen Artikel erstellen</a>
+                                <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn-primary">➕ Neuen Artikel erstellen</a>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }} - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>{{ '✏️ Artikel bearbeiten' if article else '➕ Neuer Artikel' }}</h1>
+        <p class="page-subtitle">Merch-Artikel {{ 'bearbeiten' if article else 'erstellen' }}</p>
+    </div>
+    
+    <div class="page-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>Artikel-Informationen</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="form">
+                    <div class="form-group">
+                        <label for="name">Artikel-Name *</label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               class="form-control" 
+                               value="{{ article.name if article else '' }}" 
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Beschreibung</label>
+                        <textarea id="description" 
+                                  name="description" 
+                                  class="form-control" 
+                                  rows="4">{{ article.description if article else '' }}</textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="base_supplier_price_chf">Lieferanten-Preis (CHF) *</label>
+                            <input type="number" 
+                                   id="base_supplier_price_chf" 
+                                   name="base_supplier_price_chf" 
+                                   class="form-control" 
+                                   step="0.01" 
+                                   min="0" 
+                                   value="{{ '%.2f'|format(article.base_supplier_price_chf) if article else '' }}" 
+                                   required>
+                            <small class="form-text">Basis-Einkaufspreis vom Lieferanten</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="base_member_price_chf">Mitglieder-Preis (CHF) *</label>
+                            <input type="number" 
+                                   id="base_member_price_chf" 
+                                   name="base_member_price_chf" 
+                                   class="form-control" 
+                                   step="0.01" 
+                                   min="0" 
+                                   value="{{ '%.2f'|format(article.base_member_price_chf) if article else '' }}" 
+                                   required>
+                            <small class="form-text">Basis-Verkaufspreis für Mitglieder</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image_url">Bild-URL</label>
+                        <input type="url" 
+                               id="image_url" 
+                               name="image_url" 
+                               class="form-control" 
+                               value="{{ article.image_url if article else '' }}" 
+                               placeholder="https://example.com/image.jpg">
+                        <small class="form-text">Optionale URL zu einem Produktbild</small>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" 
+                                   id="is_active" 
+                                   name="is_active" 
+                                   {{ 'checked' if not article or article.is_active else '' }}>
+                            <span>Artikel ist aktiv</span>
+                        </label>
+                        <small class="form-text">Nur aktive Artikel sind für Mitglieder sichtbar</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            💾 {{ 'Aktualisieren' if article else 'Erstellen' }}
+                        </button>
+                        <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-outline">
+                            ❌ Abbrechen
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if article %}
+        <div class="card">
+            <div class="card-header">
+                <h2>Varianten</h2>
+            </div>
+            <div class="card-body">
+                <p>Nach dem Erstellen des Artikels können Sie hier Varianten (Farben/Größen) hinzufügen.</p>
+                <a href="{{ url_for('admin.merch_article_detail', article_id=article.id) }}" class="btn btn-primary">
+                    📦 Varianten verwalten
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.form {
+    max-width: 800px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.checkbox-group {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+

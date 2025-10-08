@@ -37,7 +37,10 @@ def index():
     """Admin dashboard overview"""
     from backend.models.event import Event
     from backend.models.audit_event import AuditEvent
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_order import MerchOrder, OrderStatus
     from datetime import datetime
+    from sqlalchemy import func
     
     # Member statistics
     members_count = Member.query.filter_by(is_active=True).count()
@@ -59,12 +62,29 @@ def index():
     # Audit events count
     audit_events_count = AuditEvent.query.count()
     
+    # Merch statistics
+    active_articles = MerchArticle.query.filter_by(is_active=True).all()
+    active_articles_names = ', '.join([article.name for article in active_articles[:3]]) if active_articles else 'Keine Artikel'
+    if len(active_articles) > 3:
+        active_articles_names += f' (+{len(active_articles) - 3} weitere)'
+    
+    pending_orders_count = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).count()
+    
+    # Total revenue (Gesamtumsatz)
+    total_revenue = db.session.query(
+        func.sum(MerchOrder.total_profit_rappen)
+    ).filter(MerchOrder.status == OrderStatus.GELIEFERT).scalar() or 0
+    total_revenue_chf = total_revenue / 100
+    
     return render_template('admin/index.html',
                          members_count=members_count,
                          admins_count=admins_count,
                          upcoming_events_count=upcoming_events_count,
                          current_season_events=current_season_events,
-                         audit_events_count=audit_events_count)
+                         audit_events_count=audit_events_count,
+                         active_articles_names=active_articles_names,
+                         pending_orders_count=pending_orders_count,
+                         total_revenue_chf=total_revenue_chf)
 
 class MemberForm(FlaskForm):
     # Basic info
@@ -777,4 +797,127 @@ def merch_article_detail(article_id):
     article = MerchArticle.query.get_or_404(article_id)
     variants = MerchVariant.query.filter_by(article_id=article_id).all()
     
-    return render_template('admin/merch/article_detail.html', article=article, variants=variants) 
+    return render_template('admin/merch/article_detail.html', article=article, variants=variants)
+
+@bp.route('/merch/articles/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_merch_article():
+    """Create new merch article"""
+    from backend.models.merch_article import MerchArticle
+    
+    if request.method == 'POST':
+        try:
+            article = MerchArticle(
+                name=request.form.get('name'),
+                description=request.form.get('description'),
+                base_supplier_price_rappen=int(float(request.form.get('base_supplier_price_chf')) * 100),
+                base_member_price_rappen=int(float(request.form.get('base_member_price_chf')) * 100),
+                image_url=request.form.get('image_url') or None,
+                is_active=request.form.get('is_active') == 'on'
+            )
+            
+            db.session.add(article)
+            db.session.commit()
+            
+            flash(f'Artikel "{article.name}" erfolgreich erstellt!', 'success')
+            return redirect(url_for('admin.merch_article_detail', article_id=article.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Erstellen des Artikels: {str(e)}', 'error')
+    
+    return render_template('admin/merch/article_form.html', article=None)
+
+@bp.route('/merch/articles/<int:article_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_merch_article(article_id):
+    """Edit merch article"""
+    from backend.models.merch_article import MerchArticle
+    
+    article = MerchArticle.query.get_or_404(article_id)
+    
+    if request.method == 'POST':
+        try:
+            article.name = request.form.get('name')
+            article.description = request.form.get('description')
+            article.base_supplier_price_rappen = int(float(request.form.get('base_supplier_price_chf')) * 100)
+            article.base_member_price_rappen = int(float(request.form.get('base_member_price_chf')) * 100)
+            article.image_url = request.form.get('image_url') or None
+            article.is_active = request.form.get('is_active') == 'on'
+            article.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            
+            flash(f'Artikel "{article.name}" erfolgreich aktualisiert!', 'success')
+            return redirect(url_for('admin.merch_article_detail', article_id=article.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Aktualisieren des Artikels: {str(e)}', 'error')
+    
+    return render_template('admin/merch/article_form.html', article=article)
+
+@bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_merch_variant(article_id):
+    """Create new variant for an article"""
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
+    
+    article = MerchArticle.query.get_or_404(article_id)
+    
+    if request.method == 'POST':
+        try:
+            variant = MerchVariant(
+                article_id=article_id,
+                color=request.form.get('color'),
+                size=request.form.get('size'),
+                supplier_price_rappen=int(float(request.form.get('supplier_price_chf')) * 100),
+                member_price_rappen=int(float(request.form.get('member_price_chf')) * 100),
+                is_active=request.form.get('is_active') == 'on'
+            )
+            
+            db.session.add(variant)
+            db.session.commit()
+            
+            flash(f'Variante "{variant.color} / {variant.size}" erfolgreich erstellt!', 'success')
+            return redirect(url_for('admin.merch_article_detail', article_id=article_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Erstellen der Variante: {str(e)}', 'error')
+    
+    return render_template('admin/merch/variant_form.html', article=article, variant=None)
+
+@bp.route('/merch/variants/<int:variant_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_merch_variant(variant_id):
+    """Edit merch variant"""
+    from backend.models.merch_variant import MerchVariant
+    
+    variant = MerchVariant.query.get_or_404(variant_id)
+    article = variant.article
+    
+    if request.method == 'POST':
+        try:
+            variant.color = request.form.get('color')
+            variant.size = request.form.get('size')
+            variant.supplier_price_rappen = int(float(request.form.get('supplier_price_chf')) * 100)
+            variant.member_price_rappen = int(float(request.form.get('member_price_chf')) * 100)
+            variant.is_active = request.form.get('is_active') == 'on'
+            variant.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            
+            flash(f'Variante "{variant.color} / {variant.size}" erfolgreich aktualisiert!', 'success')
+            return redirect(url_for('admin.merch_article_detail', article_id=variant.article_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Aktualisieren der Variante: {str(e)}', 'error')
+    
+    return render_template('admin/merch/variant_form.html', article=article, variant=variant) 
