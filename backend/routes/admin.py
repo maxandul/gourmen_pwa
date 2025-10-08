@@ -35,7 +35,36 @@ def admin_required(f):
 @admin_required
 def index():
     """Admin dashboard overview"""
-    return render_template('admin/index.html')
+    from backend.models.event import Event
+    from backend.models.audit_event import AuditEvent
+    from datetime import datetime
+    
+    # Member statistics
+    members_count = Member.query.filter_by(is_active=True).count()
+    admins_count = Member.query.filter_by(role=Role.ADMIN, is_active=True).count()
+    
+    # Event statistics
+    upcoming_events_count = Event.query.filter(Event.datum >= datetime.now()).count()
+    
+    # Current season (aktuelle Saison berechnen)
+    current_year = datetime.now().year
+    current_month = datetime.now().month
+    # Saison läuft von September bis August
+    if current_month >= 9:
+        current_season = current_year
+    else:
+        current_season = current_year - 1
+    current_season_events = Event.query.filter_by(season=current_season).count()
+    
+    # Audit events count
+    audit_events_count = AuditEvent.query.count()
+    
+    return render_template('admin/index.html',
+                         members_count=members_count,
+                         admins_count=admins_count,
+                         upcoming_events_count=upcoming_events_count,
+                         current_season_events=current_season_events,
+                         audit_events_count=audit_events_count)
 
 class MemberForm(FlaskForm):
     # Basic info
