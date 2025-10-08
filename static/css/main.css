@@ -1,0 +1,36 @@
+/* ================================================================
+   GOURMEN PWA - MAIN STYLESHEET
+   ================================================================
+   Mobile First with Desktop Enhancements
+   Version: 2.0 - Modular Architecture
+   Last Updated: 2025
+   ================================================================ */
+
+/* ================================================================
+   IMPORT ORDER
+   ================================================================
+   1. Core (Variables, Reset, Base, Typography)
+   2. Layout (Navigation, Cards, Container, Grid)
+   3. Components (Buttons, Forms, Tables, Badges)
+   4. Features (Template-specific: Events, BillBro, GGL, etc.)
+   5. Notifications (Flash, Toast, Top Banners)
+   6. Utilities (Spacing, Display, Text Helpers)
+   7. Animations (Keyframes, Transitions)
+   8. Responsive (Media Queries for all breakpoints)
+   9. Mobile Touch (Touch-specific optimizations)
+   ================================================================ */
+
+@import url('core.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('features.css');
+@import url('notifications.css');
+@import url('utilities.css');
+@import url('animations.css');
+@import url('responsive.css');
+@import url('mobile-touch.css');
+
+/* ================================================================
+   END OF MAIN.CSS
+   ================================================================ */
+

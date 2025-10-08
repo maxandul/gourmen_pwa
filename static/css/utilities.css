@@ -1,0 +1,83 @@
+/* ================================================================
+   GOURMEN PWA - UTILITIES
+   ================================================================
+   Helper Classes: Spacing, Display, Text, Alignment
+   Universal & Resolution Agnostic
+   ================================================================ */
+
+/* ================================================================
+   TEXT UTILITIES
+   ================================================================ */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+/* ================================================================
+   SPACING UTILITIES
+   ================================================================  
+   TODO DESKTOP (Optional):
+   - Größere Spacing-Stufen ergänzen (mb-4, mb-5, etc.)
+   - Desktop-spezifische Spacing-Klassen
+   ================================================================ */
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+
+.p-0 { padding: 0; }
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+
+/* ================================================================
+   DISPLAY UTILITIES
+   ================================================================
+   TODO (Optional):
+   - .hide-on-mobile, .hide-on-desktop
+   - .show-on-mobile, .show-on-desktop
+   ================================================================ */
+
+.d-none { display: none; }
+.d-block { display: block; }
+.d-flex { display: flex; }
+
+/* ================================================================
+   FLEXBOX UTILITIES
+   ================================================================ */
+
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.align-center { align-items: center; }
+
+/* ================================================================
+   SIZE UTILITIES
+   ================================================================ */
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+
+
+/* ================================================================
+   TEXT COLORS & HELPERS
+   ================================================================ */
+
+.text-danger { color: var(--error-color); }
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-info { color: var(--info-color); }
+.text-muted { color: var(--text-muted); }
+.small { font-size: 0.875rem; }
+.text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* ================================================================
+   END OF UTILITIES.CSS
+   ================================================================ */
+
