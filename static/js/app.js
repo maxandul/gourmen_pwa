@@ -200,32 +200,9 @@ async function initializePushNotifications() {
     }
     
     try {
-        // Prüfe zuerst die globale Service Worker-Referenz von PWA
-        let registration = window.gourmenServiceWorker;
-        
-        if (!registration) {
-            console.log('No service worker registration found - waiting for PWA initialization...');
-            // Warte bis zu 5 Sekunden auf Service Worker
-            for (let i = 0; i < 50; i++) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                registration = window.gourmenServiceWorker || await navigator.serviceWorker.getRegistration('/');
-                if (registration) break;
-            }
-            if (!registration) {
-                console.log('Service worker still not available after waiting');
-                return;
-            }
-        }
-        
-        console.log('Using existing Service Worker for push notifications:', registration);
-        
-        // Stelle sicher, dass der Service Worker aktiv ist, bevor wir subscriben
-        try {
-            await navigator.serviceWorker.ready;
-        } catch (_) {
-            console.log('Service worker ready() failed or timed out');
-            return;
-        }
+        // Warte auf Service Worker (nutzt das native ready-Promise)
+        const registration = await navigator.serviceWorker.ready;
+        console.log('✅ Service Worker bereit für Push-Benachrichtigungen:', registration);
         
         // Hole VAPID public key
         const vapidPublicKey = await getVAPIDPublicKey();

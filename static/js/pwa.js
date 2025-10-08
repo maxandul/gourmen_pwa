@@ -85,97 +85,45 @@ class PWA {
     }
 
     setupServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            console.log('🔄 Starte Service Worker Registrierung...');
-            
-            // Prüfe zuerst, ob bereits eine Registration existiert
-            navigator.serviceWorker.getRegistrations().then(existingRegistrations => {
-                if (existingRegistrations.length > 0) {
-                    // Bevorzugt Root-Scope
-                    const originRoot = window.location.origin + '/';
-                    let rootReg = existingRegistrations.find(reg => reg.scope === originRoot);
-                    if (rootReg) {
-                        console.log('✅ Service Worker bereits registriert (Root-Scope):', rootReg);
-                        this.serviceWorkerRegistration = rootReg;
-                        this.setupServiceWorkerEvents(rootReg);
-                        return;
-                    }
-                    // Migration: vorhandene Registrierungen haben keinen Root-Scope → re-registrieren auf /sw.js
-                    console.log('⚠️ Gefundene Service Worker haben keinen Root-Scope. Migriere auf /sw.js ...');
-                    Promise.all(existingRegistrations.map(r => r.unregister()))
-                        .then(() => new Promise(res => setTimeout(res, 500)))
-                        .then(() => navigator.serviceWorker.register('/sw.js', { scope: '/' }))
-                        .then(registration => {
-                            console.log('✅ Service Worker erfolgreich auf Root-Scope migriert:', registration);
-                            this.serviceWorkerRegistration = registration;
-                            this.setupServiceWorkerEvents(registration);
-                            setTimeout(() => {
-                                console.log('🔄 Initialer Update-Check...');
-                                this.checkForUpdates();
-                            }, 1000);
-                        })
-                        .catch(error => {
-                            console.error('❌ Migration auf Root-Scope fehlgeschlagen:', error);
-                            this.showToast('Service Worker Migration fehlgeschlagen: ' + error.message, 'error');
-                        });
-                    return;
-                }
-                
-                // Keine Registration gefunden, registriere neuen Service Worker
-                console.log('🔄 Registriere neuen Service Worker...');
-                // Registriere SW vom Root-Pfad für vollen Scope
-                navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                .then(registration => {
-                        console.log('✅ Service Worker erfolgreich registriert:', registration);
-                        this.serviceWorkerRegistration = registration;
-                        this.setupServiceWorkerEvents(registration);
-                        
-                        // Zeige Erfolgs-Toast
-                        this.showToast('✅ Service Worker erfolgreich registriert', 'success');
-                        
-                        // Warte auf vollständige Installation bevor Update-Check
-                        const installingWorker = registration.installing;
-                        if (installingWorker) {
-                            console.log('🔄 Warte auf Service Worker Installation...');
-                            installingWorker.addEventListener('statechange', () => {
-                                if (installingWorker && installingWorker.state === 'installed') {
-                                    console.log('✅ Service Worker Installation abgeschlossen');
-                                    // Kurze Verzögerung vor Update-Check
-                                    setTimeout(() => {
-                                        console.log('🔄 Initialer Update-Check...');
-                                        this.checkForUpdates();
-                                    }, 500);
-                                }
-                            });
-                        } else {
-                            // Service Worker bereits installiert
-                            setTimeout(() => {
-                                console.log('🔄 Initialer Update-Check...');
-                                this.checkForUpdates();
-                            }, 1000);
-                        }
-                        
-                    })
-                    .catch(error => {
-                        console.error('❌ Service Worker Registrierung fehlgeschlagen:', error);
-                        this.showToast('Service Worker konnte nicht registriert werden: ' + error.message, 'error');
-                        
-                        // Debug-Info für localhost
-                        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                            console.log('🔧 Debug-Info für Service Worker Fehler:');
-                            console.log('- URL:', window.location.href);
-                            console.log('- Protocol:', window.location.protocol);
-                            console.log('- Service Worker File:', '/sw.js');
-                            console.log('- Error Details:', error);
-                        }
-                    });
-            }).catch(error => {
-                console.error('❌ Fehler beim Prüfen bestehender Registrierungen:', error);
-            });
-        } else {
+        if (!('serviceWorker' in navigator)) {
             console.log('❌ Service Worker nicht unterstützt');
             this.showToast('Service Worker nicht unterstützt - PWA-Installation nicht möglich', 'warning');
+            return;
         }
+        
+        console.log('🔄 Starte Service Worker Registrierung...');
+        
+        // Registriere Service Worker (oder hole bestehende Registration)
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(registration => {
+                console.log('✅ Service Worker registriert:', registration);
+                this.serviceWorkerRegistration = registration;
+                this.setupServiceWorkerEvents(registration);
+                
+                // Globale Referenz für andere Skripte (z.B. app.js)
+                window.gourmenServiceWorker = registration;
+                
+                // Initialer Update-Check nach erfolgreicher Registrierung
+                if (registration.active) {
+                    setTimeout(() => {
+                        console.log('🔄 Initialer Update-Check...');
+                        this.checkForUpdates();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Service Worker Registrierung fehlgeschlagen:', error);
+                this.showToast('Service Worker konnte nicht registriert werden: ' + error.message, 'error');
+                
+                // Debug-Info für localhost
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('🔧 Debug-Info:');
+                    console.log('- URL:', window.location.href);
+                    console.log('- Protocol:', window.location.protocol);
+                    console.log('- Service Worker File:', '/sw.js');
+                    console.log('- Error:', error);
+                }
+            });
     }
 
     setupServiceWorkerEvents(registration) {
@@ -303,7 +251,40 @@ class PWA {
             console.log('🚀 App bereits installiert');
         } else {
             console.log('🚀 App nicht installiert, Install-Prompt möglich');
+            
+            // iOS-User informieren (da kein beforeinstallprompt auf iOS)
+            if (this.isIOS() && !this.isInstalled) {
+                this.showIOSInstallPrompt();
+            }
         }
+    }
+
+    isIOS() {
+        // Prüfe ob iOS/Safari
+        return /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+
+    showIOSInstallPrompt() {
+        // Zeige dezenten Hinweis für iOS-User
+        // Nur einmal anzeigen (localStorage)
+        if (localStorage.getItem('ios-install-prompt-shown')) {
+            return;
+        }
+
+        // Warte 3 Sekunden nach Seitenload
+        setTimeout(() => {
+            const message = '💡 Tipp: Installiere die Gourmen-App auf deinem iPhone!\n\n' +
+                          '1. Tippe auf das Teilen-Symbol ↗️\n' +
+                          '2. Wähle "Zum Home-Bildschirm"\n' +
+                          '3. Tippe auf "Hinzufügen"';
+            
+            this.showToast(message, 'info', 12000);
+            
+            // Markiere als angezeigt
+            localStorage.setItem('ios-install-prompt-shown', 'true');
+            
+            console.log('📱 iOS-Installationshinweis angezeigt');
+        }, 3000);
     }
 
     showInstallButton() {
@@ -783,34 +764,15 @@ class PWA {
             throw new Error('Service Worker nicht unterstützt');
         }
 
-        // Prüfe zuerst, ob bereits eine Registration existiert (Root-Scope)
+        // Verwende das native ready-Promise
         try {
-            const existingRegistration = await navigator.serviceWorker.getRegistration('/');
-            if (existingRegistration) {
-                console.log('✅ Service Worker bereits registriert:', existingRegistration);
-                return existingRegistration;
-            }
+            const registration = await navigator.serviceWorker.ready;
+            console.log('✅ Service Worker bereit:', registration);
+            return registration;
         } catch (error) {
-            console.log('⚠️ Fehler beim Prüfen bestehender Registration:', error);
+            console.error('❌ Service Worker ready fehlgeschlagen:', error);
+            throw new Error('Service Worker nicht verfügbar: ' + error.message);
         }
-
-        // Warte bis zu 10 Sekunden auf Service Worker (erhöht von 5 Sekunden)
-        for (let i = 0; i < 100; i++) {
-            try {
-                const registration = await navigator.serviceWorker.getRegistration('/');
-                if (registration) {
-                    console.log('✅ Service Worker gefunden:', registration);
-                    return registration;
-                }
-            } catch (error) {
-                console.log('Service Worker noch nicht verfügbar, warte...', i);
-            }
-            
-            // Warte 100ms vor dem nächsten Versuch
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        throw new Error('Service Worker Registrierung Timeout - keine Registration nach 10 Sekunden gefunden');
     }
 
     async performManualUpdate(btn, statusDiv, statusText) {
@@ -898,7 +860,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.0';
+            versionSpan.textContent = '1.3.6';
         }
 
         // Installationsstatus prüfen
@@ -995,26 +957,57 @@ class PWA {
     }
 
     showToast(message, type = 'info', duration = 5000) {
-        // Entferne existierende Toasts des gleichen Typs
-        const existingToasts = document.querySelectorAll(`.toast.${type}`);
-        existingToasts.forEach(toast => toast.remove());
+        // Erstelle oder hole Toast Container
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
 
+        // Erstelle Toast Element
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <span>${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-        `;
+        
+        // Toast Content
+        const content = document.createElement('div');
+        content.className = 'toast-content';
+        content.textContent = message;
+        
+        // Close Button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'toast-close';
+        closeBtn.innerHTML = '×';
+        closeBtn.onclick = () => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        };
+        
+        // Zusammenbauen
+        toast.appendChild(content);
+        toast.appendChild(closeBtn);
+        container.appendChild(toast);
 
-        document.body.appendChild(toast);
+        // Auto-remove nach Dauer
+        if (duration > 0) {
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, duration);
+        }
 
-        // Auto-remove nach definierter Zeit
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }
-        }, duration);
+        return toast;
     }
 
     async sendNotification(title, body, options = {}) {
@@ -1621,316 +1614,8 @@ class PWA {
     }
 }
 
-// PWA CSS - Network Indicator entfernt, nur noch Toast-System
-const pwaStyles = `
-
-.toast-close {
-    background: none;
-    border: none;
-    color: inherit;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: 12px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.toast-close:hover {
-    opacity: 1;
-}
-
-/* Toast Notifications - Einheitliches System */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 16px 20px;
-    border-radius: 12px;
-    color: white;
-    font-weight: 500;
-    z-index: 1005;
-    max-width: 350px;
-    min-width: 280px;
-    word-wrap: break-word;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    animation: slideIn 0.4s ease;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.toast.info {
-    background: linear-gradient(135deg, rgba(23, 162, 184, 0.95), rgba(23, 162, 184, 0.85));
-    border-left: 4px solid #17a2b8;
-}
-
-.toast.success {
-    background: linear-gradient(135deg, rgba(113, 198, 166, 0.95), rgba(113, 198, 166, 0.85));
-    border-left: 4px solid #71c6a6;
-}
-
-.toast.warning {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 193, 7, 0.85));
-    color: #1b232e;
-    border-left: 4px solid #ffc107;
-}
-
-.toast.error {
-    background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(220, 53, 69, 0.85));
-    border-left: 4px solid #dc3545;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Verbesserte PWA Buttons */
-.pwa-install-btn,
-.notification-permission-btn,
-.pwa-update-btn {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #71c6a6, #5ba68a);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(113, 198, 166, 0.3);
-    z-index: 1003;
-    /* animation: bounce 2s infinite; */ /* Animation entfernt */
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-/* Dezenterer Install-Button */
-.pwa-install-btn-subtle {
-    position: fixed;
-    top: 80px;
-    right: 16px;
-    background: rgba(113, 198, 166, 0.9);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(113, 198, 166, 0.3);
-    z-index: 1003;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.pwa-install-btn-subtle:hover {
-    background: rgba(113, 198, 166, 1);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(113, 198, 166, 0.4);
-}
-
-.pwa-install-btn:hover,
-.notification-permission-btn:hover,
-.pwa-update-btn:hover {
-    background: linear-gradient(135deg, #8dd4b8, #71c6a6);
-    transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(113, 198, 166, 0.4);
-}
-
-.notification-permission-btn {
-    bottom: 160px;
-    background: linear-gradient(135deg, #17a2b8, #71c6a6);
-}
-
-.notification-permission-btn:hover {
-    background: linear-gradient(135deg, #1ea085, #8dd4b8);
-}
-
-.pwa-update-btn {
-    bottom: 220px;
-    background: linear-gradient(135deg, #ffc107, #71c6a6);
-    color: #1b232e;
-}
-
-.pwa-update-btn:hover {
-    background: linear-gradient(135deg, #e0a800, #8dd4b8);
-}
-
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateX(-50%) translateY(0);
-    }
-    40% {
-        transform: translateX(-50%) translateY(-10px);
-    }
-    60% {
-        transform: translateX(-50%) translateY(-5px);
-    }
-}
-
-/* PWA Update Button Styles für Account-Seite */
-.pwa-section {
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.pwa-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.pwa-section h4 {
-    margin: 0 0 8px 0;
-    color: #1b232e;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.pwa-section p {
-    margin: 0 0 16px 0;
-    color: #666;
-    line-height: 1.5;
-}
-
-.btn-icon {
-    margin-right: 8px;
-}
-
-.btn-text {
-    font-weight: 500;
-}
-
-/* Update Status Anzeige */
-.update-status {
-    margin-top: 12px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-}
-
-.update-status.info {
-    background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
-    color: #17a2b8;
-    border: 1px solid rgba(23, 162, 184, 0.2);
-}
-
-.update-status.success {
-    background: linear-gradient(135deg, rgba(113, 198, 166, 0.1), rgba(113, 198, 166, 0.05));
-    color: #71c6a6;
-    border: 1px solid rgba(113, 198, 166, 0.2);
-}
-
-.update-status.error {
-    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.2);
-}
-
-.update-status::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.5;
-        transform: scale(1.2);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* App Info Styles */
-.app-info {
-    background: #f8f9fa;
-    padding: 16px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.app-info p {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.app-info p:last-child {
-    margin-bottom: 0;
-}
-
-.app-info strong {
-    color: #1b232e;
-    font-weight: 600;
-}
-
-/* Status Badges */
-.status-installed {
-    color: #71c6a6;
-    font-weight: 600;
-}
-
-.status-browser {
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.status-available {
-    color: #71c6a6;
-    font-weight: 600;
-}
-
-.status-unavailable {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-/* Button Loading State */
-#manual-update-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-#manual-update-btn:disabled:hover {
-    background: linear-gradient(135deg, #71c6a6, #5ba68a);
-    transform: none;
-    box-shadow: 0 4px 15px rgba(113, 198, 166, 0.3);
-}
-`;
-
-// CSS hinzufügen
-const styleSheet = document.createElement('style');
-styleSheet.textContent = pwaStyles;
-document.head.appendChild(styleSheet);
-
 // PWA initialisieren
+// CSS wurde nach static/css/pwa.css ausgelagert
 let pwa;
 document.addEventListener('DOMContentLoaded', () => {
     pwa = new PWA();
