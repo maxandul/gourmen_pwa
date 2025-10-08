@@ -172,4 +172,8 @@ instance/
 .env.production
 
 # Railway
-.railway/ 
+.railway/
+
+# VAPID Keys (private keys should never be in version control)
+vapid_private.pem
+vapid_public.txt 
