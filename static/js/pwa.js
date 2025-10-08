@@ -20,6 +20,7 @@ class PWA {
         this.setupServiceWorker();
         this.setupNetworkStatus();
         this.setupNotifications();
+        this.updateAppInfo();
         this.setupUpdateDetection();
         // Optionaler Button für manuelle Updates (derzeit nicht genutzt)
         if (typeof this.setupManualUpdateButton === 'function') {
@@ -861,7 +862,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.9';
+            versionSpan.textContent = '1.3.10';
         }
 
         // Installationsstatus prüfen

@@ -18,24 +18,36 @@ def main():
     # Generiere Keys
     keys = VAPIDService.generate_vapid_keys()
     
-    print("\n" + "="*60)
-    print("RAILWAY ENVIRONMENT VARIABLES:")
-    print("="*60)
-    print(f"VAPID_PUBLIC_KEY={keys['public_key']}")
-    print("\n" + "="*60)
-    print("VAPID_PRIVATE_KEY:")
-    print("="*60)
-    print(keys['private_key'])
-    print("="*60)
+    # Private Key mit \n statt echten Newlines für Railway
+    private_key_escaped = keys['private_key'].replace('\n', '\\n')
     
-    print("\n📋 Anweisungen:")
-    print("1. Kopiere die VAPID_PUBLIC_KEY in Railway Environment Variables")
-    print("2. Kopiere den kompletten VAPID_PRIVATE_KEY (inkl. -----BEGIN/END-----)")
-    print("3. Füge beide als Environment Variables in Railway hinzu")
-    print("4. Restart deine Railway App")
+    print("\n" + "="*80)
+    print("📋 RAILWAY ENVIRONMENT VARIABLES - KOPIERE DIESE EXAKT:")
+    print("="*80)
     
-    print(f"\n🔍 Public Key (für Client): {keys['public_key'][:50]}...")
-    print(f"🔐 Private Key (für Server): {keys['private_key'][:50]}...")
+    print("\n🔑 VAPID_PUBLIC_KEY:")
+    print("-" * 80)
+    print(keys['public_key'])
+    print("-" * 80)
+    
+    print("\n🔐 VAPID_PRIVATE_KEY (WICHTIG: Als EINE Zeile mit \\n):")
+    print("-" * 80)
+    print(private_key_escaped)
+    print("-" * 80)
+    
+    print("\n" + "="*80)
+    print("📝 ANWEISUNGEN:")
+    print("="*80)
+    print("1. Gehe zu Railway → deinem Projekt → Variables")
+    print("2. Lösche die existierenden VAPID_PUBLIC_KEY und VAPID_PRIVATE_KEY")
+    print("3. Erstelle neue Variables:")
+    print("   - Name: VAPID_PUBLIC_KEY")
+    print("     Wert: [Kopiere den Public Key von oben - EINE Zeile, KEIN \\n]")
+    print("   - Name: VAPID_PRIVATE_KEY")
+    print("     Wert: [Kopiere den Private Key von oben - EINE Zeile, MIT \\n]")
+    print("4. Railway wird automatisch neu deployen")
+    print("5. Teste nach ~2 Min mit 'Test-Push senden' in der App")
+    print("="*80)
 
 if __name__ == "__main__":
     main()

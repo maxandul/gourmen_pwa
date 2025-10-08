@@ -17,27 +17,27 @@
         <div class="card">
             <div class="card-header">
                 <h2>🔧 Service Worker & App-Status</h2>
-            </div>
-            <div class="card-body">
-                <div class="app-info">
+                    </div>
+                    <div class="card-body">
+                        <div class="app-info">
                     <p><strong>App-Version:</strong> <span id="app-version">Prüfe...</span></p>
                     <p><strong>Service Worker:</strong> <span id="sw-registration-status">Prüfe...</span></p>
-                    <p><strong>Scope:</strong> <span id="sw-scope">-</span></p>
+                            <p><strong>Scope:</strong> <span id="sw-scope">-</span></p>
                     <p><strong>Installiert:</strong> <span id="pwa-installed">Prüfe...</span></p>
                     <p><strong>Offline-Modus:</strong> <span id="offline-status">Prüfe...</span></p>
                     <p><strong>Cache-Status:</strong> <span id="cache-status">Prüfe...</span></p>
-                </div>
-                
-                <div class="card-actions primary">
-                    <button id="sw-diagnose-btn" class="btn btn-info">
-                        <span class="btn-icon">🔍</span>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <button id="sw-diagnose-btn" class="btn btn-info">
+                                <span class="btn-icon">🔍</span>
                         <span class="btn-text">Diagnose anzeigen</span>
-                    </button>
+                            </button>
                     <button id="sw-cleanup-btn" class="btn btn-outline">
                         <span class="btn-icon">🧹</span>
                         <span class="btn-text">App zurücksetzen</span>
-                    </button>
-                </div>
+                            </button>
+                        </div>
                 
                 <div id="sw-status" class="update-status" style="display: none;">
                     <span class="status-text"></span>
@@ -59,23 +59,23 @@
                     <p><strong>Status:</strong> <span id="notification-status">Prüfe...</span></p>
                     <p><strong>Berechtigung:</strong> <span id="permission-status">Prüfe...</span></p>
                     <p><strong>Push-Support:</strong> <span id="push-status">Prüfe...</span></p>
-                </div>
-                
-                <div class="card-actions primary">
-                    <button id="enable-push-btn" class="btn btn-primary">
-                        <span class="btn-icon">🔔</span>
-                        <span class="btn-text">Benachrichtigungen aktivieren</span>
-                    </button>
+                        </div>
+                        
+                        <div class="card-actions primary">
+                            <button id="enable-push-btn" class="btn btn-primary">
+                                <span class="btn-icon">🔔</span>
+                                <span class="btn-text">Benachrichtigungen aktivieren</span>
+                            </button>
                     <button id="sw-test-btn" class="btn btn-outline">
-                        <span class="btn-icon">🧪</span>
+                                <span class="btn-icon">🧪</span>
                         <span class="btn-text">Test-Push senden</span>
-                    </button>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
+        
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('⚙️ App-Einstellungen initialisiert');
