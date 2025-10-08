@@ -805,9 +805,23 @@ def merch_article_detail(article_id):
 def create_merch_article():
     """Create new merch article"""
     from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
     
     if request.method == 'POST':
         try:
+            # Get selected colors and sizes
+            colors = request.form.getlist('colors')
+            sizes = request.form.getlist('sizes')
+            
+            if not colors:
+                flash('Bitte wählen Sie mindestens eine Farbe aus!', 'error')
+                return render_template('admin/merch/article_form.html', article=None)
+            
+            if not sizes:
+                flash('Bitte wählen Sie mindestens eine Größe aus!', 'error')
+                return render_template('admin/merch/article_form.html', article=None)
+            
+            # Create article
             article = MerchArticle(
                 name=request.form.get('name'),
                 description=request.form.get('description'),
@@ -818,9 +832,26 @@ def create_merch_article():
             )
             
             db.session.add(article)
+            db.session.flush()  # Get article ID
+            
+            # Automatically create all variants (color × size combinations)
+            variant_count = 0
+            for color in colors:
+                for size in sizes:
+                    variant = MerchVariant(
+                        article_id=article.id,
+                        color=color,
+                        size=size,
+                        supplier_price_rappen=article.base_supplier_price_rappen,
+                        member_price_rappen=article.base_member_price_rappen,
+                        is_active=True
+                    )
+                    db.session.add(variant)
+                    variant_count += 1
+            
             db.session.commit()
             
-            flash(f'Artikel "{article.name}" erfolgreich erstellt!', 'success')
+            flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich erstellt!', 'success')
             return redirect(url_for('admin.merch_article_detail', article_id=article.id))
             
         except Exception as e:
