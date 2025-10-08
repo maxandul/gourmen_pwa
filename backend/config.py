@@ -83,20 +83,19 @@ class Config:
     GOOGLE_MAPS_API_KEY_FRONTEND = os.environ.get('GOOGLE_MAPS_API_KEY_FRONTEND')
     
     # Web Push / VAPID settings
-    VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY') or '''-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgEdtTmIlV1qFlMk2W
-Uo77Fhga7xJIsxvTaa+BO+fIpdOhRANCAAS+wTXZ+vAHf40PxqrCTmKY8VVz3qjz
-kmJoT3rhruZ0IqvRnzHGAjFhfujEn14yX6xmg/Gyn2NGJDNUmQLd+XLX
------END PRIVATE KEY-----'''
+    # Keys müssen als Environment Variables gesetzt sein (Railway/Production)
+    # Lokal: generiere mit `python scripts/generate_vapid_keys.py`
+    VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY')
+    VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY')
     
-    VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY') or '''-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvsE12frwB3+ND8aqwk5imPFVc96o
-85JiaE964a7mdCKr0Z8xxgIxYX7oxJ9eMl+sZoPxsp9jRiQzVJkC3fly1w==
------END PUBLIC KEY-----'''
-    
-    VAPID_CLAIMS = {
-        'sub': 'mailto:admin@gourmen.ch'
-    }
+    # Warnung wenn Keys nicht gesetzt sind
+    if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
+        import warnings
+        warnings.warn(
+            "⚠️  VAPID keys not configured! Push notifications will not work.\n"
+            "   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.\n"
+            "   Run: python scripts/generate_vapid_keys.py"
+        )
 
 class DevelopmentConfig(Config):
     """Development configuration"""

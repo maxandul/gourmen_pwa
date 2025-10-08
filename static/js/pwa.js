@@ -475,24 +475,30 @@ class PWA {
     // Manueller Update-Check für Benutzer (nur für Debugging/Admin)
     checkForUpdates() {
         if ('serviceWorker' in navigator) {
-            this.showToast('🔄 Suche nach Updates...', 'info');
+            // Kein Toast mehr - läuft still im Hintergrund
+            console.log('🔄 Manual update check requested...');
             
             navigator.serviceWorker.getRegistration().then(registration => {
                 if (registration) {
-                    console.log('🔄 Manual update check...');
+                    console.log('🔄 Running update check...');
                     return registration.update();
                 } else {
                     throw new Error('Keine Service Worker Registrierung gefunden');
                 }
             })
             .then(() => {
-                this.showToast('✅ Update-Check abgeschlossen', 'success');
+                console.log('✅ Update-Check abgeschlossen');
+                // Kein Toast - Update-Button erscheint automatisch wenn verfügbar
             })
             .catch(error => {
-                console.error('Update check failed:', error);
-                this.showToast('❌ Update-Check fehlgeschlagen', 'error');
+                console.error('❌ Update check failed:', error);
+                // Nur bei Fehler Toast anzeigen
+                if (error.message !== 'Keine Service Worker Registrierung gefunden') {
+                    this.showToast('❌ Update-Check fehlgeschlagen', 'error');
+                }
             });
         } else {
+            console.error('❌ Service Worker nicht unterstützt');
             this.showToast('❌ Service Worker nicht unterstützt', 'error');
         }
     }
@@ -860,7 +866,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.6';
+            versionSpan.textContent = '1.3.7';
         }
 
         // Installationsstatus prüfen
@@ -913,14 +919,17 @@ class PWA {
             this.updateAvailable = true;
             this.showUpdateButton();
             
-            // Update Status auf Account-Seite
+            // Update Status auf Account-Seite (nur dort, kein Toast)
             const statusDiv = document.getElementById('update-status');
             const statusText = document.querySelector('#update-status .status-text');
             if (statusDiv && statusText) {
                 this.showUpdateStatus(statusDiv, statusText, 'Update verfügbar! Klicke auf "Nach Updates suchen"', 'success');
             }
         } else {
-            // Update Status auf Account-Seite
+            // Kein Toast - läuft still im Hintergrund
+            console.log('✅ App ist bereits auf dem neuesten Stand');
+            
+            // Update Status nur auf Account-Seite zeigen
             const statusDiv = document.getElementById('update-status');
             const statusText = document.querySelector('#update-status .status-text');
             if (statusDiv && statusText) {

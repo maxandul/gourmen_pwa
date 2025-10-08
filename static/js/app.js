@@ -293,6 +293,21 @@ async function getPushSubscriptionStatus() {
 
 async function subscribeToPushNotifications(registration, vapidPublicKey) {
     try {
+        // Validiere VAPID Key
+        if (!vapidPublicKey || vapidPublicKey.length < 80) {
+            throw new Error('Invalid VAPID public key received from server');
+        }
+        
+        // iOS Version Check
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            const iOSVersionMatch = navigator.userAgent.match(/OS (\d+)_/);
+            const iOSVersion = iOSVersionMatch ? parseFloat(iOSVersionMatch[1]) : 0;
+            if (iOSVersion > 0 && iOSVersion < 16.4) {
+                throw new Error('Push notifications require iOS 16.4 or later. Please update your device.');
+            }
+        }
+        
         // Request permission
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
@@ -300,10 +315,16 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
         }
         
         // Subscribe to push notifications
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-        });
+        let subscription;
+        try {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+        } catch (subError) {
+            console.error('Push subscription error:', subError);
+            throw new Error(`Failed to create push subscription: ${subError.message}`);
+        }
         
         // Send subscription to server
         const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';

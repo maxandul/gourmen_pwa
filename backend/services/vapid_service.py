@@ -49,28 +49,45 @@ class VAPIDService:
     def get_vapid_public_key():
         """Holt den öffentlichen VAPID-Key für den Client"""
         try:
-            # Prüfe zuerst Umgebungsvariablen (für Produktion)
+            # 1. Prüfe zuerst Umgebungsvariablen (PRIMÄR für Production)
             public_key = os.environ.get('VAPID_PUBLIC_KEY')
             if public_key:
-                return public_key
+                return public_key.strip()
             
-            # Fallback: Prüfe ob bereits Keys existieren
-            private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
+            # 2. Prüfe ob in Production (NICHT automatisch generieren!)
+            is_production = os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PRODUCTION')
+            if is_production:
+                raise Exception(
+                    "VAPID_PUBLIC_KEY environment variable not set! "
+                    "Push notifications cannot work without valid VAPID keys. "
+                    "Set VAPID_PUBLIC_KEY in Railway dashboard."
+                )
+            
+            # 3. Development: Prüfe ob bereits Keys in Dateien existieren
             public_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_public.txt')
             
             if os.path.exists(public_key_file):
                 with open(public_key_file, 'r') as f:
                     return f.read().strip()
             
-            # Generiere neue Keys (nur für Development)
+            # 4. Development: Generiere neue Keys
+            print("⚠️  No VAPID keys found. Generating new keys for development...")
             keys = VAPIDService.generate_vapid_keys()
             
-            # Speichere Keys nur in Development
+            # Speichere Keys für Development
+            private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
+            
             with open(private_key_file, 'w') as f:
                 f.write(keys['private_key'])
             
             with open(public_key_file, 'w') as f:
                 f.write(keys['public_key'])
+            
+            print(f"✓ VAPID keys saved to:")
+            print(f"  - {public_key_file}")
+            print(f"  - {private_key_file}")
+            print(f"\n📋 Public Key: {keys['public_key']}")
+            print(f"\n⚠️  For production, set these as environment variables in Railway!")
             
             return keys['public_key']
             
@@ -81,24 +98,34 @@ class VAPIDService:
     def get_vapid_private_key():
         """Holt den privaten VAPID-Key für den Server"""
         try:
-            # Prüfe zuerst Umgebungsvariablen (für Produktion)
+            # 1. Prüfe zuerst Umgebungsvariablen (PRIMÄR für Production)
             private_key = os.environ.get('VAPID_PRIVATE_KEY')
             if private_key:
                 # Normalize escaped newlines (Railway/Heroku style)
                 if '\\n' in private_key and '-----BEGIN' in private_key:
                     private_key = private_key.replace('\\n', '\n')
-                return private_key
+                return private_key.strip()
             
-            # Fallback: Prüfe ob bereits Keys existieren
+            # 2. Prüfe ob in Production (NICHT automatisch generieren!)
+            is_production = os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PRODUCTION')
+            if is_production:
+                raise Exception(
+                    "VAPID_PRIVATE_KEY environment variable not set! "
+                    "Push notifications cannot work without valid VAPID keys. "
+                    "Set VAPID_PRIVATE_KEY in Railway dashboard."
+                )
+            
+            # 3. Development: Prüfe ob bereits Keys in Dateien existieren
             private_key_file = os.path.join(os.path.dirname(__file__), '..', '..', 'vapid_private.pem')
             
             if os.path.exists(private_key_file):
                 with open(private_key_file, 'r') as f:
                     return f.read().strip()
             
-            # Falls keine Keys existieren, generiere sie (nur für Development)
-            VAPIDService.get_vapid_public_key()  # Das generiert auch den private key
+            # 4. Development: Generiere Keys (ruft get_vapid_public_key auf)
+            VAPIDService.get_vapid_public_key()  # Generiert beide Keys
             
+            # Lies den generierten private key
             with open(private_key_file, 'r') as f:
                 return f.read().strip()
                 

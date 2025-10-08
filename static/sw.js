@@ -3,9 +3,9 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.6';
-const STATIC_CACHE = 'gourmen-static-v1.3.6';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.6';
+const CACHE_NAME = 'gourmen-v1.3.7';
+const STATIC_CACHE = 'gourmen-static-v1.3.7';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.7';
 
 // Assets die gecacht werden sollen
 const STATIC_ASSETS = [

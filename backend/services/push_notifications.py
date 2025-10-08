@@ -41,12 +41,30 @@ class PushNotificationService:
             vapid_public_key = VAPIDService.get_vapid_public_key()
             
             # Push-Benachrichtigung senden
+            # Extrahiere Push-Server Domain für aud (audience)
+            try:
+                endpoint_url = subscription_data.get('endpoint', '')
+                # Für FCM (Chrome/Android)
+                if 'fcm.googleapis.com' in endpoint_url or 'android.googleapis.com' in endpoint_url:
+                    audience = 'https://fcm.googleapis.com'
+                # Für Mozilla (Firefox)
+                elif 'mozilla.com' in endpoint_url:
+                    audience = 'https://updates.push.services.mozilla.com'
+                # Fallback: Extrahiere aus endpoint
+                else:
+                    from urllib.parse import urlparse
+                    parsed = urlparse(endpoint_url)
+                    audience = f"{parsed.scheme}://{parsed.netloc}"
+            except Exception:
+                audience = 'https://fcm.googleapis.com'  # Fallback auf FCM
+            
             result = webpush(
                 subscription_info=subscription_data,
                 data=json.dumps(payload),
                 vapid_private_key=vapid_private_key,
                 vapid_claims={
-                    "sub": "mailto:admin@gourmen-verein.ch"  # Kontakt-E-Mail
+                    "sub": "mailto:ulrich.andreas@hotmail.com",
+                    "aud": audience
                 }
             )
             
