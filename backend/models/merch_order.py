@@ -90,3 +90,4 @@ class MerchOrder(db.Model):
         """Generate unique order number"""
         import uuid
         return f"MERCH-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+

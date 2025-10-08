@@ -61,3 +61,4 @@ class MerchVariant(db.Model):
             color=self.color, 
             is_active=True
         ).distinct().all()
+

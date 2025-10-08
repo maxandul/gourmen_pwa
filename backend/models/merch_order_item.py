@@ -65,3 +65,4 @@ class MerchOrderItem(db.Model):
             self.unit_member_price_rappen = self.variant.member_price_rappen
             self.unit_supplier_price_rappen = self.variant.supplier_price_rappen
             self.calculate_totals()
+

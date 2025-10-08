@@ -119,3 +119,4 @@ def seed_merch_data():
 
 if __name__ == "__main__":
     seed_merch_data()
+

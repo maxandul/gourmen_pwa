@@ -54,3 +54,4 @@ class MerchArticle(db.Model):
             size=size, 
             is_active=True
         ).first()
+
