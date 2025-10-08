@@ -77,14 +77,28 @@
                     <div class="form-group">
                         <label for="colors_input">Verfügbare Farben *</label>
                         <div id="colors-container" class="dynamic-input-container">
-                            <div class="dynamic-input-item">
-                                <input type="text" 
-                                       name="colors" 
-                                       class="form-control" 
-                                       placeholder="z.B. Schwarz"
-                                       required>
-                                <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
-                            </div>
+                            {% if existing_colors %}
+                                {% for color in existing_colors %}
+                                <div class="dynamic-input-item">
+                                    <input type="text" 
+                                           name="colors" 
+                                           class="form-control" 
+                                           value="{{ color }}"
+                                           placeholder="z.B. Schwarz"
+                                           required>
+                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="dynamic-input-item">
+                                    <input type="text" 
+                                           name="colors" 
+                                           class="form-control" 
+                                           placeholder="z.B. Schwarz"
+                                           required>
+                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <button type="button" class="btn btn-outline btn-sm" onclick="addColorInput()">
                             ➕ Weitere Farbe hinzufügen
@@ -95,14 +109,28 @@
                     <div class="form-group">
                         <label for="sizes_input">Verfügbare Größen *</label>
                         <div id="sizes-container" class="dynamic-input-container">
-                            <div class="dynamic-input-item">
-                                <input type="text" 
-                                       name="sizes" 
-                                       class="form-control" 
-                                       placeholder="z.B. M"
-                                       required>
-                                <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
-                            </div>
+                            {% if existing_sizes %}
+                                {% for size in existing_sizes %}
+                                <div class="dynamic-input-item">
+                                    <input type="text" 
+                                           name="sizes" 
+                                           class="form-control" 
+                                           value="{{ size }}"
+                                           placeholder="z.B. M"
+                                           required>
+                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="dynamic-input-item">
+                                    <input type="text" 
+                                           name="sizes" 
+                                           class="form-control" 
+                                           placeholder="z.B. M"
+                                           required>
+                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <button type="button" class="btn btn-outline btn-sm" onclick="addSizeInput()">
                             ➕ Weitere Größe hinzufügen
@@ -114,6 +142,12 @@
                         <strong>💡 Automatische Varianten:</strong><br>
                         Alle Kombinationen aus Farben und Größen werden automatisch als Varianten erstellt.<br>
                         <em>Beispiel: 2 Farben × 4 Größen = 8 Varianten</em>
+                        {% if article %}
+                        <br><br>
+                        <strong>⚠️ Hinweis beim Bearbeiten:</strong><br>
+                        Wenn Sie Farben oder Größen ändern, werden <strong>alle Varianten gelöscht und neu erstellt</strong>.<br>
+                        Individuelle Preis-Anpassungen einzelner Varianten gehen dabei verloren.
+                        {% endif %}
                     </div>
                     
                     <div class="form-group checkbox-group">

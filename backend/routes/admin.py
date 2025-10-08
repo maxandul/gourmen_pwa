@@ -866,11 +866,27 @@ def create_merch_article():
 def edit_merch_article(article_id):
     """Edit merch article"""
     from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
     
     article = MerchArticle.query.get_or_404(article_id)
     
     if request.method == 'POST':
         try:
+            # Get selected colors and sizes
+            colors = request.form.getlist('colors')
+            sizes = request.form.getlist('sizes')
+            
+            if not colors:
+                flash('Bitte wählen Sie mindestens eine Farbe aus!', 'error')
+                return render_template('admin/merch/article_form.html', article=article, 
+                                     existing_colors=[], existing_sizes=[])
+            
+            if not sizes:
+                flash('Bitte wählen Sie mindestens eine Größe aus!', 'error')
+                return render_template('admin/merch/article_form.html', article=article,
+                                     existing_colors=colors, existing_sizes=[])
+            
+            # Update article
             article.name = request.form.get('name')
             article.description = request.form.get('description')
             article.base_supplier_price_rappen = int(float(request.form.get('base_supplier_price_chf')) * 100)
@@ -879,16 +895,42 @@ def edit_merch_article(article_id):
             article.is_active = request.form.get('is_active') == 'on'
             article.updated_at = datetime.utcnow()
             
+            # Delete existing variants
+            MerchVariant.query.filter_by(article_id=article.id).delete()
+            
+            # Create new variants with updated combinations
+            variant_count = 0
+            for color in colors:
+                for size in sizes:
+                    variant = MerchVariant(
+                        article_id=article.id,
+                        color=color.strip(),
+                        size=size.strip(),
+                        supplier_price_rappen=article.base_supplier_price_rappen,
+                        member_price_rappen=article.base_member_price_rappen,
+                        is_active=True
+                    )
+                    db.session.add(variant)
+                    variant_count += 1
+            
             db.session.commit()
             
-            flash(f'Artikel "{article.name}" erfolgreich aktualisiert!', 'success')
+            flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich aktualisiert!', 'success')
             return redirect(url_for('admin.merch_article_detail', article_id=article.id))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Fehler beim Aktualisieren des Artikels: {str(e)}', 'error')
     
-    return render_template('admin/merch/article_form.html', article=article)
+    # GET request - load existing variants and extract unique colors/sizes
+    variants = MerchVariant.query.filter_by(article_id=article_id).all()
+    existing_colors = sorted(list(set([v.color for v in variants])))
+    existing_sizes = sorted(list(set([v.size for v in variants])))
+    
+    return render_template('admin/merch/article_form.html', 
+                         article=article,
+                         existing_colors=existing_colors,
+                         existing_sizes=existing_sizes)
 
 @bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST'])
 @login_required
