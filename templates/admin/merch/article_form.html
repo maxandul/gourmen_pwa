@@ -75,37 +75,39 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Verfügbare Farben *</label>
-                        <div class="checkbox-grid">
-                            {% set available_colors = ['Schwarz', 'Weiß', 'Navy', 'Grau', 'Rot', 'Grün', 'Blau'] %}
-                            {% for color in available_colors %}
-                            <label class="checkbox-item">
-                                <input type="checkbox" 
+                        <label for="colors_input">Verfügbare Farben *</label>
+                        <div id="colors-container" class="dynamic-input-container">
+                            <div class="dynamic-input-item">
+                                <input type="text" 
                                        name="colors" 
-                                       value="{{ color }}"
-                                       {% if article %}checked{% endif %}>
-                                <span>{{ color }}</span>
-                            </label>
-                            {% endfor %}
+                                       class="form-control" 
+                                       placeholder="z.B. Schwarz"
+                                       required>
+                                <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                            </div>
                         </div>
-                        <small class="form-text">Wählen Sie alle verfügbaren Farben aus</small>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addColorInput()">
+                            ➕ Weitere Farbe hinzufügen
+                        </button>
+                        <small class="form-text">Geben Sie alle verfügbaren Farben ein (z.B. Schwarz, Weiß, Navy, Rot, etc.)</small>
                     </div>
                     
                     <div class="form-group">
-                        <label>Verfügbare Größen *</label>
-                        <div class="checkbox-grid">
-                            {% set available_sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                            {% for size in available_sizes %}
-                            <label class="checkbox-item">
-                                <input type="checkbox" 
+                        <label for="sizes_input">Verfügbare Größen *</label>
+                        <div id="sizes-container" class="dynamic-input-container">
+                            <div class="dynamic-input-item">
+                                <input type="text" 
                                        name="sizes" 
-                                       value="{{ size }}"
-                                       {% if article %}checked{% endif %}>
-                                <span>{{ size }}</span>
-                            </label>
-                            {% endfor %}
+                                       class="form-control" 
+                                       placeholder="z.B. M"
+                                       required>
+                                <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                            </div>
                         </div>
-                        <small class="form-text">Wählen Sie alle verfügbaren Größen aus</small>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addSizeInput()">
+                            ➕ Weitere Größe hinzufügen
+                        </button>
+                        <small class="form-text">Geben Sie alle verfügbaren Größen ein (z.B. XS, S, M, L, XL, XXL oder One Size, etc.)</small>
                     </div>
                     
                     <div class="info-box">
@@ -136,20 +138,6 @@
                 </form>
             </div>
         </div>
-        
-        {% if article %}
-        <div class="card">
-            <div class="card-header">
-                <h2>Varianten</h2>
-            </div>
-            <div class="card-body">
-                <p>Nach dem Erstellen des Artikels können Sie hier Varianten (Farben/Größen) hinzufügen.</p>
-                <a href="{{ url_for('admin.merch_article_detail', article_id=article.id) }}" class="btn btn-primary">
-                    📦 Varianten verwalten
-                </a>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 
@@ -218,43 +206,6 @@
     cursor: pointer;
 }
 
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.checkbox-item:hover {
-    border-color: var(--primary-color);
-    background: var(--bg-secondary);
-}
-
-.checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.checkbox-item input[type="checkbox"]:checked + span {
-    font-weight: 600;
-    color: var(--primary-color);
-}
-
 .info-box {
     padding: 1rem 1.25rem;
     background: linear-gradient(135deg, rgba(255, 102, 0, 0.1), rgba(255, 102, 0, 0.05));
@@ -283,6 +234,105 @@
         grid-template-columns: 1fr;
     }
 }
+
+.dynamic-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.dynamic-input-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.dynamic-input-item .form-control {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--error-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: var(--error-color);
+    transform: scale(1.1);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
 </style>
+
+<script>
+function addColorInput() {
+    const container = document.getElementById('colors-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'dynamic-input-item';
+    newItem.innerHTML = `
+        <input type="text" 
+               name="colors" 
+               class="form-control" 
+               placeholder="z.B. Navy"
+               required>
+        <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+    `;
+    container.appendChild(newItem);
+    updateRemoveButtons('colors-container');
+}
+
+function addSizeInput() {
+    const container = document.getElementById('sizes-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'dynamic-input-item';
+    newItem.innerHTML = `
+        <input type="text" 
+               name="sizes" 
+               class="form-control" 
+               placeholder="z.B. XL"
+               required>
+        <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+    `;
+    container.appendChild(newItem);
+    updateRemoveButtons('sizes-container');
+}
+
+function removeInput(button) {
+    const item = button.parentElement;
+    const container = item.parentElement;
+    item.remove();
+    updateRemoveButtons(container.id);
+}
+
+function updateRemoveButtons(containerId) {
+    const container = document.getElementById(containerId);
+    const items = container.querySelectorAll('.dynamic-input-item');
+    
+    items.forEach((item, index) => {
+        const removeBtn = item.querySelector('.btn-remove');
+        if (items.length > 1) {
+            removeBtn.style.display = 'block';
+        } else {
+            removeBtn.style.display = 'none';
+        }
+    });
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateRemoveButtons('colors-container');
+    updateRemoveButtons('sizes-container');
+});
+</script>
 {% endblock %}
 
