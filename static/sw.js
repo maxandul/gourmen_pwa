@@ -3,16 +3,15 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v1.3.7';
-const STATIC_CACHE = 'gourmen-static-v1.3.7';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.7';
+const CACHE_NAME = 'gourmen-v1.3.8';
+const STATIC_CACHE = 'gourmen-static-v1.3.8';
+const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.8';
 
-// Assets die gecacht werden sollen
+// Assets die gecacht werden sollen (nur wirklich statische Dateien!)
+// JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/',
     '/static/css/main.css',
-    '/static/js/pwa.js',
-    '/static/js/app.js',
     '/static/manifest.json',
     '/static/img/pwa/icon-16.png',
     '/static/img/pwa/icon-32.png',

@@ -103,13 +103,8 @@ class PWA {
                 // Globale Referenz für andere Skripte (z.B. app.js)
                 window.gourmenServiceWorker = registration;
                 
-                // Initialer Update-Check nach erfolgreicher Registrierung
-                if (registration.active) {
-                    setTimeout(() => {
-                        console.log('🔄 Initialer Update-Check...');
-                        this.checkForUpdates();
-                    }, 1000);
-                }
+                // Kein initialer Update-Check mehr - läuft automatisch im Hintergrund
+                // (siehe setupUpdateDetection: alle 5 Min + bei focus)
             })
             .catch(error => {
                 console.error('❌ Service Worker Registrierung fehlgeschlagen:', error);
@@ -866,7 +861,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.7';
+            versionSpan.textContent = '1.3.8';
         }
 
         // Installationsstatus prüfen
