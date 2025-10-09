@@ -5,10 +5,13 @@ Generiert und verwaltet VAPID-Keys für echte Push-Benachrichtigungen
 
 import base64
 import json
+import logging
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
 import os
+
+logger = logging.getLogger(__name__)
 
 class VAPIDService:
     """Service für VAPID (Voluntary Application Server Identification) Keys"""
@@ -71,7 +74,7 @@ class VAPIDService:
                     return f.read().strip()
             
             # 4. Development: Generiere neue Keys
-            print("⚠️  No VAPID keys found. Generating new keys for development...")
+            logger.warning("No VAPID keys found. Generating new keys for development...")
             keys = VAPIDService.generate_vapid_keys()
             
             # Speichere Keys für Development
@@ -83,11 +86,9 @@ class VAPIDService:
             with open(public_key_file, 'w') as f:
                 f.write(keys['public_key'])
             
-            print(f"✓ VAPID keys saved to:")
-            print(f"  - {public_key_file}")
-            print(f"  - {private_key_file}")
-            print(f"\n📋 Public Key: {keys['public_key']}")
-            print(f"\n⚠️  For production, set these as environment variables in Railway!")
+            logger.info(f"VAPID keys saved to: {public_key_file} and {private_key_file}")
+            logger.info(f"Public Key: {keys['public_key']}")
+            logger.warning("For production, set these as environment variables in Railway!")
             
             return keys['public_key']
             
