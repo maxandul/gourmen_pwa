@@ -102,35 +102,13 @@ class VAPIDService:
             # 1. Prüfe zuerst Umgebungsvariablen (PRIMÄR für Production)
             private_key = os.environ.get('VAPID_PRIVATE_KEY')
             if private_key:
-                private_key = private_key.strip()
-                
-                # Check if it's Base64-encoded (empfohlen für Railway)
-                if not private_key.startswith('-----BEGIN'):
-                    try:
-                        # Dekodiere Base64
-                        import base64
-                        decoded = base64.b64decode(private_key)
-                        private_key = decoded.decode('utf-8')
-                        logger.info("VAPID private key loaded from Base64 format")
-                    except Exception as e:
-                        logger.error(f"Failed to decode Base64 VAPID key: {e}")
-                        raise Exception("VAPID_PRIVATE_KEY is neither valid PEM nor Base64")
-                
-                # Legacy: Normalize escaped newlines (Railway/Heroku style mit \n)
-                elif '\\n' in private_key:
-                    private_key = private_key.replace('\\n', '\n')
-                    logger.info("VAPID private key loaded from escaped newline format")
-                else:
-                    logger.info("VAPID private key loaded from PEM format")
-                
-                # Normalisiere Windows-Zeilenumbrüche zu Unix
+                # Normalisiere Zeilenumbrüche (Railway kann \r\n senden)
                 private_key = private_key.replace('\r\n', '\n').replace('\r', '\n')
                 
                 # Stelle sicher, dass der Key mit einem Newline endet
                 if not private_key.endswith('\n'):
                     private_key += '\n'
                 
-                logger.debug(f"VAPID key length: {len(private_key)} chars, first line: {private_key.split(chr(10))[0]}")
                 return private_key
             
             # 2. Prüfe ob in Production (NICHT automatisch generieren!)
