@@ -271,8 +271,8 @@ async function getVAPIDPublicKey() {
         return data.public_key;
     } catch (error) {
         console.error('Error getting VAPID public key:', error);
-        // Fallback key (should not be used in production)
-        return 'BJrWx8xCvf_8kT2j3R3_7nqJ2x3kX4c2Pd4FVk1cJ5q_QH7_0LlCPT9gU8NZ_ZEt4QP8vP2N_YfXYt8aU0rN_E4';
+        // Fallback key - updated to match current VAPID_PRIVATE_KEY in Railway
+        return 'BLvwDBUeI5rru4VEYWxqFFtOtBdqA5TTkbpOH6WaiX1kD2LMt3baz1t_wOyWEBXNvtF52SUnkSIy0vvoh2_T0C4';
     }
 }
 
