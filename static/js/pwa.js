@@ -73,7 +73,7 @@ class PWA {
             navigator.serviceWorker.addEventListener('message', (event) => {
                 if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
                     this.updateAvailable = true;
-                    this.showUpdateButton();
+                    // Update läuft automatisch - keine Benachrichtigung nötig
                 } else if (event.data && event.data.type === 'UPDATE_CHECK_COMPLETE') {
                     this.handleUpdateCheckComplete(event.data);
                 } else if (event.data && event.data.type === 'UPDATE_CHECK_FAILED') {
@@ -135,12 +135,9 @@ class PWA {
                 if (!newWorker) return;
                             if (newWorker.state === 'installed') {
                                 if (navigator.serviceWorker.controller) {
-                                    console.log('🔄 Neuer Service Worker installiert - Update verfügbar!');
+                                    console.log('🔄 Neuer Service Worker installiert - Update läuft automatisch');
                                     this.updateAvailable = true;
-                                    this.showUpdateButton();
-                        
-                        // Zeige auch Toast-Benachrichtigung
-                        this.showToast('🔄 Neues Update verfügbar! Klicke auf den Update-Button.', 'info', 8000);
+                                    // Update läuft automatisch - keine Benachrichtigung nötig
                                 } else {
                                     console.log('🔄 Service Worker installiert - App bereit für Offline-Nutzung');
                         // Bei der ersten Installation warten wir auf die Aktivierung
@@ -219,9 +216,9 @@ class PWA {
                 // Prüfe nach Update-Check, ob ein neuer Service Worker wartet
                 setTimeout(() => {
                     if (registration.waiting) {
-                        console.log('🔄 Automatisches Update verfügbar!');
+                        console.log('🔄 Automatisches Update verfügbar - wird installiert');
                         this.updateAvailable = true;
-                        this.showUpdateButton();
+                        // Update läuft automatisch - keine Benachrichtigung nötig
                     }
                 }, 1000);
             }
@@ -426,8 +423,7 @@ class PWA {
         updateBtn.addEventListener('click', () => this.updateApp());
         document.body.appendChild(updateBtn);
         
-        // Zeige auch eine Toast-Benachrichtigung
-        this.showToast('🔄 Neues Update verfügbar! Klicke auf den Update-Button.', 'info');
+        // Keine Toast-Benachrichtigung - Update läuft automatisch
         
         // Auto-hide nach 60 Sekunden falls nicht geklickt
         setTimeout(() => {
@@ -862,7 +858,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.22';
+            versionSpan.textContent = '1.3.23';
         }
 
         // Installationsstatus prüfen
@@ -913,13 +909,13 @@ class PWA {
         
         if (data.hasUpdate) {
             this.updateAvailable = true;
-            this.showUpdateButton();
+            // Update läuft automatisch - keine Benachrichtigung nötig
             
             // Update Status auf Account-Seite (nur dort, kein Toast)
             const statusDiv = document.getElementById('update-status');
             const statusText = document.querySelector('#update-status .status-text');
             if (statusDiv && statusText) {
-                this.showUpdateStatus(statusDiv, statusText, 'Update verfügbar! Klicke auf "Nach Updates suchen"', 'success');
+                this.showUpdateStatus(statusDiv, statusText, 'Update wird automatisch installiert...', 'success');
             }
         } else {
             // Kein Toast - läuft still im Hintergrund
