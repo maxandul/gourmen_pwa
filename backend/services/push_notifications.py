@@ -145,7 +145,7 @@ class PushNotificationService:
                 'title': f'Event-Organisation: {event.event_typ.value}',
                 'body': f"Das Event '{event.restaurant or 'Unbekanntes Restaurant'}' findet in 3 Wochen statt. {non_responded_count} Mitglieder haben noch nicht geantwortet.",
                 'icon': '/static/img/pwa/icon-192.png',
-                'badge': '/static/img/pwa/icon-96.png',
+                'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android
                 'tag': f'event-organizer-{event_id}',
                 'data': {
                     'url': f'/events/{event_id}',
@@ -199,7 +199,7 @@ class PushNotificationService:
                 'title': f'Teilnahme gesucht: {event.event_typ.value}',
                 'body': f"Das Event '{event.restaurant or 'Unbekanntes Restaurant'}' am {event.display_date} benötigt deine Antwort!",
                 'icon': '/static/img/pwa/icon-192.png',
-                'badge': '/static/img/pwa/icon-96.png',
+                'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android
                 'tag': f'event-participation-{event_id}',
                 'data': {
                     'url': f'/events/{event_id}',

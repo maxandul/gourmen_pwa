@@ -140,7 +140,7 @@ def test_push_notification():
             'title': 'Gourmen Test-Benachrichtigung',
             'body': f'Hallo {current_user.display_name}! Dies ist eine Test-Push-Benachrichtigung.',
             'icon': '/static/img/pwa/icon-192.png',
-            'badge': '/static/img/pwa/icon-96.png',
+            'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android Statusleiste
             'tag': 'gourmen-test',
             'data': {
                 'url': '/account/profile',
