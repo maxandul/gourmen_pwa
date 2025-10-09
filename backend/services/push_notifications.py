@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from pywebpush import webpush, WebPushException
+    from py_vapid import Vapid02
     WEBPUSH_AVAILABLE = True
 except ImportError:
     logger.warning("pywebpush not available - install with: pip install pywebpush")
@@ -37,8 +38,12 @@ class PushNotificationService:
         
         try:
             # VAPID-Keys holen
-            vapid_private_key = VAPIDService.get_vapid_private_key()
+            vapid_private_key_pem = VAPIDService.get_vapid_private_key()
             vapid_public_key = VAPIDService.get_vapid_public_key()
+            
+            # Erstelle Vapid02-Objekt (pywebpush benötigt dies für PEM-String)
+            vapid = Vapid02()
+            vapid.from_pem(vapid_private_key_pem.encode('utf-8'))
             
             # Push-Benachrichtigung senden
             # Extrahiere Push-Server Domain für aud (audience)
@@ -61,7 +66,7 @@ class PushNotificationService:
             result = webpush(
                 subscription_info=subscription_data,
                 data=json.dumps(payload),
-                vapid_private_key=vapid_private_key,
+                vapid_private_key=vapid,
                 vapid_claims={
                     "sub": "mailto:ulrich.andreas@hotmail.com",
                     "aud": audience
