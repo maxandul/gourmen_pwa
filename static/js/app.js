@@ -267,12 +267,17 @@ function urlBase64ToUint8Array(base64String) {
 async function getVAPIDPublicKey() {
     try {
         const response = await fetch('/api/vapid-public-key');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        if (!data.public_key) {
+            throw new Error('No public key in response');
+        }
         return data.public_key;
     } catch (error) {
         console.error('Error getting VAPID public key:', error);
-        // Fallback key - updated to match current VAPID_PRIVATE_KEY in Railway
-        return 'BLvwDBUeI5rru4VEYWxqFFtOtBdqA5TTkbpOH6WaiX1kD2LMt3baz1t_wOyWEBXNvtF52SUnkSIy0vvoh2_T0C4';
+        throw new Error('Failed to get VAPID public key. Push notifications cannot be enabled.');
     }
 }
 

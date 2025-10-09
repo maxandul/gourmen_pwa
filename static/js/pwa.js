@@ -862,7 +862,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.3.17';
+            versionSpan.textContent = '1.3.18';
         }
 
         // Installationsstatus prüfen
