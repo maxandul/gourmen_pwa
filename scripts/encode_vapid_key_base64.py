@@ -21,6 +21,9 @@ def main():
     with open(vapid_private_file, 'r', encoding='utf-8') as f:
         pem_key = f.read()
     
+    # Normalisiere Zeilenumbrüche zu Unix-Style (wichtig für pywebpush)
+    pem_key = pem_key.replace('\r\n', '\n').replace('\r', '\n')
+    
     # Encodiere in Base64
     encoded_key = base64.b64encode(pem_key.encode('utf-8')).decode('ascii')
     

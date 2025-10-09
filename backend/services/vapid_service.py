@@ -123,10 +123,14 @@ class VAPIDService:
                 else:
                     logger.info("VAPID private key loaded from PEM format")
                 
+                # Normalisiere Windows-Zeilenumbrüche zu Unix
+                private_key = private_key.replace('\r\n', '\n').replace('\r', '\n')
+                
                 # Stelle sicher, dass der Key mit einem Newline endet
                 if not private_key.endswith('\n'):
                     private_key += '\n'
                 
+                logger.debug(f"VAPID key length: {len(private_key)} chars, first line: {private_key.split(chr(10))[0]}")
                 return private_key
             
             # 2. Prüfe ob in Production (NICHT automatisch generieren!)

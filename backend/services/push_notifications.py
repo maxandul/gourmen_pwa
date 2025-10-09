@@ -41,9 +41,25 @@ class PushNotificationService:
             vapid_private_key_pem = VAPIDService.get_vapid_private_key()
             vapid_public_key = VAPIDService.get_vapid_public_key()
             
-            # Erstelle Vapid02-Objekt (pywebpush benötigt dies für PEM-String)
+            # Erstelle Vapid02-Objekt aus PEM
+            # Vapid02 benötigt eine Datei, also erstellen wir eine temporäre
+            import tempfile
+            import os as os_module
+            
             vapid = Vapid02()
-            vapid.from_pem(vapid_private_key_pem.encode('utf-8'))
+            # Schreibe PEM in temporäre Datei
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.pem', delete=False) as tmp:
+                tmp.write(vapid_private_key_pem)
+                tmp_path = tmp.name
+            
+            try:
+                vapid.from_file(tmp_path)
+            finally:
+                # Lösche temporäre Datei
+                try:
+                    os_module.unlink(tmp_path)
+                except:
+                    pass
             
             # Push-Benachrichtigung senden
             # Extrahiere Push-Server Domain für aud (audience)
