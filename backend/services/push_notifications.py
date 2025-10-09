@@ -41,21 +41,23 @@ class PushNotificationService:
             vapid_private_key_pem = VAPIDService.get_vapid_private_key()
             vapid_public_key = VAPIDService.get_vapid_public_key()
             
-            # Erstelle Vapid02-Objekt aus PEM-Key
-            # Verwende from_raw mit dem private_key object aus cryptography
-            from cryptography.hazmat.primitives import serialization
-            from cryptography.hazmat.primitives.serialization import load_pem_private_key
+            # Erstelle Vapid02-Objekt
+            # py_vapid interpretiert Strings als Dateipfade, daher temporäre Datei
+            import tempfile
+            import os as os_module
             
-            private_key_obj = load_pem_private_key(
-                vapid_private_key_pem.encode('utf-8'),
-                password=None
-            )
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.pem', delete=False, encoding='utf-8') as tmp:
+                tmp.write(vapid_private_key_pem)
+                tmp_path = tmp.name
             
-            vapid = Vapid02.from_raw(private_key_obj.private_bytes(
-                encoding=serialization.Encoding.DER,
-                format=serialization.PrivateFormat.PKCS8,
-                encryption_algorithm=serialization.NoEncryption()
-            ))
+            try:
+                vapid = Vapid02.from_file(private_key_file=tmp_path)
+            finally:
+                # Lösche temporäre Datei
+                try:
+                    os_module.unlink(tmp_path)
+                except Exception:
+                    pass
             
             # Push-Benachrichtigung senden
             # Extrahiere Push-Server Domain für aud (audience)
