@@ -196,7 +196,12 @@ class PushNotificationService:
             
             # Push-Benachrichtigung Payload
             organizer = event.organisator
-            organizer_name = f"{organizer.spirit_animal_emoji} {organizer.vorname}" if organizer else "Der Organisator"
+            if organizer and organizer.spirit_animal:
+                organizer_name = f"{organizer.spirit_animal} {organizer.display_name}"
+            elif organizer:
+                organizer_name = organizer.display_name
+            else:
+                organizer_name = "Der Organisator"
             
             payload = {
                 'title': f'{event.event_typ.value} {event.display_date}',
