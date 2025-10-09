@@ -500,7 +500,7 @@ def rsvp(event_id):
 @bp.route('/<int:event_id>/send_rsvp_reminder', methods=['POST'])
 @login_required
 def send_rsvp_reminder(event_id):
-    """Send RSVP reminder to members who haven't responded yet (organizer only)"""
+    """Send RSVP reminder via Push Notifications to members who haven't responded yet"""
     event = Event.query.get_or_404(event_id)
     
     # Check if user is organizer or admin
@@ -508,26 +508,9 @@ def send_rsvp_reminder(event_id):
         flash('Nur der Organisator kann Erinnerungen senden', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
-    # Get all active members
-    all_members = Member.query.filter_by(is_active=True).all()
-    
-    # Get members who have already responded (have a participation record)
-    responded_member_ids = set()
-    for participation in event.participations:
-        responded_member_ids.add(participation.member_id)
-    
-    # Find members who haven't responded yet
-    pending_member_ids = []
-    for member in all_members:
-        if member.id not in responded_member_ids:
-            pending_member_ids.append(member.id)
-    
-    if not pending_member_ids:
-        flash('Alle Mitglieder haben bereits geantwortet', 'info')
-        return redirect(url_for('events.detail', event_id=event_id))
-    
-    # Send reminder notifications
-    success = NotifierService.send_event_reminder(event_id, pending_member_ids)
+    # Use PushNotificationService to send reminders
+    from backend.services.push_notifications import PushNotificationService
+    result = PushNotificationService.send_participation_reminder_to_members(event_id)
     
     # Log audit event
     from backend.services.security import SecurityService, AuditAction
@@ -535,15 +518,19 @@ def send_rsvp_reminder(event_id):
         AuditAction.EVENT_SEND_REMINDER, 'event', event.id,
         extra_data={
             'event_id': event_id,
-            'pending_members': len(pending_member_ids),
-            'notification_success': success
+            'result': result
         }
     )
     
-    if success:
-        flash(f'RSVP-Erinnerung an {len(pending_member_ids)} Mitglieder gesendet.', 'success')
+    if result.get('success'):
+        sent_count = result.get('sent_count', 0)
+        members_count = result.get('members_count', 0)
+        if sent_count > 0:
+            flash(f'✅ Push-Benachrichtigung an {sent_count} Geräte von {members_count} Mitgliedern gesendet!', 'success')
+        else:
+            flash(f'ℹ️ {members_count} Mitglied(er) haben noch nicht geantwortet, aber keine Push-Subscriptions.', 'info')
     else:
-        flash('Erinnerungen konnten nicht gesendet werden.', 'warning')
+        flash(f'⚠️ Fehler: {result.get("message", "Unbekannter Fehler")}', 'warning')
     
     return redirect(url_for('events.detail', event_id=event_id))
 
