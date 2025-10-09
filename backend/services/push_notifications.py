@@ -190,7 +190,7 @@ class PushNotificationService:
             ).subquery()
             
             non_responded_members = Member.query.filter(
-                Member.aktiv == True,
+                Member.is_active == True,
                 ~Member.id.in_(responded_member_ids)
             ).all()
             

@@ -154,7 +154,7 @@
             {% if current_user.is_admin or event.organisator_id == current_user.id %}
             {% if event.is_upcoming %}
             <button type="button" class="btn btn-primary" 
-                    onclick="if(confirm('📱 Push-Benachrichtigung an alle Mitglieder senden, die noch nicht geantwortet haben?\\n\\nHinweis: Nur Mitglieder mit aktivierten Push-Benachrichtigungen erhalten die Erinnerung.')) { 
+                    onclick="if(confirm('📱 Push-Benachrichtigung an alle Mitglieder senden, die noch nicht geantwortet haben?\n\nHinweis: Nur Mitglieder mit aktivierten Push-Benachrichtigungen erhalten die Erinnerung.')) { 
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = '{{ url_for('events.send_rsvp_reminder', event_id=event.id) }}';
