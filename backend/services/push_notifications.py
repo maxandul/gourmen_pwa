@@ -195,9 +195,12 @@ class PushNotificationService:
             ).all()
             
             # Push-Benachrichtigung Payload
+            organizer = event.organisator
+            organizer_name = f"{organizer.spirit_animal_emoji} {organizer.vorname}" if organizer else "Der Organisator"
+            
             payload = {
-                'title': f'Teilnahme gesucht: {event.event_typ.value}',
-                'body': f"Das Event '{event.restaurant or 'Unbekanntes Restaurant'}' am {event.display_date} benötigt deine Antwort!",
+                'title': f'{event.event_typ.value} {event.display_date}',
+                'body': f"{organizer_name} wartet noch auf deine Zu-/Absage.",
                 'icon': '/static/img/pwa/icon-192.png',
                 'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android
                 'tag': f'event-participation-{event_id}',
