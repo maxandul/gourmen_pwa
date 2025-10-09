@@ -7,9 +7,6 @@
     <div class="page-header">
         <h1>👤 Mein Profil</h1>
         <p class="page-subtitle">Verwalte deine persönlichen Daten und Einstellungen</p>
-        <div class="page-actions">
-            <a href="{{ url_for('account.sensitive_data') }}" class="btn btn-primary">🔒 Sensible Daten</a>
-        </div>
     </div>
     
     <div class="page-content">
@@ -82,6 +79,19 @@
                         {% if form.nationalitaet.errors %}
                         <div class="error">{{ form.nationalitaet.errors[0] }}</div>
                         {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sensitive Data Section -->
+            <div class="card card-secondary variant-warning">
+                <div class="card-header">
+                    <h2>🔒 Sensible Daten</h2>
+                </div>
+                <div class="card-body">
+                    <p>Hier kannst du deine sensiblen Daten wie IBAN, AHV-Nummer und weitere vertrauliche Informationen verwalten.</p>
+                    <div class="card-actions">
+                        <a href="{{ url_for('account.sensitive_data') }}" class="btn btn-primary">🔒 Sensible Daten verwalten</a>
                     </div>
                 </div>
             </div>
@@ -235,6 +245,19 @@
             </div>
         </form>
         
+        <!-- Merch Bestellungen Section -->
+        <div class="card card-secondary variant-info">
+            <div class="card-header">
+                <h2>👕 Merch-Bestellungen</h2>
+            </div>
+            <div class="card-body">
+                <p>Hier kannst du deine Merch-Bestellungen einsehen und verwalten.</p>
+                <div class="card-actions">
+                    <a href="{{ url_for('member.merch_orders') }}" class="btn btn-primary">📦 Meine Bestellungen</a>
+                </div>
+            </div>
+        </div>
+        
         <!-- Service Worker Info Section -->
         <div class="card">
             <div class="card-header">
@@ -268,7 +291,7 @@
                     <div class="app-info">
                         <p><strong>Status:</strong> <span id="sw-registration-status">Prüfe...</span></p>
                         <p><strong>Scope:</strong> <span id="sw-scope">-</span></p>
-                        <p><strong>Version:</strong> <span id="sw-version">v1.3.4</span></p>
+                        <p><strong>Version:</strong> <span id="sw-version">v1.4.0</span></p>
                         <p><strong>Push-Benachrichtigungen:</strong> <span id="push-status">Prüfe...</span></p>
                     </div>
                 </div>

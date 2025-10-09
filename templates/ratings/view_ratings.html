@@ -99,7 +99,7 @@
                         
                         <div class="rating-scores">
                             <div class="rating-category">
-                                <p><strong>🍽️ Essen:</strong><br>
+                                <p><strong>🍽️ Essen:</strong> {{ rating.food_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
                                         {% if i < rating.food_rating %}
@@ -112,7 +112,7 @@
                                 </p>
                             </div>
                             <div class="rating-category">
-                                <p><strong>🥤 Getränke:</strong><br>
+                                <p><strong>🥤 Getränke:</strong> {{ rating.drinks_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
                                         {% if i < rating.drinks_rating %}
@@ -125,7 +125,7 @@
                                 </p>
                             </div>
                             <div class="rating-category">
-                                <p><strong>👨‍🍳 Bedienung:</strong><br>
+                                <p><strong>👨‍🍳 Bedienung:</strong> {{ rating.service_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
                                         {% if i < rating.service_rating %}
@@ -149,8 +149,8 @@
                                class="btn btn-primary">
                                 <i class="fas fa-edit"></i> Bearbeiten
                             </a>
-                            <button type="button" class="btn btn-danger" 
-                                    onclick="deleteRating({{ event.id }})">
+                            <button type="button" class="btn btn-danger delete-rating-btn" 
+                                    data-event-id="{{ event.id }}">
                                 <i class="fas fa-trash"></i> Löschen
                             </button>
                         </div>
@@ -196,21 +196,28 @@
 </style>
 
 <script>
-function deleteRating(eventId) {
-    if (confirm('Sind Sie sicher, dass Sie Ihre Bewertung löschen möchten?')) {
-        fetch(`/ratings/event/${eventId}/rating/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        }).then(response => {
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                alert('Fehler beim Löschen der Bewertung');
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-rating-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const eventId = this.getAttribute('data-event-id');
+            if (confirm('Sind Sie sicher, dass Sie Ihre Bewertung löschen möchten?')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch(`/ratings/event/${eventId}/rating/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Fehler beim Löschen der Bewertung');
+                    }
+                });
             }
         });
-    }
-}
+    });
+});
 </script>
 {% endblock %}

@@ -10,8 +10,10 @@ bp = Blueprint('public', __name__)
 def landing():
     """Landing page"""
     try:
-        # Get latest published event
-        latest_event = Event.query.filter_by(published=True).order_by(Event.datum.desc()).first()
+        # Get next upcoming published event
+        latest_event = Event.query.filter_by(published=True).filter(
+            Event.datum >= datetime.utcnow()
+        ).order_by(Event.datum.asc()).first()
 
         # Public stats
         member_count = Member.query.filter_by(is_active=True).count()
