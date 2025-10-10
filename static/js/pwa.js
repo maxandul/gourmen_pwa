@@ -717,6 +717,7 @@ class PWA {
         // Aktualisiere Service Worker Status
         const statusSpan = document.getElementById('sw-registration-status');
         const scopeSpan = document.getElementById('sw-scope');
+        const versionSpan = document.getElementById('sw-version');
         const pushSpan = document.getElementById('push-status');
         
         if (statusSpan) {
@@ -729,12 +730,36 @@ class PWA {
                     if (scopeSpan) {
                         scopeSpan.textContent = registration.scope;
                     }
+                    
+                    // Version aus Cache-Namen auslesen
+                    if (versionSpan) {
+                        try {
+                            const cacheNames = await caches.keys();
+                            const gourmenCache = cacheNames.find(name => name.startsWith('gourmen-v'));
+                            if (gourmenCache) {
+                                const versionMatch = gourmenCache.match(/gourmen-v([\d.]+)/);
+                                if (versionMatch) {
+                                    versionSpan.textContent = `v${versionMatch[1]}`;
+                                } else {
+                                    versionSpan.textContent = 'Unbekannt';
+                                }
+                            } else {
+                                versionSpan.textContent = 'Nicht gefunden';
+                            }
+                        } catch (error) {
+                            versionSpan.textContent = 'Fehler';
+                        }
+                    }
                 } else {
                     statusSpan.textContent = 'Nicht registriert';
                     statusSpan.className = 'status-unavailable';
                     
                     if (scopeSpan) {
                         scopeSpan.textContent = '-';
+                    }
+                    
+                    if (versionSpan) {
+                        versionSpan.textContent = '-';
                     }
                 }
             } catch (error) {
@@ -858,7 +883,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.4.1';
+            versionSpan.textContent = '1.4.2';
         }
 
         // Installationsstatus prüfen

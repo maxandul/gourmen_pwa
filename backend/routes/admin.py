@@ -63,11 +63,7 @@ def index():
     audit_events_count = AuditEvent.query.count()
     
     # Merch statistics
-    active_articles = MerchArticle.query.filter_by(is_active=True).all()
-    active_articles_names = ', '.join([article.name for article in active_articles[:3]]) if active_articles else 'Keine Artikel'
-    if len(active_articles) > 3:
-        active_articles_names += f' (+{len(active_articles) - 3} weitere)'
-    
+    active_articles_count = MerchArticle.query.filter_by(is_active=True).count()
     pending_orders_count = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).count()
     
     # Total revenue (Gesamtumsatz)
@@ -82,7 +78,7 @@ def index():
                          upcoming_events_count=upcoming_events_count,
                          current_season_events=current_season_events,
                          audit_events_count=audit_events_count,
-                         active_articles_names=active_articles_names,
+                         active_articles_count=active_articles_count,
                          pending_orders_count=pending_orders_count,
                          total_revenue_chf=total_revenue_chf)
 

@@ -249,7 +249,7 @@ def enroll_2fa():
     
     if mfa_data.is_totp_enabled:
         flash('2FA ist bereits aktiviert', 'info')
-        return redirect(url_for('account.profile'))
+        return redirect(url_for('member.profile'))
     
     # Generate new secret only if not already in session
     if '2fa_secret' not in session:
@@ -298,7 +298,7 @@ def disable_2fa():
     mfa_data = MemberMFA.query.filter_by(member_id=current_user.id).first()
     if not mfa_data or not mfa_data.is_totp_enabled:
         flash('2FA ist nicht aktiviert', 'info')
-        return redirect(url_for('account.profile'))
+        return redirect(url_for('member.profile'))
     
     step_up_form = StepUpForm()
     if step_up_form.validate_on_submit():
@@ -318,7 +318,7 @@ def disable_2fa():
             SecurityService.log_audit_event(AuditAction.DISABLE_MFA, 'member_mfa', current_user.id)
             
             flash('2FA erfolgreich deaktiviert', 'success')
-            return redirect(url_for('account.profile'))
+            return redirect(url_for('member.profile'))
         else:
             flash('Ungültiges Passwort', 'error')
     
@@ -329,10 +329,14 @@ def disable_2fa():
 def step_up():
     """Step-up authentication"""
     # Get next page from multiple sources for robustness
-    next_page = (request.args.get('next') or 
-                request.form.get('next') or 
-                request.form.get('next_url') or
-                session.get('step_up_next'))
+    # Use a list comprehension to filter out empty strings
+    next_candidates = [
+        request.args.get('next'),
+        request.form.get('next'),
+        request.form.get('next_url'),
+        session.get('step_up_next')
+    ]
+    next_page = next((page for page in next_candidates if page and page.strip()), None)
     
     # Debug logging
     current_app.logger.info(f"Step-up called with next_page: {next_page}")
@@ -340,11 +344,11 @@ def step_up():
     current_app.logger.info(f"Request form: {dict(request.form)}")
     current_app.logger.info(f"Session step_up_next: {session.get('step_up_next')}")
     
-    # Store next page in session for reliability
+    # Store next page in session for reliability (only on GET or if not already set)
     if next_page and next_page.startswith('/'):
         session['step_up_next'] = next_page
         current_app.logger.info(f"Stored next_page in session: {next_page}")
-    else:
+    elif not session.get('step_up_next'):
         current_app.logger.info(f"Invalid or missing next_page: {next_page}")
     
     # If user already has step-up access, redirect to the requested page
@@ -369,27 +373,31 @@ def step_up():
             SecurityService.grant_step_up_access()
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', current_user.id)
             
+            # Get the final next page to redirect to
+            final_next = session.get('step_up_next') or next_page
+            
             # Debug logging
             current_app.logger.info(f"Step-up successful for user {current_user.id}")
-            current_app.logger.info(f"Next page: {next_page}")
-            current_app.logger.info(f"Stored next: {session.get('step_up_next')}")
+            current_app.logger.info(f"Next page from form: {next_page}")
+            current_app.logger.info(f"Next page from session: {session.get('step_up_next')}")
+            current_app.logger.info(f"Final next page: {final_next}")
             
-            # Use session-stored next page if available
-            stored_next = session.get('step_up_next')
-            if stored_next:
-                session.pop('step_up_next', None)  # Clear after use
-                current_app.logger.info(f"Redirecting to stored next: {stored_next}")
-                return redirect(stored_next)
-            elif next_page and next_page.startswith('/'):
-                current_app.logger.info(f"Redirecting to next: {next_page}")
-                return redirect(next_page)
+            # Clear session after reading
+            session.pop('step_up_next', None)
+            
+            # Redirect to the final next page
+            if final_next and final_next.startswith('/'):
+                current_app.logger.info(f"Redirecting to: {final_next}")
+                return redirect(final_next)
             else:
-                current_app.logger.info("No next page, redirecting to dashboard")
+                current_app.logger.info("No valid next page, redirecting to dashboard")
                 return redirect(url_for('dashboard.index'))
         else:
             flash('Ungültiges Passwort', 'error')
     
-    return render_template('auth/step_up.html', form=form, next=next_page)
+    # Always pass the next page to the template (prefer session value)
+    template_next = session.get('step_up_next') or next_page
+    return render_template('auth/step_up.html', form=form, next=template_next)
 
 @bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -433,7 +441,7 @@ def change_password():
         if was_first_login:
             return redirect(url_for('dashboard.index'))
         else:
-            return redirect(url_for('account.profile'))
+            return redirect(url_for('member.profile'))
     
     return render_template('auth/change_password.html', form=form)
 
@@ -674,4 +682,4 @@ def backup_codes():
     
     # If backup codes already exist, show a message
     flash('Backup-Codes wurden bereits generiert. Falls Sie sie verloren haben, können Sie 2FA deaktivieren und neu einrichten.', 'info')
-    return redirect(url_for('account.profile')) 
+    return redirect(url_for('member.profile')) 

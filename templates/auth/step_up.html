@@ -19,13 +19,10 @@
                 
                 <form method="POST" class="form">
                     {{ form.hidden_tag() }}
-                    {% if next %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                    {% endif %}
-                    <!-- Debug: Zeige den next Parameter an -->
-                    <input type="hidden" name="debug_next" value="{{ next or 'NONE' }}">
-                    <!-- Fallback: Auch aus URL-Parameter lesen -->
-                    <input type="hidden" name="next_url" value="{{ request.args.get('next', '') }}">
+                    <!-- Always include next parameter, even if empty -->
+                    <input type="hidden" name="next" value="{{ next or '' }}">
+                    <!-- Fallback: Also use next_url -->
+                    <input type="hidden" name="next_url" value="{{ next or request.args.get('next', '') }}">
                     
                     <div class="form-group">
                         {{ form.password.label(class="form-label") }}

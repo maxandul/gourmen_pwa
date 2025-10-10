@@ -26,42 +26,22 @@
                     <div class="summary-item">
                         <h3 class="summary-value">{{ average_ratings.overall }}</h3>
                         <p class="summary-label">Gesamtbewertung</p>
-                        <div class="stars">
-                            {% for i in range(5) %}
-                                <span class="star {% if i < average_ratings.overall %}active{% endif %}">★</span>
-                            {% endfor %}
-                        </div>
                         <small class="text-muted">{{ average_ratings.count }} Bewertungen</small>
                     </div>
                     
                     <div class="summary-item">
                         <h4 class="summary-value">{{ average_ratings.food }}</h4>
                         <p class="summary-label">Essen</p>
-                        <div class="stars">
-                            {% for i in range(5) %}
-                                <span class="star {% if i < average_ratings.food %}active{% endif %}">★</span>
-                            {% endfor %}
-                        </div>
                     </div>
                     
                     <div class="summary-item">
                         <h4 class="summary-value">{{ average_ratings.drinks }}</h4>
                         <p class="summary-label">Getränke</p>
-                        <div class="stars">
-                            {% for i in range(5) %}
-                                <span class="star {% if i < average_ratings.drinks %}active{% endif %}">★</span>
-                            {% endfor %}
-                        </div>
                     </div>
                     
                     <div class="summary-item">
                         <h4 class="summary-value">{{ average_ratings.service }}</h4>
                         <p class="summary-label">Bedienung</p>
-                        <div class="stars">
-                            {% for i in range(5) %}
-                                <span class="star {% if i < average_ratings.service %}active{% endif %}">★</span>
-                            {% endfor %}
-                        </div>
                     </div>
                 </div>
             </div>

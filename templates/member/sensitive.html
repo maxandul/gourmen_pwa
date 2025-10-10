@@ -8,7 +8,7 @@
         <h1> Sensible Daten</h1>
         <p class="page-subtitle">Verwalte deine persönlichen Dokumente und medizinischen Informationen</p>
         <div class="page-actions">
-            <a href="{{ url_for('account.profile') }}" class="btn btn-primary">← Zurück zum Profil</a>
+            <a href="{{ url_for('member.profile') }}" class="btn btn-primary">← Zurück zum Profil</a>
         </div>
     </div>
     
@@ -136,7 +136,7 @@
                     <!-- Form Actions -->
                     <div class="card-actions primary">
                         {{ form.submit(class="btn btn-primary") }}
-                        <a href="{{ url_for('account.profile') }}" class="btn btn-outline">Abbrechen</a>
+                        <a href="{{ url_for('member.profile') }}" class="btn btn-outline">Abbrechen</a>
                     </div>
                 </form>
             </div>
