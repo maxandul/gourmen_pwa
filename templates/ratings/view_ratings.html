@@ -28,11 +28,7 @@
                         <p class="summary-label">Gesamtbewertung</p>
                         <div class="stars">
                             {% for i in range(5) %}
-                                {% if i < average_ratings.overall %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-muted"></i>
-                                {% endif %}
+                                <span class="star {% if i < average_ratings.overall %}active{% endif %}">★</span>
                             {% endfor %}
                         </div>
                         <small class="text-muted">{{ average_ratings.count }} Bewertungen</small>
@@ -43,11 +39,7 @@
                         <p class="summary-label">Essen</p>
                         <div class="stars">
                             {% for i in range(5) %}
-                                {% if i < average_ratings.food %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-muted"></i>
-                                {% endif %}
+                                <span class="star {% if i < average_ratings.food %}active{% endif %}">★</span>
                             {% endfor %}
                         </div>
                     </div>
@@ -57,11 +49,7 @@
                         <p class="summary-label">Getränke</p>
                         <div class="stars">
                             {% for i in range(5) %}
-                                {% if i < average_ratings.drinks %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-muted"></i>
-                                {% endif %}
+                                <span class="star {% if i < average_ratings.drinks %}active{% endif %}">★</span>
                             {% endfor %}
                         </div>
                     </div>
@@ -71,11 +59,7 @@
                         <p class="summary-label">Bedienung</p>
                         <div class="stars">
                             {% for i in range(5) %}
-                                {% if i < average_ratings.service %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-muted"></i>
-                                {% endif %}
+                                <span class="star {% if i < average_ratings.service %}active{% endif %}">★</span>
                             {% endfor %}
                         </div>
                     </div>
@@ -102,11 +86,7 @@
                                 <p><strong>🍽️ Essen:</strong> {{ rating.food_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
-                                        {% if i < rating.food_rating %}
-                                            <i class="fas fa-star text-warning"></i>
-                                        {% else %}
-                                            <i class="far fa-star text-muted"></i>
-                                        {% endif %}
+                                        <span class="star {% if i < rating.food_rating %}active{% endif %}">★</span>
                                     {% endfor %}
                                 </div>
                                 </p>
@@ -115,11 +95,7 @@
                                 <p><strong>🥤 Getränke:</strong> {{ rating.drinks_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
-                                        {% if i < rating.drinks_rating %}
-                                            <i class="fas fa-star text-warning"></i>
-                                        {% else %}
-                                            <i class="far fa-star text-muted"></i>
-                                        {% endif %}
+                                        <span class="star {% if i < rating.drinks_rating %}active{% endif %}">★</span>
                                     {% endfor %}
                                 </div>
                                 </p>
@@ -128,11 +104,7 @@
                                 <p><strong>👨‍🍳 Bedienung:</strong> {{ rating.service_rating }}/5<br>
                                 <div class="stars">
                                     {% for i in range(5) %}
-                                        {% if i < rating.service_rating %}
-                                            <i class="fas fa-star text-warning"></i>
-                                        {% else %}
-                                            <i class="far fa-star text-muted"></i>
-                                        {% endif %}
+                                        <span class="star {% if i < rating.service_rating %}active{% endif %}">★</span>
                                     {% endfor %}
                                 </div>
                                 </p>
@@ -168,7 +140,7 @@
             </div>
             <div class="card-body">
                 <div class="text-center py-4">
-                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                    <div style="font-size: 3em; margin-bottom: 16px;">⭐</div>
                     <h4>Noch keine Bewertungen</h4>
                     <p class="text-muted">Für dieses Event wurden noch keine Bewertungen abgegeben.</p>
                 </div>
@@ -187,11 +159,18 @@
 
 <style>
 .stars {
-    font-size: 0.9em;
+    display: inline-block;
+    font-size: 1.2em;
+    line-height: 1;
 }
 
-.stars i {
-    margin-right: 1px;
+.star {
+    color: #ddd;
+    margin-right: 2px;
+}
+
+.star.active {
+    color: #ffc107;
 }
 </style>
 
