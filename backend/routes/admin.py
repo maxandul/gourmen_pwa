@@ -1040,6 +1040,10 @@ def merch_supplier_order():
         article = MerchArticle.query.get(item.article_id)
         variant = MerchVariant.query.get(item.variant_id)
         
+        # Skip if article or variant not found (deleted items)
+        if not article or not variant:
+            continue
+        
         if article.id not in articles_dict:
             articles_dict[article.id] = {
                 'article': article,
