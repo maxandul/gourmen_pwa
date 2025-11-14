@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+"""
+Railway Cron Job Script für alle Event-Erinnerungen
+Dieses Script wird von Railway's Cron Schedule ausgeführt und prüft:
+- 3-Wochen-Erinnerungen (täglich)
+- Montag-vor-Event-Erinnerungen (nur Montags)
+- Zukünftige weitere Reminder können hier hinzugefügt werden
+"""
+
+import sys
+import os
+import logging
+
+# Füge den Projektpfad hinzu
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Logging konfigurieren
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def run_all_reminders():
+    """Führt alle Reminder-Checks aus"""
+    try:
+        # Importiere Flask App und Services
+        from backend.app import create_app
+        from backend.services.cron_service import CronService
+        
+        # Erstelle Flask App Context
+        app = create_app()
+        
+        all_success = True
+        
+        with app.app_context():
+            logger.info("🚀 Starting all reminder checks...")
+            logger.info("")
+            
+            # ========================================
+            # 1. 3-Wochen-Reminder (täglich)
+            # ========================================
+            logger.info("📧 [1/2] Checking 3-week reminders...")
+            result_3week = CronService.run_3_week_reminders()
+            
+            if result_3week['success']:
+                logger.info(f"   ✅ 3-week reminders: {result_3week['processed_events']} events processed")
+                
+                for event_result in result_3week.get('results', []):
+                    logger.info(f"      Event {event_result['event_id']}: {event_result['event_name']}")
+                    logger.info(f"         Organizer: {event_result['organizer_reminder_sent']}")
+                    logger.info(f"         Members: {event_result['member_reminders'].get('sent_count', 0)} notifications")
+            else:
+                logger.error(f"   ❌ 3-week reminders failed: {result_3week.get('error', 'Unknown')}")
+                all_success = False
+            
+            logger.info("")
+            
+            # ========================================
+            # 2. Montag-Reminder (nur Montags)
+            # ========================================
+            logger.info("🥰 [2/2] Checking weekly reminders (Monday)...")
+            result_weekly = CronService.run_weekly_reminders()
+            
+            if result_weekly['success']:
+                if result_weekly.get('message') == 'Not Monday, skipped':
+                    logger.info(f"   ⏭️  Weekly reminders: Skipped (not Monday)")
+                else:
+                    logger.info(f"   ✅ Weekly reminders: {result_weekly['processed_events']} events processed")
+                    
+                    for event_result in result_weekly.get('results', []):
+                        logger.info(f"      Event {event_result['event_id']}: {event_result['event_name']}")
+                        reminder_result = event_result.get('reminder_result', {})
+                        logger.info(f"         Participants: {reminder_result.get('sent_count', 0)} notifications")
+            else:
+                logger.error(f"   ❌ Weekly reminders failed: {result_weekly.get('error', 'Unknown')}")
+                all_success = False
+            
+            logger.info("")
+            logger.info("=" * 60)
+            
+            if all_success:
+                logger.info("✅ All reminder checks completed successfully!")
+                return 0
+            else:
+                logger.error("⚠️  Some reminder checks failed (see above)")
+                return 1
+                
+    except Exception as e:
+        logger.error(f"❌ Fatal error in cron job: {e}", exc_info=True)
+        return 1
+
+if __name__ == '__main__':
+    logger.info("=" * 60)
+    logger.info("🔔 Railway Cron Job: All Event Reminders")
+    logger.info("=" * 60)
+    logger.info("")
+    
+    exit_code = run_all_reminders()
+    
+    logger.info("=" * 60)
+    logger.info(f"Cron job finished with exit code: {exit_code}")
+    logger.info("=" * 60)
+    
+    sys.exit(exit_code)
+
+
+
