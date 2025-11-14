@@ -142,8 +142,8 @@ class PushNotificationService:
             
             # Push-Benachrichtigung Payload
             payload = {
-                'title': f'Event-Organisation: {event.event_typ.value}',
-                'body': f"Das Event '{event.restaurant or 'Unbekanntes Restaurant'}' findet in 3 Wochen statt. {non_responded_count} Mitglieder haben noch nicht geantwortet.",
+                'title': f'{event.event_typ.value} vom [event.display_date]',
+                'body': f"Dein Event findet in 3 Wochen statt. {non_responded_count} Mitglieder haben noch nicht geantwortet und heute einen Reminder erhalten.",
                 'icon': '/static/img/pwa/icon-192.png',
                 'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android
                 'tag': f'event-organizer-{event_id}',
@@ -294,17 +294,22 @@ class PushNotificationService:
         """
         Prüft alle Events und sendet 3-Wochen-Erinnerungen automatisch
         Sollte täglich als Cron-Job ausgeführt werden
+        Nur für MONATSESSEN und GENERALVERSAMMLUNG (nicht für AUSFLUG)
         """
         try:
+            from backend.models.event import EventType
+            
             # Finde Events die in 3 Wochen (21 Tagen) sind
             target_date = datetime.utcnow() + timedelta(days=21)
             start_date = target_date - timedelta(hours=12)  # 12h Toleranz
             end_date = target_date + timedelta(hours=12)
             
+            # Nur MONATSESSEN und GENERALVERSAMMLUNG, nicht AUSFLUG
             events = Event.query.filter(
                 Event.datum >= start_date,
                 Event.datum <= end_date,
-                Event.published == True
+                Event.published == True,
+                Event.event_typ.in_([EventType.MONATSESSEN, EventType.GENERALVERSAMMLUNG])
             ).all()
             
             results = []
@@ -319,11 +324,12 @@ class PushNotificationService:
                     'event_id': event.id,
                     'event_name': event.restaurant or 'Unbekanntes Restaurant',
                     'event_date': event.display_date,
+                    'event_type': event.event_typ.value,
                     'organizer_reminder_sent': organizer_success,
                     'member_reminders': member_result
                 })
                 
-                logger.info(f"Processed 3-week reminder for event {event.id}: organizer={organizer_success}, members={member_result}")
+                logger.info(f"Processed 3-week reminder for event {event.id} ({event.event_typ.value}): organizer={organizer_success}, members={member_result}")
             
             return {
                 'success': True,
@@ -333,6 +339,157 @@ class PushNotificationService:
             
         except Exception as e:
             logger.error(f"Error in 3-week reminder check: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    @staticmethod
+    def send_event_week_reminder_to_participants(event_id: int) -> dict:
+        """
+        Sendet "Montag-vor-Event" Reminder an alle Teilnehmenden
+        "Friendly reminder 🥰 Am [Wochentag] sehen wir uns hier: [Restaurant Name]"
+        """
+        try:
+            event = Event.query.get(event_id)
+            if not event or not event.is_upcoming:
+                return {"success": False, "message": "Event nicht gefunden oder bereits vorbei"}
+            
+            # Finde alle Teilnehmenden (teilnahme=True)
+            participants = Participation.query.filter_by(
+                event_id=event_id,
+                teilnahme=True
+            ).all()
+            
+            if not participants:
+                return {"success": False, "message": "Keine Teilnehmer gefunden"}
+            
+            # Wochentag auf Deutsch
+            weekday_names = {
+                0: 'Montag',
+                1: 'Dienstag',
+                2: 'Mittwoch',
+                3: 'Donnerstag',
+                4: 'Freitag',
+                5: 'Samstag',
+                6: 'Sonntag'
+            }
+            weekday = weekday_names[event.datum.weekday()]
+            
+            # Restaurant-Name (mit Fallback)
+            restaurant_name = event.restaurant or event.place_name or "dem Restaurant"
+            
+            # Push-Benachrichtigung Payload
+            payload = {
+                'title': f'Friendly reminder 🥰',
+                'body': f'Am {weekday} sehen wir uns hier: {restaurant_name}',
+                'icon': '/static/img/pwa/icon-192.png',
+                'badge': '/static/img/pwa/badge-96.png',
+                'tag': f'event-week-reminder-{event_id}',
+                'data': {
+                    'url': f'/events/{event_id}',
+                    'event_id': event_id,
+                    'type': 'event_week_reminder'
+                },
+                'actions': [
+                    {
+                        'action': 'view_event',
+                        'title': 'Event anzeigen'
+                    }
+                ]
+            }
+            
+            sent_count = 0
+            total_subscriptions = 0
+            
+            for participation in participants:
+                member = participation.member
+                if not member or not member.is_active:
+                    continue
+                
+                # Hole Push-Subscriptions des Mitglieds
+                subscriptions = PushSubscription.query.filter_by(
+                    member_id=member.id,
+                    is_active=True
+                ).all()
+                
+                total_subscriptions += len(subscriptions)
+                
+                # Sende an alle Subscriptions des Mitglieds
+                for subscription in subscriptions:
+                    if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
+                        subscription.mark_used()
+                        sent_count += 1
+            
+            return {
+                "success": True,
+                "message": f"Wochenreminder an {sent_count} Geräte von {len(participants)} Teilnehmern gesendet",
+                "sent_count": sent_count,
+                "participants_count": len(participants),
+                "total_subscriptions": total_subscriptions
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending event week reminder: {e}")
+            return {"success": False, "message": f"Fehler beim Senden: {e}"}
+    
+    @staticmethod
+    def check_and_send_weekly_reminders():
+        """
+        Prüft alle Events und sendet Montag-vor-Event-Reminder
+        Sollte jeden Montag ausgeführt werden
+        """
+        try:
+            from backend.models.event import EventType
+            
+            # Prüfe ob heute Montag ist
+            today = datetime.utcnow()
+            if today.weekday() != 0:  # 0 = Montag
+                logger.info(f"Today is not Monday ({today.strftime('%A')}), skipping weekly reminders")
+                return {
+                    'success': True,
+                    'processed_events': 0,
+                    'results': [],
+                    'message': 'Not Monday, skipped'
+                }
+            
+            # Finde Events die diese Woche stattfinden (Montag bis Sonntag)
+            # Start: Heute 00:00
+            week_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Ende: Sonntag 23:59
+            week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
+            
+            events = Event.query.filter(
+                Event.datum >= week_start,
+                Event.datum <= week_end,
+                Event.published == True,
+                Event.event_typ.in_([EventType.MONATSESSEN, EventType.GENERALVERSAMMLUNG])
+            ).all()
+            
+            logger.info(f"Found {len(events)} events this week for weekly reminders")
+            
+            results = []
+            for event in events:
+                result = PushNotificationService.send_event_week_reminder_to_participants(event.id)
+                
+                results.append({
+                    'event_id': event.id,
+                    'event_name': event.restaurant or event.place_name or f"{event.event_typ.value}",
+                    'event_date': event.display_date,
+                    'event_type': event.event_typ.value,
+                    'reminder_result': result
+                })
+                
+                logger.info(f"Processed weekly reminder for event {event.id} ({event.event_typ.value}): {result}")
+            
+            return {
+                'success': True,
+                'processed_events': len(events),
+                'results': results
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in weekly reminder check: {e}")
             return {
                 'success': False,
                 'error': str(e)

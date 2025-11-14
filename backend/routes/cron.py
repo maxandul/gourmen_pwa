@@ -59,6 +59,35 @@ def cron_status():
         logger.error(f"Error getting cron status: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/cron/weekly-reminders', methods=['POST'])
+@csrf.exempt
+def cron_weekly_reminders():
+    """
+    Cron-Job Endpoint für Wochen-Erinnerungen (Montag vor Event)
+    Railway Cron-Job: curl -X POST https://your-app.railway.app/cron/weekly-reminders
+    """
+    try:
+        # Einfache Authentifizierung über Header (für Railway Cron)
+        auth_header = request.headers.get('X-Cron-Auth')
+        expected_auth = current_app.config.get('CRON_AUTH_TOKEN', 'gourmen-cron-2024')
+        
+        if auth_header != expected_auth:
+            logger.warning(f"Unauthorized cron request from {request.remote_addr}")
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        result = CronService.run_weekly_reminders()
+        
+        if result['success']:
+            logger.info(f"Cron job weekly reminders completed: {result}")
+            return jsonify(result)
+        else:
+            logger.error(f"Cron job weekly reminders failed: {result}")
+            return jsonify(result), 500
+            
+    except Exception as e:
+        logger.error(f"Error in cron weekly reminders: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/cron/test', methods=['POST'])
 @csrf.exempt
 def cron_test():
