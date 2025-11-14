@@ -59,7 +59,7 @@ def run_all_reminders():
             # ========================================
             # 2. Montag-Reminder (nur Montags)
             # ========================================
-            logger.info("🥰 [2/2] Checking weekly reminders (Monday)...")
+            logger.info("🥰 [2/3] Checking weekly reminders (Monday)...")
             result_weekly = CronService.run_weekly_reminders()
             
             if result_weekly['success']:
@@ -74,6 +74,25 @@ def run_all_reminders():
                         logger.info(f"         Participants: {reminder_result.get('sent_count', 0)} notifications")
             else:
                 logger.error(f"   ❌ Weekly reminders failed: {result_weekly.get('error', 'Unknown')}")
+                all_success = False
+            
+            logger.info("")
+            
+            # ========================================
+            # 3. Rating-Reminder (Tag nach Event)
+            # ========================================
+            logger.info("🌟 [3/3] Checking rating reminders (yesterday's events)...")
+            result_rating = CronService.run_rating_reminders()
+            
+            if result_rating['success']:
+                logger.info(f"   ✅ Rating reminders: {result_rating['processed_events']} events processed")
+                
+                for event_result in result_rating.get('results', []):
+                    logger.info(f"      Event {event_result['event_id']}: {event_result['event_name']}")
+                    reminder_result = event_result.get('reminder_result', {})
+                    logger.info(f"         Participants: {reminder_result.get('sent_count', 0)} notifications")
+            else:
+                logger.error(f"   ❌ Rating reminders failed: {result_rating.get('error', 'Unknown')}")
                 all_success = False
             
             logger.info("")

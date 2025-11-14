@@ -496,6 +496,149 @@ class PushNotificationService:
             }
     
     @staticmethod
+    def send_rating_reminder_to_participants(event_id: int) -> dict:
+        """
+        Sendet Rating-Reminder an Teilnehmer die noch nicht bewertet haben
+        "Schön, dass du gestern dabei warst 🥰 Vergiss nicht das Event zu bewerten! 🌟"
+        """
+        try:
+            event = Event.query.get(event_id)
+            if not event or event.is_upcoming:
+                return {"success": False, "message": "Event nicht gefunden oder noch nicht vorbei"}
+            
+            # Finde Teilnehmer die noch nicht bewertet haben
+            from backend.models.rating import EventRating
+            
+            # Alle Teilnehmer
+            participants = Participation.query.filter_by(
+                event_id=event_id,
+                teilnahme=True
+            ).all()
+            
+            if not participants:
+                return {"success": False, "message": "Keine Teilnehmer gefunden"}
+            
+            # Finde wer bereits bewertet hat
+            rated_member_ids = db.session.query(EventRating.participant_id).filter_by(
+                event_id=event_id
+            ).all()
+            rated_member_ids = [r[0] for r in rated_member_ids]
+            
+            # Filter: Nur Teilnehmer die NICHT bewertet haben
+            non_rated_participants = [p for p in participants if p.member_id not in rated_member_ids]
+            
+            if not non_rated_participants:
+                return {"success": True, "message": "Alle Teilnehmer haben bereits bewertet", "sent_count": 0}
+            
+            # Restaurant-Name (mit Fallback)
+            restaurant_name = event.restaurant or event.place_name or "das Restaurant"
+            
+            # Push-Benachrichtigung Payload
+            payload = {
+                'title': 'Schön, dass du gestern dabei warst 🥰',
+                'body': f'Vergiss nicht das Event zu bewerten! 🌟',
+                'icon': '/static/img/pwa/icon-192.png',
+                'badge': '/static/img/pwa/badge-96.png',
+                'tag': f'event-rating-reminder-{event_id}',
+                'data': {
+                    'url': f'/ratings/{event_id}/submit',
+                    'event_id': event_id,
+                    'type': 'event_rating_reminder'
+                },
+                'actions': [
+                    {
+                        'action': 'view_event',
+                        'title': 'Jetzt bewerten'
+                    }
+                ]
+            }
+            
+            sent_count = 0
+            total_subscriptions = 0
+            
+            for participation in non_rated_participants:
+                member = participation.member
+                if not member or not member.is_active:
+                    continue
+                
+                # Hole Push-Subscriptions des Mitglieds
+                subscriptions = PushSubscription.query.filter_by(
+                    member_id=member.id,
+                    is_active=True
+                ).all()
+                
+                total_subscriptions += len(subscriptions)
+                
+                # Sende an alle Subscriptions des Mitglieds
+                for subscription in subscriptions:
+                    if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
+                        subscription.mark_used()
+                        sent_count += 1
+            
+            return {
+                "success": True,
+                "message": f"Rating-Reminder an {sent_count} Geräte von {len(non_rated_participants)} Teilnehmern gesendet",
+                "sent_count": sent_count,
+                "participants_count": len(non_rated_participants),
+                "total_subscriptions": total_subscriptions
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending rating reminder: {e}")
+            return {"success": False, "message": f"Fehler beim Senden: {e}"}
+    
+    @staticmethod
+    def check_and_send_rating_reminders():
+        """
+        Prüft alle Events von gestern und sendet Rating-Reminder
+        Sollte täglich ausgeführt werden
+        """
+        try:
+            from backend.models.event import EventType
+            
+            # Gestern (00:00 bis 23:59)
+            yesterday = datetime.utcnow() - timedelta(days=1)
+            day_start = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
+            day_end = yesterday.replace(hour=23, minute=59, second=59, microsecond=999999)
+            
+            # Finde Events von gestern (nur MONATSESSEN)
+            events = Event.query.filter(
+                Event.datum >= day_start,
+                Event.datum <= day_end,
+                Event.published == True,
+                Event.event_typ == EventType.MONATSESSEN
+            ).all()
+            
+            logger.info(f"Found {len(events)} MONATSESSEN events from yesterday for rating reminders")
+            
+            results = []
+            for event in events:
+                result = PushNotificationService.send_rating_reminder_to_participants(event.id)
+                
+                results.append({
+                    'event_id': event.id,
+                    'event_name': event.restaurant or event.place_name or f"{event.event_typ.value}",
+                    'event_date': event.display_date,
+                    'event_type': event.event_typ.value,
+                    'reminder_result': result
+                })
+                
+                logger.info(f"Processed rating reminder for event {event.id} ({event.event_typ.value}): {result}")
+            
+            return {
+                'success': True,
+                'processed_events': len(events),
+                'results': results
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in rating reminder check: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    @staticmethod
     def subscribe_member_to_push(member_id: int, subscription_data: Dict, user_agent: str = None) -> bool:
         """
         Registriert ein Mitglied für Push-Benachrichtigungen

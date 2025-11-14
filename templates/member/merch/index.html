@@ -32,12 +32,15 @@
                                 <span class="value">{{ article.description }}</span>
                             </div>
                             <div class="stats-item">
-                                <span class="label">Basispreis:</span>
+                                <span class="label">Preis:</span>
                                 <span class="value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
                             </div>
                             <div class="stats-item">
-                                <span class="label">Verfügbare Varianten:</span>
-                                <span class="value">{{ article.variants|length }} Farb-/Größen-Kombinationen</span>
+                                <span class="label">Farbvarianten:</span>
+                                <span class="value">
+                                    {% set colors = article.variants | map(attribute='color') | unique | sort | list %}
+                                    {{ colors | join(', ') }}
+                                </span>
                             </div>
                             
                             <div class="card-actions primary">
@@ -122,5 +125,23 @@
         </div>
     </div>
 </div>
+
+<style>
+.stats-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.stats-item .label {
+    text-align: left;
+}
+
+.stats-item .value {
+    text-align: right;
+    margin-left: auto;
+}
+</style>
 {% endblock %}
 

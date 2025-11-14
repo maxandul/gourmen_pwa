@@ -989,4 +989,128 @@ def edit_merch_variant(variant_id):
             db.session.rollback()
             flash(f'Fehler beim Aktualisieren der Variante: {str(e)}', 'error')
     
-    return render_template('admin/merch/variant_form.html', article=article, variant=variant) 
+    return render_template('admin/merch/variant_form.html', article=article, variant=variant)
+
+@bp.route('/merch/supplier-order')
+@login_required
+@admin_required
+def merch_supplier_order():
+    """Supplier order overview - aggregated by article and variant"""
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order_item import MerchOrderItem
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
+    from sqlalchemy import func
+    
+    # Get all pending orders (BESTELLT status)
+    pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
+    pending_order_ids = [order.id for order in pending_orders]
+    
+    if not pending_order_ids:
+        return render_template('admin/merch/supplier_order.html', 
+                             articles_data=[], 
+                             total_stats={},
+                             pending_orders_count=0)
+    
+    # Aggregate order items by variant
+    aggregated = db.session.query(
+        MerchOrderItem.article_id,
+        MerchOrderItem.variant_id,
+        func.sum(MerchOrderItem.quantity).label('total_quantity'),
+        func.count(func.distinct(MerchOrderItem.order_id)).label('order_count'),
+        func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
+        func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
+        func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
+    ).filter(
+        MerchOrderItem.order_id.in_(pending_order_ids)
+    ).group_by(
+        MerchOrderItem.article_id,
+        MerchOrderItem.variant_id
+    ).all()
+    
+    # Organize data by article
+    articles_dict = {}
+    total_supplier_price = 0
+    total_member_price = 0
+    total_profit = 0
+    total_quantity = 0
+    total_variants = 0
+    
+    for item in aggregated:
+        article = MerchArticle.query.get(item.article_id)
+        variant = MerchVariant.query.get(item.variant_id)
+        
+        if article.id not in articles_dict:
+            articles_dict[article.id] = {
+                'article': article,
+                'variants': [],
+                'total_quantity': 0,
+                'total_supplier_price': 0
+            }
+        
+        articles_dict[article.id]['variants'].append({
+            'variant': variant,
+            'quantity': item.total_quantity,
+            'order_count': item.order_count,
+            'supplier_price': item.total_supplier_price
+        })
+        articles_dict[article.id]['total_quantity'] += item.total_quantity
+        articles_dict[article.id]['total_supplier_price'] += item.total_supplier_price
+        
+        total_supplier_price += item.total_supplier_price
+        total_member_price += item.total_member_price
+        total_profit += item.total_profit
+        total_quantity += item.total_quantity
+        total_variants += 1
+    
+    # Convert to list and sort by article name
+    articles_data = sorted(articles_dict.values(), key=lambda x: x['article'].name)
+    
+    # Sort variants within each article by color then size
+    for article_data in articles_data:
+        article_data['variants'].sort(key=lambda x: (x['variant'].color, x['variant'].size))
+    
+    total_stats = {
+        'article_count': len(articles_data),
+        'variant_count': total_variants,
+        'total_quantity': total_quantity,
+        'total_supplier_price': total_supplier_price,
+        'total_member_price': total_member_price,
+        'total_profit': total_profit
+    }
+    
+    return render_template('admin/merch/supplier_order.html',
+                         articles_data=articles_data,
+                         total_stats=total_stats,
+                         pending_orders_count=len(pending_orders))
+
+@bp.route('/merch/supplier-order/mark-ordered', methods=['POST'])
+@login_required
+@admin_required
+def mark_orders_as_shipped():
+    """Mark all pending orders as WIRD_GELIEFERT"""
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    
+    try:
+        # Get all pending orders
+        pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
+        
+        if not pending_orders:
+            flash('Keine ausstehenden Bestellungen gefunden', 'info')
+            return redirect(url_for('admin.merch_supplier_order'))
+        
+        # Update status
+        count = 0
+        for order in pending_orders:
+            order.status = OrderStatus.WIRD_GELIEFERT
+            count += 1
+        
+        db.session.commit()
+        
+        flash(f'{count} Bestellung(en) als "Wird geliefert" markiert', 'success')
+        return redirect(url_for('admin.merch_supplier_order'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Aktualisieren der Bestellungen: {str(e)}', 'error')
+        return redirect(url_for('admin.merch_supplier_order')) 

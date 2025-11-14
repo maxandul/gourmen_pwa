@@ -103,3 +103,28 @@ class CronService:
                 'success': False,
                 'error': str(e)
             }
+    
+    @staticmethod
+    def run_rating_reminders():
+        """
+        Cron-Job für Rating-Erinnerungen (Tag nach Event)
+        Sollte täglich ausgeführt werden
+        """
+        try:
+            logger.info("Starting rating reminder cron job...")
+            
+            result = PushNotificationService.check_and_send_rating_reminders()
+            
+            if result['success']:
+                logger.info(f"Rating reminder cron job completed successfully: {result['processed_events']} events processed")
+                return result
+            else:
+                logger.error(f"Rating reminder cron job failed: {result.get('error', 'Unknown error')}")
+                return result
+                
+        except Exception as e:
+            logger.error(f"Error in rating reminder cron job: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
