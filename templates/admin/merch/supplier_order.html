@@ -73,31 +73,14 @@
                             <span class="label">Gesamtstückzahl:</span>
                             <span class="value">{{ article_data.total_quantity }} Stück</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Lieferantenpreis:</span>
-                            <span class="value">{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</span>
-                        </div>
                         
                         <div class="variant-divider"></div>
                         
                         {% for variant_data in article_data.variants %}
-                        <div class="variant-item">
-                            <div class="stats-item">
-                                <span class="label"><strong>{{ variant_data.variant.color }}</strong> - {{ variant_data.variant.size }}</span>
-                                <span class="value">{{ variant_data.quantity }} Stück</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Bestellungen:</span>
-                                <span class="value">{{ variant_data.order_count }}</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Preis (Lieferant):</span>
-                                <span class="value">{{ "%.2f"|format(variant_data.supplier_price / 100) }} CHF</span>
-                            </div>
+                        <div class="stats-item">
+                            <span class="label"><strong>{{ variant_data.variant.color }}</strong> - {{ variant_data.variant.size }}</span>
+                            <span class="value">{{ variant_data.quantity }} Stück</span>
                         </div>
-                        {% if not loop.last %}
-                        <div class="variant-separator"></div>
-                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
@@ -193,24 +176,9 @@ function copyToClipboard() {
     border-top: 2px solid var(--card-border);
 }
 
-.variant-item {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-}
-
-.variant-separator {
-    margin: 15px 0;
-    border-top: 1px dashed var(--card-border);
-}
-
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .variant-item {
-        margin-bottom: 12px;
-        padding-bottom: 12px;
     }
     
     .action-buttons {
