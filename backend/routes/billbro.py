@@ -368,42 +368,7 @@ def set_total(event_id):
     event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
     
     # Calculate individual shares based on weights
-    sparsam_count = 0
-    normal_count = 0
-    allin_count = 0
-    
-    for participation in event.participations:
-        if participation.teilnahme and participation.esstyp:
-            if participation.esstyp == Esstyp.SPARSAM:
-                sparsam_count += 1
-            elif participation.esstyp == Esstyp.NORMAL:
-                normal_count += 1
-            elif participation.esstyp == Esstyp.ALLIN:
-                allin_count += 1
-    
-    total_participants = sparsam_count + normal_count + allin_count
-    
-    if total_participants > 0:
-        # Calculate shares based on actual participant counts
-        if sparsam_count > 0:
-            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_sparsam_rappen = None
-            
-        if normal_count > 0:
-            event.betrag_normal_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_normal_rappen = None
-            
-        if allin_count > 0:
-            event.betrag_allin_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_allin_rappen = None
-        
-        # Update calculated shares for each participation
-        for participation in event.participations:
-            if participation.teilnahme and participation.esstyp:
-                participation.calculated_share_rappen = int(gesamtbetrag_rappen / total_participants)
+    calculate_weighted_shares(event, gesamtbetrag_rappen)
     
     db.session.commit()
     
@@ -447,42 +412,7 @@ def accept_suggested_total(event_id):
     event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
     
     # Calculate individual shares based on weights
-    sparsam_count = 0
-    normal_count = 0
-    allin_count = 0
-    
-    for participation in event.participations:
-        if participation.teilnahme and participation.esstyp:
-            if participation.esstyp == Esstyp.SPARSAM:
-                sparsam_count += 1
-            elif participation.esstyp == Esstyp.NORMAL:
-                normal_count += 1
-            elif participation.esstyp == Esstyp.ALLIN:
-                allin_count += 1
-    
-    total_participants = sparsam_count + normal_count + allin_count
-    
-    if total_participants > 0:
-        # Calculate shares based on actual participant counts
-        if sparsam_count > 0:
-            event.betrag_sparsam_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_sparsam_rappen = None
-            
-        if normal_count > 0:
-            event.betrag_normal_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_normal_rappen = None
-            
-        if allin_count > 0:
-            event.betrag_allin_rappen = int(gesamtbetrag_rappen / total_participants)
-        else:
-            event.betrag_allin_rappen = None
-        
-        # Update calculated shares for each participation
-        for participation in event.participations:
-            if participation.teilnahme and participation.esstyp:
-                participation.calculated_share_rappen = int(gesamtbetrag_rappen / total_participants)
+    calculate_weighted_shares(event, gesamtbetrag_rappen)
     
     db.session.commit()
     

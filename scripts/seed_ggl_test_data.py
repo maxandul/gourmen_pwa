@@ -103,7 +103,7 @@ def create_event_with_participations(year, month, restaurant, kueche, members, p
     # BillBro weights
     event.betrag_sparsam_rappen = int(event.gesamtbetrag_rappen * 0.7 / 3)
     event.betrag_normal_rappen = int(event.gesamtbetrag_rappen * 1.0 / 3)
-    event.betrag_allin_rappen = int(event.gesamtbetrag_rappen * 1.8 / 3)
+    event.betrag_allin_rappen = int(event.gesamtbetrag_rappen * 1.3 / 3)
     
     db.session.add(event)
     db.session.flush()  # Get event ID

@@ -60,7 +60,7 @@ class Event(db.Model):
     weights_used_json = db.Column(db.JSON, default={
         "sparsam": 0.7,
         "normal": 1.0,
-        "allin": 1.8
+        "allin": 1.3
     })
     tip_rule = db.Column(db.String(50), default="7pct_round10")
     rounding_rule = db.Column(db.String(50), default="ceil_10")
@@ -144,7 +144,7 @@ class Event(db.Model):
     @property
     def billbro_allin_weight(self):
         """Get all-in weight for BillBro calculations"""
-        return self.weights_used_json.get('allin', 1.8)
+        return self.weights_used_json.get('allin', 1.3)
     
     # Rating methods
     def get_ratings(self):
