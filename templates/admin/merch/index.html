@@ -84,9 +84,8 @@
                     <div class="card-body">
                         <div class="quick-actions">
                             <a href="{{ url_for('admin.merch_orders') }}" class="btn btn-primary">📋 Alle Bestellungen</a>
-                            <a href="{{ url_for('admin.merch_supplier_order') }}" class="btn btn-primary">📦 Übersicht Bestellungen</a>
+                            <a href="{{ url_for('admin.merch_supplier_order') }}" class="btn btn-primary">📦 Offene Bestellungen</a>
                             <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-primary">📦 Artikel verwalten</a>
-                            <a href="{{ url_for('admin.merch_orders', status='BESTELLT') }}" class="btn btn-warning">🟡 Ausstehende Bestellungen</a>
                             <a href="{{ url_for('admin.merch_orders', status='WIRD_GELIEFERT') }}" class="btn btn-info">🔵 In Bearbeitung</a>
                         </div>
                     </div>
