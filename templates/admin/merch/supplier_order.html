@@ -9,58 +9,14 @@
         <p class="page-subtitle">Übersicht aller ausstehenden Bestellungen nach Artikel</p>
         <div class="page-actions">
             <a href="{{ url_for('admin.merch_orders') }}" class="btn btn-outline">← Zurück zu Bestellungen</a>
+            {% if pending_orders_count > 0 %}
+            <button onclick="copyToClipboard()" class="btn btn-primary">📋 Liste kopieren</button>
+            {% endif %}
         </div>
     </div>
     
     <div class="page-content">
         {% if pending_orders_count > 0 %}
-            <!-- Gesamtübersicht -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>📊 Gesamtbestellung</h2>
-                </div>
-                <div class="card-body">
-                    <div class="stats-grid">
-                        <div class="stats-item">
-                            <span class="label">Ausstehende Bestellungen:</span>
-                            <span class="value">{{ pending_orders_count }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Artikel:</span>
-                            <span class="value">{{ total_stats.article_count }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Varianten:</span>
-                            <span class="value">{{ total_stats.variant_count }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Gesamtstückzahl:</span>
-                            <span class="value">{{ total_stats.total_quantity }} Stück</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Lieferantenpreis:</span>
-                            <span class="value">{{ "%.2f"|format(total_stats.total_supplier_price / 100) }} CHF</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Mitgliederpreis:</span>
-                            <span class="value">{{ "%.2f"|format(total_stats.total_member_price / 100) }} CHF</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Gewinn:</span>
-                            <span class="value profit">{{ "%.2f"|format(total_stats.total_profit / 100) }} CHF</span>
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button onclick="copyToClipboard()" class="btn btn-primary">📋 Liste kopieren</button>
-                        <form method="POST" action="{{ url_for('admin.mark_orders_as_shipped') }}" style="display: inline;" onsubmit="return confirm('Alle {{ pending_orders_count }} Bestellung(en) als \'Wird geliefert\' markieren?');">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-success">✅ Als bestellt markieren</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Artikel-Liste -->
             <div class="events-list">
                 {% for article_data in articles_data %}
@@ -156,38 +112,10 @@ function copyToClipboard() {
 </script>
 
 <style>
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
 /* Variant Divider */
 .variant-divider {
     margin: 20px 0;
     border-top: 2px solid var(--card-border);
-}
-
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .action-buttons .btn {
-        width: 100%;
-    }
 }
 </style>
 {% endblock %}
