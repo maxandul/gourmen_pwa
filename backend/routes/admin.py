@@ -996,24 +996,25 @@ def edit_merch_variant(variant_id):
 @admin_required
 def merch_supplier_order():
     """Supplier order overview - aggregated by article and variant"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    from backend.models.merch_order_item import MerchOrderItem
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    from sqlalchemy import func
-    
-    # Get all pending orders (BESTELLT status)
-    pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
-    pending_order_ids = [order.id for order in pending_orders]
-    
-    if not pending_order_ids:
-        return render_template('admin/merch/supplier_order.html', 
-                             articles_data=[], 
-                             total_stats={},
-                             pending_orders_count=0)
-    
-    # Aggregate order items by variant
-    aggregated = db.session.query(
+    try:
+        from backend.models.merch_order import MerchOrder, OrderStatus
+        from backend.models.merch_order_item import MerchOrderItem
+        from backend.models.merch_article import MerchArticle
+        from backend.models.merch_variant import MerchVariant
+        from sqlalchemy import func
+        
+        # Get all pending orders (BESTELLT status)
+        pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
+        pending_order_ids = [order.id for order in pending_orders]
+        
+        if not pending_order_ids:
+            return render_template('admin/merch/supplier_order.html', 
+                                 articles_data=[], 
+                                 total_stats={},
+                                 pending_orders_count=0)
+        
+        # Aggregate order items by variant
+        aggregated = db.session.query(
         MerchOrderItem.article_id,
         MerchOrderItem.variant_id,
         func.sum(MerchOrderItem.quantity).label('total_quantity'),
@@ -1021,72 +1022,77 @@ def merch_supplier_order():
         func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
         func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
         func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
-    ).filter(
-        MerchOrderItem.order_id.in_(pending_order_ids)
-    ).group_by(
-        MerchOrderItem.article_id,
-        MerchOrderItem.variant_id
-    ).all()
-    
-    # Organize data by article
-    articles_dict = {}
-    total_supplier_price = 0
-    total_member_price = 0
-    total_profit = 0
-    total_quantity = 0
-    total_variants = 0
-    
-    for item in aggregated:
-        article = MerchArticle.query.get(item.article_id)
-        variant = MerchVariant.query.get(item.variant_id)
+        ).filter(
+            MerchOrderItem.order_id.in_(pending_order_ids)
+        ).group_by(
+            MerchOrderItem.article_id,
+            MerchOrderItem.variant_id
+        ).all()
         
-        # Skip if article or variant not found (deleted items)
-        if not article or not variant:
-            continue
+        # Organize data by article
+        articles_dict = {}
+        total_supplier_price = 0
+        total_member_price = 0
+        total_profit = 0
+        total_quantity = 0
+        total_variants = 0
         
-        if article.id not in articles_dict:
-            articles_dict[article.id] = {
-                'article': article,
-                'variants': [],
-                'total_quantity': 0,
-                'total_supplier_price': 0
-            }
+        for item in aggregated:
+            article = MerchArticle.query.get(item.article_id)
+            variant = MerchVariant.query.get(item.variant_id)
+            
+            # Skip if article or variant not found (deleted items)
+            if not article or not variant:
+                continue
+            
+            if article.id not in articles_dict:
+                articles_dict[article.id] = {
+                    'article': article,
+                    'variants': [],
+                    'total_quantity': 0,
+                    'total_supplier_price': 0
+                }
+            
+            articles_dict[article.id]['variants'].append({
+                'variant': variant,
+                'quantity': item.total_quantity,
+                'order_count': item.order_count,
+                'supplier_price': item.total_supplier_price
+            })
+            articles_dict[article.id]['total_quantity'] += item.total_quantity
+            articles_dict[article.id]['total_supplier_price'] += item.total_supplier_price
+            
+            total_supplier_price += item.total_supplier_price
+            total_member_price += item.total_member_price
+            total_profit += item.total_profit
+            total_quantity += item.total_quantity
+            total_variants += 1
         
-        articles_dict[article.id]['variants'].append({
-            'variant': variant,
-            'quantity': item.total_quantity,
-            'order_count': item.order_count,
-            'supplier_price': item.total_supplier_price
-        })
-        articles_dict[article.id]['total_quantity'] += item.total_quantity
-        articles_dict[article.id]['total_supplier_price'] += item.total_supplier_price
+        # Convert to list and sort by article name
+        articles_data = sorted(articles_dict.values(), key=lambda x: x['article'].name)
         
-        total_supplier_price += item.total_supplier_price
-        total_member_price += item.total_member_price
-        total_profit += item.total_profit
-        total_quantity += item.total_quantity
-        total_variants += 1
+        # Sort variants within each article by color then size
+        for article_data in articles_data:
+            article_data['variants'].sort(key=lambda x: (x['variant'].color, x['variant'].size))
+        
+        total_stats = {
+            'article_count': len(articles_data),
+            'variant_count': total_variants,
+            'total_quantity': total_quantity,
+            'total_supplier_price': total_supplier_price,
+            'total_member_price': total_member_price,
+            'total_profit': total_profit
+        }
     
-    # Convert to list and sort by article name
-    articles_data = sorted(articles_dict.values(), key=lambda x: x['article'].name)
-    
-    # Sort variants within each article by color then size
-    for article_data in articles_data:
-        article_data['variants'].sort(key=lambda x: (x['variant'].color, x['variant'].size))
-    
-    total_stats = {
-        'article_count': len(articles_data),
-        'variant_count': total_variants,
-        'total_quantity': total_quantity,
-        'total_supplier_price': total_supplier_price,
-        'total_member_price': total_member_price,
-        'total_profit': total_profit
-    }
-    
-    return render_template('admin/merch/supplier_order.html',
-                         articles_data=articles_data,
-                         total_stats=total_stats,
-                         pending_orders_count=len(pending_orders))
+        return render_template('admin/merch/supplier_order.html',
+                             articles_data=articles_data,
+                             total_stats=total_stats,
+                             pending_orders_count=len(pending_orders))
+    except Exception as e:
+        flash(f'Fehler beim Laden der Bestellübersicht: {str(e)}', 'error')
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('admin.merch'))
 
 @bp.route('/merch/supplier-order/mark-ordered', methods=['POST'])
 @login_required
