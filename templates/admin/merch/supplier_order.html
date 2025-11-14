@@ -62,62 +62,47 @@
             </div>
             
             <!-- Artikel-Liste -->
-            {% for article_data in articles_data %}
-            <div class="card">
-                <div class="card-header">
-                    <h2>🏷️ {{ article_data.article.name }}</h2>
-                </div>
-                <div class="card-body">
-                    <div class="card card-secondary variant-accent">
-                        <div class="card-header">
-                            <h3>📊 Übersicht</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="stats-item">
-                                <span class="label">Gesamtstückzahl:</span>
-                                <span class="value">{{ article_data.total_quantity }} Stück</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Lieferantenpreis:</span>
-                                <span class="value">{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</span>
-                            </div>
-                        </div>
+            <div class="events-list">
+                {% for article_data in articles_data %}
+                <div class="card card-secondary variant-accent">
+                    <div class="card-header">
+                        <h3>🏷️ {{ article_data.article.name }}</h3>
                     </div>
-                    
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>📦 Varianten-Details</h3>
+                    <div class="card-body">
+                        <div class="stats-item">
+                            <span class="label">Gesamtstückzahl:</span>
+                            <span class="value">{{ article_data.total_quantity }} Stück</span>
                         </div>
-                        <div class="card-body">
-                            <div class="variants-table">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Farbe</th>
-                                            <th>Größe</th>
-                                            <th>Anzahl</th>
-                                            <th>Bestellungen</th>
-                                            <th>Preis (Lieferant)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for variant_data in article_data.variants %}
-                                        <tr>
-                                            <td><strong>{{ variant_data.variant.color }}</strong></td>
-                                            <td>{{ variant_data.variant.size }}</td>
-                                            <td class="quantity">{{ variant_data.quantity }} Stück</td>
-                                            <td>{{ variant_data.order_count }} Bestellung(en)</td>
-                                            <td class="price">{{ "%.2f"|format(variant_data.supplier_price / 100) }} CHF</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                        <div class="stats-item">
+                            <span class="label">Lieferantenpreis:</span>
+                            <span class="value">{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</span>
+                        </div>
+                        
+                        <div class="variant-divider"></div>
+                        
+                        {% for variant_data in article_data.variants %}
+                        <div class="variant-item">
+                            <div class="stats-item">
+                                <span class="label"><strong>{{ variant_data.variant.color }}</strong> - {{ variant_data.variant.size }}</span>
+                                <span class="value">{{ variant_data.quantity }} Stück</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Bestellungen:</span>
+                                <span class="value">{{ variant_data.order_count }}</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Preis (Lieferant):</span>
+                                <span class="value">{{ "%.2f"|format(variant_data.supplier_price / 100) }} CHF</span>
                             </div>
                         </div>
+                        {% if not loop.last %}
+                        <div class="variant-separator"></div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
             
         {% else %}
             <div class="card">
@@ -202,53 +187,20 @@ function copyToClipboard() {
     flex-wrap: wrap;
 }
 
-.variants-table {
-    overflow-x: auto;
+/* Variant Divider */
+.variant-divider {
+    margin: 20px 0;
+    border-top: 2px solid var(--card-border);
 }
 
-.variants-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.variants-table th,
-.variants-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--background-tertiary);
-}
-
-.variants-table th {
-    background: var(--background-secondary);
-    font-weight: bold;
-    color: var(--text-secondary);
-}
-
-.variants-table tbody tr:hover {
-    background: var(--background-secondary);
-}
-
-.variants-table .quantity {
-    font-weight: bold;
-    color: var(--accent-color);
-}
-
-.variants-table .price {
-    text-align: right;
-}
-
-.profit {
-    color: var(--success-color, #28a745);
-    font-weight: bold;
-}
-
-/* Card-Secondary Abstände */
-.card-body > .card-secondary {
+.variant-item {
     margin-bottom: 15px;
+    padding-bottom: 15px;
 }
 
-.card-body > .card-secondary:last-child {
-    margin-bottom: 0;
+.variant-separator {
+    margin: 15px 0;
+    border-top: 1px dashed var(--card-border);
 }
 
 @media (max-width: 768px) {
@@ -256,13 +208,9 @@ function copyToClipboard() {
         grid-template-columns: 1fr;
     }
     
-    .variants-table {
-        font-size: 14px;
-    }
-    
-    .variants-table th,
-    .variants-table td {
-        padding: 8px 6px;
+    .variant-item {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
     }
     
     .action-buttons {
