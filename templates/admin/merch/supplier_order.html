@@ -66,43 +66,54 @@
             <div class="card">
                 <div class="card-header">
                     <h2>🏷️ {{ article_data.article.name }}</h2>
-                    <div class="article-summary">
-                        <span class="summary-badge">{{ article_data.total_quantity }} Stück</span>
-                        <span class="summary-badge">{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</span>
-                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="variants-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Farbe</th>
-                                    <th>Größe</th>
-                                    <th>Anzahl</th>
-                                    <th>Bestellungen</th>
-                                    <th>Preis (Lieferant)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for variant_data in article_data.variants %}
-                                <tr>
-                                    <td><strong>{{ variant_data.variant.color }}</strong></td>
-                                    <td>{{ variant_data.variant.size }}</td>
-                                    <td class="quantity">{{ variant_data.quantity }} Stück</td>
-                                    <td>{{ variant_data.order_count }} Bestellung(en)</td>
-                                    <td class="price">{{ "%.2f"|format(variant_data.supplier_price / 100) }} CHF</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr class="total-row">
-                                    <td colspan="2"><strong>Artikel-Gesamt</strong></td>
-                                    <td class="quantity"><strong>{{ article_data.total_quantity }} Stück</strong></td>
-                                    <td></td>
-                                    <td class="price"><strong>{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</strong></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <div class="card card-secondary variant-accent">
+                        <div class="card-header">
+                            <h3>📊 Übersicht</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-item">
+                                <span class="label">Gesamtstückzahl:</span>
+                                <span class="value">{{ article_data.total_quantity }} Stück</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="label">Lieferantenpreis:</span>
+                                <span class="value">{{ "%.2f"|format(article_data.total_supplier_price / 100) }} CHF</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-secondary variant-info">
+                        <div class="card-header">
+                            <h3>📦 Varianten-Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="variants-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Farbe</th>
+                                            <th>Größe</th>
+                                            <th>Anzahl</th>
+                                            <th>Bestellungen</th>
+                                            <th>Preis (Lieferant)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for variant_data in article_data.variants %}
+                                        <tr>
+                                            <td><strong>{{ variant_data.variant.color }}</strong></td>
+                                            <td>{{ variant_data.variant.size }}</td>
+                                            <td class="quantity">{{ variant_data.quantity }} Stück</td>
+                                            <td>{{ variant_data.order_count }} Bestellung(en)</td>
+                                            <td class="price">{{ "%.2f"|format(variant_data.supplier_price / 100) }} CHF</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,21 +195,6 @@ function copyToClipboard() {
     margin-bottom: 20px;
 }
 
-.article-summary {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.summary-badge {
-    padding: 4px 12px;
-    background: var(--background-secondary);
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--accent-color);
-}
-
 .action-buttons {
     display: flex;
     gap: 10px;
@@ -208,7 +204,6 @@ function copyToClipboard() {
 
 .variants-table {
     overflow-x: auto;
-    margin-top: 15px;
 }
 
 .variants-table table {
@@ -242,18 +237,18 @@ function copyToClipboard() {
     text-align: right;
 }
 
-.variants-table tfoot {
-    border-top: 2px solid var(--background-tertiary);
-}
-
-.variants-table .total-row td {
-    padding-top: 15px;
-    font-size: 16px;
-}
-
 .profit {
     color: var(--success-color, #28a745);
     font-weight: bold;
+}
+
+/* Card-Secondary Abstände */
+.card-body > .card-secondary {
+    margin-bottom: 15px;
+}
+
+.card-body > .card-secondary:last-child {
+    margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
