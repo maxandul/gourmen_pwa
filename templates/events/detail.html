@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const eventId = this.getAttribute('data-event-id');
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '/events/' + eventId + '/send-rsvp-reminder';
+                form.action = '/events/' + eventId + '/send_rsvp_reminder';
                 
                 const csrf = document.createElement('input');
                 csrf.type = 'hidden';
