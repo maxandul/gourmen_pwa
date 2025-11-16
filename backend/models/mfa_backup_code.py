@@ -26,12 +26,6 @@ class MFABackupCode(db.Model):
         return f'<MFABackupCode {self.member_id}>'
     
     @property
-    def member(self):
-        """Get associated member"""
-        from backend.models.member import Member
-        return Member.query.get(self.member_id)
-    
-    @property
     def is_used(self):
         """Check if code has been used"""
         return self.used_at is not None

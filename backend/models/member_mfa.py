@@ -22,10 +22,4 @@ class MemberMFA(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
-        return f'<MemberMFA {self.member_id}>'
-    
-    @property
-    def member(self):
-        """Get associated member"""
-        from backend.models.member import Member
-        return Member.query.get(self.member_id) 
+        return f'<MemberMFA {self.member_id}>' 

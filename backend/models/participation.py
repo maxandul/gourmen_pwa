@@ -42,18 +42,6 @@ class Participation(db.Model):
         return f'<Participation {self.member_id} at Event {self.event_id}>'
     
     @property
-    def member(self):
-        """Get associated member"""
-        from backend.models.member import Member
-        return Member.query.get(self.member_id)
-    
-    @property
-    def event(self):
-        """Get associated event"""
-        from backend.models.event import Event
-        return Event.query.get(self.event_id)
-    
-    @property
     def has_guess(self):
         """Check if member has made a guess"""
         return self.guess_bill_amount_rappen is not None

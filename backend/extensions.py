@@ -18,19 +18,37 @@ login_manager.login_message_category = 'info'
 # Security
 csrf = CSRFProtect()
 
-# Rate limiting
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
+# Rate limiting - will be initialized in init_extensions()
+limiter = None
 
 def init_extensions(app):
     """Initialize all Flask extensions"""
+    global limiter
+    
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
-    limiter.init_app(app)
+    
+    # Initialize Flask-Limiter with Redis if available, otherwise in-memory
+    redis_url = app.config.get('REDIS_URL')
+    if redis_url:
+        # Use Redis storage
+        limiter = Limiter(
+            app=app,
+            key_func=get_remote_address,
+            default_limits=["200 per day", "50 per hour"],
+            storage_uri=redis_url
+        )
+        app.logger.info(f"Flask-Limiter initialized with Redis storage")
+    else:
+        # Fallback to in-memory storage (not recommended for production)
+        limiter = Limiter(
+            app=app,
+            key_func=get_remote_address,
+            default_limits=["200 per day", "50 per hour"]
+        )
+        app.logger.warning("Flask-Limiter initialized with in-memory storage (not recommended for production)")
     
     # Configure login manager
     @login_manager.user_loader

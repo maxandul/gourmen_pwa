@@ -82,12 +82,6 @@ class Event(db.Model):
         return f'<Event {self.id}: {event_type} am {self.datum.date()}>'
     
     @property
-    def organisator(self):
-        """Get event organizer"""
-        from backend.models.member import Member
-        return Member.query.get(self.organisator_id)
-    
-    @property
     def is_past(self):
         """Check if event is in the past"""
         return self.datum < datetime.utcnow()

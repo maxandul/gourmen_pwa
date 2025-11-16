@@ -56,6 +56,9 @@ class Config:
     RATE_LIMIT_LOGIN = os.environ.get('RATE_LIMIT_LOGIN', '5 per minute')
     RATE_LIMIT_STEPUP = os.environ.get('RATE_LIMIT_STEPUP', '5 per minute')
     
+    # Redis (optional - für Flask-Limiter storage)
+    REDIS_URL = os.environ.get('REDIS_URL')
+    
     # CSP settings
     SECURITY_CSP = os.environ.get('SECURITY_CSP', 
         "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")

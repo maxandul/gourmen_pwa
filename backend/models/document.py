@@ -44,18 +44,6 @@ class Document(db.Model):
         return f'<Document {self.id}: {self.title}>'
     
     @property
-    def event(self):
-        """Get associated event"""
-        from backend.models.event import Event
-        return Event.query.get(self.event_id) if self.event_id else None
-    
-    @property
-    def uploader(self):
-        """Get uploader"""
-        from backend.models.member import Member
-        return Member.query.get(self.uploader_id)
-    
-    @property
     def is_deleted(self):
         """Check if document is soft-deleted"""
         return self.deleted_at is not None

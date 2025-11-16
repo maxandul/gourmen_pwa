@@ -65,12 +65,6 @@ class AuditEvent(db.Model):
         return f'<AuditEvent {action} by {self.actor_id} at {self.at}>'
     
     @property
-    def actor(self):
-        """Get actor"""
-        from backend.models.member import Member
-        return Member.query.get(self.actor_id)
-    
-    @property
     def display_action(self):
         """Get human-readable action name"""
         action_names = {
