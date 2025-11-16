@@ -3,6 +3,44 @@
 {% block title %}App-Einstellungen - Gourmen{% endblock %}
 
 {% block content %}
+<style>
+.alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.alert strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.alert p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.alert ul {
+    margin: 12px 0 0 0;
+    padding-left: 24px;
+    font-size: 14px;
+}
+
+.alert li {
+    margin: 4px 0;
+}
+</style>
 <div class="container">
     <div class="page-header">
         <h1>⚙️ App-Einstellungen</h1>
@@ -51,6 +89,26 @@
                 <h2>🔔 Push-Benachrichtigungen</h2>
             </div>
             <div class="card-body">
+                <div id="push-enabled-message" style="display: none;">
+                    <div class="alert alert-success">
+                        <strong>✅ Push-Benachrichtigungen sind aktiviert!</strong>
+                        <p>Du erhältst Benachrichtigungen für:</p>
+                        <ul>
+                            <li>📅 3-Wochen-Reminder vor Events (nur Organisatoren)</li>
+                            <li>🥰 Montag-Reminder für Teilnehmer</li>
+                            <li>⭐ Rating-Erinnerungen nach Events</li>
+                            <li>🔔 RSVP-Erinnerungen vom Organisator</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="push-disabled-message" style="display: none;">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Push-Benachrichtigungen sind nicht aktiviert</strong>
+                        <p>Du verpasst wichtige Event-Erinnerungen! Aktiviere jetzt Push-Benachrichtigungen.</p>
+                    </div>
+                </div>
+                
                 <p class="card-description">
                     Aktiviere Push-Benachrichtigungen, um über neue Events und wichtige Informationen informiert zu werden.
                 </p>
@@ -62,7 +120,7 @@
                         </div>
                         
                         <div class="card-actions primary">
-                            <button id="enable-push-btn" class="btn btn-primary">
+                            <button id="enable-push-btn" class="btn btn-primary" style="display: none;">
                                 <span class="btn-icon">🔔</span>
                                 <span class="btn-text">Benachrichtigungen aktivieren</span>
                             </button>
@@ -139,9 +197,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Push-Status aktualisieren
-    function updatePushStatus() {
+    async function updatePushStatus() {
         const notificationSpan = document.getElementById('notification-status');
         const permissionSpan = document.getElementById('permission-status');
+        const enabledMessage = document.getElementById('push-enabled-message');
+        const disabledMessage = document.getElementById('push-disabled-message');
+        const enableBtn = document.getElementById('enable-push-btn');
         
         if ('Notification' in window) {
             if (notificationSpan) {
@@ -160,6 +221,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 notificationSpan.textContent = 'Nicht unterstützt';
                 notificationSpan.className = 'status-unavailable';
             }
+        }
+        
+        // Prüfe Subscription-Status auf dem Server
+        try {
+            const response = await fetch('/notifications/push/status');
+            const data = await response.json();
+            
+            if (data.subscribed) {
+                // User hat Push aktiviert
+                if (enabledMessage) enabledMessage.style.display = 'block';
+                if (disabledMessage) disabledMessage.style.display = 'none';
+                if (enableBtn) enableBtn.style.display = 'none';
+            } else {
+                // User hat Push NICHT aktiviert
+                if (enabledMessage) enabledMessage.style.display = 'none';
+                if (disabledMessage) disabledMessage.style.display = 'block';
+                if (enableBtn) enableBtn.style.display = 'inline-block';
+            }
+        } catch (error) {
+            console.error('Error checking push status:', error);
         }
     }
     

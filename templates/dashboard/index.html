@@ -9,6 +9,21 @@
         <p class="page-subtitle">Willkommen, {{ current_user.display_name_with_spirit }}!</p>
     </div>
     
+    <!-- Push-Benachrichtigungs-Banner -->
+    <div id="push-notification-banner" class="notification-banner" style="display: none;">
+        <div class="banner-content">
+            <span class="banner-icon">🔔</span>
+            <div class="banner-text">
+                <strong>Verpasse keine Events mehr!</strong>
+                <p>Aktiviere Push-Benachrichtigungen und bleib immer auf dem Laufenden.</p>
+            </div>
+            <div class="banner-actions">
+                <button id="enable-push-banner-btn" class="btn btn-primary btn-sm">Jetzt aktivieren</button>
+                <button id="dismiss-push-banner-btn" class="btn btn-secondary btn-sm">Später</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="page-content">
     
         {% if next_event %}
@@ -173,4 +188,215 @@
         </div>
     </div>
 </div>
+
+<style>
+.notification-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.banner-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+}
+
+.banner-text {
+    flex: 1;
+    min-width: 250px;
+}
+
+.banner-text strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.banner-text p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+.banner-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* Dark mode specific */
+.notification-banner .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.notification-banner .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .banner-actions {
+        width: 100%;
+    }
+    
+    .banner-actions button {
+        flex: 1;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    // Prüfe Push-Subscription-Status
+    try {
+        const response = await fetch('/notifications/push/status');
+        const data = await response.json();
+        
+        // Zeige Banner nur wenn:
+        // 1. User nicht subscribed ist
+        // 2. Banner nicht in den letzten 7 Tagen dismissed wurde
+        if (!data.subscribed) {
+            const dismissedAt = localStorage.getItem('push_banner_dismissed_at');
+            const now = Date.now();
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+            
+            if (!dismissedAt || (now - parseInt(dismissedAt)) > sevenDays) {
+                document.getElementById('push-notification-banner').style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking push status:', error);
+    }
+    
+    // "Jetzt aktivieren" Button
+    const enableBtn = document.getElementById('enable-push-banner-btn');
+    if (enableBtn) {
+        enableBtn.addEventListener('click', async function() {
+            enableBtn.disabled = true;
+            enableBtn.textContent = 'Aktiviere...';
+            
+            try {
+                // Prüfe ob Service Worker registriert ist
+                const registration = await navigator.serviceWorker.ready;
+                
+                // Hole VAPID Public Key
+                const vapidResponse = await fetch('/notifications/push/vapid-public-key');
+                const vapidData = await vapidResponse.json();
+                
+                if (!vapidData.publicKey) {
+                    throw new Error('VAPID key nicht verfügbar');
+                }
+                
+                // Request notification permission
+                const permission = await Notification.requestPermission();
+                
+                if (permission !== 'granted') {
+                    alert('Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen.');
+                    enableBtn.disabled = false;
+                    enableBtn.textContent = 'Jetzt aktivieren';
+                    return;
+                }
+                
+                // Subscribe to push
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidData.publicKey)
+                });
+                
+                // Send subscription to server
+                const subscribeResponse = await fetch('/notifications/push/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(subscription.toJSON())
+                });
+                
+                if (subscribeResponse.ok) {
+                    // Banner ausblenden
+                    document.getElementById('push-notification-banner').style.display = 'none';
+                    
+                    // Erfolgs-Meldung
+                    const successBanner = document.createElement('div');
+                    successBanner.className = 'notification-banner';
+                    successBanner.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+                    successBanner.innerHTML = '<div class="banner-content"><span class="banner-icon">✅</span><div class="banner-text"><strong>Push-Benachrichtigungen aktiviert!</strong><p>Du wirst ab jetzt über neue Events informiert.</p></div></div>';
+                    document.querySelector('.page-header').after(successBanner);
+                    
+                    setTimeout(() => {
+                        successBanner.style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error('Subscription fehlgeschlagen');
+                }
+                
+            } catch (error) {
+                console.error('Error enabling push:', error);
+                alert('Fehler beim Aktivieren der Push-Benachrichtigungen: ' + error.message);
+                enableBtn.disabled = false;
+                enableBtn.textContent = 'Jetzt aktivieren';
+            }
+        });
+    }
+    
+    // "Später" Button
+    const dismissBtn = document.getElementById('dismiss-push-banner-btn');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+            // Speichere Zeitstempel
+            localStorage.setItem('push_banner_dismissed_at', Date.now().toString());
+            
+            // Blende Banner aus
+            document.getElementById('push-notification-banner').style.display = 'none';
+        });
+    }
+    
+    // Helper function
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+});
+</script>
 {% endblock %}
