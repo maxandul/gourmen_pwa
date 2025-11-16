@@ -45,6 +45,10 @@
                             <span class="label">⌀ Punkte:</span>
                             <span class="value">{{ "%.1f"|format(entry.avg_points) }}</span>
                         </div>
+                        <div class="stats-item">
+                            <span class="label">⊘ Differenz:</span>
+                            <span class="value">{{ "%.1f"|format(entry.avg_diff_rappen / 100) }} CHF</span>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -534,6 +538,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         size: 13
                     },
                     padding: 12,
+                    // Sort tooltip items by points (descending)
+                    itemSort: function(a, b) {
+                        return b.parsed.y - a.parsed.y; // Descending order
+                    },
                     callbacks: {
                         title: function(context) {
                             return 'Event: ' + context[0].label;

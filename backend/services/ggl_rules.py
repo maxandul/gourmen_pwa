@@ -81,6 +81,7 @@ class GGLService:
         
         # Collect all participations with valid guesses
         member_points = defaultdict(list)
+        member_diffs = defaultdict(list)
         member_participation_count = defaultdict(int)
         
         for event in events:
@@ -95,6 +96,8 @@ class GGLService:
                 if participation.points is not None:
                     member_points[participation.member_id].append(participation.points)
                     member_participation_count[participation.member_id] += 1
+                if participation.diff_amount_rappen is not None:
+                    member_diffs[participation.member_id].append(participation.diff_amount_rappen)
         
         # Calculate season statistics
         season_stats = []
@@ -103,11 +106,17 @@ class GGLService:
             participation_count = member_participation_count[member_id]
             avg_points = total_points / participation_count if participation_count > 0 else 0
             
+            # Calculate average difference
+            diffs_list = member_diffs.get(member_id, [])
+            total_diff = sum(diffs_list)
+            avg_diff_rappen = total_diff / len(diffs_list) if len(diffs_list) > 0 else 0
+            
             season_stats.append({
                 'member_id': member_id,
                 'total_points': total_points,
                 'participation_count': participation_count,
                 'avg_points': avg_points,
+                'avg_diff_rappen': avg_diff_rappen,
                 'events_ranked': len(points_list)
             })
         
