@@ -510,7 +510,7 @@ def reset_member_password(member_id):
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
             flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
-            return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+            return render_template('admin/reset_member_password.html', member=member)
         
         # Generate new password
         new_password = SecurityService.generate_secure_password()
@@ -533,7 +533,7 @@ def reset_member_password(member_id):
         }
         return redirect(url_for('admin.show_temp_password'))
     
-    return render_template('admin/reset_member_password.html', member=member, csrf_token=generate_csrf())
+    return render_template('admin/reset_member_password.html', member=member)
 
 @bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST'])
 @login_required
@@ -547,7 +547,7 @@ def reset_member_2fa(member_id):
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
             flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
-            return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+            return render_template('admin/reset_member_2fa.html', member=member)
         
         # Get MFA data
         mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
@@ -574,9 +574,9 @@ def reset_member_2fa(member_id):
         else:
             flash(f'2FA für {member.display_name} war nicht aktiviert.', 'info')
         
-        return redirect(url_for('admin.members'))
+        return redirect(url_for('admin.member_security_overview', member_id=member.id))
     
-    return render_template('admin/reset_member_2fa.html', member=member, csrf_token=generate_csrf())
+    return render_template('admin/reset_member_2fa.html', member=member)
 
 @bp.route('/members/<int:member_id>/security-overview')
 @login_required

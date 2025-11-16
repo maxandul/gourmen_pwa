@@ -73,7 +73,7 @@
             </div>
             
             <form method="POST" class="mt-4">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-group">
                     <label for="confirm">Bestätigung:</label>
                     <input type="text" 
@@ -91,7 +91,7 @@
                     <button type="submit" class="btn btn-danger" onclick="return confirm('Sind Sie sicher, dass Sie die 2FA zurücksetzen möchten?')">
                         🔐 2FA zurücksetzen
                     </button>
-                    <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-secondary">
                         ❌ Abbrechen
                     </a>
                 </div>

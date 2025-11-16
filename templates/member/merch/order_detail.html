@@ -9,6 +9,9 @@
         <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
         <div class="page-actions">
             <a href="{{ url_for('member.merch_orders') }}" class="btn btn-outline">← Zurück zu Bestellungen</a>
+            {% if order.status.value == 'BESTELLT' %}
+            <a href="{{ url_for('member.merch_order_edit', order_id=order.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
+            {% endif %}
         </div>
     </div>
     

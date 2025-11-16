@@ -83,6 +83,14 @@
                         <div class="error">{{ form.nationalitaet.errors[0] }}</div>
                         {% endif %}
                     </div>
+                    
+                    <div class="form-group">
+                        {{ form.zimmerwunsch.label }}
+                        {{ form.zimmerwunsch(class="form-control") }}
+                        {% if form.zimmerwunsch.errors %}
+                        <div class="error">{{ form.zimmerwunsch.errors[0] }}</div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             
@@ -204,14 +212,6 @@
                     <h2>⭐ Präferenzen</h2>
                 </div>
                 <div class="card-body">
-                    <div class="form-group">
-                        {{ form.zimmerwunsch.label }}
-                        {{ form.zimmerwunsch(class="form-control") }}
-                        {% if form.zimmerwunsch.errors %}
-                        <div class="error">{{ form.zimmerwunsch.errors[0] }}</div>
-                        {% endif %}
-                    </div>
-                    
                     <div class="form-group">
                         {{ form.spirit_animal.label }}
                         {{ form.spirit_animal(class="form-control") }}

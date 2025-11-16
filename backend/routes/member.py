@@ -51,7 +51,6 @@ class ProfileForm(FlaskForm):
     kleider_cap = StringField('Kleidergröße Cap')
     
     # Preferences
-    zimmerwunsch = StringField('Zimmerwunsch')
     spirit_animal = StringField('Spirit Animal')
     fuehrerschein = StringField('Führerschein (Kategorien)')
     
@@ -123,7 +122,6 @@ def profile():
         form.kleider_cap.data = current_user.kleider_cap
         
         # Preferences
-        form.zimmerwunsch.data = current_user.zimmerwunsch
         form.spirit_animal.data = current_user.spirit_animal
         form.fuehrerschein.data = current_user.fuehrerschein
     
@@ -164,7 +162,6 @@ def profile():
         current_user.kleider_cap = form.kleider_cap.data
         
         # Preferences
-        current_user.zimmerwunsch = form.zimmerwunsch.data
         current_user.spirit_animal = form.spirit_animal.data
         current_user.fuehrerschein = form.fuehrerschein.data
         
@@ -309,6 +306,108 @@ def merch_order_detail(order_id):
     order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
     
     return render_template('member/merch/order_detail.html', order=order)
+
+@bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])
+@login_required
+def merch_order_edit(order_id):
+    """Edit merch order (only if status is BESTELLT)"""
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order_item import MerchOrderItem
+    
+    # Load the order and verify ownership + status
+    order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
+    
+    # Check if order can be edited
+    if order.status != OrderStatus.BESTELLT:
+        flash('Diese Bestellung kann nicht mehr bearbeitet werden.', 'error')
+        return redirect(url_for('member.merch_order_detail', order_id=order_id))
+    
+    if request.method == 'POST':
+        try:
+            # Delete old order items
+            MerchOrderItem.query.filter_by(order_id=order.id).delete()
+            
+            total_member_price = 0
+            total_supplier_price = 0
+            total_profit = 0
+            
+            # Process each article
+            for article in MerchArticle.query.filter_by(is_active=True).all():
+                color = request.form.get(f'color_{article.id}')
+                size = request.form.get(f'size_{article.id}')
+                quantity = int(request.form.get(f'quantity_{article.id}', 0))
+                
+                if quantity > 0 and color and size:
+                    # Find the variant
+                    variant = MerchVariant.query.filter_by(
+                        article_id=article.id,
+                        color=color,
+                        size=size,
+                        is_active=True
+                    ).first()
+                    
+                    if variant:
+                        # Create new order item
+                        item = MerchOrderItem(
+                            order_id=order.id,
+                            article_id=article.id,
+                            variant_id=variant.id,
+                            quantity=quantity,
+                            unit_member_price_rappen=variant.member_price_rappen,
+                            unit_supplier_price_rappen=variant.supplier_price_rappen,
+                            total_member_price_rappen=quantity * variant.member_price_rappen,
+                            total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
+                            total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
+                        )
+                        db.session.add(item)
+                        
+                        total_member_price += item.total_member_price_rappen
+                        total_supplier_price += item.total_supplier_price_rappen
+                        total_profit += item.total_profit_rappen
+            
+            # Update order totals
+            order.total_member_price_rappen = total_member_price
+            order.total_supplier_price_rappen = total_supplier_price
+            order.total_profit_rappen = total_profit
+            
+            db.session.commit()
+            flash('Bestellung erfolgreich aktualisiert!', 'success')
+            return redirect(url_for('member.merch_order_detail', order_id=order.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Aktualisieren der Bestellung: {str(e)}', 'error')
+    
+    # GET request - show form with existing data
+    articles = MerchArticle.query.filter_by(is_active=True).all()
+    
+    # Prepare existing order data
+    existing_items = {}
+    for item in order.order_items:
+        existing_items[item.article_id] = {
+            'color': item.variant.color,
+            'size': item.variant.size,
+            'quantity': item.quantity
+        }
+    
+    # Get all variants for each article
+    for article in articles:
+        article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
+        article.available_colors = list(set([variant.color for variant in article.variants]))
+        
+        # Pre-fill existing data if available
+        if article.id in existing_items:
+            article.selected_color = existing_items[article.id]['color']
+            article.selected_size = existing_items[article.id]['size']
+            article.selected_quantity = existing_items[article.id]['quantity']
+        else:
+            article.selected_color = None
+            article.selected_size = None
+            article.selected_quantity = 0
+    
+    return render_template('member/merch/order_edit.html', articles=articles, order=order)
 
 @bp.route('/sensitive', methods=['GET', 'POST'])
 @login_required
