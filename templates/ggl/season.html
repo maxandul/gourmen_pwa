@@ -548,12 +548,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         label: function(context) {
                             const fullLabel = context.dataset.label;
-                            const points = context.parsed.y;
+                            const cumulativePoints = context.parsed.y;
+                            const dataIndex = context.dataIndex;
                             
-                            return [
-                                fullLabel,
-                                'Punkte: ' + points
-                            ];
+                            // Calculate event-specific points (difference from previous cumulative)
+                            let eventPoints = cumulativePoints;
+                            if (dataIndex > 0) {
+                                const previousPoints = context.dataset.data[dataIndex - 1];
+                                if (previousPoints !== null && previousPoints !== undefined) {
+                                    eventPoints = cumulativePoints - previousPoints;
+                                }
+                            }
+                            
+                            // Format: "Name - Punkte: 11 (+3)"
+                            return fullLabel + ' - Punkte: ' + cumulativePoints + ' (+' + eventPoints + ')';
                         }
                     }
                 },
