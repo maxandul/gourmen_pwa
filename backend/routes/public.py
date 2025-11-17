@@ -17,17 +17,26 @@ def landing():
 
         # Public stats
         member_count = Member.query.filter_by(is_active=True).count()
-        restaurant_count = (
-            db.session.query(Event.restaurant)
+        
+        # Count unique restaurants from both 'restaurant' and 'place_name' fields
+        from sqlalchemy import func, case
+        restaurant_names = (
+            db.session.query(
+                func.coalesce(Event.place_name, Event.restaurant).label('name')
+            )
             .filter(
                 Event.published == True,
                 Event.datum < datetime.utcnow(),
-                Event.restaurant.isnot(None),
-                Event.restaurant != ''
+                db.or_(
+                    db.and_(Event.restaurant.isnot(None), Event.restaurant != ''),
+                    db.and_(Event.place_name.isnot(None), Event.place_name != '')
+                )
             )
             .distinct()
-            .count()
+            .all()
         )
+        restaurant_count = len(restaurant_names)
+        
         days_since_foundation = (datetime.utcnow().date() - date(2021, 11, 21)).days
 
         return render_template(

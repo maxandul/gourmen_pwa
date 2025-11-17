@@ -741,13 +741,13 @@ class PWA {
                                 if (versionMatch) {
                                     versionSpan.textContent = `v${versionMatch[1]}`;
                                 } else {
-                                    versionSpan.textContent = '1.5.6';
+                                    versionSpan.textContent = '1.5.7';
                                 }
                             } else {
-                                versionSpan.textContent = '1.5.6';
+                                versionSpan.textContent = '1.5.7';
                             }
                         } catch (error) {
-                            versionSpan.textContent = '1.5.6';
+                            versionSpan.textContent = '1.5.7';
                         }
                     }
                 } else {
@@ -759,7 +759,7 @@ class PWA {
                     }
                     
                     if (versionSpan) {
-                        versionSpan.textContent = '1.5.6';
+                        versionSpan.textContent = '1.5.7';
                     }
                 }
             } catch (error) {
@@ -883,7 +883,7 @@ class PWA {
         // App-Version anzeigen
         const versionSpan = document.getElementById('app-version');
         if (versionSpan) {
-            versionSpan.textContent = '1.5.6';
+            versionSpan.textContent = '1.5.7';
         }
 
         // Installationsstatus prüfen
