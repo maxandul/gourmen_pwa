@@ -228,39 +228,44 @@ def merch_order():
             total_supplier_price = 0
             total_profit = 0
             
-            # Process each article
+            # Process each article (now with multiple variants per article)
             for article in MerchArticle.query.filter_by(is_active=True).all():
-                color = request.form.get(f'color_{article.id}')
-                size = request.form.get(f'size_{article.id}')
-                quantity = int(request.form.get(f'quantity_{article.id}', 0))
+                # Get arrays of colors, sizes, and quantities for this article
+                colors = request.form.getlist(f'color_{article.id}[]')
+                sizes = request.form.getlist(f'size_{article.id}[]')
+                quantities = request.form.getlist(f'quantity_{article.id}[]')
                 
-                if quantity > 0 and color and size:
-                    # Find the variant
-                    variant = MerchVariant.query.filter_by(
-                        article_id=article.id,
-                        color=color,
-                        size=size,
-                        is_active=True
-                    ).first()
+                # Process each variant row for this article
+                for color, size, quantity_str in zip(colors, sizes, quantities):
+                    quantity = int(quantity_str or 0)
                     
-                    if variant:
-                        # Create order item
-                        item = MerchOrderItem(
-                            order_id=order.id,
+                    if quantity > 0 and color and size:
+                        # Find the variant
+                        variant = MerchVariant.query.filter_by(
                             article_id=article.id,
-                            variant_id=variant.id,
-                            quantity=quantity,
-                            unit_member_price_rappen=variant.member_price_rappen,
-                            unit_supplier_price_rappen=variant.supplier_price_rappen,
-                            total_member_price_rappen=quantity * variant.member_price_rappen,
-                            total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
-                            total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
-                        )
-                        db.session.add(item)
+                            color=color,
+                            size=size,
+                            is_active=True
+                        ).first()
                         
-                        total_member_price += item.total_member_price_rappen
-                        total_supplier_price += item.total_supplier_price_rappen
-                        total_profit += item.total_profit_rappen
+                        if variant:
+                            # Create order item
+                            item = MerchOrderItem(
+                                order_id=order.id,
+                                article_id=article.id,
+                                variant_id=variant.id,
+                                quantity=quantity,
+                                unit_member_price_rappen=variant.member_price_rappen,
+                                unit_supplier_price_rappen=variant.supplier_price_rappen,
+                                total_member_price_rappen=quantity * variant.member_price_rappen,
+                                total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
+                                total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
+                            )
+                            db.session.add(item)
+                            
+                            total_member_price += item.total_member_price_rappen
+                            total_supplier_price += item.total_supplier_price_rappen
+                            total_profit += item.total_profit_rappen
             
             # Update order totals
             order.total_member_price_rappen = total_member_price
@@ -333,39 +338,44 @@ def merch_order_edit(order_id):
             total_supplier_price = 0
             total_profit = 0
             
-            # Process each article
+            # Process each article (now with multiple variants per article)
             for article in MerchArticle.query.filter_by(is_active=True).all():
-                color = request.form.get(f'color_{article.id}')
-                size = request.form.get(f'size_{article.id}')
-                quantity = int(request.form.get(f'quantity_{article.id}', 0))
+                # Get arrays of colors, sizes, and quantities for this article
+                colors = request.form.getlist(f'color_{article.id}[]')
+                sizes = request.form.getlist(f'size_{article.id}[]')
+                quantities = request.form.getlist(f'quantity_{article.id}[]')
                 
-                if quantity > 0 and color and size:
-                    # Find the variant
-                    variant = MerchVariant.query.filter_by(
-                        article_id=article.id,
-                        color=color,
-                        size=size,
-                        is_active=True
-                    ).first()
+                # Process each variant row for this article
+                for color, size, quantity_str in zip(colors, sizes, quantities):
+                    quantity = int(quantity_str or 0)
                     
-                    if variant:
-                        # Create new order item
-                        item = MerchOrderItem(
-                            order_id=order.id,
+                    if quantity > 0 and color and size:
+                        # Find the variant
+                        variant = MerchVariant.query.filter_by(
                             article_id=article.id,
-                            variant_id=variant.id,
-                            quantity=quantity,
-                            unit_member_price_rappen=variant.member_price_rappen,
-                            unit_supplier_price_rappen=variant.supplier_price_rappen,
-                            total_member_price_rappen=quantity * variant.member_price_rappen,
-                            total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
-                            total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
-                        )
-                        db.session.add(item)
+                            color=color,
+                            size=size,
+                            is_active=True
+                        ).first()
                         
-                        total_member_price += item.total_member_price_rappen
-                        total_supplier_price += item.total_supplier_price_rappen
-                        total_profit += item.total_profit_rappen
+                        if variant:
+                            # Create new order item
+                            item = MerchOrderItem(
+                                order_id=order.id,
+                                article_id=article.id,
+                                variant_id=variant.id,
+                                quantity=quantity,
+                                unit_member_price_rappen=variant.member_price_rappen,
+                                unit_supplier_price_rappen=variant.supplier_price_rappen,
+                                total_member_price_rappen=quantity * variant.member_price_rappen,
+                                total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
+                                total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
+                            )
+                            db.session.add(item)
+                            
+                            total_member_price += item.total_member_price_rappen
+                            total_supplier_price += item.total_supplier_price_rappen
+                            total_profit += item.total_profit_rappen
             
             # Update order totals
             order.total_member_price_rappen = total_member_price
@@ -383,29 +393,24 @@ def merch_order_edit(order_id):
     # GET request - show form with existing data
     articles = MerchArticle.query.filter_by(is_active=True).all()
     
-    # Prepare existing order data
-    existing_items = {}
+    # Prepare existing order data (now supporting multiple items per article)
+    existing_items = {}  # article_id -> list of items
     for item in order.order_items:
-        existing_items[item.article_id] = {
+        if item.article_id not in existing_items:
+            existing_items[item.article_id] = []
+        existing_items[item.article_id].append({
             'color': item.variant.color,
             'size': item.variant.size,
             'quantity': item.quantity
-        }
+        })
     
     # Get all variants for each article
     for article in articles:
         article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
         article.available_colors = list(set([variant.color for variant in article.variants]))
         
-        # Pre-fill existing data if available
-        if article.id in existing_items:
-            article.selected_color = existing_items[article.id]['color']
-            article.selected_size = existing_items[article.id]['size']
-            article.selected_quantity = existing_items[article.id]['quantity']
-        else:
-            article.selected_color = None
-            article.selected_size = None
-            article.selected_quantity = 0
+        # Pre-fill existing data if available (now as a list)
+        article.existing_items = existing_items.get(article.id, [])
     
     return render_template('member/merch/order_edit.html', articles=articles, order=order)
 
