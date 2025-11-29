@@ -1,0 +1,273 @@
+/* ================================================================
+   GOURMEN PWA - DESIGN TOKENS V2
+   ================================================================
+   Logo-based Color System
+   Last Updated: 2025-01-29
+   ================================================================ */
+
+:root {
+  /* ============================================
+     LOGO COLORS - Foundation
+     ============================================ */
+  --logo-navy-dark: #1b232e;
+  --logo-navy-medium: #354e5e;
+  --logo-orange: #dc693c;
+  --logo-teal: #73c8a8;
+
+  /* ============================================
+     BRAND PALETTES (50-900 Scale)
+     ============================================ */
+  
+  /* Primary - Navy (from logo) */
+  --brand-primary-50: #f5f7f9;
+  --brand-primary-100: #e8ecf0;
+  --brand-primary-200: #d1d9e1;
+  --brand-primary-300: #b4c0cd;
+  --brand-primary-400: #8a9db1;
+  --brand-primary-500: #667a91;
+  --brand-primary-600: #4f6477;
+  --brand-primary-700: #354e5e;    /* LOGO */
+  --brand-primary-800: #1b232e;    /* LOGO */
+  --brand-primary-900: #0f151a;
+  --brand-primary-950: #060a0d;
+  
+  /* Accent - Orange (from logo) */
+  --brand-accent-50: #fef5f0;
+  --brand-accent-100: #fde8dc;
+  --brand-accent-200: #fcd0b8;
+  --brand-accent-300: #fab08a;
+  --brand-accent-400: #f88958;
+  --brand-accent-500: #dc693c;     /* LOGO */
+  --brand-accent-600: #c35428;
+  --brand-accent-700: #a3421f;
+  --brand-accent-800: #83361c;
+  --brand-accent-900: #6b2e1b;
+  
+  /* Secondary - Teal (from logo) */
+  --brand-secondary-50: #f0faf7;
+  --brand-secondary-100: #d6f3eb;
+  --brand-secondary-200: #ace6d7;
+  --brand-secondary-300: #73c8a8;  /* LOGO */
+  --brand-secondary-400: #4db896;
+  --brand-secondary-500: #2fa885;
+  --brand-secondary-600: #21886d;
+  --brand-secondary-700: #1d6d5a;
+  --brand-secondary-800: #1b5749;
+  --brand-secondary-900: #1a493e;
+  
+  /* Warm - Red (Danger) */
+  --brand-warm-50: #fef2f2;
+  --brand-warm-100: #fee2e2;
+  --brand-warm-200: #fecaca;
+  --brand-warm-300: #fca5a5;
+  --brand-warm-400: #f87171;
+  --brand-warm-500: #ef4444;
+  --brand-warm-600: #dc2626;
+  --brand-warm-700: #b91c1c;
+  --brand-warm-800: #991b1b;
+  --brand-warm-900: #7f1d1d;
+
+  /* ============================================
+     STATUS COLORS
+     ============================================ */
+  --status-success-light: #10b981;
+  --status-success-dark: #34d399;
+  --status-warning-light: #f59e0b;
+  --status-warning-dark: #fbbf24;
+  --status-error-light: #ef4444;
+  --status-error-dark: #f87171;
+  --status-info-light: #3b82f6;
+  --status-info-dark: #60a5fa;
+
+  /* ============================================
+     SPACING SCALE (8px base)
+     ============================================ */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-8: 3rem;      /* 48px */
+  --space-10: 4rem;     /* 64px */
+  --space-12: 6rem;     /* 96px */
+
+  /* ============================================
+     TYPOGRAPHY SCALE (1.25 ratio)
+     ============================================ */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --radius-sm: 0.25rem;  /* 4px */
+  --radius-md: 0.5rem;   /* 8px */
+  --radius-lg: 0.75rem;  /* 12px */
+  --radius-xl: 1rem;     /* 16px */
+  --radius-full: 9999px; /* Pills */
+
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+}
+
+/* ============================================
+   LIGHT THEME - Semantic Tokens
+   ============================================ */
+[data-theme="light"] {
+  /* Backgrounds */
+  --color-bg-base: #ffffff;
+  --color-bg-subtle: var(--brand-primary-50);
+  --color-bg-muted: var(--brand-primary-100);
+  --color-bg-elevated: #ffffff;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-secondary: var(--brand-primary-50);
+  --color-surface-tertiary: var(--brand-primary-100);
+  --color-surface-hover: var(--brand-primary-100);
+  
+  /* Borders */
+  --color-border-subtle: var(--brand-primary-200);
+  --color-border-default: var(--brand-primary-300);
+  --color-border-strong: var(--brand-primary-400);
+  
+  /* Text */
+  --color-text-primary: var(--logo-navy-dark);
+  --color-text-secondary: var(--brand-primary-600);
+  --color-text-tertiary: var(--brand-primary-500);
+  --color-text-disabled: var(--brand-primary-400);
+  --color-text-inverse: #ffffff;
+  --color-text-link: var(--logo-orange);
+  --color-text-link-hover: var(--brand-accent-600);
+  
+  /* Interactive */
+  --color-interactive-primary: var(--logo-orange);
+  --color-interactive-primary-hover: var(--brand-accent-600);
+  --color-interactive-primary-active: var(--brand-accent-700);
+  
+  /* Status */
+  --color-success: var(--status-success-light);
+  --color-warning: var(--status-warning-light);
+  --color-error: var(--status-error-light);
+  --color-info: var(--status-info-light);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   DARK THEME - Semantic Tokens
+   ============================================ */
+[data-theme="dark"] {
+  /* Backgrounds */
+  --color-bg-base: var(--brand-primary-950);
+  --color-bg-subtle: var(--brand-primary-900);
+  --color-bg-muted: var(--logo-navy-dark);
+  --color-bg-elevated: var(--logo-navy-medium);
+  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+  
+  /* Surfaces */
+  --color-surface: var(--logo-navy-dark);
+  --color-surface-secondary: var(--logo-navy-medium);
+  --color-surface-tertiary: var(--brand-primary-600);
+  --color-surface-hover: var(--brand-primary-600);
+  
+  /* Borders */
+  --color-border-subtle: var(--brand-primary-700);
+  --color-border-default: var(--brand-primary-600);
+  --color-border-strong: var(--brand-primary-500);
+  
+  /* Text */
+  --color-text-primary: var(--brand-primary-50);
+  --color-text-secondary: var(--brand-primary-300);
+  --color-text-tertiary: var(--brand-primary-400);
+  --color-text-disabled: var(--brand-primary-600);
+  --color-text-inverse: var(--logo-navy-dark);
+  --color-text-link: var(--brand-accent-400);
+  --color-text-link-hover: var(--brand-accent-300);
+  
+  /* Interactive */
+  --color-interactive-primary: var(--logo-orange);
+  --color-interactive-primary-hover: var(--brand-accent-400);
+  --color-interactive-primary-active: var(--brand-accent-600);
+  
+  /* Status */
+  --color-success: var(--status-success-dark);
+  --color-warning: var(--status-warning-dark);
+  --color-error: var(--status-error-dark);
+  --color-info: var(--status-info-dark);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
+   COMPONENT TOKENS
+   ============================================ */
+:root {
+  /* Card */
+  --card-bg: var(--color-surface);
+  --card-border: var(--color-border-subtle);
+  --card-shadow: var(--shadow-sm);
+  --card-hover-shadow: var(--shadow-md);
+  --card-padding: var(--space-5);
+  --card-radius: var(--radius-lg);
+  
+  /* Button */
+  --btn-primary-bg: var(--color-interactive-primary);
+  --btn-primary-hover: var(--color-interactive-primary-hover);
+  --btn-primary-text: var(--color-text-inverse);
+  --btn-padding-y: var(--space-3);
+  --btn-padding-x: var(--space-5);
+  --btn-radius: var(--radius-md);
+  --btn-transition: var(--transition-fast);
+  
+  /* Input */
+  --input-padding: var(--space-3);
+  --input-border: var(--color-border-default);
+  --input-focus: var(--color-interactive-primary);
+  --input-radius: var(--radius-md);
+  
+  /* Safe Area Insets (iOS Notch/Dynamic Island) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+}
+

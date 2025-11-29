@@ -35,7 +35,7 @@ def create_app(config_name=None):
             # Continue anyway - database might be available later
         
         # Register blueprints
-        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, member, admin, docs, notifications, ratings, migrate, test_migrate, init_db
+        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, member, admin, docs, notifications, ratings, migrate, test_migrate, init_db, demo
         
         # Push-Notification und Cron-Blueprints registrieren (Fehler werden in den Endpoints gehandhabt)
         from backend.routes import push_notifications, cron
@@ -54,6 +54,7 @@ def create_app(config_name=None):
         app.register_blueprint(migrate.migrate_bp, url_prefix='/admin')
         app.register_blueprint(test_migrate.test_migrate_bp, url_prefix='/test')
         app.register_blueprint(init_db.init_db_bp, url_prefix='/init')
+        app.register_blueprint(demo.bp)  # Design System V2 Demo
         
         # Registriere Push-Notification und Cron-Blueprints immer
         app.register_blueprint(push_notifications.bp)

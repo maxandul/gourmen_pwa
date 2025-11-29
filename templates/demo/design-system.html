@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmen Design System V2 - Demo</title>
+    
+    <!-- Design System V2 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.css') }}">
+    
+    <style>
+        body {
+            padding-bottom: var(--space-12);
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Container -->
+    <div class="demo-container">
+        <!-- Header -->
+        <header class="demo-header">
+            <img src="{{ url_for('static', filename='img/logos/logo-primary.png') }}" 
+                 alt="Gourmen Logo" 
+                 class="demo-header__logo">
+            <h1 class="demo-header__title">Design System V2</h1>
+            <p class="demo-header__subtitle">
+                Logo-based Color System | BEM Naming | Light/Dark Theme
+            </p>
+            <div class="demo-header__actions">
+                <button class="btn btn--primary" id="theme-toggle">
+                    <span id="theme-icon-light" style="display: none;">☀️</span>
+                    <span id="theme-icon-dark">🌙</span>
+                    Toggle Theme
+                </button>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn--outline">← Zurück zum Dashboard</a>
+            </div>
+        </header>
+
+        <!-- Colors Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🎨 Colors (Logo-based)</h2>
+            <p class="demo-section__description">
+                Alle Farben basieren auf den Gourmen Logo-Farben: Navy (#1b232e, #354e5e), Orange (#dc693c), Teal (#73c8a8)
+            </p>
+            
+            <h3>Logo Colors</h3>
+            <div class="demo-color-grid">
+                <div class="demo-color" style="background: #1b232e;">
+                    <span class="demo-color__label">Navy Dark</span>
+                </div>
+                <div class="demo-color" style="background: #354e5e;">
+                    <span class="demo-color__label">Navy Medium</span>
+                </div>
+                <div class="demo-color" style="background: #dc693c;">
+                    <span class="demo-color__label">Orange</span>
+                </div>
+                <div class="demo-color" style="background: #73c8a8;">
+                    <span class="demo-color__label">Teal</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buttons Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🔘 Buttons</h2>
+            <p class="demo-section__description">
+                5 Button-Varianten (reduziert von 10): Primary, Success, Danger, Outline, BillBro
+            </p>
+            
+            <h3>Variants</h3>
+            <div class="demo-buttons">
+                <button class="btn btn--primary">Primary</button>
+                <button class="btn btn--success">Success</button>
+                <button class="btn btn--danger">Danger</button>
+                <button class="btn btn--outline">Outline</button>
+                <button class="btn btn--billbro">BillBro</button>
+            </div>
+
+            <h3>Sizes</h3>
+            <div class="demo-buttons">
+                <button class="btn btn--primary btn--sm">Small</button>
+                <button class="btn btn--primary">Default</button>
+                <button class="btn btn--primary btn--lg">Large</button>
+            </div>
+
+            <h3>States</h3>
+            <div class="demo-buttons">
+                <button class="btn btn--primary" disabled>Disabled</button>
+                <button class="btn btn--primary">
+                    <span class="icon icon--spin">⟳</span>
+                    Loading
+                </button>
+            </div>
+        </section>
+
+        <!-- Cards Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🎴 Cards & Card Sections</h2>
+            <p class="demo-section__description">
+                Neues System OHNE Verschachtelung! card-secondary ersetzt durch card-section
+            </p>
+            
+            <div class="demo-grid demo-grid--2col">
+                <!-- Basic Card -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3 class="card__title">Basic Card</h3>
+                        <div class="card__actions">
+                            <button class="btn btn--sm btn--outline">Edit</button>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <p>This is a basic card with header and body.</p>
+                    </div>
+                </div>
+
+                <!-- Card with Sections -->
+                <div class="card">
+                    <div class="card__header">
+                        <h3 class="card__title">Card with Sections</h3>
+                    </div>
+                    <div class="card__body">
+                        <!-- Section 1 -->
+                        <div class="card-section card-section--accent">
+                            <div class="card-section__header">
+                                <h4 class="card-section__title">Accent Section</h4>
+                            </div>
+                            <div class="card-section__body">
+                                <p>Orange border (from logo)</p>
+                            </div>
+                        </div>
+
+                        <!-- Section 2 -->
+                        <div class="card-section card-section--info">
+                            <div class="card-section__header">
+                                <h4 class="card-section__title">Info Section</h4>
+                            </div>
+                            <div class="card-section__body">
+                                <p>Teal border (from logo)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info Rows Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">📊 Info Rows</h2>
+            <p class="demo-section__description">
+                Ersetzt stats-item. Label/Value Paare mit automatischen Borders
+            </p>
+            
+            <div class="card">
+                <div class="card__header">
+                    <h3 class="card__title">Event Details</h3>
+                </div>
+                <div class="card__body">
+                    <div class="info-row">
+                        <span class="info-row__label">Restaurant:</span>
+                        <span class="info-row__value">Chez Vrony</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Datum:</span>
+                        <span class="info-row__value">14.02.2025</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Teilnehmer:</span>
+                        <span class="info-row__value">12 von 15</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Website:</span>
+                        <span class="info-row__value">
+                            <a href="#" class="info-row__link">chez-vrony.ch</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Forms Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">📝 Forms</h2>
+            <p class="demo-section__description">
+                Form Fields mit Labels, Inputs, Selects, Textareas
+            </p>
+            
+            <div class="card">
+                <div class="card__header">
+                    <h3 class="card__title">Example Form</h3>
+                </div>
+                <div class="card__body">
+                    <div class="form-field">
+                        <label class="form-field__label" for="demo-name">
+                            Name <span class="form-field__required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="demo-name" 
+                            class="form-field__input"
+                            placeholder="Max Mustermann">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-field__label" for="demo-select">Event Type</label>
+                        <select id="demo-select" class="form-field__select">
+                            <option>Monatsessen</option>
+                            <option>Ausflug</option>
+                            <option>Generalversammlung</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-field__label" for="demo-textarea">Notizen</label>
+                        <textarea id="demo-textarea" class="form-field__textarea" placeholder="Optional..."></textarea>
+                        <span class="form-field__help">Max 500 Zeichen</span>
+                    </div>
+                </div>
+                <div class="card__footer">
+                    <button class="btn btn--outline">Abbrechen</button>
+                    <button class="btn btn--primary">Speichern</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Badges Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🏷️ Badges</h2>
+            <p class="demo-section__description">
+                Status Badges für verschiedene Zustände
+            </p>
+            
+            <div class="demo-buttons">
+                <span class="badge badge--primary">Primary</span>
+                <span class="badge badge--success">Success</span>
+                <span class="badge badge--warning">Warning</span>
+                <span class="badge badge--error">Error</span>
+                <span class="badge badge--info">Info</span>
+            </div>
+        </section>
+
+        <!-- Tabs Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🗂️ Tabs</h2>
+            <p class="demo-section__description">
+                Tab-Navigation für zusammengelegte Seiten (z.B. Member: Profil + Security + Technical)
+            </p>
+            
+            <div class="tabs">
+                <nav class="tabs__nav" role="tablist">
+                    <button class="tabs__tab tabs__tab--active" onclick="switchTab(event, 'tab1')">
+                        Übersicht
+                    </button>
+                    <button class="tabs__tab" onclick="switchTab(event, 'tab2')">
+                        Profil
+                    </button>
+                    <button class="tabs__tab" onclick="switchTab(event, 'tab3')">
+                        Einstellungen
+                    </button>
+                </nav>
+                
+                <div class="tabs__content">
+                    <div class="tabs__panel tabs__panel--active" id="tab1">
+                        <div class="card">
+                            <div class="card__body">
+                                <h3>Übersicht</h3>
+                                <p>Willkommen! Dies ist der Übersichts-Tab.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tabs__panel" id="tab2">
+                        <div class="card">
+                            <div class="card__body">
+                                <h3>Profil</h3>
+                                <p>Hier kannst du dein Profil bearbeiten.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tabs__panel" id="tab3">
+                        <div class="card">
+                            <div class="card__body">
+                                <h3>Einstellungen</h3>
+                                <p>Hier kannst du Einstellungen anpassen.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">📱 Modal</h2>
+            <p class="demo-section__description">
+                Modals für Confirmations und kurze Formulare
+            </p>
+            
+            <button class="btn btn--primary" onclick="openModal()">Open Modal</button>
+        </section>
+
+        <!-- Typography Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">📝 Typography</h2>
+            <p class="demo-section__description">
+                Typography Scale (1.25 Ratio), basierend auf System Fonts
+            </p>
+            
+            <div class="card">
+                <div class="card__body">
+                    <h1>Heading 1 (36px)</h1>
+                    <h2>Heading 2 (30px)</h2>
+                    <h3>Heading 3 (24px)</h3>
+                    <h4>Heading 4 (20px)</h4>
+                    <h5>Heading 5 (18px)</h5>
+                    <h6>Heading 6 (16px)</h6>
+                    <p>Regular paragraph text (16px). Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    <p><small>Small text (14px)</small></p>
+                    <p><a href="#">Link example</a></p>
+                    <p><strong>Bold text</strong> and <code>inline code</code></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- UX Features Section -->
+        <section class="demo-section">
+            <h2 class="demo-section__title">🎯 UX Features</h2>
+
+            <!-- Toast Notifications -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Toast Notifications</h3>
+                <p class="demo-card__description">
+                    Non-intrusive feedback messages with auto-dismiss
+                </p>
+                <div class="demo-card__content">
+                    <div style="display: flex; flex-wrap: wrap; gap: var(--space-3);">
+                        <button class="btn btn--success" onclick="showSuccessToast()">
+                            Success Toast
+                        </button>
+                        <button class="btn btn--danger" onclick="showErrorToast()">
+                            Error Toast
+                        </button>
+                        <button class="btn btn--outline" onclick="showWarningToast()">
+                            Warning Toast
+                        </button>
+                        <button class="btn btn--outline" onclick="showInfoToast()">
+                            Info Toast
+                        </button>
+                        <button class="btn btn--outline" onclick="showUndoToast()">
+                            Undo Action
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Filter Chips</h3>
+                <p class="demo-card__description">
+                    Clickable tags for filtering content
+                </p>
+                <div class="demo-card__content">
+                    <div class="filter-chips">
+                        <button class="chip chip--active">
+                            Alle Events
+                            <span class="chip__count">42</span>
+                        </button>
+                        <button class="chip">
+                            Monatsessen
+                            <span class="chip__count">30</span>
+                        </button>
+                        <button class="chip">
+                            Ausflug
+                            <span class="chip__count">8</span>
+                        </button>
+                        <button class="chip">
+                            Special Event
+                            <span class="chip__count">4</span>
+                        </button>
+                        <button class="chip">
+                            Archiviert
+                            <button class="chip__remove" aria-label="Remove filter">×</button>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Field -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Instant Search</h3>
+                <p class="demo-card__description">
+                    Real-time search with clear button
+                </p>
+                <div class="demo-card__content">
+                    <div class="search-field" data-search data-search-target=".demo-search-item">
+                        <svg class="search-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input 
+                            type="search" 
+                            class="search-field__input" 
+                            placeholder="Events durchsuchen..."
+                            aria-label="Search">
+                        <button class="search-field__clear" aria-label="Clear search">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2);">
+                        <div class="demo-search-item card" data-search-text="Monatsessen im Restaurant Taverna">
+                            <div class="card__body">
+                                <strong>Monatsessen im Restaurant Taverna</strong>
+                                <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: var(--space-1);">14.02.2025</p>
+                            </div>
+                        </div>
+                        <div class="demo-search-item card" data-search-text="Ausflug nach Bern">
+                            <div class="card__body">
+                                <strong>Ausflug nach Bern</strong>
+                                <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: var(--space-1);">20.03.2025</p>
+                            </div>
+                        </div>
+                        <div class="demo-search-item card" data-search-text="Grillabend am See">
+                            <div class="card__body">
+                                <strong>Grillabend am See</strong>
+                                <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: var(--space-1);">15.06.2025</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Accordion</h3>
+                <p class="demo-card__description">
+                    Collapsible sections for long content
+                </p>
+                <div class="demo-card__content">
+                    <div class="accordion" data-accordion data-allow-multiple>
+                        <div class="accordion-item accordion-item--open">
+                            <button class="accordion-item__header">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                <span class="accordion-item__title">Persönliche Daten</span>
+                                <svg class="accordion-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div class="accordion-item__content">
+                                <div class="info-row">
+                                    <span class="info-row__label">Name</span>
+                                    <span class="info-row__value">Max Mustermann</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Email</span>
+                                    <span class="info-row__value">max@example.com</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-item__header">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                                <span class="accordion-item__title">Sicherheit</span>
+                                <svg class="accordion-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div class="accordion-item__content">
+                                <p>Passwort und Sicherheitseinstellungen hier bearbeiten.</p>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-item__header">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                </svg>
+                                <span class="accordion-item__title">Benachrichtigungen</span>
+                                <svg class="accordion-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div class="accordion-item__content">
+                                <p>Benachrichtigungseinstellungen verwalten.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progressive Disclosure -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Progressive Disclosure</h3>
+                <p class="demo-card__description">
+                    Show more details on demand using &lt;details&gt;
+                </p>
+                <div class="demo-card__content">
+                    <details class="disclosure">
+                        <summary class="disclosure__summary">
+                            Erweiterte Optionen anzeigen
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </summary>
+                        <div class="disclosure__content">
+                            <p style="margin-bottom: var(--space-3);">
+                                Hier werden zusätzliche Informationen angezeigt, die nicht sofort sichtbar sein müssen.
+                            </p>
+                            <div class="info-row">
+                                <span class="info-row__label">Google Maps Link</span>
+                                <span class="info-row__value">
+                                    <a href="#">Karte öffnen</a>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Notizen</span>
+                                <span class="info-row__value">Tisch im hinteren Bereich</span>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Breadcrumbs -->
+            <div class="demo-card">
+                <h3 class="demo-card__title">Breadcrumbs</h3>
+                <p class="demo-card__description">
+                    Navigation hierarchy for complex pages
+                </p>
+                <div class="demo-card__content">
+                    <nav class="breadcrumbs" aria-label="Breadcrumb">
+                        <div class="breadcrumbs__item">
+                            <a href="#" class="breadcrumbs__link">Admin</a>
+                            <span class="breadcrumbs__separator">/</span>
+                        </div>
+                        <div class="breadcrumbs__item">
+                            <a href="#" class="breadcrumbs__link">Events</a>
+                            <span class="breadcrumbs__separator">/</span>
+                        </div>
+                        <div class="breadcrumbs__item">
+                            <a href="#" class="breadcrumbs__link">Monatsessen Februar</a>
+                            <span class="breadcrumbs__separator">/</span>
+                        </div>
+                        <div class="breadcrumbs__item">
+                            <span class="breadcrumbs__current">Bearbeiten</span>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="demo-modal">
+        <div class="modal__backdrop" onclick="closeModal()"></div>
+        <div class="modal__container">
+            <div class="modal__header">
+                <h3 class="modal__title">Confirm Action</h3>
+                <button class="modal__close" onclick="closeModal()">
+                    <span class="icon">✕</span>
+                </button>
+            </div>
+            <div class="modal__body">
+                <p>Are you sure you want to proceed with this action?</p>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn--danger" onclick="closeModal()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Indicator -->
+    <div class="theme-indicator" id="theme-indicator">
+        Theme: <strong id="theme-name">Dark</strong>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="{{ url_for('static', filename='js/v2/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/v2/scroll-to-top.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/v2/focus-trap.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/v2/accordion.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/v2/search.js') }}"></script>
+
+    <!-- JavaScript -->
+    <script>
+        // Toast Demos
+        function showSuccessToast() {
+            Toast.success('Erfolgreich gespeichert!', 'Deine Änderungen wurden übernommen.');
+        }
+
+        function showErrorToast() {
+            Toast.error('Fehler aufgetreten', 'Die Aktion konnte nicht ausgeführt werden.');
+        }
+
+        function showWarningToast() {
+            Toast.warning('Achtung!', 'Dieser Vorgang kann nicht rückgängig gemacht werden.');
+        }
+
+        function showInfoToast() {
+            Toast.info('Neue Nachricht', 'Du hast eine neue Benachrichtigung erhalten.');
+        }
+
+        function showUndoToast() {
+            Toast.info('Event gelöscht', null, {
+                action: 'Rückgängig',
+                onAction: () => {
+                    Toast.success('Wiederhergestellt', 'Event wurde wiederhergestellt.');
+                },
+                duration: 10000
+            });
+        }
+
+        // Theme Toggle
+        const html = document.documentElement;
+        const toggleBtn = document.getElementById('theme-toggle');
+        const themeName = document.getElementById('theme-name');
+        const iconLight = document.getElementById('theme-icon-light');
+        const iconDark = document.getElementById('theme-icon-dark');
+
+        // Initialize theme from localStorage or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        function setTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeName.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+            
+            if (theme === 'light') {
+                iconLight.style.display = 'inline';
+                iconDark.style.display = 'none';
+            } else {
+                iconLight.style.display = 'none';
+                iconDark.style.display = 'inline';
+            }
+        }
+
+        // Tab Switching
+        function switchTab(event, tabId) {
+            // Hide all panels
+            document.querySelectorAll('.tabs__panel').forEach(panel => {
+                panel.classList.remove('tabs__panel--active');
+            });
+            
+            // Deactivate all tabs
+            document.querySelectorAll('.tabs__tab').forEach(tab => {
+                tab.classList.remove('tabs__tab--active');
+            });
+            
+            // Show selected panel
+            document.getElementById(tabId).classList.add('tabs__panel--active');
+            
+            // Activate clicked tab
+            event.target.classList.add('tabs__tab--active');
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('demo-modal').setAttribute('data-open', 'true');
+        }
+
+        function closeModal() {
+            document.getElementById('demo-modal').removeAttribute('data-open');
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
