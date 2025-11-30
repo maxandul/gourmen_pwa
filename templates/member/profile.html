@@ -51,6 +51,7 @@
                      role="tabpanel">
         <form method="POST" class="form">
             {{ form.hidden_tag() }}
+            <input type="hidden" name="active_tab" value="profile">
             
             <!-- Personal Data Card -->
             <div class="card">
@@ -120,7 +121,7 @@
                             
                             <div class="form-field">
                                 {{ form.nationalitaet.label(class="form-field__label") }}
-                                {{ form.nationalitaet(class="form-field__input") }}
+                                {{ form.nationalitaet(class="form-field__select") }}
                                 {% if form.nationalitaet.errors %}
                                 <span class="form-field__error">{{ form.nationalitaet.errors[0] }}</span>
                                 {% endif %}
@@ -128,7 +129,7 @@
                             
                             <div class="form-field">
                                 {{ form.zimmerwunsch.label(class="form-field__label") }}
-                                {{ form.zimmerwunsch(class="form-field__input") }}
+                                {{ form.zimmerwunsch(class="form-field__select") }}
                                 {% if form.zimmerwunsch.errors %}
                                 <span class="form-field__error">{{ form.zimmerwunsch.errors[0] }}</span>
                                 {% endif %}
@@ -322,6 +323,7 @@
                     
                     <form method="POST">
                         {{ sensitive_form.hidden_tag() }}
+                        <input type="hidden" name="active_tab" value="sensitive">
                         
                         <!-- Reisepass Card -->
                         <div class="card">

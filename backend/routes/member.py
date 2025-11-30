@@ -27,19 +27,6 @@ class ProfileForm(FlaskForm):
     plz = StringField('PLZ')
     ort = StringField('Ort')
     
-    # Association data
-    funktion = SelectField('Funktion', choices=[
-        (Funktion.MEMBER.value, 'Member'),
-        (Funktion.VEREINSPRAESIDENT.value, 'Vereinspräsident'),
-        (Funktion.KOMMISSIONSPRAESIDENT.value, 'Kommissionspräsident'),
-        (Funktion.SCHATZMEISTER.value, 'Schatzmeister'),
-        (Funktion.MARKETINGCHEF.value, 'Marketingchef'),
-        (Funktion.REISEKOMMISSAR.value, 'Reisekommissar'),
-        (Funktion.RECHNUNGSPRUEFER.value, 'Rechnungsprüfer')
-    ])
-    beitrittsjahr = IntegerField('Beitrittsjahr', validators=[Optional()])
-    vorstandsmitglied = BooleanField('Vorstandsmitglied')
-    
     # Physical data
     koerpergroesse = IntegerField('Körpergröße (cm)', validators=[Optional()])
     koerpergewicht = IntegerField('Körpergewicht (kg)', validators=[Optional()])
@@ -80,7 +67,7 @@ def index():
 @login_required
 def profile():
     """User profile page"""
-    form = ProfileForm()
+    form = ProfileForm(prefix='profile')
     
     if request.method == 'GET':
         # Personal data
@@ -99,18 +86,6 @@ def profile():
         form.plz.data = current_user.plz
         form.ort.data = current_user.ort
         
-        # Association data
-        if current_user.funktion:
-            # Handle both Enum and string values (migration compatibility)
-            if hasattr(current_user.funktion, 'value'):
-                form.funktion.data = current_user.funktion.value
-            else:
-                form.funktion.data = str(current_user.funktion)
-        else:
-            form.funktion.data = Funktion.MEMBER.value
-        form.beitrittsjahr.data = current_user.beitrittsjahr
-        form.vorstandsmitglied.data = current_user.vorstandsmitglied
-        
         # Physical data
         form.koerpergroesse.data = current_user.koerpergroesse
         form.koerpergewicht.data = current_user.koerpergewicht
@@ -125,8 +100,8 @@ def profile():
         form.spirit_animal.data = current_user.spirit_animal
         form.fuehrerschein.data = current_user.fuehrerschein
     
-    # Determine active tab
-    active_tab = request.args.get('tab', 'profile')  # 'profile' or 'sensitive'
+    # Determine active tab (from query params or form data)
+    active_tab = request.args.get('tab') or request.form.get('active_tab', 'profile')
     
     # Initialize sensitive form (only if needed)
     sensitive_form = None
@@ -140,7 +115,7 @@ def profile():
             return redirect(url_for('auth.step_up', next=url_for('member.profile', tab='sensitive')))
         
         # User has step-up access, initialize sensitive form
-        sensitive_form = SensitiveDataForm()
+        sensitive_form = SensitiveDataForm(prefix='sensitive')
         
         # Get or create sensitive data record
         sensitive_data = MemberSensitive.query.filter_by(member_id=current_user.id).first()
@@ -206,49 +181,58 @@ def profile():
             return redirect(url_for('member.profile', tab='sensitive'))
     
     # Handle Profile Tab form submission
-    if active_tab == 'profile' and form.validate_on_submit():
-        # Personal data
-        current_user.vorname = form.vorname.data
-        current_user.nachname = form.nachname.data
-        current_user.rufname = form.rufname.data
-        current_user.email = form.email.data
-        current_user.telefon = form.telefon.data
-        current_user.geburtsdatum = form.geburtsdatum.data
-        current_user.nationalitaet = form.nationalitaet.data
-        current_user.zimmerwunsch = form.zimmerwunsch.data
+    if active_tab == 'profile' and request.method == 'POST':
+        from flask import current_app
+        is_valid = form.validate_on_submit()
         
-        # Address data
-        current_user.strasse = form.strasse.data
-        current_user.hausnummer = form.hausnummer.data
-        current_user.plz = form.plz.data
-        current_user.ort = form.ort.data
+        current_app.logger.info(f"=== PROFILE DEBUG ===")
+        current_app.logger.info(f"Active tab: {active_tab}")
+        current_app.logger.info(f"Form prefix: profile")
+        current_app.logger.info(f"Form.validate_on_submit(): {is_valid}")
+        current_app.logger.info(f"Form errors: {form.errors}")
+        current_app.logger.info(f"Request.form keys: {list(request.form.keys())}")
+        current_app.logger.info(f"===================")
         
-        # Association data
-        try:
-            current_user.funktion = Funktion(form.funktion.data)
-        except ValueError:
-            # Handle invalid function values gracefully
-            current_user.funktion = Funktion.MEMBER
-        current_user.beitrittsjahr = form.beitrittsjahr.data
-        current_user.vorstandsmitglied = form.vorstandsmitglied.data
-        
-        # Physical data
-        current_user.koerpergroesse = form.koerpergroesse.data
-        current_user.koerpergewicht = form.koerpergewicht.data
-        current_user.schuhgroesse = form.schuhgroesse.data
-        
-        # Clothing data
-        current_user.kleider_oberteil = form.kleider_oberteil.data
-        current_user.kleider_hosen = form.kleider_hosen.data
-        current_user.kleider_cap = form.kleider_cap.data
-        
-        # Preferences
-        current_user.spirit_animal = form.spirit_animal.data
-        current_user.fuehrerschein = form.fuehrerschein.data
-        
-        db.session.commit()
-        flash('Profil erfolgreich aktualisiert', 'success')
-        return redirect(url_for('member.profile', tab='profile'))
+        if not is_valid:
+            # Show validation errors
+            flash('Bitte überprüfe deine Eingaben. Es gibt Fehler im Formular.', 'error')
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f'{field}: {error}', 'error')
+        else:
+            # Personal data
+            current_user.vorname = form.vorname.data
+            current_user.nachname = form.nachname.data
+            current_user.rufname = form.rufname.data
+            current_user.email = form.email.data
+            current_user.telefon = form.telefon.data
+            current_user.geburtsdatum = form.geburtsdatum.data
+            current_user.nationalitaet = form.nationalitaet.data
+            current_user.zimmerwunsch = form.zimmerwunsch.data
+            
+            # Address data
+            current_user.strasse = form.strasse.data
+            current_user.hausnummer = form.hausnummer.data
+            current_user.plz = form.plz.data
+            current_user.ort = form.ort.data
+            
+            # Physical data
+            current_user.koerpergroesse = form.koerpergroesse.data
+            current_user.koerpergewicht = form.koerpergewicht.data
+            current_user.schuhgroesse = form.schuhgroesse.data
+            
+            # Clothing data
+            current_user.kleider_oberteil = form.kleider_oberteil.data
+            current_user.kleider_hosen = form.kleider_hosen.data
+            current_user.kleider_cap = form.kleider_cap.data
+            
+            # Preferences
+            current_user.spirit_animal = form.spirit_animal.data
+            current_user.fuehrerschein = form.fuehrerschein.data
+            
+            db.session.commit()
+            flash('Profil erfolgreich aktualisiert', 'success')
+            return redirect(url_for('member.profile', tab='profile'))
     
     return render_template('member/profile.html', 
                          form=form,
