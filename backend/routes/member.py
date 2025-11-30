@@ -169,7 +169,7 @@ def profile():
         flash('Profil erfolgreich aktualisiert', 'success')
         return redirect(url_for('member.profile'))
     
-    return render_template('member/profile.html', form=form)
+    return render_template('member/profile.html', form=form, use_v2_design=True)
 
 @bp.route('/security')
 @login_required

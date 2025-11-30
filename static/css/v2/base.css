@@ -192,3 +192,156 @@ li {
   }
 }
 
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+/* ============================================
+   PAGE HEADER - Standard (for Subpages)
+   ============================================ */
+
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.page-header h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.page-header h1 .icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.page-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ============================================
+   PAGE HEADER - Featured (for Hub Pages)
+   ============================================ */
+
+.page-header--featured {
+  text-align: center;
+  padding-bottom: var(--space-6);
+  border-bottom: 2px solid var(--color-border-subtle);
+}
+
+.page-header--featured h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: var(--text-4xl);
+  margin-bottom: var(--space-3);
+  
+  /* Gradient Text (Logo Orange Colors) */
+  background: linear-gradient(135deg, 
+    var(--logo-orange), 
+    var(--brand-accent-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* Fallback for browsers that don't support background-clip */
+  color: var(--logo-orange);
+}
+
+.page-header--featured h1 .icon {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  /* Icon should not get gradient, keep normal color */
+  color: var(--logo-orange);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* Ensure gradient works in WebKit browsers */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .page-header--featured h1 {
+    color: transparent;
+  }
+}
+
+.page-header--featured .page-subtitle {
+  font-size: var(--text-lg);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0;
+}
+
+.page-header--featured .page-actions {
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Featured Header auf Mobile */
+  .page-header--featured {
+    text-align: left;
+    padding-bottom: var(--space-5);
+  }
+  
+  .page-header--featured h1 {
+    justify-content: flex-start;
+    font-size: var(--text-3xl);
+  }
+  
+  .page-header--featured h1 .icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .page-header--featured .page-subtitle {
+    margin-left: 0;
+    margin-right: 0;
+    font-size: var(--text-base);
+  }
+  
+  .page-header--featured .page-actions {
+    justify-content: flex-start;
+  }
+  
+  /* Standard + Featured Actions */
+  .page-actions {
+    flex-direction: column;
+  }
+  
+  .page-actions .btn {
+    width: 100%;
+  }
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+

@@ -698,6 +698,76 @@ TEMPLATES (Page Layouts)
 
 ---
 
+## 📋 USAGE PATTERNS
+
+### Multi-Section Forms (mehrere Cards, ein Submit)
+
+**Use Case:** Form mit mehreren thematischen Sections (z.B. Profil-Seite).
+
+**Problem:** Submit-Button in letzter Card sieht aus als gehört nur zu dieser Section!
+
+**Lösung:** `.form-actions` AUSSERHALB aller Cards verwenden!
+
+```html
+<form method="POST">
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">Persönliche Daten</h2>
+        </div>
+        <div class="card__body">
+            <div class="form-field">...</div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">Adresse</h2>
+        </div>
+        <div class="card__body">
+            <div class="form-field">...</div>
+        </div>
+    </div>
+    
+    <!-- Submit Button außerhalb aller Cards -->
+    <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Speichern</button>
+    </div>
+</form>
+```
+
+**Wann verwenden:**
+- ✅ Profil-Seiten mit mehreren Sections
+- ✅ Settings-Seiten
+- ✅ Multi-Step Forms auf einer Seite
+
+**Wann NICHT:**
+- ❌ Einzelne Card → dort `card__footer` verwenden!
+
+---
+
+### Single-Section Form (eine Card mit Footer)
+
+**Use Case:** Ein Form in einer einzelnen Card.
+
+```html
+<form method="POST">
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">Event erstellen</h2>
+        </div>
+        <div class="card__body">
+            <div class="form-field">...</div>
+        </div>
+        <div class="card__footer">
+            <button type="button" class="btn btn--outline">Abbrechen</button>
+            <button type="submit" class="btn btn--primary">Erstellen</button>
+        </div>
+    </div>
+</form>
+```
+
+---
+
 ## ✅ MIGRATION PATTERNS
 
 ### Alt → Neu Mapping

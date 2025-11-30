@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" {% if use_v2_design %}data-theme="dark"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gourmen{% endblock %}</title>
     
     <!-- PWA Meta -->
-    <meta name="theme-color" content="#354e5e">
+    <meta name="theme-color" content="{% if use_v2_design %}#1b232e{% else %}#354e5e{% endif %}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,7 +43,6 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=1.5.7">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/pwa/icon-16.png') }}?v=1.5.7">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/pwa/icon-32.png') }}?v=1.5.7">
-    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='img/pwa/icon-96.png') }}?v=1.5.7">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}?v=1.5.7">
     <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='img/pwa/icon-512.png') }}?v=1.5.7">
     
@@ -56,39 +55,21 @@
     <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
     <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
     <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='img/pwa/icon-96.png') }}">
-    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='img/pwa/icon-96.png') }}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
+    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
     
     <!-- Splash Screens -->
-    <!-- iPhone 14 Pro Max -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-430x932.png') }}">
-    <!-- iPhone 14 Pro -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-393x852.png') }}">
-    <!-- iPhone 14 Plus -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-428x926.png') }}">
-    <!-- iPhone 12/13 Pro Max -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-428x926.png') }}">
-    <!-- iPhone 12/13 mini -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-375x812.png') }}">
-    <!-- iPhone 12/13 -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-390x844.png') }}">
-    <!-- iPhone 11 Pro Max -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-414x896.png') }}">
-    <!-- iPhone 11 Pro -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-375x812.png') }}">
-    <!-- iPhone X/XS -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-375x812.png') }}">
-    <!-- iPhone XR/11 -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-414x896.png') }}">
-    <!-- iPhone 8 Plus -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" href="{{ url_for('static', filename='img/ui/splash-414x736.png') }}">
-    <!-- iPhone 8 -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-375x667.png') }}">
-    <!-- iPhone SE -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="{{ url_for('static', filename='img/ui/splash-320x568.png') }}">
+    <!-- TODO: splash-generic.png erstellen (siehe docs/ASSETS.md) -->
+    <!-- <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/ui/splash-generic.png') }}"> -->
     
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% if use_v2_design %}
+        <!-- Design System V2 -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.css') }}?v=2.0.0">
+    {% else %}
+        <!-- Legacy V1 CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% endif %}
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -169,6 +150,15 @@
     <!-- Toast Messages werden jetzt über Top-Banner angezeigt -->
     
     <!-- JavaScript wird über app.js geladen -->
+    
+    {% if use_v2_design %}
+    <!-- V2 Design System JavaScript -->
+    <script src="{{ url_for('static', filename='js/v2/toast.js') }}?v=2.0.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/scroll-to-top.js') }}?v=2.0.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/accordion.js') }}?v=2.0.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/search.js') }}?v=2.0.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/focus-trap.js') }}?v=2.0.0" defer></script>
+    {% endif %}
     
     {% block scripts %}{% endblock %}
 </body>

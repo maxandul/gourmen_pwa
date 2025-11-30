@@ -140,6 +140,58 @@
 }
 
 /* ============================================
+   DEFAULT THEME - Dark Mode (V2 Standard)
+   ============================================ */
+:root {
+  /* Backgrounds */
+  --color-bg-base: var(--brand-primary-950);
+  --color-bg-subtle: var(--brand-primary-900);
+  --color-bg-muted: var(--logo-navy-dark);
+  --color-bg-elevated: var(--logo-navy-medium);
+  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+  
+  /* Surfaces */
+  --color-surface: var(--logo-navy-dark);
+  --color-surface-secondary: var(--logo-navy-medium);
+  --color-surface-tertiary: var(--brand-primary-600);
+  --color-surface-hover: var(--brand-primary-600);
+  --color-surface-elevated: var(--brand-primary-700);
+  --color-surface-overlay: var(--brand-primary-600);
+  
+  /* Borders */
+  --color-border-subtle: var(--brand-primary-700);
+  --color-border-default: var(--brand-primary-600);
+  --color-border-strong: var(--brand-primary-500);
+  
+  /* Text */
+  --color-text-primary: var(--brand-primary-50);
+  --color-text-secondary: var(--brand-primary-300);
+  --color-text-tertiary: var(--brand-primary-400);
+  --color-text-disabled: var(--brand-primary-600);
+  --color-text-inverse: var(--logo-navy-dark);
+  --color-text-link: var(--brand-accent-400);
+  --color-text-link-hover: var(--brand-accent-300);
+  
+  /* Interactive */
+  --color-interactive-primary: var(--logo-orange);
+  --color-interactive-primary-hover: var(--brand-accent-400);
+  --color-interactive-primary-active: var(--brand-accent-600);
+  --color-interactive-primary-subtle: rgba(220, 105, 60, 0.1);
+  
+  /* Status */
+  --color-success: var(--status-success-dark);
+  --color-warning: var(--status-warning-dark);
+  --color-error: var(--status-error-dark);
+  --color-info: var(--status-info-dark);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
    LIGHT THEME - Semantic Tokens
    ============================================ */
 [data-theme="light"] {

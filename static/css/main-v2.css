@@ -10,6 +10,7 @@
 /* Import Order */
 @import url('v2/tokens.css');      /* Design Tokens & Theme Variables */
 @import url('v2/base.css');        /* Reset, Typography, Base Elements */
+@import url('v2/layout.css');      /* Base Layout (User Bar, Nav, Main Content) */
 @import url('v2/components.css');  /* All Components */
 
 /* ================================================================
