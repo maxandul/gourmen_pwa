@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Profil</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -42,12 +42,20 @@
 }
 </style>
 <div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Technische Einstellungen</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>⚙️ App-Einstellungen</h1>
         <p class="page-subtitle">Service Worker und Push-Benachrichtigungen</p>
-        <div class="page-actions">
-            <a href="{{ url_for('member.index') }}" class="btn btn-outline">← Zurück zur Übersicht</a>
-        </div>
     </div>
     
     <div class="page-content">

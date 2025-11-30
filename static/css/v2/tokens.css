@@ -143,12 +143,12 @@
    DEFAULT THEME - Dark Mode (V2 Standard)
    ============================================ */
 :root {
-  /* Backgrounds */
-  --color-bg-base: var(--brand-primary-950);
-  --color-bg-subtle: var(--brand-primary-900);
-  --color-bg-muted: var(--logo-navy-dark);
+  /* Backgrounds - Matter/Less glossy with more Navy tone */
+  --color-bg-base: var(--brand-primary-900);
+  --color-bg-subtle: var(--logo-navy-dark);
+  --color-bg-muted: var(--brand-primary-800);
   --color-bg-elevated: var(--logo-navy-medium);
-  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+  --color-bg-overlay: rgba(27, 35, 46, 0.85);
   
   /* Surfaces */
   --color-surface: var(--logo-navy-dark);
@@ -184,11 +184,11 @@
   --color-error: var(--status-error-dark);
   --color-info: var(--status-info-dark);
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.7);
+  /* Shadows - Softer with Navy tone for matte appearance */
+  --shadow-sm: 0 1px 2px rgba(6, 10, 13, 0.3);
+  --shadow-md: 0 4px 6px rgba(6, 10, 13, 0.4);
+  --shadow-lg: 0 10px 15px rgba(6, 10, 13, 0.5);
+  --shadow-xl: 0 20px 25px rgba(6, 10, 13, 0.6);
 }
 
 /* ============================================
@@ -244,12 +244,12 @@
    DARK THEME - Semantic Tokens
    ============================================ */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-bg-base: var(--brand-primary-950);
-  --color-bg-subtle: var(--brand-primary-900);
-  --color-bg-muted: var(--logo-navy-dark);
+  /* Backgrounds - Matter/Less glossy with more Navy tone */
+  --color-bg-base: var(--brand-primary-900);
+  --color-bg-subtle: var(--logo-navy-dark);
+  --color-bg-muted: var(--brand-primary-800);
   --color-bg-elevated: var(--logo-navy-medium);
-  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+  --color-bg-overlay: rgba(27, 35, 46, 0.85);
   
   /* Surfaces */
   --color-surface: var(--logo-navy-dark);
@@ -282,11 +282,11 @@
   --color-error: var(--status-error-dark);
   --color-info: var(--status-info-dark);
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.7);
+  /* Shadows - Softer with Navy tone for matte appearance */
+  --shadow-sm: 0 1px 2px rgba(6, 10, 13, 0.3);
+  --shadow-md: 0 4px 6px rgba(6, 10, 13, 0.4);
+  --shadow-lg: 0 10px 15px rgba(6, 10, 13, 0.5);
+  --shadow-xl: 0 20px 25px rgba(6, 10, 13, 0.6);
 }
 
 /* ============================================
