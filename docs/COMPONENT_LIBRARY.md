@@ -24,7 +24,8 @@ MOLECULES (Simple Combinations)
 ├── Search Box (Input + Icon + Button)
 ├── Info Row (Label + Value)
 ├── Card Header (Title + Actions)
-└── Nav Item (Icon + Label + Badge)
+├── Nav Item (Icon + Label + Badge)
+└── Alert / Info Banner
 
 ORGANISMS (Complex Components)
 ├── Card
@@ -534,6 +535,86 @@ TEMPLATES (Page Layouts)
 
 ---
 
+## 🔔 ALERT / INFO BANNER
+
+**Use Case:** Informative messages, warnings, errors, or success notifications at page/section level.
+
+```html
+<!-- Info Alert -->
+<div class="alert alert--info">
+  <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="16" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12.01" y2="8"/>
+  </svg>
+  <div class="alert__content">
+    <div class="alert__message">
+      Diese Informationen werden verschlüsselt gespeichert.
+    </div>
+  </div>
+</div>
+
+<!-- With Title -->
+<div class="alert alert--warning">
+  <svg class="alert__icon">...</svg>
+  <div class="alert__content">
+    <div class="alert__title">Achtung</div>
+    <div class="alert__message">
+      Diese Aktion kann nicht rückgängig gemacht werden.
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="alert alert--success">
+  <svg class="alert__icon">...</svg>
+  <div class="alert__content">
+    <div class="alert__message">Daten erfolgreich gespeichert!</div>
+  </div>
+</div>
+
+<!-- Error -->
+<div class="alert alert--error">
+  <svg class="alert__icon">...</svg>
+  <div class="alert__content">
+    <div class="alert__title">Fehler</div>
+    <div class="alert__message">Bitte alle Pflichtfelder ausfüllen.</div>
+  </div>
+</div>
+```
+
+### When to use
+
+**Alert (persistent):**
+- ✅ Important information about the entire page/section
+- ✅ Security notices (e.g., encryption info)
+- ✅ Validation errors that apply to multiple fields
+- ✅ Warnings before destructive actions
+
+**Toast (temporary):**
+- ✅ Action feedback (saved, deleted, etc.)
+- ✅ Temporary notifications
+- ✅ Non-critical updates
+
+### CSS
+
+```css
+.alert {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-left: 4px solid;
+  border-radius: var(--radius-md);
+}
+
+.alert--info    { border-left-color: var(--brand-primary-600); }
+.alert--success { border-left-color: var(--color-success); }
+.alert--warning { border-left-color: var(--color-warning); }
+.alert--error   { border-left-color: var(--color-error); }
+```
+
+---
+
 ## 📝 FORMS
 
 ```html
@@ -628,6 +709,48 @@ TEMPLATES (Page Layouts)
 
 ## 🗂️ TABS
 
+**Two Implementations:** JavaScript-based (buttons) or URL-based (links).
+
+### URL-Based Tabs (Recommended)
+
+**Benefits:** Bookmarkable, works without JS, progressive enhancement.
+
+```html
+<div class="tabs">
+  <nav class="tabs__nav" role="tablist">
+    <a href="?tab=profile" 
+       class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'profile' else '' }}"
+       role="tab">
+      Profildaten
+    </a>
+    <a href="?tab=sensitive" 
+       class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'sensitive' else '' }}"
+       role="tab">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Sensible Daten
+    </a>
+  </nav>
+  
+  <div class="tabs__content">
+    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'profile' else '' }}"
+         role="tabpanel">
+      <!-- Profile Content -->
+    </div>
+    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'sensitive' else '' }}"
+         role="tabpanel">
+      <!-- Sensitive Content -->
+    </div>
+  </div>
+</div>
+```
+
+### JavaScript-Based Tabs (Interactive)
+
+**Benefits:** No page reload, smooth transitions.
+
 ```html
 <div class="tabs">
   <nav class="tabs__nav" role="tablist">
@@ -645,13 +768,6 @@ TEMPLATES (Page Layouts)
       aria-controls="panel-2">
       Profil
     </button>
-    <button 
-      class="tabs__tab" 
-      role="tab"
-      aria-selected="false"
-      aria-controls="panel-3">
-      Sicherheit
-    </button>
   </nav>
   
   <div class="tabs__content">
@@ -664,12 +780,35 @@ TEMPLATES (Page Layouts)
     <div 
       class="tabs__panel" 
       id="panel-2"
-      role="tabpanel"
-      hidden>
+      role="tabpanel">
       <!-- Content 2 -->
     </div>
   </div>
 </div>
+```
+
+### CSS Features
+
+```css
+.tabs__nav {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;                    /* Mobile scroll */
+  scrollbar-width: none;               /* Hide scrollbar */
+}
+
+.tabs__tab {
+  display: inline-flex;                /* Icon + text support */
+  gap: var(--space-2);
+  border-bottom: 2px solid transparent;
+  text-decoration: none !important;    /* For <a> tags */
+}
+
+.tabs__tab--active {
+  color: var(--color-interactive-primary);
+  border-bottom-color: var(--color-interactive-primary);
+  font-weight: var(--font-bold);
+}
 ```
 
 ---

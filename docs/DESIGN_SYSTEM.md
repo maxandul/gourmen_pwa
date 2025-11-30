@@ -635,6 +635,7 @@ Modern UX-Standards die implementiert sind:
 ```
 ✅ Safe Area Insets (iOS Notch/Dynamic Island)
 ✅ Toast Notifications (Non-intrusive Feedback)
+✅ Alert Banners (Persistent Info/Warning Messages)
 ✅ Scroll-to-Top Button (Auto-show/hide)
 ✅ Visual Feedback (:active states, hover)
 ✅ Smooth Scroll (respects user preferences)

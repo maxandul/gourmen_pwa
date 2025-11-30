@@ -382,6 +382,77 @@
 }
 
 /* ============================================
+   ALERT / INFO BANNER
+   ============================================ */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+  border-left: 4px solid;
+  font-size: var(--text-sm);
+}
+
+.alert__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.alert__content {
+  flex: 1;
+}
+
+.alert__title {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.alert__message {
+  color: var(--color-text-secondary);
+}
+
+/* Alert Variants */
+.alert--info {
+  background: var(--color-bg-subtle);
+  border-left-color: var(--brand-primary-600);
+}
+
+.alert--info .alert__icon {
+  color: var(--brand-primary-600);
+}
+
+.alert--success {
+  background: rgba(16, 185, 129, 0.1);
+  border-left-color: var(--color-success);
+}
+
+.alert--success .alert__icon {
+  color: var(--color-success);
+}
+
+.alert--warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--color-warning);
+}
+
+.alert--warning .alert__icon {
+  color: var(--color-warning);
+}
+
+.alert--error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left-color: var(--color-error);
+}
+
+.alert--error .alert__icon {
+  color: var(--color-error);
+}
+
+/* ============================================
    BADGE
    ============================================ */
 .badge {
@@ -527,32 +598,44 @@
 .tabs__nav {
   display: flex;
   gap: var(--space-2);
-  border-bottom: 2px solid var(--color-border-subtle);
   margin-bottom: var(--space-5);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Hide scrollbar for Chrome/Safari */
+.tabs__nav::-webkit-scrollbar {
+  display: none;
 }
 
 .tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
   cursor: pointer;
   font-size: var(--text-base);
   font-weight: var(--font-medium);
   color: var(--color-text-tertiary);
   transition: all var(--transition-fast);
   white-space: nowrap;
+  text-decoration: none !important;
 }
 
 .tabs__tab:hover {
   color: var(--color-text-primary);
+  text-decoration: none !important;
 }
 
 .tabs__tab--active {
   color: var(--color-interactive-primary);
   border-bottom-color: var(--color-interactive-primary);
+  font-weight: var(--font-bold);
 }
 
 .tabs__panel {

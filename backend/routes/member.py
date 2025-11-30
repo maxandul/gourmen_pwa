@@ -125,7 +125,88 @@ def profile():
         form.spirit_animal.data = current_user.spirit_animal
         form.fuehrerschein.data = current_user.fuehrerschein
     
-    if form.validate_on_submit():
+    # Determine active tab
+    active_tab = request.args.get('tab', 'profile')  # 'profile' or 'sensitive'
+    
+    # Initialize sensitive form (only if needed)
+    sensitive_form = None
+    sensitive_data_decrypted = None
+    
+    # Handle Sensitive Tab
+    if active_tab == 'sensitive':
+        # Check step-up access
+        if not SecurityService.check_step_up_access():
+            # Redirect to step-up with return to this tab
+            return redirect(url_for('auth.step_up', next=url_for('member.profile', tab='sensitive')))
+        
+        # User has step-up access, initialize sensitive form
+        sensitive_form = SensitiveDataForm()
+        
+        # Get or create sensitive data record
+        sensitive_data = MemberSensitive.query.filter_by(member_id=current_user.id).first()
+        
+        if request.method == 'GET':
+            if sensitive_data:
+                try:
+                    sensitive_data_decrypted = SecurityService.decrypt_json(sensitive_data.payload_encrypted)
+                    
+                    # Populate form
+                    sensitive_form.pass_nummer.data = sensitive_data_decrypted.get('pass_nummer', '')
+                    sensitive_form.pass_ausgestellt.data = sensitive_data_decrypted.get('pass_ausgestellt', '')
+                    sensitive_form.pass_ablauf.data = sensitive_data_decrypted.get('pass_ablauf', '')
+                    sensitive_form.id_nummer.data = sensitive_data_decrypted.get('id_nummer', '')
+                    sensitive_form.id_ausgestellt.data = sensitive_data_decrypted.get('id_ausgestellt', '')
+                    sensitive_form.id_ablauf.data = sensitive_data_decrypted.get('id_ablauf', '')
+                    sensitive_form.allergien.data = sensitive_data_decrypted.get('allergien', '')
+                    
+                    # Log access
+                    SecurityService.log_audit_event(
+                        AuditAction.READ_SENSITIVE_SELF, 'member_sensitive', current_user.id
+                    )
+                except Exception as e:
+                    # If decryption fails, clear the corrupted data
+                    flash('Sensible Daten waren beschädigt und wurden zurückgesetzt.', 'warning')
+                    db.session.delete(sensitive_data)
+                    db.session.commit()
+                    sensitive_data_decrypted = {}
+            else:
+                sensitive_data_decrypted = {}
+        
+        elif sensitive_form.validate_on_submit():
+            # Update sensitive data
+            data = {
+                'pass_nummer': sensitive_form.pass_nummer.data,
+                'pass_ausgestellt': sensitive_form.pass_ausgestellt.data,
+                'pass_ablauf': sensitive_form.pass_ablauf.data,
+                'id_nummer': sensitive_form.id_nummer.data,
+                'id_ausgestellt': sensitive_form.id_ausgestellt.data,
+                'id_ablauf': sensitive_form.id_ablauf.data,
+                'allergien': sensitive_form.allergien.data
+            }
+            
+            encrypted_data = SecurityService.encrypt_json(data)
+            
+            if sensitive_data:
+                sensitive_data.payload_encrypted = encrypted_data
+            else:
+                sensitive_data = MemberSensitive(
+                    member_id=current_user.id,
+                    payload_encrypted=encrypted_data
+                )
+                db.session.add(sensitive_data)
+            
+            db.session.commit()
+            
+            # Log update
+            SecurityService.log_audit_event(
+                AuditAction.UPDATE_SENSITIVE_SELF, 'member_sensitive', current_user.id
+            )
+            
+            flash('Sensible Daten erfolgreich gespeichert', 'success')
+            return redirect(url_for('member.profile', tab='sensitive'))
+    
+    # Handle Profile Tab form submission
+    if active_tab == 'profile' and form.validate_on_submit():
         # Personal data
         current_user.vorname = form.vorname.data
         current_user.nachname = form.nachname.data
@@ -167,9 +248,15 @@ def profile():
         
         db.session.commit()
         flash('Profil erfolgreich aktualisiert', 'success')
-        return redirect(url_for('member.profile'))
+        return redirect(url_for('member.profile', tab='profile'))
     
-    return render_template('member/profile.html', form=form, use_v2_design=True)
+    return render_template('member/profile.html', 
+                         form=form,
+                         sensitive_form=sensitive_form,
+                         sensitive_data=sensitive_data_decrypted,
+                         active_tab=active_tab,
+                         has_step_up=SecurityService.check_step_up_access(),
+                         use_v2_design=True)
 
 @bp.route('/security')
 @login_required
