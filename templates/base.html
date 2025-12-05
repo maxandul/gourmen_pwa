@@ -1,6 +1,31 @@
 <!DOCTYPE html>
-<html lang="de" {% if use_v2_design %}data-theme="dark"{% endif %}>
+<html lang="de">
 <head>
+    <!-- CRITICAL: Theme must be set BEFORE CSS loads to prevent FOUC -->
+    <script>
+        (function() {
+            const themeKey = 'theme';
+            const defaultTheme = 'dark';
+            
+            // Get theme from localStorage or system preference
+            let theme = localStorage.getItem(themeKey);
+            
+            if (!theme || (theme !== 'light' && theme !== 'dark')) {
+                // Fallback to system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                theme = prefersDark ? 'dark' : 'light';
+            }
+            
+            // Apply immediately
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update meta theme-color
+            const metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            metaThemeColor.setAttribute('content', theme === 'dark' ? '#1b232e' : '#ffffff');
+            document.head.appendChild(metaThemeColor);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gourmen{% endblock %}</title>
@@ -117,6 +142,24 @@
                 <span class="user-name">{{ current_user.display_name_with_spirit }}</span>
             </div>
             <div class="user-actions">
+                {% if use_v2_design %}
+                <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
+                    <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon icon--theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                {% endif %}
                 {% if current_user.is_admin() %}
                     <a href="{{ url_for('admin.index') }}" class="btn btn-header">⚙️ Admin</a>
                 {% endif %}
@@ -153,6 +196,8 @@
     
     {% if use_v2_design %}
     <!-- V2 Design System JavaScript -->
+    <script src="{{ url_for('static', filename='js/v2/theme.js') }}?v=2.0.0"></script>
+    <script src="{{ url_for('static', filename='js/v2/theme-toggle.js') }}?v=2.0.0" defer></script>
     <script src="{{ url_for('static', filename='js/v2/toast.js') }}?v=2.0.0" defer></script>
     <script src="{{ url_for('static', filename='js/v2/scroll-to-top.js') }}?v=2.0.0" defer></script>
     <script src="{{ url_for('static', filename='js/v2/accordion.js') }}?v=2.0.0" defer></script>

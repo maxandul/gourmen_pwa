@@ -1,7 +1,7 @@
 # GOURMEN PWA - COMPONENT LIBRARY
 
 > **Status:** In Planning  
-> **Last Updated:** 2025-01-29  
+> **Last Updated:** 2025-01-30  
 > **Design System:** See `DESIGN_SYSTEM.md`
 
 ---
@@ -212,6 +212,93 @@ TEMPLATES (Page Layouts)
   transform: none !important;
 }
 ```
+
+---
+
+## 🌓 THEME TOGGLE BUTTON
+
+**Icon-only Button** zum Wechseln zwischen Light und Dark Mode. Positioniert im User Bar (rechts neben Admin-Button).
+
+### Features
+
+✅ **Icon-only Design**: Nur Icons, kein Text  
+✅ **Auto-Initialisierung**: Funktioniert automatisch  
+✅ **FOUC Prevention**: Theme wird sofort gesetzt  
+✅ **Accessibility**: ARIA-Labels, Screen-Reader-Ankündigungen  
+✅ **Position**: User Bar rechts, neben Admin-Button
+
+### HTML Structure
+
+```html
+<!-- In templates/base.html - User Bar -->
+<div class="user-actions">
+  <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
+    <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <!-- Sun Icon SVG -->
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <!-- ... weitere Linien für Sonne ... -->
+    </svg>
+    <svg class="icon icon--theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <!-- Moon Icon SVG -->
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+</div>
+```
+
+### CSS Styling
+
+```css
+/* Icon-only Button (44x44px Touch Target) */
+#theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+#theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Icons übereinander positioniert */
+#theme-toggle .icon--theme-light,
+#theme-toggle .icon--theme-dark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--transition-fast);
+}
+```
+
+### JavaScript
+
+Das System initialisiert sich automatisch über `static/js/v2/theme-toggle.js`. Keine manuelle Initialisierung nötig.
+
+**Implementation Details:**
+- Verwendet `ThemeManager` aus `theme.js`
+- Auto-Initialisierung aller Buttons mit `id="theme-toggle"`
+- Icon-Toggle basierend auf aktuellem Theme
+- Screen-Reader-Ankündigungen bei Theme-Wechsel
+
+### Implementation Files
+
+- **CSS**: `static/css/v2/components.css` (Zeile ~1208)
+- **JavaScript**: `static/js/v2/theme-toggle.js`
+- **Core Logic**: `static/js/v2/theme.js` (ThemeManager Klasse)
+- **Template**: `templates/base.html` (User Bar)
+
+Siehe auch: `DESIGN_SYSTEM.md` → Theme Switching für vollständige Dokumentation.
 
 ---
 
@@ -515,11 +602,7 @@ Card Titles können Icons enthalten:
   </nav>
   
   <div class="sidebar__footer">
-    <button class="sidebar__item" id="theme-toggle">
-      <svg class="icon"><use href="#sun"/></svg>
-      <span class="sidebar__label">Theme</span>
-    </button>
-    
+    <!-- Note: Theme Toggle ist tatsächlich im User Bar implementiert, nicht in Sidebar -->
     <div class="sidebar__user">
       <div class="sidebar__user-avatar">M</div>
       <div class="sidebar__user-info">

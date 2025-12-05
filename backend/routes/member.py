@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField
+from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
 from wtforms.validators import DataRequired, Email, Optional
 from backend.extensions import db
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
@@ -41,6 +41,9 @@ class ProfileForm(FlaskForm):
     spirit_animal = StringField('Spirit Animal')
     fuehrerschein = StringField('Führerschein (Kategorien)')
     
+    # Hidden field to preserve active tab during form submission
+    active_tab = HiddenField('active_tab', default='profile')
+    
     submit = SubmitField('Speichern')
 
 class SensitiveDataForm(FlaskForm):
@@ -51,6 +54,10 @@ class SensitiveDataForm(FlaskForm):
     id_ausgestellt = StringField('ID ausgestellt')
     id_ablauf = StringField('ID abläuft')
     allergien = TextAreaField('Allergien')
+    
+    # Hidden field to preserve active tab during form submission
+    active_tab = HiddenField('active_tab', default='sensitive')
+    
     submit = SubmitField('Speichern')
 
 @bp.route('/')
@@ -99,9 +106,16 @@ def profile():
         # Preferences
         form.spirit_animal.data = current_user.spirit_animal
         form.fuehrerschein.data = current_user.fuehrerschein
+        
+        # Set active_tab field based on query parameter
+        form.active_tab.data = request.args.get('tab', 'profile')
     
-    # Determine active tab (from query params or form data)
-    active_tab = request.args.get('tab') or request.form.get('active_tab', 'profile')
+    # Determine active tab (prioritize form data for POST, then query params, then default)
+    # For POST requests, form data takes precedence to preserve tab state during submission
+    if request.method == 'POST':
+        active_tab = request.form.get('active_tab') or request.args.get('tab') or 'profile'
+    else:
+        active_tab = request.args.get('tab') or 'profile'
     
     # Initialize sensitive form (only if needed)
     sensitive_form = None
@@ -121,6 +135,9 @@ def profile():
         sensitive_data = MemberSensitive.query.filter_by(member_id=current_user.id).first()
         
         if request.method == 'GET':
+            # Set active_tab field based on query parameter
+            sensitive_form.active_tab.data = request.args.get('tab', 'sensitive')
+            
             if sensitive_data:
                 try:
                     sensitive_data_decrypted = SecurityService.decrypt_json(sensitive_data.payload_encrypted)
@@ -182,16 +199,7 @@ def profile():
     
     # Handle Profile Tab form submission
     if active_tab == 'profile' and request.method == 'POST':
-        from flask import current_app
         is_valid = form.validate_on_submit()
-        
-        current_app.logger.info(f"=== PROFILE DEBUG ===")
-        current_app.logger.info(f"Active tab: {active_tab}")
-        current_app.logger.info(f"Form prefix: profile")
-        current_app.logger.info(f"Form.validate_on_submit(): {is_valid}")
-        current_app.logger.info(f"Form errors: {form.errors}")
-        current_app.logger.info(f"Request.form keys: {list(request.form.keys())}")
-        current_app.logger.info(f"===================")
         
         if not is_valid:
             # Show validation errors

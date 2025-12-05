@@ -323,3 +323,25 @@
   --safe-area-left: env(safe-area-inset-left, 0px);
 }
 
+/* ============================================
+   THEME TRANSITIONS
+   ============================================ */
+
+/* Disable transitions on initial load to prevent FOUC */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease;
+  transition-delay: 0s;
+}
+
+/* Enable smooth transitions only when theme-transition class is present */
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition-duration: 0.3s;
+}
+

@@ -64,7 +64,7 @@
                      role="tabpanel">
                     <form method="POST" class="form">
                         {{ form.hidden_tag() }}
-                        <input type="hidden" name="active_tab" value="profile">
+                        {{ form.active_tab() }}
                         
                         <!-- Personal Data Card -->
                         <div class="card">
@@ -336,7 +336,7 @@
                     
                     <form method="POST" class="form">
                         {{ sensitive_form.hidden_tag() }}
-                        <input type="hidden" name="active_tab" value="sensitive">
+                        {{ sensitive_form.active_tab() }}
                         
                         <!-- Reisepass Card -->
                         <div class="card">

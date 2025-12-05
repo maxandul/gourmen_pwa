@@ -1,7 +1,7 @@
 # GOURMEN PWA - DESIGN SYSTEM
 
 > **Status:** In Planning  
-> **Last Updated:** 2025-01-29  
+> **Last Updated:** 2025-01-30  
 > **Version:** 2.0 (Complete Redesign)
 
 ---
@@ -536,51 +536,121 @@ body {
 
 ## 🚀 THEME SWITCHING
 
-### Implementation
+### Implementation (Best Practice)
+
+Das Theme-Switching-System wurde als modulare, production-ready Lösung implementiert mit FOUC-Prevention, System-Präferenz-Erkennung und Persistenz.
+
+#### Architecture
+
+```
+static/js/v2/
+├── theme.js          → ThemeManager Klasse (Core Logic)
+└── theme-toggle.js   → ThemeToggle Klasse (Button Component)
+```
+
+#### HTML Structure
 
 ```html
-<!-- Theme Toggle Button -->
-<button id="theme-toggle" aria-label="Toggle theme">
-  <svg class="icon icon--theme-light">
-    <use href="#sun"/>
-  </svg>
-  <svg class="icon icon--theme-dark">
-    <use href="#moon"/>
-  </svg>
-</button>
+<!-- In templates/base.html - User Bar -->
+<div class="user-actions">
+  <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
+    <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <!-- Sun Icon SVG -->
+    </svg>
+    <svg class="icon icon--theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <!-- Moon Icon SVG -->
+    </svg>
+  </button>
+</div>
 
+<!-- FOUC Prevention Script (in <head>) -->
 <script>
-// Theme Detection & Persistence
-const getTheme = () => {
-  const saved = localStorage.getItem('theme');
-  if (saved) return saved;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches 
-    ? 'dark' 
-    : 'light';
-};
-
-const setTheme = (theme) => {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-};
-
-// Initialize
-setTheme(getTheme());
-
-// Toggle
-document.getElementById('theme-toggle')?.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  setTheme(current === 'dark' ? 'light' : 'dark');
-});
-
-// Listen to system changes
-window.matchMedia('(prefers-color-scheme: dark)')
-  .addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      setTheme(e.matches ? 'dark' : 'light');
-    }
-  });
+(function() {
+  const getTheme = () => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+  document.documentElement.setAttribute('data-theme', getTheme());
+})();
 </script>
+```
+
+#### JavaScript Implementation
+
+**ThemeManager (`static/js/v2/theme.js`):**
+- Klasse-basierte Architektur
+- Theme-Detection (localStorage → System Preference)
+- Persistenz in localStorage
+- System-Präferenz-Listener (nur wenn kein manuelles Theme gesetzt)
+- Meta-Theme-Color-Update für Mobile Browser
+- Custom Event `themechange` für andere Komponenten
+- Smooth Transitions (nach initial load)
+
+**ThemeToggle (`static/js/v2/theme-toggle.js`):**
+- Auto-Initialisierung aller Theme-Toggle-Buttons
+- Icon-only Design (kein Text)
+- ARIA-Labels für Accessibility
+- Screen-Reader-Ankündigungen
+- Event-Listener für externe Theme-Änderungen
+
+#### CSS Styling
+
+```css
+/* Icon-only Button (44x44px Touch Target) */
+#theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+#theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Icons übereinander positioniert */
+#theme-toggle .icon--theme-light,
+#theme-toggle .icon--theme-dark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--transition-fast);
+}
+```
+
+#### Features
+
+✅ **FOUC Prevention**: Inline-Script im `<head>` setzt Theme sofort  
+✅ **System Preference**: Respektiert `prefers-color-scheme` wenn kein manuelles Theme  
+✅ **Persistence**: Theme wird in localStorage gespeichert  
+✅ **Accessibility**: ARIA-Labels, Screen-Reader-Ankündigungen  
+✅ **Smooth Transitions**: CSS-Transitions nur nach initial load  
+✅ **Icon-only Design**: Kompaktes Design ohne Text  
+✅ **Position**: Rechts im User Bar, neben Admin-Button  
+✅ **Mobile Meta Color**: Aktualisiert `<meta name="theme-color">` für Mobile Browser
+
+#### Usage
+
+Das System initialisiert sich automatisch. Keine manuelle Initialisierung nötig.
+
+```javascript
+// Optional: Manuelles Theme setzen
+themeManager.setTheme('dark');
+
+// Optional: Theme togglen
+themeManager.toggle();
+
+// Optional: Aktuelles Theme abrufen
+const currentTheme = themeManager.getCurrentTheme();
 ```
 
 ---

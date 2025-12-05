@@ -1205,3 +1205,69 @@ a.card-link:active {
   font-weight: var(--font-medium);
 }
 
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+
+#theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+#theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+#theme-toggle .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+#theme-toggle .icon--theme-light,
+#theme-toggle .icon--theme-dark {
+  transition: opacity var(--transition-fast);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Hide any text or other elements that might be in the button */
+#theme-toggle > *:not(.icon) {
+  display: none !important;
+}
+
+/* Ensure only icons are visible */
+#theme-toggle .icon--theme-light,
+#theme-toggle .icon--theme-dark {
+  display: block;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
