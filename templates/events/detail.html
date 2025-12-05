@@ -4,6 +4,16 @@
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('events.index') }}" class="breadcrumbs__link">Events</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">{{ event.event_typ.value }} {{ event.display_date }}</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             {% if event.event_typ.value == 'MONATSESSEN' %}
@@ -35,19 +45,9 @@
             {% endif %}
             {{ event.event_typ.value }} - {{ event.display_date }}
         </h1>
-        <p class="page-subtitle">
-            {% if event.restaurant %}{{ event.restaurant }}{% endif %}
-            {% if event.kueche %} • {{ event.kueche }}{% endif %}
-        </p>
+        <p class="page-subtitle">Alle Details zum Event</p>
+        {% if current_user.is_admin or event.organisator_id == current_user.id %}
         <div class="page-actions">
-            <a href="{{ url_for('events.index') }}" class="btn btn--primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="m12 19-7-7 7-7"/>
-                    <path d="M19 12H5"/>
-                </svg>
-                Zurück zu Events
-            </a>
-            {% if current_user.is_admin or event.organisator_id == current_user.id %}
             <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--primary">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -55,8 +55,8 @@
                 </svg>
                 Bearbeiten
             </a>
-            {% endif %}
         </div>
+        {% endif %}
     </div>
     
     <div class="page-content">
