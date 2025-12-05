@@ -121,15 +121,15 @@ Component Architecture
 
 ```css
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-base: #ffffff;
-  --color-bg-subtle: var(--brand-primary-50);     /* #f5f7f9 - subtle navy tint */
+  /* Backgrounds - Subtle navy tint instead of pure white (consistent with dark mode) */
+  --color-bg-base: var(--brand-primary-50);     /* #f5f7f9 - Very light navy tint (not pure white) */
+  --color-bg-subtle: #ffffff;                    /* Pure white for subtle areas */
   --color-bg-muted: var(--brand-primary-100);
-  --color-bg-elevated: #ffffff;
+  --color-bg-elevated: #ffffff;                  /* Pure white for elevated surfaces */
   --color-bg-overlay: rgba(0, 0, 0, 0.5);
   
   /* Surfaces (Cards, Panels) */
-  --color-surface: #ffffff;
+  --color-surface: #ffffff;                      /* Cards remain pure white for contrast */
   --color-surface-secondary: var(--brand-primary-50);
   --color-surface-tertiary: var(--brand-primary-100);
   --color-surface-hover: var(--brand-primary-100);
@@ -475,8 +475,8 @@ body {
 /* Body Background (Theme-aware) */
 body {
   background-color: var(--color-bg-base);
-  /* Light Mode: #ffffff */
-  /* Dark Mode: var(--brand-primary-900) = #0f151a */
+  /* Light Mode: var(--brand-primary-50) = #f5f7f9 (subtle navy tint, not pure white) */
+  /* Dark Mode: var(--brand-primary-900) = #0f151a (almost black, not pure black) */
 }
 
 /* Wichtig: Container hat KEIN eigenes Background */
@@ -510,9 +510,9 @@ body {
 - Shadow: `--shadow-md` (theme-aware)
 
 **User Bar (Top):**
-- Dark Mode: Navy Gradient (`--brand-primary-800` → `--brand-primary-700`)
-- Light Mode: Heller Navy Gradient (`--brand-primary-700` → `--brand-primary-600`)
+- **Beide Modi:** Dunkler Navy Gradient (`--brand-primary-800` → `--brand-primary-700`)
 - Text: Immer weiß für Kontrast
+- **Design-Entscheidung:** Gleicher Look in beiden Modi für konsistentes Branding
 
 ---
 

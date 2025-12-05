@@ -31,9 +31,9 @@
   box-shadow: var(--shadow-md);
 }
 
-/* User Bar - Light Mode Variante */
+/* User Bar: Same dark gradient in both themes (as requested) */
 [data-theme="light"] .user-bar {
-  background: linear-gradient(135deg, var(--brand-primary-700), var(--brand-primary-600));
+  background: linear-gradient(135deg, var(--brand-primary-800), var(--brand-primary-700));
 }
 
 .logo-link {

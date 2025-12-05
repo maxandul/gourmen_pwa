@@ -66,6 +66,7 @@ def index():
                          ggl_stats=ggl_stats,
                          current_season=current_season,
                          latest_bill_event=latest_bill_event,
-                         latest_bill_participation=latest_bill_participation)
+                         latest_bill_participation=latest_bill_participation,
+                         use_v2_design=True)
 
  

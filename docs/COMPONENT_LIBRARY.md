@@ -501,6 +501,11 @@ Verwendet die wiederverwendbare `.btn--icon-only` Klasse (siehe Icon-only Button
   background: var(--color-surface-secondary);
 }
 
+/* Light Mode: Enhanced contrast for card header */
+[data-theme="light"] .card__header {
+  background: var(--brand-primary-200);  /* #d1d9e1 - More visible vs body bg */
+}
+
 .card__title {
   display: flex;
   align-items: center;

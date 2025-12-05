@@ -195,15 +195,15 @@
    LIGHT THEME - Semantic Tokens
    ============================================ */
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-base: #ffffff;
-  --color-bg-subtle: var(--brand-primary-50);
+  /* Backgrounds - Subtle navy tint instead of pure white */
+  --color-bg-base: var(--brand-primary-50);     /* #f5f7f9 - Very light navy tint */
+  --color-bg-subtle: #ffffff;                    /* Pure white for subtle areas */
   --color-bg-muted: var(--brand-primary-100);
-  --color-bg-elevated: #ffffff;
+  --color-bg-elevated: #ffffff;                 /* Pure white for elevated surfaces */
   --color-bg-overlay: rgba(0, 0, 0, 0.5);
   
   /* Surfaces */
-  --color-surface: #ffffff;
+  --color-surface: #ffffff;                      /* Cards remain pure white */
   --color-surface-secondary: var(--brand-primary-50);
   --color-surface-tertiary: var(--brand-primary-100);
   --color-surface-hover: var(--brand-primary-100);
