@@ -312,11 +312,31 @@ TEMPLATES (Page Layouts)
 }
 
 .card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0;
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
 }
+```
+
+### Card Title mit Icon
+
+Card Titles können Icons enthalten:
+
+```html
+<h2 class="card__title">
+  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+  Persönliche Daten
+</h2>
+```
+
+**CSS:** `.card__title` verwendet `display: flex` mit `gap: var(--space-2)` für automatische Icon-Ausrichtung.
 
 .card__actions {
   display: flex;
@@ -617,6 +637,18 @@ TEMPLATES (Page Layouts)
 
 ## 📝 FORMS
 
+### Form Container
+
+Alle Forms sollten die `.form` Klasse verwenden:
+
+```html
+<form method="POST" class="form">
+```
+
+**CSS:** Die `.form` Klasse hat keine spezifischen Styles und dient primär als Container für Form Fields. Sie ermöglicht konsistente Form-Strukturierung.
+
+### Form Fields
+
 ```html
 <form class="form">
   <!-- Form Field -->
@@ -631,6 +663,18 @@ TEMPLATES (Page Layouts)
       class="form-field__input"
       required>
     <span class="form-field__error">Bitte Namen eingeben</span>
+  </div>
+  
+  <!-- Form Row: Multiple fields side-by-side -->
+  <div class="form-row">
+    <div class="form-field">
+      <label class="form-field__label" for="vorname">Vorname</label>
+      <input type="text" id="vorname" class="form-field__input">
+    </div>
+    <div class="form-field">
+      <label class="form-field__label" for="nachname">Nachname</label>
+      <input type="text" id="nachname" class="form-field__input">
+    </div>
   </div>
   
   <!-- Select -->
@@ -649,11 +693,85 @@ TEMPLATES (Page Layouts)
   </div>
   
   <!-- Actions -->
-  <div class="form__actions">
+  <div class="form-actions">
     <button type="button" class="btn btn--outline">Abbrechen</button>
     <button type="submit" class="btn btn--primary">Speichern</button>
   </div>
 </form>
+```
+
+### CSS Implementation
+
+```css
+.form-field {
+  margin-bottom: var(--space-5);
+}
+
+.form-field__label {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+.form-field__input,
+.form-field__select,
+.form-field__textarea {
+  width: 100%;
+  padding: var(--input-padding);
+  border: 2px solid var(--input-border);
+  border-radius: var(--input-radius);
+  font-size: var(--text-base);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.form-field__input:focus,
+.form-field__select:focus,
+.form-field__textarea:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(220, 105, 60, 0.1);
+}
+
+.form-field__error {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--color-error);
+  font-size: var(--text-sm);
+}
+
+/* Form Row: Multiple fields side-by-side */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+@media (max-width: 640px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+}
 ```
 
 ---
@@ -787,6 +905,35 @@ TEMPLATES (Page Layouts)
 </div>
 ```
 
+### Icons in Tabs
+
+Tabs können Icons enthalten. Die Icons werden automatisch mit `gap: var(--space-2)` ausgerichtet:
+
+```html
+<a href="?tab=sensitive" class="tabs__tab" role="tab">
+  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+  Sensible Daten
+</a>
+```
+
+**CSS:** `.tabs__tab` verwendet `display: inline-flex` mit `gap: var(--space-2)` für automatische Icon-Ausrichtung.
+
+### ARIA-Attribute (Optional, aber empfohlen)
+
+Für bessere Accessibility können URL-based Tabs `aria-selected` verwenden:
+
+```html
+<a href="?tab=profile" 
+   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'profile' else '' }}"
+   role="tab"
+   aria-selected="{{ 'true' if active_tab == 'profile' else 'false' }}">
+  Profildaten
+</a>
+```
+
 ### CSS Features
 
 ```css
@@ -809,6 +956,19 @@ TEMPLATES (Page Layouts)
   border-bottom-color: var(--color-interactive-primary);
   font-weight: var(--font-bold);
 }
+
+.tabs__content {
+  margin-top: var(--space-5);
+}
+
+.tabs__panel {
+  display: none;
+}
+
+.tabs__panel--active {
+  display: block;
+  animation: fadeIn 200ms ease;
+}
 ```
 
 ---
@@ -818,22 +978,97 @@ TEMPLATES (Page Layouts)
 ### Standard Page Structure
 
 ```html
-<div class="page">
-  <div class="page__header">
-    <h1 class="page__title">Dashboard</h1>
-    <p class="page__subtitle">Willkommen zurück!</p>
-    <div class="page__actions">
+<div class="container">
+  <!-- Breadcrumbs (optional) -->
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <!-- ... -->
+  </nav>
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>
+      <svg class="icon"><use href="#dashboard"/></svg>
+      Dashboard
+    </h1>
+    <p class="page-subtitle">Willkommen zurück!</p>
+    <div class="page-actions">
       <button class="btn btn--primary">Neues Event</button>
     </div>
   </div>
   
-  <div class="page__content">
+  <!-- Page Content -->
+  <div class="page-content">
     <div class="card">
       <!-- Content -->
     </div>
   </div>
 </div>
 ```
+
+### CSS Implementation
+
+```css
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.page-header h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.page-header h1 .icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.page-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+```
+
+### Featured Page Header (for Hub Pages)
+
+```html
+<div class="page-header page-header--featured">
+  <h1>
+    <svg class="icon"><use href="#events"/></svg>
+    Events
+  </h1>
+  <p class="page-subtitle">Verwalte deine Events</p>
+  <div class="page-actions">
+    <button class="btn btn--primary">Neues Event</button>
+  </div>
+</div>
+```
+
+**Note:** `.page-header--featured` has centered text, gradient title, and larger typography for hub/dashboard pages.
 
 ---
 
@@ -1234,6 +1469,45 @@ accordion.closeAll();
     <span class="breadcrumbs__current">Bearbeiten</span>
   </div>
 </nav>
+```
+
+#### CSS
+
+```css
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+}
+
+.breadcrumbs__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.breadcrumbs__link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.breadcrumbs__link:hover {
+  color: var(--color-text-link);  /* Orange on hover */
+}
+
+.breadcrumbs__separator {
+  color: var(--color-text-tertiary);
+  user-select: none;
+}
+
+.breadcrumbs__current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-medium);
+}
 ```
 
 #### Wann nutzen?

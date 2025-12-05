@@ -172,11 +172,11 @@ Component Architecture
 ```css
 [data-theme="dark"] {
   /* Backgrounds - Uses logo navy as foundation */
-  --color-bg-base: var(--brand-primary-950);      /* #060a0d - Deep black */
-  --color-bg-subtle: var(--brand-primary-900);    /* #0f151a - Almost black */
-  --color-bg-muted: var(--logo-navy-dark);        /* #1b232e - LOGO! */
+  --color-bg-base: var(--brand-primary-900);      /* #0f151a - Almost black (sehr dunkles Grau) */
+  --color-bg-subtle: var(--logo-navy-dark);       /* #1b232e - LOGO! */
+  --color-bg-muted: var(--brand-primary-800);     /* #1b232e - LOGO! */
   --color-bg-elevated: var(--logo-navy-medium);   /* #354e5e - LOGO! */
-  --color-bg-overlay: rgba(0, 0, 0, 0.75);
+  --color-bg-overlay: rgba(27, 35, 46, 0.85);
   
   /* Surfaces - Logo colors */
   --color-surface: var(--logo-navy-dark);         /* #1b232e - LOGO! */
@@ -459,12 +459,21 @@ body {
 ## 📐 CONTAINER SYSTEM
 
 ```css
-:root {
-  --container-narrow: 640px;    /* Forms, Text */
-  --container-standard: 1024px; /* Most Content */
-  --container-wide: 1280px;     /* Dashboards, Lists */
-  --container-full: 100%;       /* Special Layouts */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4);
 }
+
+/* Body Background (Theme-aware) */
+body {
+  background-color: var(--color-bg-base);
+  /* Light Mode: #ffffff */
+  /* Dark Mode: var(--brand-primary-900) = #0f151a */
+}
+
+/* Wichtig: Container hat KEIN eigenes Background */
+/* Container nutzt body background für konsistentes Theme */
 ```
 
 ---
