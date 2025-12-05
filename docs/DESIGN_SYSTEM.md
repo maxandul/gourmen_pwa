@@ -760,6 +760,7 @@ Modern UX-Standards die implementiert sind:
 ✅ Responsive Design (Mobile/Tablet/Desktop)
 ✅ Light/Dark Theme Toggle
 ✅ WCAG 2.2 Level AA Compliance
+✅ Tabs Overflow Fade (rechts) mit Auto-Hide am Scroll-Ende
 ```
 
 ### ❌ Not Needed / Browser Default
@@ -787,7 +788,8 @@ static/
 │   ├── scroll-to-top.js  # Scroll-to-Top Button
 │   ├── focus-trap.js     # Focus Management
 │   ├── accordion.js      # Accordion Component
-│   └── search.js         # Instant Search
+│   ├── search.js         # Instant Search
+│   └── tabs.js           # Tabs Overflow Fade Controller
 │
 └── docs/
     ├── DESIGN_SYSTEM.md      # Design Decisions

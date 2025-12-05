@@ -680,23 +680,22 @@
 .tabs {
   position: relative;
   margin-bottom: var(--space-6);
-  overflow: visible; /* Fade kann über Container hinausgehen */
+  overflow: hidden;
 }
 
 .tabs__nav {
   display: flex;
   gap: 0; /* Kein Gap, Tabs haben Trennstriche */
   margin-bottom: var(--space-5);
+  position: relative;
+  min-height: var(--tabs-nav-height, 56px);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
   scroll-behavior: smooth;
-  /* Negative Margins für Container-Padding ausgleichen */
-  margin-left: calc(-1 * var(--space-4));
-  margin-right: calc(-1 * var(--space-4));
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Hide scrollbar for Chrome/Safari */
@@ -704,20 +703,36 @@
   display: none;
 }
 
-/* Fade-Effekt am rechten Rand (zeigt an, dass mehr Tabs vorhanden sind) */
-.tabs__nav::after {
+/* Fades am Container, gesteuert über Klassen */
+.tabs::before,
+.tabs::after {
   content: '';
-  position: sticky;
-  right: calc(-1 * var(--space-4));
+  position: absolute;
   top: 0;
-  width: 50px;
-  height: 100%;
-  background: linear-gradient(to right, transparent, var(--color-bg-base));
+  width: 56px;
+  height: var(--tabs-nav-height, 56px);
   pointer-events: none;
   z-index: 2;
-  flex-shrink: 0;
-  margin-left: auto;
-  order: 999; /* Am Ende des Flex-Containers */
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tabs::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg-base) 0%, transparent 80%);
+}
+
+.tabs::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg-base) 0%, transparent 80%);
+}
+
+.tabs--fade-left::before {
+  opacity: 1;
+}
+
+.tabs--fade-right::after {
+  opacity: 1;
 }
 
 .tabs__tab {

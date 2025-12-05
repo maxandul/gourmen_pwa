@@ -1177,25 +1177,25 @@ Für bessere Accessibility können URL-based Tabs `aria-selected` verwenden:
 - ✅ Trennstriche zwischen inaktiven Tabs für klare Abgrenzung
 - ✅ Theme-aware Farben (Light/Dark Mode)
 - ✅ Horizontales Scrolling mit versteckter Scrollbar
-- ✅ Negative Margins für Container-Padding-Ausgleich
+- ✅ Fade-Indikatoren an der Tab-Leiste, gesteuert über Container-Klassen (nur bei Overflow sichtbar, blenden am jeweiligen Rand aus; `static/js/v2/tabs.js`)
 
 ```css
 .tabs {
   position: relative;
   margin-bottom: var(--space-6);
+  overflow: hidden;
 }
 
 .tabs__nav {
   display: flex;
   gap: 0; /* Kein Gap, Tabs haben Trennstriche */
+  position: relative;
+  min-height: var(--tabs-nav-height, 56px);
   overflow-x: auto;
   scrollbar-width: none;               /* Hide scrollbar */
   scroll-behavior: smooth;
-  /* Negative Margins für Container-Padding ausgleichen */
-  margin-left: calc(-1 * var(--space-4));
-  margin-right: calc(-1 * var(--space-4));
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .tabs__tab {
@@ -1235,6 +1235,33 @@ Für bessere Accessibility können URL-based Tabs `aria-selected` verwenden:
   border-bottom-color: var(--color-interactive-primary);
   font-weight: var(--font-bold);
 }
+
+/* Fades am Container, via Klassen (.tabs--fade-left/right) */
+.tabs::before,
+.tabs::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 56px;
+  height: var(--tabs-nav-height, 56px);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tabs::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg-base) 0%, transparent 80%);
+}
+
+.tabs::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg-base) 0%, transparent 80%);
+}
+
+.tabs--fade-left::before { opacity: 1; }
+.tabs--fade-right::after { opacity: 1; }
 ```
 
 .tabs__content {
