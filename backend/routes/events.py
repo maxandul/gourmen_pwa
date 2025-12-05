@@ -10,6 +10,7 @@ from wtforms.validators import DataRequired, NumberRange
 from backend.extensions import db
 from backend.models.event import Event, EventType
 from backend.models.participation import Participation, Esstyp
+from backend.routes.billbro import BillBroForm
 from backend.models.member import Member, Role
 from backend.services.places import PlacesService
 from backend.services.notifier import NotifierService
@@ -380,6 +381,7 @@ def archive():
 def detail(event_id):
     """Event detail"""
     event = Event.query.get_or_404(event_id)
+    active_tab = request.args.get('tab', 'info')
     
     # Get user's participation
     participation = Participation.query.filter_by(
@@ -392,12 +394,19 @@ def detail(event_id):
     
     # Get all active members for complete overview
     all_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
+
+    is_organizer = (current_user.is_admin() or event.organisator_id == current_user.id)
+    billbro_form = None
+    if (participation and participation.teilnahme) or is_organizer:
+        billbro_form = BillBroForm()
     
     return render_template('events/detail.html', 
                          event=event, 
                          participation=participation,
                          participations=participations,
                          all_members=all_members,
+                         active_tab=active_tab,
+                         form=billbro_form,
                          use_v2_design=True)
 
 @bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])

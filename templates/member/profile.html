@@ -28,19 +28,20 @@
     </div>
     
     <div class="page-content">
+        {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'profile') %}
         <!-- Tabs Navigation -->
         <div class="tabs">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('member.profile', tab='profile') }}"
-                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'profile' else '' }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'profile' else '' }}"
                    role="tab"
-                   aria-selected="{{ 'true' if active_tab == 'profile' else 'false' }}">
+                   aria-selected="{{ 'true' if tab_param == 'profile' else 'false' }}">
                     Profildaten
                 </a>
                 <a href="{{ url_for('member.profile', tab='sensitive') }}"
-                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'sensitive' else '' }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'sensitive' else '' }}"
                    role="tab"
-                   aria-selected="{{ 'true' if active_tab == 'sensitive' else 'false' }}">
+                   aria-selected="{{ 'true' if tab_param == 'sensitive' else 'false' }}">
                     {% if has_step_up %}
                     <!-- Unlocked Icon wenn Step-Up aktiv -->
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -60,7 +61,7 @@
             
             <div class="tabs__content">
                 <!-- Tab 1: Profildaten -->
-                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'profile' else '' }}"
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'profile' else '' }}"
                      role="tabpanel">
                     <form method="POST" class="form">
                         {{ form.hidden_tag() }}
@@ -315,7 +316,7 @@
                 </div>
                 
                 <!-- Tab 2: Sensible Daten -->
-                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'sensitive' else '' }}"
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'sensitive' else '' }}"
                      role="tabpanel">
                     {% if sensitive_form %}
                     

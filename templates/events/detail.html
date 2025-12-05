@@ -81,16 +81,17 @@
     </div>
     
     <div class="page-content">
+                {% set tab_param = active_tab if active_tab is defined else 'info' %}
         <div class="tabs" data-tabs>
             <nav class="tabs__nav" role="tablist">
-                <button class="tabs__tab tabs__tab--active" type="button" role="tab" aria-selected="true" data-tab-target="tab-info">Infos</button>
-                <button class="tabs__tab" type="button" role="tab" aria-selected="false" data-tab-target="tab-billbro">BillBro</button>
-                <button class="tabs__tab" type="button" role="tab" aria-selected="false" data-tab-target="tab-ratings">Bewertungen</button>
+                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'info' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'info' else 'false' }}" data-tab-target="tab-info">Infos</button>
+                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'billbro' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'billbro' else 'false' }}" data-tab-target="tab-billbro">BillBro</button>
+                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'ratings' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'ratings' else 'false' }}" data-tab-target="tab-ratings">Bewertungen</button>
             </nav>
 
             <div class="tabs__content">
                 <!-- Tab: Infos -->
-                <div class="tabs__panel tabs__panel--active" id="tab-info" role="tabpanel">
+                        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'info' else '' }}" id="tab-info" role="tabpanel">
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
@@ -250,7 +251,7 @@
                 </div>
 
                 <!-- Tab: BillBro -->
-                <div class="tabs__panel" id="tab-billbro" role="tabpanel">
+                        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'billbro' else '' }}" id="tab-billbro" role="tabpanel">
                     {% set is_organizer = current_user.is_admin or event.organisator_id == current_user.id %}
                     {% if participation and participation.teilnahme %}
                     <!-- BillBro: Neue V2-Struktur -->
@@ -288,17 +289,15 @@
                         </div>
                         <div class="card__footer">
                             {% if not event.billbro_closed %}
-                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form">
+                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form" style="margin:0;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn--outline">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                        </svg>
-                                        Schätzung bearbeiten
-                                    </button>
-                                </div>
+                                <button type="submit" class="btn btn--outline">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    Schätzung bearbeiten
+                                </button>
                             </form>
                             {% else %}
                             <p class="text-muted">BillBro ist abgeschlossen – keine Änderungen mehr möglich.</p>
@@ -322,34 +321,38 @@
                         </div>
                         <div class="card__body">
                             {% if not event.billbro_closed %}
-                            <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="form">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                
-                                <div class="form-field">
-                                    {{ form.esstyp.label(class_="form-field__label") }}
-                                    {{ form.esstyp(class_="form-field__select") }}
-                                    {% if form.esstyp.errors %}
-                                    <span class="form-field__error">{{ form.esstyp.errors[0] }}</span>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-field">
-                                    {{ form.guess_amount.label(class_="form-field__label") }}
-                                    {{ form.guess_amount(class_="form-field__input", placeholder="z.B. 45.50") }}
-                                    {% if form.guess_amount.errors %}
-                                    <span class="form-field__error">{{ form.guess_amount.errors[0] }}</span>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn--primary">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                        Schätzung abgeben
-                                    </button>
-                                </div>
-                            </form>
+                            {% if form is defined %}
+                                <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    
+                                    <div class="form-field">
+                                        {{ form.esstyp.label(class_="form-field__label") }}
+                                        {{ form.esstyp(class_="form-field__select") }}
+                                        {% if form.esstyp.errors %}
+                                        <span class="form-field__error">{{ form.esstyp.errors[0] }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="form-field">
+                                        {{ form.guess_amount.label(class_="form-field__label") }}
+                                        {{ form.guess_amount(class_="form-field__input", placeholder="z.B. 45.50") }}
+                                        {% if form.guess_amount.errors %}
+                                        <span class="form-field__error">{{ form.guess_amount.errors[0] }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"/>
+                                            </svg>
+                                            Schätzung abgeben
+                                        </button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <p class="text-muted">Formular nicht verfügbar.</p>
+                            {% endif %}
                             {% else %}
                             <p class="text-muted">BillBro ist abgeschlossen – keine neuen Schätzungen möglich.</p>
                             {% endif %}
@@ -422,7 +425,28 @@
                     {% endif %}
 
                     <!-- Rechnung & Berechnung als eigenständige Cards -->
-                    {% if is_organizer and not event.rechnungsbetrag_rappen %}
+                    {# Hinweis/Button unter Anwesenheitscheck #}
+                    {% if is_organizer %}
+                    <div class="page-actions" style="justify-content: flex-end; margin-top: var(--space-4);">
+                        {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
+                        {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
+                        {% if event.billbro_closed %}
+                        <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn--outline">Schätzrunde öffnen</button>
+                        </form>
+                        {% elif pending_guesses|length > 0 %}
+                        <span class="text-muted">Warten auf Schätzungen ({{ pending_guesses|length }})</span>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn--primary">Schätzrunde schließen</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if is_organizer and event.billbro_closed %}
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">Rechnungsbetrag eingeben</h2>
@@ -579,40 +603,6 @@
                                 <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
                             </div>
                         </div>
-                        <div class="card__footer">
-                            <a href="{{ url_for('billbro.share_whatsapp', event_id=event.id) }}" class="btn btn--primary">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M16 2H8a6 6 0 0 0-6 6v8a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V8a6 6 0 0 0-6-6Z"/>
-                                    <path d="M7 12v.01"/>
-                                    <path d="M12 12v.01"/>
-                                    <path d="M17 12v.01"/>
-                                </svg>
-                                Per WhatsApp teilen
-                            </a>
-                            {% if is_organizer %}
-                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                {% if event.billbro_closed %}
-                                <button type="submit" class="btn btn--primary" onclick="return confirm('BillBro wieder öffnen?')">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 7v10a5 5 0 0 0 5 5h8a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5H8a5 5 0 0 0-5 5Z"/>
-                                        <path d="M7 10h10"/>
-                                    </svg>
-                                    BillBro öffnen
-                                </button>
-                                {% else %}
-                                <button type="submit" class="btn btn--danger" onclick="return confirm('BillBro abschließen? Schätzungen können dann nicht mehr geändert werden.')">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M10 2h4"/>
-                                        <path d="M12 14v-4"/>
-                                        <path d="M6 8h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/>
-                                    </svg>
-                                    BillBro abschließen
-                                </button>
-                                {% endif %}
-                            </form>
-                            {% endif %}
-                        </div>
                     </div>
                     {% endif %}
                     {% endif %}
@@ -659,7 +649,7 @@
                 </div>
 
                 <!-- Tab: Bewertungen -->
-                <div class="tabs__panel" id="tab-ratings" role="tabpanel">
+                        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'ratings' else '' }}" id="tab-ratings" role="tabpanel">
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">

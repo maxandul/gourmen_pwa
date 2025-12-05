@@ -17,13 +17,14 @@
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
     </div>
     
+    {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'overview') %}
     <!-- Tabs Navigation -->
     <div class="tabs">
         <nav class="tabs__nav" role="tablist">
             <a href="{{ url_for('events.index', tab='overview') }}"
-               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'overview' else '' }}"
+               class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'overview' else '' }}"
                role="tab"
-               aria-selected="{{ 'true' if active_tab == 'overview' else 'false' }}">
+               aria-selected="{{ 'true' if tab_param == 'overview' else 'false' }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7"/>
                     <rect x="14" y="3" width="7" height="7"/>
@@ -33,9 +34,9 @@
                 Übersicht
             </a>
             <a href="{{ url_for('events.index', tab='kommend') }}"
-               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'kommend' else '' }}"
+               class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'kommend' else '' }}"
                role="tab"
-               aria-selected="{{ 'true' if active_tab == 'kommend' else 'false' }}">
+               aria-selected="{{ 'true' if tab_param == 'kommend' else 'false' }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 11 12 14 22 4"/>
                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -43,9 +44,9 @@
                 Kommend
             </a>
             <a href="{{ url_for('events.index', tab='archiv') }}"
-               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'archiv' else '' }}"
+               class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'archiv' else '' }}"
                role="tab"
-               aria-selected="{{ 'true' if active_tab == 'archiv' else 'false' }}">
+               aria-selected="{{ 'true' if tab_param == 'archiv' else 'false' }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
                     <path d="M8 21h8M12 7v8M8 11l4-4 4 4"/>
@@ -53,9 +54,9 @@
                 Archiv
             </a>
             <a href="{{ url_for('events.index', tab='stats') }}"
-               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'stats' else '' }}"
+               class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'stats' else '' }}"
                role="tab"
-               aria-selected="{{ 'true' if active_tab == 'stats' else 'false' }}">
+               aria-selected="{{ 'true' if tab_param == 'stats' else 'false' }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="20" x2="18" y2="10"/>
                     <line x1="12" y1="20" x2="12" y2="4"/>
@@ -67,7 +68,7 @@
         
         <div class="tabs__content">
             <!-- Tab 1: Übersicht -->
-            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'overview' else '' }}"
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'overview' else '' }}"
                  role="tabpanel">
                 
                 <!-- Aktuelles Event -->
@@ -365,7 +366,7 @@
             </div>
             
             <!-- Tab 2: Kommend -->
-            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'kommend' else '' }}"
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'kommend' else '' }}"
                  role="tabpanel">
                 {% if events %}
                 {% for event in events %}
@@ -455,7 +456,7 @@
             </div>
             
             <!-- Tab 3: Archiv -->
-            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'archiv' else '' }}"
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
                  role="tabpanel">
                 <!-- Filter Section -->
                 <div class="card">
@@ -585,7 +586,7 @@
             </div>
             
             <!-- Tab 4: Statistiken -->
-            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'stats' else '' }}"
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'stats' else '' }}"
                  role="tabpanel">
                 <!-- Allgemeine Statistiken -->
                 <div class="card">

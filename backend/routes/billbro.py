@@ -187,7 +187,7 @@ def compute(event_id):
         })
     
     flash('Schätzung gespeichert', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 # Ergebnisse-Seite entfernt; Rangliste wird direkt in BillBro angezeigt
 
@@ -202,18 +202,18 @@ def enter_bill(event_id):
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Rechnungsbetrag eingeben', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     rechnungsbetrag = request.form.get('rechnungsbetrag')
     if not rechnungsbetrag:
         flash('Rechnungsbetrag erforderlich', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Convert to Rappen
     rechnungsbetrag_rappen = MoneyService.to_rappen(rechnungsbetrag)
     if rechnungsbetrag_rappen is None:
         flash('Ungültiger Rechnungsbetrag', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Calculate tip (for display, but don't set gesamtbetrag yet)
     tip_rappen = int(rechnungsbetrag_rappen * 0.07)  # 7% tip
@@ -249,7 +249,7 @@ def enter_bill(event_id):
     )
     
     flash('Rechnungsbetrag eingegeben - bitte Gesamtbetrag bestätigen oder anpassen', 'info')
-    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/start_session', methods=['POST'])
 @login_required
@@ -260,14 +260,14 @@ def start_session(event_id):
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann BillBro starten', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Get all participating members (teilnahme=True)
     participating_members = [p.member_id for p in event.participations if p.teilnahme]
     
     if not participating_members:
         flash('Keine Teilnehmer gefunden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Send push notifications to all participants
     success = NotifierService.send_billbro_start(event_id, participating_members)
@@ -287,7 +287,7 @@ def start_session(event_id):
     else:
         flash(f'BillBro gestartet, aber Push-Nachrichten konnten nicht gesendet werden.', 'warning')
     
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/send_reminder', methods=['POST'])
 @login_required
@@ -298,7 +298,7 @@ def send_reminder(event_id):
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann Erinnerungen senden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Get participants who haven't guessed yet
     pending_participants = []
@@ -309,7 +309,7 @@ def send_reminder(event_id):
     
     if not pending_participants:
         flash('Alle Teilnehmer haben bereits geschätzt', 'info')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Send reminder notifications
     success = NotifierService.send_billbro_reminder(event_id, pending_participants)
@@ -329,7 +329,7 @@ def send_reminder(event_id):
     else:
         flash('Erinnerungen konnten nicht gesendet werden.', 'warning')
     
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/set_total', methods=['POST'])
 @login_required
@@ -340,11 +340,11 @@ def set_total(event_id):
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     if not event.rechnungsbetrag_rappen:
         flash('Rechnungsbetrag muss zuerst eingegeben werden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     gesamtbetrag_manual = request.form.get('gesamtbetrag_manual')
     if not gesamtbetrag_manual:
@@ -356,11 +356,11 @@ def set_total(event_id):
         gesamtbetrag_rappen = MoneyService.to_rappen(gesamtbetrag_manual)
         if gesamtbetrag_rappen is None:
             flash('Ungültiger Gesamtbetrag', 'error')
-            return redirect(url_for('billbro.index', event_id=event_id))
+            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
         
         if gesamtbetrag_rappen < event.rechnungsbetrag_rappen:
             flash('Gesamtbetrag kann nicht kleiner als Rechnungsbetrag sein', 'error')
-            return redirect(url_for('billbro.index', event_id=event_id))
+            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Update event with final total
     event.gesamtbetrag_rappen = gesamtbetrag_rappen
@@ -385,7 +385,7 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])
 @login_required
@@ -396,11 +396,11 @@ def accept_suggested_total(event_id):
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     if not event.rechnungsbetrag_rappen:
         flash('Rechnungsbetrag muss zuerst eingegeben werden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Calculate suggested total (rounded to next 10 CHF)
     auto_total = event.rechnungsbetrag_rappen + event.trinkgeld_rappen
@@ -429,7 +429,7 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id, scroll_to='ergebnisse-section'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/share_whatsapp')
 @login_required
@@ -532,7 +532,7 @@ def update_guess(event_id):
     
     if not participation or not participation.teilnahme:
         flash('Sie nehmen nicht an diesem Event teil', 'error')
-        return redirect(url_for('events.detail', event_id=event_id))
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Clear existing guess to allow new one
     participation.guess_bill_amount_rappen = None
@@ -544,7 +544,7 @@ def update_guess(event_id):
     db.session.commit()
     
     flash('Schätzung zurückgesetzt - neue Schätzung möglich', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST'])
 @login_required
@@ -772,4 +772,4 @@ def toggle_billbro_status(event_id):
         }
     )
     
-    return redirect(url_for('billbro.index', event_id=event_id)) 
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
