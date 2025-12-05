@@ -431,12 +431,17 @@ body {
 
 ### Icon Mapping (Emoji → Lucide)
 
+**Navigation Icons (Bottom Nav & Page Headers):**
 ```
-🏠 Dashboard   → home
-📅 Events      → calendar
-🏆 GGL         → trophy
-👤 Member      → user
-⚙️ Admin       → settings
+🏠 Dashboard   → home (Lucide)
+📅 Events      → calendar (Lucide)
+🏆 GGL         → trophy (Lucide)
+👤 Member      → user (Lucide)
+```
+
+**Action Icons:**
+```
+👑 Admin       → user-star (Lucide)
 🛍️ Merch       → shopping-bag
 📊 Stats       → bar-chart-2
 🔒 Security    → lock
@@ -453,6 +458,8 @@ body {
 🌙 Dark Mode   → moon
 ☀️ Light Mode  → sun
 ```
+
+**Wichtig:** Navigation Icons sind konsistent zwischen Bottom Nav und Page Headers. Alle Icons werden als inline SVG implementiert (Lucide Icons).
 
 ---
 
@@ -484,6 +491,7 @@ body {
 - **Bottom Navigation** (behalten!)
 - 4-5 Haupt-Items
 - Touch-optimiert (60px safe-area iOS)
+- **Theme-aware:** Passt sich automatisch an Dark/Light Mode an
 
 ### Tablet (768px - 1023px)
 - **Hybrid:** Bottom Nav OR collapsible Sidebar
@@ -492,6 +500,19 @@ body {
 - **Persistent Sidebar** (links, modern app-like)
 - 256px expanded / 72px collapsed
 - Collapsible mit Icon-only Mode
+
+### Theme-Aware Navigation
+
+**Bottom Navigation:**
+- Dark Mode: `--color-surface` (Logo Navy Dark #1b232e)
+- Light Mode: `--color-surface` (White #ffffff)
+- Border: `--color-border-subtle` (theme-aware)
+- Shadow: `--shadow-md` (theme-aware)
+
+**User Bar (Top):**
+- Dark Mode: Navy Gradient (`--brand-primary-800` → `--brand-primary-700`)
+- Light Mode: Heller Navy Gradient (`--brand-primary-700` → `--brand-primary-600`)
+- Text: Immer weiß für Kontrast
 
 ---
 

@@ -302,6 +302,109 @@ Siehe auch: `DESIGN_SYSTEM.md` → Theme Switching für vollständige Dokumentat
 
 ---
 
+## 👑 ADMIN BUTTON
+
+**Icon-only Button** für den Admin-Bereich. Positioniert im User Bar (rechts neben Theme Toggle).
+
+### Features
+
+✅ **Icon-only Design**: Nur Icon, kein Text  
+✅ **Konsistent mit Theme Toggle**: Gleiches Styling  
+✅ **Accessibility**: ARIA-Label für Screen Reader  
+✅ **Position**: User Bar rechts, neben Theme Toggle
+
+### HTML Structure
+
+```html
+<!-- In templates/base.html - User Bar -->
+<div class="user-actions">
+  <a href="{{ url_for('admin.index') }}" 
+     id="admin-button" 
+     class="btn btn--icon-only" 
+     aria-label="Admin-Bereich">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+      <path d="M17.8 20.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.413-2.411L13.567 17.3a.392.392 0 0 1 .228-.671l2.428-.035 1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193 2.428.035a.392.392 0 0 1 .228.67l-1.725 1.844.413 2.411a.392.392 0 0 1-.568.411L17.8 20.817z"/>
+    </svg>
+  </a>
+</div>
+```
+
+### CSS Styling
+
+Verwendet die wiederverwendbare `.btn--icon-only` Klasse (siehe Icon-only Button Pattern).
+
+### Icon
+
+- **Icon**: `user-star` (Lucide)
+- **Symbolik**: Privilegierter/ausgezeichneter Benutzer für Admin-Bereich
+
+### Implementation Files
+
+- **CSS**: `static/css/v2/components.css` (nach Theme Toggle)
+- **Template**: `templates/base.html` (User Bar)
+
+---
+
+## 🎯 ICON-ONLY BUTTON PATTERN
+
+**Wiederverwendbares Pattern** für Icon-only Buttons (z.B. Theme Toggle, Admin Button).
+
+### Verwendung
+
+```html
+<a href="#" id="my-icon-button" class="btn btn--icon-only" aria-label="Beschreibung">
+  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <!-- Icon SVG -->
+  </svg>
+</a>
+```
+
+### CSS Implementation
+
+```css
+.btn--icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.btn--icon-only:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn--icon-only .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+```
+
+### Best Practices
+
+- ✅ **Touch Target**: Mindestens 44x44px (WCAG 2.1)
+- ✅ **ARIA-Label**: Immer beschreibendes Label für Screen Reader
+- ✅ **Icon Size**: 1.25rem (20px) für gute Sichtbarkeit
+- ✅ **Konsistenz**: Gleiches Styling wie Theme Toggle Button
+
+### Beispiele
+
+- Theme Toggle Button (`#theme-toggle`)
+- Admin Button (`#admin-button`)
+
+---
+
 ## 🎴 CARD SYSTEM (REDESIGNED)
 
 ### Problem mit altem System
@@ -615,26 +718,61 @@ Card Titles können Icons enthalten:
 
 ### Bottom Nav (Mobile)
 
+**Theme-aware:** Passt sich automatisch an Dark/Light Mode an.
+
+**Icons:** Verwendet Lucide SVG Icons (inline) - konsistent mit den Icons auf den Hauptseiten.
+
 ```html
 <nav class="bottom-nav">
-  <a href="/dashboard" class="bottom-nav__item bottom-nav__item--active">
-    <svg class="icon"><use href="#home"/></svg>
-    <span class="bottom-nav__label">Dashboard</span>
+  <a href="/dashboard" class="nav-item active" aria-label="Dashboard">
+    <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span class="nav-text">Dashboard</span>
   </a>
-  <a href="/events" class="bottom-nav__item">
-    <svg class="icon"><use href="#calendar"/></svg>
-    <span class="bottom-nav__label">Events</span>
+  <a href="/events" class="nav-item" aria-label="Events">
+    <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    <span class="nav-text">Events</span>
   </a>
-  <a href="/ggl" class="bottom-nav__item">
-    <svg class="icon"><use href="#trophy"/></svg>
-    <span class="bottom-nav__label">GGL</span>
+  <a href="/ggl" class="nav-item" aria-label="GGL">
+    <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+      <path d="M4 22h16"/>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+    </svg>
+    <span class="nav-text">GGL</span>
   </a>
-  <a href="/member" class="bottom-nav__item">
-    <svg class="icon"><use href="#user"/></svg>
-    <span class="bottom-nav__label">Member</span>
+  <a href="/member" class="nav-item" aria-label="Member">
+    <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span class="nav-text">Member</span>
   </a>
 </nav>
 ```
+
+**Icon Mapping (konsistent mit Hauptseiten):**
+- Dashboard → `home` (Lucide)
+- Events → `calendar` (Lucide)
+- GGL → `trophy` (Lucide)
+- Member → `user` (Lucide)
+
+**CSS Implementation:**
+- Background: `var(--color-surface)` (Logo Navy Dark #1b232e im Dark Mode, White im Light Mode)
+- Border: `var(--color-border-subtle)` (theme-aware)
+- Shadow: `var(--shadow-md)` (theme-aware)
+- Active State: Orange (`var(--color-interactive-primary)`)
+- Icon Size: 24x24px (`.nav-icon`)
 
 ---
 
@@ -1609,6 +1747,37 @@ accordion.closeAll();
 - ✅ Smooth Scroll zum Anfang
 - ✅ Respektiert Safe Area Insets
 - ✅ Mobile: Position über Bottom Nav
+- ✅ **Theme-aware**: Verbesserter Kontrast im Light Mode
+
+#### CSS Implementation
+
+```css
+.scroll-to-top {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-default);
+  /* ... */
+}
+
+.scroll-to-top .icon {
+  color: var(--color-text-primary);
+}
+
+/* Light Mode: Verbesserter Kontrast */
+[data-theme="light"] .scroll-to-top {
+  background: var(--brand-primary-700);  /* Navy Hintergrund */
+  border-color: var(--brand-primary-600);
+}
+
+[data-theme="light"] .scroll-to-top .icon {
+  color: #ffffff;  /* Weißes Icon für maximalen Kontrast */
+}
+
+[data-theme="light"] .scroll-to-top:hover {
+  background: var(--brand-primary-600);
+}
+```
+
+**Warum:** Im Light Mode wäre weißer Hintergrund auf hellem Seitenhintergrund zu wenig Kontrast. Navy Hintergrund mit weißem Icon bietet bessere Sichtbarkeit.
 
 #### JavaScript (Auto-initializes)
 

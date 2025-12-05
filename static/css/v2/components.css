@@ -876,6 +876,20 @@ a.card-link:active {
   color: var(--color-text-primary);
 }
 
+/* Light Mode: Verbesserter Kontrast */
+[data-theme="light"] .scroll-to-top {
+  background: var(--brand-primary-700);
+  border-color: var(--brand-primary-600);
+}
+
+[data-theme="light"] .scroll-to-top .icon {
+  color: #ffffff;
+}
+
+[data-theme="light"] .scroll-to-top:hover {
+  background: var(--brand-primary-600);
+}
+
 /* Mobile: Position above bottom nav */
 @media (max-width: 768px) {
   .scroll-to-top {
@@ -1269,5 +1283,53 @@ a.card-link:active {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ============================================
+   ADMIN BUTTON (Icon-only, konsistent mit Theme Toggle)
+   ============================================ */
+
+#admin-button,
+.btn--icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+#admin-button:hover,
+.btn--icon-only:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+#admin-button:active,
+.btn--icon-only:active {
+  transform: scale(0.95);
+}
+
+#admin-button .icon,
+.btn--icon-only .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* Hide any text that might be in the button */
+#admin-button > *:not(.icon),
+.btn--icon-only > *:not(.icon) {
+  display: none !important;
 }
 
