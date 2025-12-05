@@ -694,6 +694,7 @@ Card Titles können Icons enthalten:
 - ✅ Theme-aware: Passt sich an Dark/Light Mode an
 - ✅ Responsive: Nur auf Desktop (≥ 1024px) sichtbar
 - ✅ Konsistent: Gleiche Icons und Logik wie Bottom Nav
+- ✅ Dark Mode: Hintergrund wie Body (`--color-bg-base`), Border in Sidebar-Farbe für klare Abgrenzung
 
 ```html
 <aside class="sidebar">
@@ -1481,6 +1482,24 @@ def index():
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+/* Icon-only Actions (kompakt, wiederverwendbar) */
+.page-actions--icons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.page-actions--icons .btn--icon-only,
+.page-actions--icons form .btn--icon-only {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+
+.page-actions--right {
+  justify-content: flex-end;
 }
 
 .page-content {

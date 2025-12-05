@@ -512,7 +512,7 @@ body {
 - Shadow: `--shadow-md` (theme-aware)
 
 **Sidebar (Desktop):**
-- Dark Mode: `--color-surface-secondary` (Logo Navy Medium #354e5e)
+- Dark Mode: Hintergrund wie Body (`--color-bg-base`), Border in Sidebar-Farbe (`--color-surface-secondary`) für klare Abgrenzung
 - Light Mode: `--color-surface-secondary` (Theme-aware)
 - Border: `--color-border-subtle` (theme-aware)
 - Position: Fixed, unter User Bar (top: 60px)

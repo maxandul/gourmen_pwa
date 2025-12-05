@@ -238,6 +238,29 @@ li {
   margin-top: var(--space-4);
 }
 
+/* Icon-only Action Group (keine Vollbreite) */
+.page-actions--icons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.page-actions--icons .btn--icon-only {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+
+.page-actions--icons form {
+  margin: 0;
+}
+
+.page-actions--icons form .btn--icon-only {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+
 /* ============================================
    PAGE HEADER - Featured (for Hub Pages)
    ============================================ */
@@ -337,6 +360,24 @@ li {
   .page-actions .btn {
     width: 100%;
   }
+
+  /* Icon-only Actions: bleiben kompakt auch auf Mobile */
+  .page-actions--icons {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+
+  .page-actions--icons .btn--icon-only,
+  .page-actions--icons form .btn--icon-only {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+/* Alignment helper */
+.page-actions--right {
+  justify-content: flex-end;
+}
 }
 
 .page-content {

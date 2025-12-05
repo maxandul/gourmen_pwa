@@ -1452,6 +1452,12 @@ a.card-link:active {
   transition: all var(--transition-fast);
 }
 
+#admin-button.btn--danger,
+.btn--icon-only.btn--danger {
+  border-color: var(--brand-warm-600);
+  color: var(--brand-warm-500);
+}
+
 #admin-button:hover,
 .btn--icon-only:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -1478,6 +1484,28 @@ a.card-link:active {
   display: none !important;
 }
 
+/* Light mode variant für bessere Sichtbarkeit */
+[data-theme="light"] .btn--icon-only {
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .btn--icon-only:hover {
+  background: var(--brand-primary-100);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .btn--icon-only.btn--danger {
+  border-color: var(--brand-warm-600);
+  color: var(--brand-warm-600);
+}
+
+[data-theme="light"] .btn--icon-only.btn--danger:hover {
+  background: linear-gradient(135deg, var(--brand-warm-700), var(--brand-accent-600));
+  color: #ffffff;
+  border-color: var(--brand-warm-700);
+}
+
 /* ============================================
    SIDEBAR (Desktop Navigation Component)
    ============================================ */
@@ -1495,6 +1523,12 @@ a.card-link:active {
   z-index: calc(var(--z-fixed) - 1);
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* Dark Mode: Hintergrund an Body angleichen, Border in Sidebar-Farbe */
+[data-theme="dark"] .sidebar {
+  background: var(--color-bg-base);
+  border-right: 1px solid var(--color-surface-secondary);
 }
 
 .sidebar__nav {
