@@ -5,43 +5,77 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📊 Event-Statistiken</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            Event-Statistiken
+        </h1>
         <p class="page-subtitle">Übersicht über alle Events</p>
-        <div class="alert alert-warning" style="margin: 1rem 0; padding: 0.75rem; background-color: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 0.5rem; color: var(--warning-text);">
-            <strong>⚠️ Under Construction:</strong> Diese Seite befindet sich noch im Aufbau. Weitere Statistiken und Features werden in Zukunft hinzugefügt.
+        <div class="alert alert--warning">
+            <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <path d="M12 9v4M12 17h.01"/>
+            </svg>
+            <div class="alert__content">
+                <div class="alert__title">Under Construction</div>
+                <div class="alert__message">Diese Seite befindet sich noch im Aufbau. Weitere Statistiken und Features werden in Zukunft hinzugefügt.</div>
+            </div>
         </div>
         <div class="page-actions">
-            <a href="{{ url_for('events.index') }}" class="btn btn-primary">← Zurück zu Events</a>
+            <a href="{{ url_for('events.index') }}" class="btn btn--primary">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m12 19-7-7 7-7"/>
+                    <path d="M19 12H5"/>
+                </svg>
+                Zurück zu Events
+            </a>
         </div>
     </div>
     
     <div class="page-content">
         <!-- Allgemeine Statistiken -->
         <div class="card">
-            <div class="card-header">
-                <h2>📈 Allgemeine Statistiken</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Allgemeine Statistiken
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>📊 Zahlen & Fakten</h3>
+            <div class="card__body">
+                <div class="card-section card-section--accent">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                            Zahlen & Fakten
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Gesamte Events:</span>
-                            <span class="value">{{ total_events }}</span>
+                    <div class="card-section__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamte Events:</span>
+                            <span class="info-row__value">{{ total_events }}</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Vergangene Events:</span>
-                            <span class="value">{{ total_past_events }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Vergangene Events:</span>
+                            <span class="info-row__value">{{ total_past_events }}</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Kommende Events:</span>
-                            <span class="value">{{ total_future_events }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Kommende Events:</span>
+                            <span class="info-row__value">{{ total_future_events }}</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Durchschnittliche Teilnahme:</span>
-                            <span class="value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Durchschnittliche Teilnahme:</span>
+                            <span class="info-row__value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
                         </div>
                     </div>
                 </div>
@@ -51,30 +85,48 @@
         <!-- BillBro Statistiken -->
         {% if total_billbro_events > 0 %}
         <div class="card">
-            <div class="card-header">
-                <h2>🧾 BillBro Statistiken</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                        <line x1="8" y1="6" x2="16" y2="6"/>
+                        <line x1="8" y1="10" x2="16" y2="10"/>
+                        <line x1="8" y1="14" x2="16" y2="14"/>
+                        <line x1="8" y1="18" x2="16" y2="18"/>
+                    </svg>
+                    BillBro Statistiken
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>🧾 BillBro-Daten</h3>
+            <div class="card__body">
+                <div class="card-section card-section--info">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                <line x1="8" y1="6" x2="16" y2="6"/>
+                                <line x1="8" y1="10" x2="16" y2="10"/>
+                                <line x1="8" y1="14" x2="16" y2="14"/>
+                                <line x1="8" y1="18" x2="16" y2="18"/>
+                            </svg>
+                            BillBro-Daten
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Events mit BillBro:</span>
-                            <span class="value">{{ total_billbro_events }}</span>
+                    <div class="card-section__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Events mit BillBro:</span>
+                            <span class="info-row__value">{{ total_billbro_events }}</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Durchschnittlicher Rechnungsbetrag:</span>
-                            <span class="value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Durchschnittlicher Rechnungsbetrag:</span>
+                            <span class="info-row__value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Durchschnittliches Trinkgeld:</span>
-                            <span class="value">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Durchschnittliches Trinkgeld:</span>
+                            <span class="info-row__value">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Gesamte Teilnahmen:</span>
-                            <span class="value">{{ confirmed_participations }} / {{ total_participations }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamte Teilnahmen:</span>
+                            <span class="info-row__value">{{ confirmed_participations }} / {{ total_participations }}</span>
                         </div>
                     </div>
                 </div>
@@ -84,19 +136,32 @@
 
         <!-- Event-Typen Verteilung -->
         <div class="card">
-            <div class="card-header">
-                <h2>🎯 Event-Typen Verteilung</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    Event-Typen Verteilung
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-success">
-                    <div class="card-header">
-                        <h3>📊 Verteilung nach Typ</h3>
+            <div class="card__body">
+                <div class="card-section card-section--accent">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                            Verteilung nach Typ
+                        </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-section__body">
                         {% for event_type, count in event_types.items() %}
-                        <div class="stats-item">
-                            <span class="label">{{ event_type }}:</span>
-                            <span class="value">{{ count }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">{{ event_type }}:</span>
+                            <span class="info-row__value">{{ count }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -107,28 +172,46 @@
         <!-- Top Restaurants -->
         {% if restaurants %}
         <div class="card">
-            <div class="card-header">
-                <h2>🏆 Top Restaurants</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                        <path d="M4 22h16"/>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                    </svg>
+                    Top Restaurants
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-warning">
-                    <div class="card-header">
-                        <h3>🍴 Beliebteste Restaurants</h3>
+            <div class="card__body">
+                <div class="card-section">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                <path d="M7 2v20"/>
+                                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/>
+                                <path d="M21 15v7"/>
+                            </svg>
+                            Beliebteste Restaurants
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="participants-table">
-                            <table>
+                    <div class="card-section__body">
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
                                 <thead>
-                                    <tr>
-                                        <th>Restaurant</th>
-                                        <th>Besuche</th>
+                                    <tr style="border-bottom: 1px solid var(--color-border-default);">
+                                        <th style="text-align: left; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Restaurant</th>
+                                        <th style="text-align: right; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Besuche</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
-                                    <tr>
-                                        <td>{{ restaurant }}</td>
-                                        <td>{{ count }}</td>
+                                    <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                        <td style="padding: var(--space-3); color: var(--color-text-primary);">{{ restaurant }}</td>
+                                        <td style="text-align: right; padding: var(--space-3); color: var(--color-text-secondary);">{{ count }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -139,7 +222,6 @@
             </div>
         </div>
         {% endif %}
-
     </div>
 </div>
 {% endblock %}

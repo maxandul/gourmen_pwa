@@ -5,107 +5,820 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📅 Events</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Events
+        </h1>
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
-        <div class="page-actions">
-            <a href="{{ url_for('events.stats') }}" class="btn btn-primary">📊 Statistiken</a>
-            <a href="{{ url_for('events.archive') }}" class="btn btn-primary">📚 Archiv</a>
-        </div>
     </div>
     
-    {% if events %}
-    <div class="card">
-        <div class="card-header">
-            <h2>📅 Kommende Events</h2>
-        </div>
-        <div class="card-body">
-            <div class="events-list">
-            {% for event in events %}
-            <div class="card card-secondary variant-accent">
-                <div class="card-header">
-                    <h3>
-                        {{ event.event_typ.value|event_type_emoji }} - {{ event.display_date }}
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="stats-item">
-                        <span class="label">Organisator:</span>
-                        <span class="value">{{ event.organisator.display_name_with_spirit }}</span>
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+        <nav class="tabs__nav" role="tablist">
+            <a href="{{ url_for('events.index', tab='overview') }}"
+               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'overview' else '' }}"
+               role="tab"
+               aria-selected="{{ 'true' if active_tab == 'overview' else 'false' }}">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Übersicht
+            </a>
+            <a href="{{ url_for('events.index', tab='kommend') }}"
+               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'kommend' else '' }}"
+               role="tab"
+               aria-selected="{{ 'true' if active_tab == 'kommend' else 'false' }}">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Kommend
+            </a>
+            <a href="{{ url_for('events.index', tab='archiv') }}"
+               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'archiv' else '' }}"
+               role="tab"
+               aria-selected="{{ 'true' if active_tab == 'archiv' else 'false' }}">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
+                    <path d="M8 21h8M12 7v8M8 11l4-4 4 4"/>
+                </svg>
+                Archiv
+            </a>
+            <a href="{{ url_for('events.index', tab='stats') }}"
+               class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'stats' else '' }}"
+               role="tab"
+               aria-selected="{{ 'true' if active_tab == 'stats' else 'false' }}">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                Statistiken
+            </a>
+        </nav>
+        
+        <div class="tabs__content">
+            <!-- Tab 1: Übersicht -->
+            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'overview' else '' }}"
+                 role="tabpanel">
+                
+                <!-- Aktuelles Event -->
+                {% if current_event %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Aktuelles Event
+                        </h2>
                     </div>
-                    {% if event.restaurant %}
-                    <div class="stats-item">
-                        <span class="label">Restaurant:</span>
-                        <span class="value">{{ event.restaurant }}</span>
-                    </div>
-                    {% endif %}
-                    {% if event.kueche %}
-                    <div class="stats-item">
-                        <span class="label">Küche:</span>
-                        <span class="value">{{ event.kueche }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Teilnahme-Status -->
-                    {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    <div class="stats-item">
-                        <span class="label">Status:</span>
-                        <span class="value">
-                            {% if my_participation %}
+                    <div class="card__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Event:</span>
+                            <span class="info-row__value">{{ current_event.event_typ.value }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Datum:</span>
+                            <span class="info-row__value">{{ current_event.display_date }}</span>
+                        </div>
+                        {% if current_event.restaurant %}
+                        <div class="info-row">
+                            <span class="info-row__label">Restaurant:</span>
+                            <span class="info-row__value">{{ current_event.restaurant }}</span>
+                        </div>
+                        {% endif %}
+                        {% set my_participation = current_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                        {% if my_participation %}
+                        <div class="info-row">
+                            <span class="info-row__label">Status:</span>
+                            <span class="info-row__value">
                                 {% if my_participation.teilnahme %}
-                                    <span class="participation-status confirmed">✅ Du nimmst teil</span>
+                                    <span class="participation-status participation-status--confirmed">Du nimmst teil</span>
                                 {% else %}
-                                    <span class="participation-status declined">❌ Du nimmst nicht teil</span>
+                                    <span class="participation-status participation-status--declined">Du nimmst nicht teil</span>
                                 {% endif %}
-                            {% else %}
-                                <span class="participation-status pending">⏳ Keine Antwort</span>
-                            {% endif %}
-                        </span>
+                            </span>
+                        </div>
+                        {% endif %}
                     </div>
-                    
-                    <div class="stats-item">
-                        <span class="label">Teilnehmer:</span>
-                        <span class="value">{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</span>
-                    </div>
-                    
-                    <!-- Button in der card-secondary -->
-                    <div class="card-actions primary">
-                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary">🔍 Details</a>
+                    <div class="card__footer">
+                        {% if my_participation and my_participation.teilnahme %}
+                        <a href="{{ url_for('billbro.index', event_id=current_event.id) }}" class="btn btn--billbro">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                <line x1="8" y1="6" x2="16" y2="6"/>
+                                <line x1="8" y1="10" x2="16" y2="10"/>
+                                <line x1="8" y1="14" x2="16" y2="14"/>
+                                <line x1="8" y1="18" x2="16" y2="18"/>
+                            </svg>
+                            BillBro
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('events.detail', event_id=current_event.id) }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            Details
+                        </a>
                     </div>
                 </div>
+                {% endif %}
+                
+                <!-- Nächstes Event -->
+                {% if next_event %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                            Nächstes Event
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Event:</span>
+                            <span class="info-row__value">{{ next_event.event_typ.value }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Datum:</span>
+                            <span class="info-row__value">{{ next_event.display_date }}</span>
+                        </div>
+                        {% if next_event.restaurant %}
+                        <div class="info-row">
+                            <span class="info-row__label">Restaurant:</span>
+                            <span class="info-row__value">{{ next_event.restaurant or 'TBD' }}</span>
+                        </div>
+                        {% endif %}
+                        {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                        <div class="info-row">
+                            <span class="info-row__label">Status:</span>
+                            <span class="info-row__value">
+                                {% if my_participation %}
+                                    {% if my_participation.teilnahme %}
+                                        <span class="participation-status participation-status--confirmed">Du nimmst teil</span>
+                                    {% else %}
+                                        <span class="participation-status participation-status--declined">Du nimmst nicht teil</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="participation-status participation-status--pending">Keine Antwort</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card__footer">
+                        {% if my_participation %}
+                            {% if my_participation.teilnahme %}
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="teilnahme" value="false">
+                                <button type="submit" class="btn btn--danger">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                    Absagen
+                                </button>
+                            </form>
+                            <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn--billbro">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                    <line x1="8" y1="6" x2="16" y2="6"/>
+                                    <line x1="8" y1="10" x2="16" y2="10"/>
+                                    <line x1="8" y1="14" x2="16" y2="14"/>
+                                    <line x1="8" y1="18" x2="16" y2="18"/>
+                                </svg>
+                                BillBro
+                            </a>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="teilnahme" value="true">
+                                <button type="submit" class="btn btn--success">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Zusagen
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="teilnahme" value="true">
+                            <button type="submit" class="btn btn--success">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Zusagen
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="teilnahme" value="false">
+                            <button type="submit" class="btn btn--danger">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                Absagen
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            Details
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Letztes Event (Rating Reminder) -->
+                {% if last_event %}
+                    {% set last_participation = last_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if last_participation and last_participation.teilnahme and not last_event.has_rating_from_participant(current_user.id) %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Letztes Event
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="alert alert--info">
+                                <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <div class="alert__content">
+                                    <div class="alert__message">Bitte noch bewerten!</div>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Event:</span>
+                                <span class="info-row__value">{{ last_event.event_typ.value }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Datum:</span>
+                                <span class="info-row__value">{{ last_event.display_date }}</span>
+                            </div>
+                            {% if last_event.restaurant %}
+                            <div class="info-row">
+                                <span class="info-row__label">Restaurant:</span>
+                                <span class="info-row__value">{{ last_event.restaurant }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card__footer">
+                            <a href="{{ url_for('ratings.rate_event', event_id=last_event.id) }}" class="btn btn--primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                Jetzt bewerten
+                            </a>
+                            <a href="{{ url_for('billbro.index', event_id=last_event.id) }}" class="btn btn--billbro">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                    <line x1="8" y1="6" x2="16" y2="6"/>
+                                    <line x1="8" y1="10" x2="16" y2="10"/>
+                                    <line x1="8" y1="14" x2="16" y2="14"/>
+                                    <line x1="8" y1="18" x2="16" y2="18"/>
+                                </svg>
+                                BillBro
+                            </a>
+                            <a href="{{ url_for('events.detail', event_id=last_event.id) }}" class="btn btn--outline">
+                                Details
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Schnellaktionen -->
+                {% if current_user.is_admin() %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="16"/>
+                                <line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                            Schnellaktionen
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <p>Erstelle neue Events oder plane das ganze Jahr im Voraus.</p>
+                    </div>
+                    <div class="card__footer">
+                        <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Neues Event
+                        </a>
+                        <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Jahresplanung erstellen
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Empty State -->
+                {% if not current_event and not next_event and not (last_event and last_participation and last_participation.teilnahme and not last_event.has_rating_from_participant(current_user.id)) %}
+                <div class="card">
+                    <div class="card__body">
+                        <p>Keine Events verfügbar.</p>
+                        {% if current_user.is_admin() %}
+                        <p style="margin-top: var(--space-4);">
+                            <a href="{{ url_for('events.year_planning') }}" class="btn btn--outline">Jahresplanung erstellen</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
+            
+            <!-- Tab 2: Kommend -->
+            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'kommend' else '' }}"
+                 role="tabpanel">
+                {% if events %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 11 12 14 22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            Kommende Events
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        {% for event in events %}
+                        <div class="card-section card-section--accent">
+                            <div class="card-section__header">
+                                <h3 class="card-section__title">
+                                    {% if event.event_typ.value == 'MONATSESSEN' %}
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                        <path d="M7 2v20"/>
+                                        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/>
+                                        <path d="M21 15v7"/>
+                                    </svg>
+                                    {% elif event.event_typ.value == 'GENERALVERSAMMLUNG' %}
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                        <path d="M9 22v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
+                                        <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"/>
+                                    </svg>
+                                    {% elif event.event_typ.value == 'AUSFLUG' %}
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/>
+                                        <path d="M14 2v6h6"/>
+                                        <path d="M10.5 7.5 13 10M8 17l6-6 2 2-6 6Z"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                    {% endif %}
+                                    {{ event.event_typ.value }} - {{ event.display_date }}
+                                </h3>
+                            </div>
+                            <div class="card-section__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Organisator:</span>
+                                    <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
+                                </div>
+                                {% if event.restaurant %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Restaurant:</span>
+                                    <span class="info-row__value">{{ event.restaurant }}</span>
+                                </div>
+                                {% endif %}
+                                {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Status:</span>
+                                    <span class="info-row__value">
+                                        {% if my_participation %}
+                                            {% if my_participation.teilnahme %}
+                                                <span class="participation-status participation-status--confirmed">Du nimmst teil</span>
+                                            {% else %}
+                                                <span class="participation-status participation-status--declined">Du nimmst nicht teil</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="participation-status participation-status--pending">Keine Antwort</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-section__footer">
+                                <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn--primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <path d="m21 21-4.35-4.35"/>
+                                    </svg>
+                                    Details
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card__body">
+                        <p>Keine kommenden Events verfügbar.</p>
+                        {% if current_user.is_admin() %}
+                        <p style="margin-top: var(--space-4);">
+                            <a href="{{ url_for('events.year_planning') }}" class="btn btn--outline">Jahresplanung erstellen</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    <div class="card">
-        <div class="card-header">
-            <h2>📋 Event-Planung</h2>
-        </div>
-        <div class="card-body">
-            <div class="quick-actions quick-actions-mobile-stack">
-            {% if current_user.is_admin %}
-            <a href="{{ url_for('admin.create_event') }}" class="btn btn-primary">➕ Neues Event</a>
-            <a href="{{ url_for('events.year_planning') }}" class="btn btn-primary">📅 Jahresplanung erstellen</a>
-            {% endif %}
+            
+            <!-- Tab 3: Archiv -->
+            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'archiv' else '' }}"
+                 role="tabpanel">
+                <!-- Filter Section -->
+                <div class="card">
+                    <div class="card__body">
+                        <form method="GET" class="form" style="display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap;">
+                            <input type="hidden" name="tab" value="archiv">
+                            <div class="form-field" style="flex: 1; min-width: 200px;">
+                                <label for="year" class="form-field__label">Jahr filtern:</label>
+                                <select name="year" id="year" class="form-field__select">
+                                    <option value="">Alle Jahre</option>
+                                    {% if years %}
+                                    {% for year in years %}
+                                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                        {{ year }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn--primary">Filtern</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Events List -->
+                {% if events and events.items %}
+                {% for event in events.items %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            {% if event.event_typ.value == 'MONATSESSEN' %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                <path d="M7 2v20"/>
+                                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/>
+                                <path d="M21 15v7"/>
+                            </svg>
+                            {% elif event.event_typ.value == 'GENERALVERSAMMLUNG' %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                <path d="M9 22v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
+                                <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"/>
+                            </svg>
+                            {% elif event.event_typ.value == 'AUSFLUG' %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/>
+                                <path d="M14 2v6h6"/>
+                                <path d="M10.5 7.5 13 10M8 17l6-6 2 2-6 6Z"/>
+                            </svg>
+                            {% else %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            {% endif %}
+                            {{ event.event_typ.value }} - {{ event.display_date }}
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="card-section card-section--info">
+                            <div class="card-section__body">
+                                {% if event.restaurant %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Restaurant:</span>
+                                    <span class="info-row__value">{{ event.restaurant }}</span>
+                                </div>
+                                {% endif %}
+                                {% if event.kueche %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Küche:</span>
+                                    <span class="info-row__value">{{ event.kueche }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Organisator:</span>
+                                    <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-section__footer" style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle);">
+                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn--primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                </svg>
+                                Details
+                            </a>
+                            {% if current_user.is_admin() or event.organisator_id == current_user.id %}
+                            <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                Bearbeiten
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if events.pages > 1 %}
+                <div class="page-actions" style="margin-top: var(--space-6); justify-content: center; gap: var(--space-4); flex-wrap: wrap;">
+                    {% if events.has_prev %}
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, year=selected_year if selected_year else '') }}" class="btn btn--outline">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m12 19-7-7 7-7"/>
+                            <path d="M19 12H5"/>
+                        </svg>
+                        Vorherige
+                    </a>
+                    {% endif %}
+                    
+                    <span style="display: flex; align-items: center; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                        Seite {{ events.page }} von {{ events.pages }}
+                    </span>
+                    
+                    {% if events.has_next %}
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, year=selected_year if selected_year else '') }}" class="btn btn--outline">
+                        Nächste
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m12 5 7 7-7 7"/>
+                            <path d="M19 12H5"/>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% elif events and not events.items %}
+                <div class="card">
+                    <div class="card__body">
+                        <p>Keine vergangenen Events im Archiv.</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-        </div>
-    </div>
-    
-    {% if not events %}
-    <div class="card">
-        <div class="card-header">
-            <h2>📅 Events</h2>
-        </div>
-        <div class="card-body">
-            <p>Noch keine kommenden Events verfügbar.</p>
-            {% if current_user.is_admin %}
-            <p><a href="{{ url_for('events.year_planning') }}" class="btn btn-outline">Jahresplanung erstellen</a> um Events zu planen.</p>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% endblock %} 
+            
+            <!-- Tab 4: Statistiken -->
+            <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'stats' else '' }}"
+                 role="tabpanel">
+                <!-- Allgemeine Statistiken -->
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                            Allgemeine Statistiken
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="card-section card-section--accent">
+                            <div class="card-section__header">
+                                <h3 class="card-section__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="20" x2="18" y2="10"/>
+                                        <line x1="12" y1="20" x2="12" y2="4"/>
+                                        <line x1="6" y1="20" x2="6" y2="14"/>
+                                    </svg>
+                                    Zahlen & Fakten
+                                </h3>
+                            </div>
+                            <div class="card-section__body">
+                                {% if total_events is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamte Events:</span>
+                                    <span class="info-row__value">{{ total_events }}</span>
+                                </div>
+                                {% endif %}
+                                {% if total_past_events is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Vergangene Events:</span>
+                                    <span class="info-row__value">{{ total_past_events }}</span>
+                                </div>
+                                {% endif %}
+                                {% if total_future_events is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Kommende Events:</span>
+                                    <span class="info-row__value">{{ total_future_events }}</span>
+                                </div>
+                                {% endif %}
+                                {% if avg_participation_rate is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Durchschnittliche Teilnahme:</span>
+                                    <span class="info-row__value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- BillBro Statistiken -->
+                {% if total_billbro_events is defined and total_billbro_events > 0 %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                <line x1="8" y1="6" x2="16" y2="6"/>
+                                <line x1="8" y1="10" x2="16" y2="10"/>
+                                <line x1="8" y1="14" x2="16" y2="14"/>
+                                <line x1="8" y1="18" x2="16" y2="18"/>
+                            </svg>
+                            BillBro Statistiken
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="card-section card-section--info">
+                            <div class="card-section__header">
+                                <h3 class="card-section__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                        <line x1="8" y1="6" x2="16" y2="6"/>
+                                        <line x1="8" y1="10" x2="16" y2="10"/>
+                                        <line x1="8" y1="14" x2="16" y2="14"/>
+                                        <line x1="8" y1="18" x2="16" y2="18"/>
+                                    </svg>
+                                    BillBro-Daten
+                                </h3>
+                            </div>
+                            <div class="card-section__body">
+                                {% if total_billbro_events is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Events mit BillBro:</span>
+                                    <span class="info-row__value">{{ total_billbro_events }}</span>
+                                </div>
+                                {% endif %}
+                                {% if avg_bill_amount is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Durchschnittlicher Rechnungsbetrag:</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
+                                </div>
+                                {% endif %}
+                                {% if avg_tip_amount is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Durchschnittliches Trinkgeld:</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
+                                </div>
+                                {% endif %}
+                                {% if confirmed_participations is defined and total_participations is defined %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamte Teilnahmen:</span>
+                                    <span class="info-row__value">{{ confirmed_participations }} / {{ total_participations }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Event-Typen Verteilung -->
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            Event-Typen Verteilung
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="card-section card-section--accent">
+                            <div class="card-section__header">
+                                <h3 class="card-section__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="20" x2="18" y2="10"/>
+                                        <line x1="12" y1="20" x2="12" y2="4"/>
+                                        <line x1="6" y1="20" x2="6" y2="14"/>
+                                    </svg>
+                                    Verteilung nach Typ
+                                </h3>
+                            </div>
+                            <div class="card-section__body">
+                                {% if event_types is defined %}
+                                {% for event_type, count in event_types.items() %}
+                                <div class="info-row">
+                                    <span class="info-row__label">{{ event_type }}:</span>
+                                    <span class="info-row__value">{{ count }}</span>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Restaurants -->
+                {% if restaurants is defined and restaurants %}
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                <path d="M4 22h16"/>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                            </svg>
+                            Top Restaurants
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="card-section">
+                            <div class="card-section__header">
+                                <h3 class="card-section__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                        <path d="M7 2v20"/>
+                                        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/>
+                                        <path d="M21 15v7"/>
+                                    </svg>
+                                    Beliebteste Restaurants
+                                </h3>
+                            </div>
+                            <div class="card-section__body">
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="border-bottom: 1px solid var(--color-border-default);">
+                                                <th style="text-align: left; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Restaurant</th>
+                                                <th style="text-align: right; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Besuche</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
+                                            <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                                <td style="padding: var(--space-3); color: var(--color-text-primary);">{{ restaurant }}</td>
+                                                <td style="text-align: right; padding: var(--space-3); color: var(--color-text-secondary);">{{ count }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

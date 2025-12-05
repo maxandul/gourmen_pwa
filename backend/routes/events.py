@@ -166,15 +166,165 @@ def create_monthly_events(year):
 @bp.route('/')
 @login_required
 def index():
-    """Events list"""
-    # Get all upcoming events (no limit, show all future events)
-    today = datetime.utcnow().date()
-    current_events = Event.query.filter(
-        Event.datum >= datetime.combine(today, datetime.min.time()),
-        Event.published == True
-    ).order_by(Event.datum.asc()).all()
+    """Events main page with tabs"""
+    tab = request.args.get('tab', 'overview')  # Default: overview
     
-    return render_template('events/index.html', events=current_events)
+    today = datetime.utcnow().date()
+    now = datetime.utcnow()
+    
+    # Common data for all tabs
+    context = {
+        'active_tab': tab,
+        'use_v2_design': True
+    }
+    
+    # Tab-specific data
+    if tab == 'overview':
+        # Get current event (today or in last 3 days)
+        three_days_ago = datetime.combine(today - timedelta(days=3), datetime.min.time())
+        current_event = Event.query.filter(
+            Event.published == True,
+            Event.datum >= three_days_ago,
+            Event.datum <= now
+        ).order_by(Event.datum.desc()).first()
+        
+        # Get next upcoming event
+        next_event = Event.query.filter(
+            Event.published == True,
+            Event.datum > now
+        ).order_by(Event.datum.asc()).first()
+        
+        # Get last event (for rating reminder)
+        last_event = Event.query.filter(
+            Event.published == True,
+            Event.datum < now
+        ).order_by(Event.datum.desc()).first()
+        
+        # Get participations for events (eager load to avoid N+1 queries)
+        if current_event:
+            current_event.participations  # Load relationship
+        if next_event:
+            next_event.participations  # Load relationship
+        if last_event:
+            last_event.participations  # Load relationship
+        
+        context.update({
+            'current_event': current_event,
+            'next_event': next_event,
+            'last_event': last_event
+        })
+        
+    elif tab == 'kommend':
+        # All upcoming events
+        upcoming_events = Event.query.filter(
+            Event.published == True,
+            Event.datum > now
+        ).order_by(Event.datum.asc()).all()
+        context['events'] = upcoming_events
+        
+    elif tab == 'archiv':
+        # Past events with pagination
+        page = request.args.get('page', 1, type=int)
+        year = request.args.get('year', type=int)
+        
+        query = Event.query.filter(
+            Event.published == True,
+            Event.datum < now
+        )
+        
+        if year:
+            query = query.filter(Event.season == year)
+        
+        events = query.order_by(Event.datum.desc()).paginate(
+            page=page, per_page=20, error_out=False
+        )
+        
+        # Get available years for filter (always set, even if empty)
+        years_query = db.session.query(Event.season).filter(
+            Event.published == True,
+            Event.datum < now
+        ).distinct().order_by(Event.season.desc()).all()
+        years = [year[0] for year in years_query] if years_query else []
+        
+        context.update({
+            'events': events,
+            'years': years,
+            'selected_year': year if year else None
+        })
+        
+    elif tab == 'stats':
+        # Statistics data
+        past_events = Event.query.filter(
+            Event.published == True,
+            Event.datum < now
+        ).order_by(Event.datum.desc()).all() or []
+        
+        future_events = Event.query.filter(
+            Event.published == True,
+            Event.datum >= now
+        ).order_by(Event.datum.asc()).all() or []
+        
+        # Calculate general stats
+        total_events = len(past_events) + len(future_events)
+        total_past_events = len(past_events)
+        total_future_events = len(future_events)
+        
+        # Event type distribution
+        event_types = {}
+        for event in past_events + future_events:
+            if hasattr(event.event_typ, 'value'):
+                event_type = event.event_typ.value
+            else:
+                event_type = str(event.event_typ)
+            event_types[event_type] = event_types.get(event_type, 0) + 1
+        
+        # Restaurant stats
+        restaurants = {}
+        for event in past_events:
+            if event.restaurant:
+                restaurants[event.restaurant] = restaurants.get(event.restaurant, 0) + 1
+        
+        # BillBro stats
+        billbro_events = [e for e in past_events if e.rechnungsbetrag_rappen]
+        total_billbro_events = len(billbro_events)
+        
+        avg_bill_amount = 0
+        avg_tip_amount = 0
+        if billbro_events:
+            total_bill_amount = sum(e.rechnungsbetrag_rappen for e in billbro_events)
+            total_tip_amount = sum(e.trinkgeld_rappen or 0 for e in billbro_events)
+            avg_bill_amount = total_bill_amount / len(billbro_events) / 100
+            avg_tip_amount = total_tip_amount / len(billbro_events) / 100
+        
+        # Participation stats
+        total_participations = 0
+        confirmed_participations = 0
+        for event in past_events + future_events:
+            participations = event.participations or []
+            total_participations += len(participations)
+            confirmed_participations += len([p for p in participations if p.teilnahme])
+        
+        avg_participation_rate = 0
+        if total_participations > 0:
+            avg_participation_rate = (confirmed_participations / total_participations) * 100
+        
+        context.update({
+            'past_events': past_events,
+            'future_events': future_events,
+            'total_events': total_events,
+            'total_past_events': total_past_events,
+            'total_future_events': total_future_events,
+            'event_types': event_types,
+            'restaurants': restaurants,
+            'total_billbro_events': total_billbro_events,
+            'avg_bill_amount': avg_bill_amount,
+            'avg_tip_amount': avg_tip_amount,
+            'total_participations': total_participations,
+            'confirmed_participations': confirmed_participations,
+            'avg_participation_rate': avg_participation_rate
+        })
+    
+    return render_template('events/index.html', **context)
 
 @bp.route('/year-planning')
 @login_required
@@ -188,7 +338,7 @@ def year_planning():
     current_year = datetime.utcnow().year
     form.year.data = current_year + 1  # Default to next year
     
-    return render_template('events/year_planning.html', form=form)
+    return render_template('events/year_planning.html', form=form, use_v2_design=True)
 
 @bp.route('/year-planning', methods=['POST'])
 @login_required
@@ -217,36 +367,13 @@ def create_year_planning():
         
         return redirect(url_for('events.index'))
     
-    return render_template('events/year_planning.html', form=form)
+    return render_template('events/year_planning.html', form=form, use_v2_design=True)
 
 @bp.route('/archive')
 @login_required
 def archive():
-    """Events archive - only past events"""
-    page = request.args.get('page', 1, type=int)
-    year = request.args.get('year', type=int)
-    
-    # Only show past events in archive
-    today = datetime.utcnow().date()
-    query = Event.query.filter(
-        Event.published == True,
-        Event.datum < datetime.combine(today, datetime.min.time())
-    )
-    
-    if year:
-        query = query.filter(Event.season == year)
-    
-    events = query.order_by(Event.datum.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    # Get available years for filter (only years with past events)
-    years = db.session.query(Event.season).filter(
-        Event.datum < datetime.combine(today, datetime.min.time())
-    ).distinct().order_by(Event.season.desc()).all()
-    years = [year[0] for year in years]
-    
-    return render_template('events/archive.html', events=events, years=years, selected_year=year)
+    """Redirect to archive tab"""
+    return redirect(url_for('events.index', tab='archiv', **request.args))
 
 @bp.route('/<int:event_id>')
 @login_required
@@ -270,7 +397,8 @@ def detail(event_id):
                          event=event, 
                          participation=participation,
                          participations=participations,
-                         all_members=all_members)
+                         all_members=all_members,
+                         use_v2_design=True)
 
 @bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -400,9 +528,9 @@ def edit(event_id):
             db.session.rollback()
             current_app.logger.error(f'Error updating event {event_id}: {str(e)}')
             flash(f'Fehler beim Speichern des Events: {str(e)}', 'error')
-            return render_template('events/edit.html', form=form, event=event)
+            return render_template('events/edit.html', form=form, event=event, use_v2_design=True)
     
-    return render_template('events/edit.html', form=form, event=event)
+    return render_template('events/edit.html', form=form, event=event, use_v2_design=True)
 
 @bp.route('/<int:event_id>/delete', methods=['POST'])
 @login_required
@@ -587,85 +715,8 @@ def places_config():
 @bp.route('/stats')
 @login_required
 def stats():
-    """General event statistics page"""
-    # Get all past events (published and in the past)
-    past_events = Event.query.filter(
-        Event.published == True,
-        Event.datum < datetime.utcnow().date()
-    ).order_by(Event.datum.desc()).all()
-    
-    # Get all future events
-    future_events = Event.query.filter(
-        Event.published == True,
-        Event.datum >= datetime.utcnow().date()
-    ).order_by(Event.datum.asc()).all()
-    
-    # Calculate general stats
-    total_events = len(past_events) + len(future_events)
-    total_past_events = len(past_events)
-    total_future_events = len(future_events)
-    
-    # Event type distribution
-    event_types = {}
-    for event in past_events + future_events:
-        # Handle both Enum and string values (migration compatibility)
-        if hasattr(event.event_typ, 'value'):
-            event_type = event.event_typ.value
-        else:
-            event_type = str(event.event_typ)
-        event_types[event_type] = event_types.get(event_type, 0) + 1
-    
-    # Restaurant stats
-    restaurants = {}
-    for event in past_events:
-        if event.restaurant:
-            restaurants[event.restaurant] = restaurants.get(event.restaurant, 0) + 1
-    
-    # BillBro stats (only for past events)
-    billbro_events = [e for e in past_events if e.rechnungsbetrag_rappen]
-    total_billbro_events = len(billbro_events)
-    
-    avg_bill_amount = 0
-    avg_tip_amount = 0
-    total_bill_amount = 0
-    total_tip_amount = 0
-    
-    if billbro_events:
-        for event in billbro_events:
-            total_bill_amount += event.rechnungsbetrag_rappen
-            if event.trinkgeld_rappen:
-                total_tip_amount += event.trinkgeld_rappen
-        
-        avg_bill_amount = total_bill_amount / len(billbro_events) / 100
-        avg_tip_amount = total_tip_amount / len(billbro_events) / 100
-    
-    # Participation stats
-    total_participations = 0
-    confirmed_participations = 0
-    
-    for event in past_events + future_events:
-        participations = Participation.query.filter_by(event_id=event.id).all()
-        total_participations += len(participations)
-        confirmed_participations += len([p for p in participations if p.teilnahme])
-    
-    avg_participation_rate = 0
-    if total_participations > 0:
-        avg_participation_rate = (confirmed_participations / total_participations) * 100
-    
-    return render_template('events/stats.html', 
-                         past_events=past_events,
-                         future_events=future_events,
-                         total_events=total_events,
-                         total_past_events=total_past_events,
-                         total_future_events=total_future_events,
-                         event_types=event_types,
-                         restaurants=restaurants,
-                         total_billbro_events=total_billbro_events,
-                         avg_bill_amount=avg_bill_amount,
-                         avg_tip_amount=avg_tip_amount,
-                         total_participations=total_participations,
-                         confirmed_participations=confirmed_participations,
-                         avg_participation_rate=avg_participation_rate)
+    """Redirect to stats tab"""
+    return redirect(url_for('events.index', tab='stats'))
 
 # Import here to avoid circular imports
 from datetime import datetime 
