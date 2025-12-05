@@ -1197,6 +1197,136 @@ Für bessere Accessibility können URL-based Tabs `aria-selected` verwenden:
 }
 ```
 
+### Real-World Example: Events Page with Multiple Tabs
+
+**Use Case:** Events-Hauptseite mit 4 Tabs (Übersicht, Kommend, Archiv, Statistiken), wobei jeder Tab unterschiedliche Daten benötigt.
+
+#### Backend Pattern (Flask)
+
+```python
+@bp.route('/')
+@login_required
+def index():
+    """Events main page with tabs"""
+    tab = request.args.get('tab', 'overview')  # Default: overview
+    now = datetime.utcnow()
+    
+    # Common data for all tabs
+    context = {
+        'active_tab': tab,
+        'use_v2_design': True
+    }
+    
+    # Tab-specific data (only load what's needed)
+    if tab == 'overview':
+        current_event = Event.query.filter(
+            Event.published == True,
+            Event.datum >= three_days_ago,
+            Event.datum <= now
+        ).order_by(Event.datum.desc()).first()
+        
+        context.update({
+            'current_event': current_event,
+            'next_event': next_event,
+            'last_event': last_event
+        })
+    
+    elif tab == 'kommend':
+        upcoming_events = Event.query.filter(
+            Event.published == True,
+            Event.datum > now
+        ).order_by(Event.datum.asc()).all()
+        context['events'] = upcoming_events
+    
+    elif tab == 'archiv':
+        page = request.args.get('page', 1, type=int)
+        events = Event.query.filter(
+            Event.published == True,
+            Event.datum < now
+        ).paginate(page=page, per_page=20, error_out=False)
+        
+        context.update({
+            'events': events,
+            'years': years,
+            'selected_year': year
+        })
+    
+    elif tab == 'stats':
+        # Statistics calculations
+        past_events = Event.query.filter(...).all()
+        context.update({
+            'total_events': total_events,
+            'avg_participation_rate': avg_rate,
+            # ... more stats
+        })
+    
+    return render_template('events/index.html', **context)
+```
+
+#### Template Pattern (Jinja2)
+
+**Wichtig:** Variablen nur verwenden, wenn sie definiert sind!
+
+```html
+<div class="tabs">
+  <nav class="tabs__nav" role="tablist">
+    <a href="{{ url_for('events.index', tab='overview') }}"
+       class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'overview' else '' }}"
+       role="tab"
+       aria-selected="{{ 'true' if active_tab == 'overview' else 'false' }}">
+      <svg class="icon">...</svg>
+      Übersicht
+    </a>
+    <!-- More tabs -->
+  </nav>
+  
+  <div class="tabs__content">
+    <!-- Tab 1: Overview -->
+    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'overview' else '' }}"
+         role="tabpanel">
+      {% if current_event %}
+      <div class="card">
+        <!-- Current event content -->
+      </div>
+      {% endif %}
+    </div>
+    
+    <!-- Tab 2: Stats -->
+    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'stats' else '' }}"
+         role="tabpanel">
+      <!-- WICHTIG: Variablen nur verwenden wenn definiert! -->
+      {% if total_events is defined %}
+      <div class="info-row">
+        <span class="info-row__label">Gesamte Events:</span>
+        <span class="info-row__value">{{ total_events }}</span>
+      </div>
+      {% endif %}
+      
+      {% if avg_participation_rate is defined %}
+      <div class="info-row">
+        <span class="info-row__label">Durchschnittliche Teilnahme:</span>
+        <span class="info-row__value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+```
+
+#### Best Practices
+
+✅ **DO:**
+- Default-Tab setzen: `tab = request.args.get('tab', 'overview')`
+- Nur benötigte Daten pro Tab laden (Performance)
+- Variablen im Template prüfen: `{% if variable is defined %}`
+- `active_tab` immer im Context setzen (für Template-Logik)
+- ARIA-Attribute für Accessibility: `role="tab"`, `aria-selected`
+
+❌ **DON'T:**
+- Alle Daten für alle Tabs laden (ineffizient)
+- Variablen verwenden ohne `is defined` Check (500 Error Risiko)
+- Verschiedene Default-Tabs pro User (verwirrend)
+
 ---
 
 ## 📋 PAGE TEMPLATES
