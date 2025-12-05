@@ -678,17 +678,25 @@
    TABS
    ============================================ */
 .tabs {
+  position: relative;
   margin-bottom: var(--space-6);
+  overflow: visible; /* Fade kann über Container hinausgehen */
 }
 
 .tabs__nav {
   display: flex;
-  gap: var(--space-2);
+  gap: 0; /* Kein Gap, Tabs haben Trennstriche */
   margin-bottom: var(--space-5);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+  scroll-behavior: smooth;
+  /* Negative Margins für Container-Padding ausgleichen */
+  margin-left: calc(-1 * var(--space-4));
+  margin-right: calc(-1 * var(--space-4));
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
 }
 
 /* Hide scrollbar for Chrome/Safari */
@@ -696,14 +704,32 @@
   display: none;
 }
 
+/* Fade-Effekt am rechten Rand (zeigt an, dass mehr Tabs vorhanden sind) */
+.tabs__nav::after {
+  content: '';
+  position: sticky;
+  right: calc(-1 * var(--space-4));
+  top: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, var(--color-bg-base));
+  pointer-events: none;
+  z-index: 2;
+  flex-shrink: 0;
+  margin-left: auto;
+  order: 999; /* Am Ende des Flex-Containers */
+}
+
 .tabs__tab {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background: transparent;
+  background: var(--color-surface-secondary);
   border: none;
   border-bottom: 2px solid transparent;
+  border-right: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   cursor: pointer;
   font-size: var(--text-base);
   font-weight: var(--font-medium);
@@ -711,14 +737,32 @@
   transition: all var(--transition-fast);
   white-space: nowrap;
   text-decoration: none !important;
+  flex-shrink: 0;
+}
+
+/* Light Mode: Mehr Kontrast für inaktive Tabs */
+[data-theme="light"] .tabs__tab {
+  background: var(--brand-primary-100);
+}
+
+/* Dark Mode: Dunklerer Hintergrund für inaktive Tabs */
+[data-theme="dark"] .tabs__tab {
+  background: var(--brand-primary-800);
+}
+
+/* Kein Trennstrich am letzten Tab */
+.tabs__tab:last-child {
+  border-right: none;
 }
 
 .tabs__tab:hover {
+  background: var(--color-surface-hover);
   color: var(--color-text-primary);
   text-decoration: none !important;
 }
 
 .tabs__tab--active {
+  background: var(--color-surface);
   color: var(--color-interactive-primary);
   border-bottom-color: var(--color-interactive-primary);
   font-weight: var(--font-bold);
@@ -1417,5 +1461,78 @@ a.card-link:active {
 #admin-button > *:not(.icon),
 .btn--icon-only > *:not(.icon) {
   display: none !important;
+}
+
+/* ============================================
+   SIDEBAR (Desktop Navigation Component)
+   ============================================ */
+
+.sidebar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 200px;
+  height: calc(100vh - 60px);
+  background: var(--color-surface-secondary);
+  border-right: 1px solid var(--color-border-subtle);
+  padding: var(--space-4);
+  display: none; /* Versteckt auf Mobile/Tablet */
+  z-index: calc(var(--z-fixed) - 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar__item:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.sidebar__item--active {
+  background: rgba(220, 105, 60, 0.1);
+  color: var(--color-interactive-primary);
+  font-weight: var(--font-semibold);
+}
+
+.sidebar__item .icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar__label {
+  font-size: var(--text-sm);
+}
+
+/* Remove text decoration */
+.sidebar__item,
+.sidebar__item:hover,
+.sidebar__item:focus,
+.sidebar__item:active {
+  text-decoration: none !important;
+}
+
+/* Desktop: Sidebar anzeigen */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: block;
+  }
 }
 

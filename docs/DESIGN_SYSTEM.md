@@ -494,12 +494,14 @@ body {
 - **Theme-aware:** Passt sich automatisch an Dark/Light Mode an
 
 ### Tablet (768px - 1023px)
-- **Hybrid:** Bottom Nav OR collapsible Sidebar
+- **Bottom Navigation** (bleibt sichtbar)
+- Keine Sidebar (zu schmal für beide)
 
 ### Desktop (1024px+)
 - **Persistent Sidebar** (links, modern app-like)
-- 256px expanded / 72px collapsed
-- Collapsible mit Icon-only Mode
+- 200px Breite (minimal, ohne Collapse)
+- Bottom Nav wird ausgeblendet
+- **Zukünftig:** Collapsible mit Icon-only Mode (optional)
 
 ### Theme-Aware Navigation
 
@@ -508,6 +510,13 @@ body {
 - Light Mode: `--color-surface` (White #ffffff)
 - Border: `--color-border-subtle` (theme-aware)
 - Shadow: `--shadow-md` (theme-aware)
+
+**Sidebar (Desktop):**
+- Dark Mode: `--color-surface-secondary` (Logo Navy Medium #354e5e)
+- Light Mode: `--color-surface-secondary` (Theme-aware)
+- Border: `--color-border-subtle` (theme-aware)
+- Position: Fixed, unter User Bar (top: 60px)
+- Breite: 200px (minimal, ohne Collapse)
 
 **User Bar (Top):**
 - **Beide Modi:** Dunkler Navy Gradient (`--brand-primary-800` → `--brand-primary-700`)

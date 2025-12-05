@@ -227,13 +227,20 @@
   .main-content {
     padding-left: var(--space-6);
     padding-right: var(--space-6);
+    /* Bottom Nav bleibt bis 1024px, daher Padding beibehalten */
   }
-  
+}
+
+/* Desktop: Bottom Nav ausblenden, Content für Sidebar anpassen */
+@media (min-width: 1024px) {
   .bottom-nav {
     display: none;
   }
   
-  /* Desktop: Show sidebar navigation instead */
-  /* TODO: Implement sidebar for desktop */
+  .main-content {
+    margin-left: 200px;
+    padding-bottom: var(--space-4); /* Bottom Nav weg, kein Padding nötig */
+    transition: margin-left var(--transition-normal);
+  }
 }
 
