@@ -251,8 +251,404 @@
 
                 <!-- Tab: BillBro -->
                 <div class="tabs__panel" id="tab-billbro" role="tabpanel">
+                    {% set is_organizer = current_user.is_admin or event.organisator_id == current_user.id %}
                     {% if participation and participation.teilnahme %}
-                        {% include "billbro/index.html" %}
+                    <!-- BillBro: Neue V2-Struktur -->
+
+                    <!-- Deine Schätzung / Neue Schätzung als eigenständige Cards -->
+                    {% if participation.has_guess %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Deine Schätzung
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Schätzung</span>
+                                <span class="info-row__value">{{ participation.display_guess }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Ess-Typ</span>
+                                <span class="info-row__value">{{ participation.esstyp.value if participation.esstyp else 'Nicht gewählt' }}</span>
+                            </div>
+                            {% if event.rechnungsbetrag_rappen %}
+                            <div class="info-row">
+                                <span class="info-row__label">Differenz</span>
+                                <span class="info-row__value">{{ participation.display_diff }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Rang</span>
+                                <span class="info-row__value">{{ participation.rank }}. Platz</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card__footer">
+                            {% if not event.billbro_closed %}
+                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn--outline">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        Schätzung bearbeiten
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <p class="text-muted">BillBro ist abgeschlossen – keine Änderungen mehr möglich.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M12 4h9"/>
+                                    <path d="M12 12h9"/>
+                                    <path d="M3 6h.01"/>
+                                    <path d="M3 12h.01"/>
+                                    <path d="M3 18h.01"/>
+                                </svg>
+                                Neue Schätzung abgeben
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% if not event.billbro_closed %}
+                            <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                
+                                <div class="form-field">
+                                    {{ form.esstyp.label(class_="form-field__label") }}
+                                    {{ form.esstyp(class_="form-field__select") }}
+                                    {% if form.esstyp.errors %}
+                                    <span class="form-field__error">{{ form.esstyp.errors[0] }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-field">
+                                    {{ form.guess_amount.label(class_="form-field__label") }}
+                                    {{ form.guess_amount(class_="form-field__input", placeholder="z.B. 45.50") }}
+                                    {% if form.guess_amount.errors %}
+                                    <span class="form-field__error">{{ form.guess_amount.errors[0] }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Schätzung abgeben
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <p class="text-muted">BillBro ist abgeschlossen – keine neuen Schätzungen möglich.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if is_organizer %}
+                    <!-- Organizer: Anwesenheit & Schätzungen -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                Anwesenheits-Check
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            <p class="text-muted">Bestätige, wer wirklich anwesend ist, bevor du die Rechnung eingibst.</p>
+                            <div class="card-section card-section--subtle">
+                                <div class="card-section__body">
+                                    {# Zusagen zuerst #}
+                                    {% for member in all_members %}
+                                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
+                                    {% if member_participation and member_participation.teilnahme %}
+                                    <div class="info-row">
+                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
+                                        <div class="info-row__value info-row__value--actions">
+                                            {{ member_participation.display_guess if member_participation.has_guess else 'Wartet auf Schätzung' }}
+                                            {% if not member_participation.has_guess %}
+                                            <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" class="form">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn--outline btn--sm" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {# Abgesagt #}
+                                    {% for member in all_members %}
+                                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
+                                    {% if member_participation and not member_participation.teilnahme %}
+                                    <div class="info-row">
+                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
+                                        <div class="info-row__value info-row__value--actions">Abgesagt</div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {# Keine Antwort #}
+                                    {% for member in all_members %}
+                                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
+                                    {% if not member_participation %}
+                                    <div class="info-row">
+                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
+                                        <div class="info-row__value info-row__value--actions">Keine Antwort</div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Rechnung & Berechnung als eigenständige Cards -->
+                    {% if is_organizer and not event.rechnungsbetrag_rappen %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Rechnungsbetrag eingeben</h2>
+                        </div>
+                        <div class="card__body">
+                            <form method="POST" action="{{ url_for('billbro.enter_bill', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="rechnungsbetrag">Rechnungsbetrag (CHF)</label>
+                                    <input type="number" id="rechnungsbetrag" name="rechnungsbetrag" step="0.01" min="0" class="form-field__input" required>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 3v18"/>
+                                            <path d="M17 8H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/>
+                                        </svg>
+                                        Berechnen
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if event.rechnungsbetrag_rappen %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Rechnungsübersicht</h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Rechnungsbetrag</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.rechnungsbetrag_rappen / 100) }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Trinkgeld (7%)</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.trinkgeld_rappen / 100) }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Vorschlag Gesamtbetrag</span>
+                                <span class="info-row__value">{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</span>
+                            </div>
+                        </div>
+                        {% if is_organizer and not event.billbro_closed %}
+                        <div class="card__footer">
+                            <form method="POST" action="{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--success">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Vorschlag übernehmen
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn--outline" data-manual-toggle="manual-total">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 7h16"/>
+                                    <path d="M10 11h10"/>
+                                    <path d="M4 15h16"/>
+                                </svg>
+                                Gesamtbetrag anpassen
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if is_organizer and not event.billbro_closed %}
+                    <div class="card" id="manual-total" hidden>
+                        <div class="card__header">
+                            <h2 class="card__title">Manuelle Anpassung</h2>
+                        </div>
+                        <div class="card__body">
+                            <form method="POST" action="{{ url_for('billbro.set_total', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="gesamtbetrag_manual">Gewünschter Gesamtbetrag (CHF)</label>
+                                    <input type="number" id="gesamtbetrag_manual" name="gesamtbetrag_manual" step="0.01" min="0" class="form-field__input" value="{{ event.gesamtbetrag_rappen / 100 if event.gesamtbetrag_rappen else '' }}" placeholder="z.B. {{ '%.0f'|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }}">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn--primary">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Gesamtbetrag speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if event.gesamtbetrag_rappen %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Finaler Betrag</h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamtbetrag</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Effektives Trinkgeld</span>
+                                <span class="info-row__value">
+                                    {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF
+                                    <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Dein Anteil</h2>
+                        </div>
+                        <div class="card__body">
+                            {% if participation.esstyp %}
+                            <div class="info-row">
+                                <span class="info-row__label">Dein Anteil</span>
+                                <span class="info-row__value">
+                                    {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
+                                        {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF (Sparsam)
+                                    {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
+                                        {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF (Normal)
+                                    {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
+                                        {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF (All-In)
+                                    {% else %}
+                                        Noch nicht berechnet
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">Bitte wähle deinen Ess-Typ.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Anteile pro Ess-Typ</h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Sparsam</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Normal</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">All-In</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                        </div>
+                        <div class="card__footer">
+                            <a href="{{ url_for('billbro.share_whatsapp', event_id=event.id) }}" class="btn btn--primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 2H8a6 6 0 0 0-6 6v8a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V8a6 6 0 0 0-6-6Z"/>
+                                    <path d="M7 12v.01"/>
+                                    <path d="M12 12v.01"/>
+                                    <path d="M17 12v.01"/>
+                                </svg>
+                                Per WhatsApp teilen
+                            </a>
+                            {% if is_organizer %}
+                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if event.billbro_closed %}
+                                <button type="submit" class="btn btn--primary" onclick="return confirm('BillBro wieder öffnen?')">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 7v10a5 5 0 0 0 5 5h8a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5H8a5 5 0 0 0-5 5Z"/>
+                                        <path d="M7 10h10"/>
+                                    </svg>
+                                    BillBro öffnen
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn--danger" onclick="return confirm('BillBro abschließen? Schätzungen können dann nicht mehr geändert werden.')">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10 2h4"/>
+                                        <path d="M12 14v-4"/>
+                                        <path d="M6 8h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/>
+                                    </svg>
+                                    BillBro abschließen
+                                </button>
+                                {% endif %}
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if event.gesamtbetrag_rappen %}
+                    <!-- Rangliste -->
+                    {% set ranked = event.participations
+                            | selectattr('teilnahme','equalto', True)
+                            | rejectattr('guess_bill_amount_rappen', 'equalto', none)
+                            | list %}
+                    {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                Schätzungsrangliste
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% for p in ranked %}
+                            <div class="info-row">
+                                <span class="info-row__label">{{ loop.index }}. {{ p.member.display_name_with_spirit }}</span>
+                                <span class="info-row__value">
+                                    {{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }} CHF
+                                    {% if p.diff_amount_rappen is not none %}
+                                    <small class="ranking-diff">(Δ {{ "%.2f"|format(p.diff_amount_rappen/100) }} CHF)</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% else %}
                     <div class="card">
                         <div class="card__body">
@@ -411,6 +807,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.body.appendChild(form);
                 form.submit();
+            }
+        });
+    });
+
+    // Manuelle Gesamtbetragsanpassung ein-/ausblenden
+    document.querySelectorAll('[data-manual-toggle]').forEach((button) => {
+        const targetId = button.getAttribute('data-manual-toggle');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        button.addEventListener('click', () => {
+            const willShow = target.hasAttribute('hidden');
+            if (willShow) {
+                target.removeAttribute('hidden');
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                target.setAttribute('hidden', '');
             }
         });
     });
