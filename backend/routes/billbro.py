@@ -387,6 +387,42 @@ def set_total(event_id):
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
+@bp.route('/<int:event_id>/undo_final', methods=['POST'])
+@login_required
+def undo_final(event_id):
+    """Reopen finalization to allow adjusting totals again (organizer only)."""
+    event = Event.query.get_or_404(event_id)
+
+    if not (event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann die Finalisierung aufheben', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    if not event.gesamtbetrag_rappen:
+        flash('Es gibt keinen finalen Gesamtbetrag zum Aufheben', 'info')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    # Clear final totals and shares, keep entered bill for reference/adjustment
+    event.gesamtbetrag_rappen = None
+    event.betrag_sparsam_rappen = None
+    event.betrag_normal_rappen = None
+    event.betrag_allin_rappen = None
+
+    for participation in event.participations:
+        participation.calculated_share_rappen = None
+
+    db.session.commit()
+
+    SecurityService.log_audit_event(
+        AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
+        extra_data={
+            'event_id': event.id,
+            'action': 'undo_final'
+        }
+    )
+
+    flash('Finalisierung aufgehoben. Gesamtbetrag und Anteile können neu gesetzt werden.', 'info')
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
 @bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])
 @login_required
 def accept_suggested_total(event_id):
@@ -429,6 +465,44 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+@bp.route('/<int:event_id>/reset_bill', methods=['POST'])
+@login_required
+def reset_bill(event_id):
+    """Reset bill and totals to start over (organizer only)."""
+    event = Event.query.get_or_404(event_id)
+
+    if not (event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann den BillBro zurücksetzen', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    # Clear all bill-related fields
+    event.rechnungsbetrag_rappen = None
+    event.trinkgeld_rappen = None
+    event.gesamtbetrag_rappen = None
+    event.betrag_sparsam_rappen = None
+    event.betrag_normal_rappen = None
+    event.betrag_allin_rappen = None
+
+    # Clear per-participation derived values
+    participations = Participation.query.filter_by(event_id=event_id).all()
+    for participation in participations:
+        participation.diff_amount_rappen = None
+        participation.rank = None
+        participation.calculated_share_rappen = None
+
+    db.session.commit()
+
+    SecurityService.log_audit_event(
+        AuditAction.BILLBRO_ENTER_BILL, 'event', event.id,
+        extra_data={
+            'event_id': event.id,
+            'action': 'reset_bill'
+        }
+    )
+
+    flash('BillBro zurückgesetzt. Bitte Rechnungsbetrag erneut eingeben.', 'info')
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
 @bp.route('/<int:event_id>/share_whatsapp')

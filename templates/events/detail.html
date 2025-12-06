@@ -252,11 +252,121 @@
 
                 <!-- Tab: BillBro -->
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'billbro' else '' }}" id="tab-billbro" role="tabpanel">
-                    {% set is_organizer = current_user.is_admin or event.organisator_id == current_user.id %}
-                    {% if participation and participation.teilnahme %}
+                    {% set is_organizer = event.organisator_id == current_user.id %}
+                    {% set has_bill = event.rechnungsbetrag_rappen is not none %}
+                    {% set has_final = event.gesamtbetrag_rappen is not none %}
+                    {% set can_access_billbro = (participation and participation.teilnahme) or is_organizer %}
+                    {% if can_access_billbro %}
                     <!-- BillBro: Neue V2-Struktur -->
 
-                    <!-- Deine Schätzung / Neue Schätzung als eigenständige Cards -->
+                    {# 1) Dein Anteil (nur nach finalem Gesamtbetrag) #}
+                    {% if has_final %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Dein Anteil</h2>
+                        </div>
+                        <div class="card__body">
+                            {% if participation and participation.esstyp %}
+                            <div class="info-row">
+                                <span class="info-row__label">Dein Anteil</span>
+                                <span class="info-row__value">
+                                    {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
+                                        {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF (Sparsam)
+                                    {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
+                                        {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF (Normal)
+                                    {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
+                                        {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF (All-In)
+                                    {% else %}
+                                        Noch nicht berechnet
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">Bitte wähle deinen Ess-Typ.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Rechnungsübersicht</h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamtbetrag</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Trinkgeld</span>
+                                <span class="info-row__value">
+                                    {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF
+                                    <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Anteil Sparsam</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Anteil Normal</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Anteil All-In</span>
+                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
+                            </div>
+                        </div>
+                        {% if is_organizer %}
+                        <div class="card__footer" style="justify-content: flex-end;">
+                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--danger" onclick="return confirm('Finalisierung aufheben? Anteile und Gesamtbetrag werden wieder bearbeitbar.')">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 7v6a9 9 0 0 0 18 0V7" />
+                                        <path d="M12 4v9" />
+                                        <path d="m15 10-3 3-3-3" />
+                                    </svg>
+                                    Finalisierung aufheben
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {# 2) Schätzungsrangliste (sobald Rechnungsbetrag gesetzt) #}
+                    {% if has_bill %}
+                    {% set ranked = event.participations
+                            | selectattr('teilnahme','equalto', True)
+                            | rejectattr('guess_bill_amount_rappen', 'equalto', none)
+                            | list %}
+                    {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                Schätzungsrangliste
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% for p in ranked %}
+                            <div class="info-row">
+                                <span class="info-row__label">{{ loop.index }}. {{ p.member.display_name_with_spirit }}</span>
+                                <span class="info-row__value">
+                                    {{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }} CHF
+                                    {% if p.diff_amount_rappen is not none %}
+                                    <small class="ranking-diff">(Δ {{ "%.2f"|format(p.diff_amount_rappen/100) }} CHF)</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 3) Deine Schätzung / Neue Schätzung als eigenständige Cards -->
                     {% if participation.has_guess %}
                     <div class="card">
                         <div class="card__header">
@@ -276,16 +386,6 @@
                                 <span class="info-row__label">Ess-Typ</span>
                                 <span class="info-row__value">{{ participation.esstyp.value if participation.esstyp else 'Nicht gewählt' }}</span>
                             </div>
-                            {% if event.rechnungsbetrag_rappen %}
-                            <div class="info-row">
-                                <span class="info-row__label">Differenz</span>
-                                <span class="info-row__value">{{ participation.display_diff }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Rang</span>
-                                <span class="info-row__value">{{ participation.rank }}. Platz</span>
-                            </div>
-                            {% endif %}
                         </div>
                         <div class="card__footer">
                             {% if not event.billbro_closed %}
@@ -421,32 +521,40 @@
                                 </div>
                             </div>
                         </div>
+                        {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
+                        {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
+                        <div class="card__footer" style="justify-content: flex-end;">
+                            {% if event.billbro_closed %}
+                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--outline">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 12h18"/>
+                                        <path d="M12 3v18"/>
+                                    </svg>
+                                    Schätzrunde öffnen
+                                </button>
+                            </form>
+                            {% elif pending_guesses|length > 0 %}
+                            <span class="text-muted">Warten auf Schätzungen ({{ pending_guesses|length }})</span>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Schätzrunde schließen
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </div>
                     {% endif %}
 
                     <!-- Rechnung & Berechnung als eigenständige Cards -->
-                    {# Hinweis/Button unter Anwesenheitscheck #}
-                    {% if is_organizer %}
-                    <div class="page-actions" style="justify-content: flex-end; margin-top: var(--space-4);">
-                        {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
-                        {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
-                        {% if event.billbro_closed %}
-                        <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn--outline">Schätzrunde öffnen</button>
-                        </form>
-                        {% elif pending_guesses|length > 0 %}
-                        <span class="text-muted">Warten auf Schätzungen ({{ pending_guesses|length }})</span>
-                        {% else %}
-                        <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn--primary">Schätzrunde schließen</button>
-                        </form>
-                        {% endif %}
-                    </div>
-                    {% endif %}
 
-                    {% if is_organizer and event.billbro_closed %}
+                    {% if is_organizer and event.billbro_closed and not has_final %}
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">Rechnungsbetrag eingeben</h2>
@@ -472,10 +580,10 @@
                     </div>
                     {% endif %}
 
-                    {% if event.rechnungsbetrag_rappen %}
+                    {% if has_bill and not has_final %}
                     <div class="card">
                         <div class="card__header">
-                            <h2 class="card__title">Rechnungsübersicht</h2>
+                            <h2 class="card__title">Vorschlag Trinkgeld</h2>
                         </div>
                         <div class="card__body">
                             <div class="info-row">
@@ -491,7 +599,7 @@
                                 <span class="info-row__value">{{ "%.2f"|format(((event.rechnungsbetrag_rappen + event.trinkgeld_rappen + 999) // 1000 * 1000) / 100) }} CHF</span>
                             </div>
                         </div>
-                        {% if is_organizer and not event.billbro_closed %}
+                        {% if is_organizer and not has_final %}
                         <div class="card__footer">
                             <form method="POST" action="{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -499,7 +607,7 @@
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="20 6 9 17 4 12"/>
                                     </svg>
-                                    Vorschlag übernehmen
+                                    Eingaben speichern
                                 </button>
                             </form>
                             <button type="button" class="btn btn--outline" data-manual-toggle="manual-total">
@@ -514,10 +622,10 @@
                         {% endif %}
                     </div>
 
-                    {% if is_organizer and not event.billbro_closed %}
+                    {% if is_organizer and not has_final %}
                     <div class="card" id="manual-total" hidden>
                         <div class="card__header">
-                            <h2 class="card__title">Manuelle Anpassung</h2>
+                            <h2 class="card__title">Vorschlag bearbeiten</h2>
                         </div>
                         <div class="card__body">
                             <form method="POST" action="{{ url_for('billbro.set_total', event_id=event.id) }}" class="form">
@@ -539,10 +647,10 @@
                     </div>
                     {% endif %}
 
-                    {% if event.gesamtbetrag_rappen %}
+                    {% if has_final %}
                     <div class="card">
                         <div class="card__header">
-                            <h2 class="card__title">Finaler Betrag</h2>
+                            <h2 class="card__title">Rechnungsübersicht</h2>
                         </div>
                         <div class="card__body">
                             <div class="info-row">
@@ -550,93 +658,58 @@
                                 <span class="info-row__value">{{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-row__label">Effektives Trinkgeld</span>
+                                <span class="info-row__label">Trinkgeld</span>
                                 <span class="info-row__value">
                                     {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF
                                     <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small>
                                 </span>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">Dein Anteil</h2>
-                        </div>
-                        <div class="card__body">
-                            {% if participation.esstyp %}
                             <div class="info-row">
-                                <span class="info-row__label">Dein Anteil</span>
-                                <span class="info-row__value">
-                                    {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
-                                        {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF (Sparsam)
-                                    {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
-                                        {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF (Normal)
-                                    {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
-                                        {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF (All-In)
-                                    {% else %}
-                                        Noch nicht berechnet
-                                    {% endif %}
-                                </span>
-                            </div>
-                            {% else %}
-                            <p class="text-muted">Bitte wähle deinen Ess-Typ.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">Anteile pro Ess-Typ</h2>
-                        </div>
-                        <div class="card__body">
-                            <div class="info-row">
-                                <span class="info-row__label">Sparsam</span>
+                                <span class="info-row__label">Anteil Sparsam</span>
                                 <span class="info-row__value">{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-row__label">Normal</span>
+                                <span class="info-row__label">Anteil Normal</span>
                                 <span class="info-row__value">{{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-row__label">All-In</span>
+                                <span class="info-row__label">Anteil All-In</span>
                                 <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
                             </div>
                         </div>
+                        {% if is_organizer %}
+                        <div class="card__footer" style="justify-content: flex-end;">
+                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--outline" onclick="return confirm('Finalisierung aufheben? Anteile und Gesamtbetrag werden wieder bearbeitbar.')">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10 2h4"/>
+                                        <path d="M12 2v20"/>
+                                        <path d="m18 8 4 4-4 4"/>
+                                        <path d="m6 16-4-4 4-4"/>
+                                    </svg>
+                                    Finalisierung aufheben
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     {% endif %}
 
-                    {% if event.gesamtbetrag_rappen %}
-                    <!-- Rangliste -->
-                    {% set ranked = event.participations
-                            | selectattr('teilnahme','equalto', True)
-                            | rejectattr('guess_bill_amount_rappen', 'equalto', none)
-                            | list %}
-                    {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
+                    {% if is_organizer and has_final %}
+                    <div class="page-actions page-actions--right" style="margin-top: var(--space-4);">
+                        <form method="POST" action="{{ url_for('billbro.reset_bill', event_id=event.id) }}" class="form" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn--danger" onclick="return confirm('BillBro neu starten? Alle Beträge werden zurückgesetzt.')">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+                                    <polyline points="21 3 21 9 15 9"/>
                                 </svg>
-                                Schätzungsrangliste
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            {% for p in ranked %}
-                            <div class="info-row">
-                                <span class="info-row__label">{{ loop.index }}. {{ p.member.display_name_with_spirit }}</span>
-                                <span class="info-row__value">
-                                    {{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }} CHF
-                                    {% if p.diff_amount_rappen is not none %}
-                                    <small class="ranking-diff">(Δ {{ "%.2f"|format(p.diff_amount_rappen/100) }} CHF)</small>
-                                    {% endif %}
-                                </span>
-                            </div>
-                            {% endfor %}
-                        </div>
+                                Neu starten
+                            </button>
+                        </form>
                     </div>
+                    {% endif %}
                     {% endif %}
 
                     {% else %}
@@ -698,34 +771,6 @@
             </div>
         </div>
 
-        <!-- Buttons außerhalb der Cards -->
-        <div class="page-actions">
-            <!-- RSVP Erinnerung Button für Organisator -->
-            {% if current_user.is_admin or event.organisator_id == current_user.id %}
-            {% if event.is_upcoming %}
-            <button type="button" class="btn btn--primary send-rsvp-reminder-btn" 
-                    data-event-id="{{ event.id }}">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                Push-Erinnerung senden
-            </button>
-            {% endif %}
-            {% endif %}
-            
-            {% if current_user.is_admin and not event.is_past %}
-            <button type="button" class="btn btn--danger delete-event-btn" 
-                    data-event-id="{{ event.id }}" 
-                    data-event-title="{{ event.restaurant or event.event_typ.value }}">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                Löschen
-            </button>
-            {% endif %}
-        </div>
     </div>
 </div>
 
