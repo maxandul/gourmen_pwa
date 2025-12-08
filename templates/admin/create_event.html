@@ -391,12 +391,26 @@ class PlacesAutocomplete {
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>📅 Neues Event erstellen</h1>
-        <p class="page-subtitle">Plane ein neues Gourmen-Event</p>
-        <div class="page-actions">
-            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">← Zurück zu Events</a>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('events.index') }}" class="breadcrumbs__link">Events</a>
+            <span class="breadcrumbs__separator">/</span>
         </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Neues Event erstellen</span>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Neues Event erstellen
+        </h1>
+        <p class="page-subtitle">Plane ein neues Gourmen-Event</p>
     </div>
     
     <div class="page-content">
@@ -405,68 +419,67 @@ class PlacesAutocomplete {
             
             <!-- Basic Event Info -->
             <div class="card">
-                <div class="card-header">
-                    <h2>📅 Event-Grunddaten</h2>
+                <div class="card__header">
+                    <h2 class="card__title">Event-Grunddaten</h2>
                 </div>
-                <div class="card-body">
+                <div class="card__body">
                     <div class="form-row">
-                        <div class="form-group">
-                            {{ form.datum.label }}
-                            {{ form.datum(class="form-control", type="date") }}
+                        <div class="form-field">
+                            {{ form.datum.label(class="form-field__label") }}
+                            {{ form.datum(class="form-field__input", type="date") }}
                             {% if form.datum.errors %}
-                            <div class="error">{{ form.datum.errors[0] }}</div>
+                            <span class="form-field__error">{{ form.datum.errors[0] }}</span>
                             {% endif %}
                         </div>
                         
-                        <div class="form-group">
-                            {{ form.event_typ.label }}
-                            {{ form.event_typ(class="form-control") }}
+                        <div class="form-field">
+                            {{ form.event_typ.label(class="form-field__label") }}
+                            {{ form.event_typ(class="form-field__select") }}
                             {% if form.event_typ.errors %}
-                            <div class="error">{{ form.event_typ.errors[0] }}</div>
+                            <span class="form-field__error">{{ form.event_typ.errors[0] }}</span>
                             {% endif %}
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        {{ form.organisator_id.label }}
-                        {{ form.organisator_id(class="form-control") }}
+                    <div class="form-field">
+                        {{ form.organisator_id.label(class="form-field__label") }}
+                        {{ form.organisator_id(class="form-field__select") }}
                         {% if form.organisator_id.errors %}
-                        <div class="error">{{ form.organisator_id.errors[0] }}</div>
+                        <span class="form-field__error">{{ form.organisator_id.errors[0] }}</span>
                         {% endif %}
-
                     </div>
                 </div>
             </div>
             
             <!-- Restaurant Section -->
             <div class="card">
-                <div class="card-header">
-                    <h2>🍽️ Restaurant & Location</h2>
+                <div class="card__header">
+                    <h2 class="card__title">Restaurant & Location</h2>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        {{ form.restaurant.label }}
-                        {{ form.restaurant(class="form-control", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
+                <div class="card__body">
+                    <div class="form-field">
+                        {{ form.restaurant.label(class="form-field__label") }}
+                        {{ form.restaurant(class="form-field__input", placeholder="Restaurant-Name eingeben für Autocomplete...") }}
                         {% if form.restaurant.errors %}
-                        <div class="error">{{ form.restaurant.errors[0] }}</div>
+                        <span class="form-field__error">{{ form.restaurant.errors[0] }}</span>
                         {% endif %}
-                        <small class="form-help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
+                        <small class="form-help text-muted">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
                     </div>
                     
                     <div class="form-row">
-                        <div class="form-group">
-                            {{ form.kueche.label }}
-                            {{ form.kueche(class="form-control", placeholder="z.B. Italienisch, Asiatisch") }}
+                        <div class="form-field">
+                            {{ form.kueche.label(class="form-field__label") }}
+                            {{ form.kueche(class="form-field__input", placeholder="z.B. Italienisch, Asiatisch") }}
                             {% if form.kueche.errors %}
-                            <div class="error">{{ form.kueche.errors[0] }}</div>
+                            <span class="form-field__error">{{ form.kueche.errors[0] }}</span>
                             {% endif %}
                         </div>
                         
-                        <div class="form-group">
-                            {{ form.website.label }}
-                            {{ form.website(class="form-control", placeholder="https://...") }}
+                        <div class="form-field">
+                            {{ form.website.label(class="form-field__label") }}
+                            {{ form.website(class="form-field__input", placeholder="https://...") }}
                             {% if form.website.errors %}
-                            <div class="error">{{ form.website.errors[0] }}</div>
+                            <span class="form-field__error">{{ form.website.errors[0] }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -475,15 +488,15 @@ class PlacesAutocomplete {
             
             <!-- Additional Info -->
             <div class="card">
-                <div class="card-header">
-                    <h2>📝 Zusätzliche Informationen</h2>
+                <div class="card__header">
+                    <h2 class="card__title">Zusätzliche Informationen</h2>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        {{ form.notizen.label }}
-                        {{ form.notizen(class="form-control", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
+                <div class="card__body">
+                    <div class="form-field">
+                        {{ form.notizen.label(class="form-field__label") }}
+                        {{ form.notizen(class="form-field__textarea", rows="4", placeholder="Reservationsdetails, besondere Hinweise...") }}
                         {% if form.notizen.errors %}
-                        <div class="error">{{ form.notizen.errors[0] }}</div>
+                        <span class="form-field__error">{{ form.notizen.errors[0] }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -508,7 +521,7 @@ class PlacesAutocomplete {
             </div>
             
             <div class="form-actions">
-                {{ form.submit(class="btn btn-primary") }}
+                {{ form.submit(class="btn btn--primary") }}
             </div>
         </form>
     </div>

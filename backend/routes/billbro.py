@@ -249,7 +249,7 @@ def enter_bill(event_id):
     )
     
     flash('Rechnungsbetrag eingegeben - bitte Gesamtbetrag bestätigen oder anpassen', 'info')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-tip-suggestion'))
 
 @bp.route('/<int:event_id>/start_session', methods=['POST'])
 @login_required
@@ -385,7 +385,7 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/undo_final', methods=['POST'])
 @login_required
@@ -465,7 +465,7 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/reset_bill', methods=['POST'])
 @login_required

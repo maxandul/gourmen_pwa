@@ -496,7 +496,7 @@ def create_event():
         flash('Event erfolgreich erstellt! Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
-    return render_template('admin/create_event.html', form=form) 
+    return render_template('admin/create_event.html', form=form, use_v2_design=True) 
 
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required

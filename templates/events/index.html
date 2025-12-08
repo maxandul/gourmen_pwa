@@ -461,16 +461,32 @@
                 <!-- Filter Section -->
                 <div class="card">
                     <div class="card__body">
-                        <form method="GET" class="form" style="display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap;">
+                        <form method="GET" class="form" style="display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start;">
                             <input type="hidden" name="tab" value="archiv">
-                            <div class="form-field" style="flex: 1; min-width: 200px;">
-                                <label for="year" class="form-field__label">Jahr filtern:</label>
+                            <div class="form-field" style="margin: 0;">
+                                <span class="form-field__label" style="font-weight: var(--font-semibold);">Events filtern:</span>
+                            </div>
+                            <div class="form-field" style="width: 100%; max-width: 320px;">
+                                <label for="year" class="form-field__label">Jahr:</label>
                                 <select name="year" id="year" class="form-field__select">
                                     <option value="">Alle Jahre</option>
                                     {% if years %}
                                     {% for year in years %}
                                     <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
                                         {{ year }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-field" style="width: 100%; max-width: 320px;">
+                                <label for="organisator_id" class="form-field__label">Organisator:</label>
+                                <select name="organisator_id" id="organisator_id" class="form-field__select">
+                                    <option value="">Alle Organisatoren</option>
+                                    {% if organizers %}
+                                    {% for organizer in organizers %}
+                                    <option value="{{ organizer.id }}" {% if selected_organizer_id == organizer.id %}selected{% endif %}>
+                                        {{ organizer.display_name_with_spirit }}
                                     </option>
                                     {% endfor %}
                                     {% endif %}
@@ -552,7 +568,7 @@
                 {% if events.pages > 1 %}
                 <div class="page-actions" style="margin-top: var(--space-6); justify-content: center; gap: var(--space-4); flex-wrap: wrap;">
                     {% if events.has_prev %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, year=selected_year if selected_year else '') }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, year=selected_year if selected_year else '', organisator_id=selected_organizer_id if selected_organizer_id else '') }}" class="btn btn--outline">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m12 19-7-7 7-7"/>
                             <path d="M19 12H5"/>
@@ -566,7 +582,7 @@
                     </span>
                     
                     {% if events.has_next %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, year=selected_year if selected_year else '') }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, year=selected_year if selected_year else '', organisator_id=selected_organizer_id if selected_organizer_id else '') }}" class="btn btn--outline">
                         Nächste
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m12 5 7 7-7 7"/>

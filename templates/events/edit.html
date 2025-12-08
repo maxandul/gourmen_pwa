@@ -391,6 +391,20 @@ class PlacesAutocomplete {
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('events.index') }}" class="breadcrumbs__link">Events</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="breadcrumbs__link">Event-Details</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Event bearbeiten</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -400,15 +414,6 @@ class PlacesAutocomplete {
             Event bearbeiten
         </h1>
         <p class="page-subtitle">{{ event.event_typ.value }} - {{ event.display_date }}</p>
-        <div class="page-actions">
-            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn--primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="m12 19-7-7 7-7"/>
-                    <path d="M19 12H5"/>
-                </svg>
-                Zurück zu Event-Details
-            </a>
-        </div>
     </div>
     
     <div class="page-content">

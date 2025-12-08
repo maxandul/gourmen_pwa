@@ -261,7 +261,7 @@
 
                     {# 1) Dein Anteil (nur nach finalem Gesamtbetrag) #}
                     {% if has_final %}
-                    <div class="card">
+                    <div class="card" id="billbro-share">
                         <div class="card__header">
                             <h2 class="card__title">Dein Anteil</h2>
                         </div>
@@ -581,7 +581,7 @@
                     {% endif %}
 
                     {% if has_bill and not has_final %}
-                    <div class="card">
+                    <div class="card" id="billbro-tip-suggestion">
                         <div class="card__header">
                             <h2 class="card__title">Vorschlag Trinkgeld</h2>
                         </div>
@@ -862,6 +862,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Scroll to anchor targets for BillBro (smooth)
+    const hash = window.location.hash ? window.location.hash.substring(1) : null;
+    if (hash) {
+        const target = document.getElementById(hash);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 });
 </script>
 {% endblock %}

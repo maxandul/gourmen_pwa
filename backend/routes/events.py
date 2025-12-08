@@ -227,6 +227,7 @@ def index():
         # Past events with pagination
         page = request.args.get('page', 1, type=int)
         year = request.args.get('year', type=int)
+        organizer_id = request.args.get('organisator_id', type=int)
         
         query = Event.query.filter(
             Event.published == True,
@@ -235,6 +236,9 @@ def index():
         
         if year:
             query = query.filter(Event.season == year)
+        
+        if organizer_id:
+            query = query.filter(Event.organisator_id == organizer_id)
         
         events = query.order_by(Event.datum.desc()).paginate(
             page=page, per_page=20, error_out=False
@@ -247,10 +251,15 @@ def index():
         ).distinct().order_by(Event.season.desc()).all()
         years = [year[0] for year in years_query] if years_query else []
         
+        # Organizer list for filter
+        organizers = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
+        
         context.update({
             'events': events,
             'years': years,
-            'selected_year': year if year else None
+            'selected_year': year if year else None,
+            'organizers': organizers,
+            'selected_organizer_id': organizer_id if organizer_id else None
         })
         
     elif tab == 'stats':
