@@ -5,165 +5,213 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>👤 Member-Bereich</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Member-Bereich
+        </h1>
         <p class="page-subtitle">Willkommen, {{ current_user.display_name_with_spirit }}!</p>
     </div>
     
     <div class="page-content">
-        <!-- Persönliche Daten Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>👤 Persönliche Daten</h2>
+        <div class="hub-grid">
+        <!-- Persönliche Daten -->
+        <div class="card hub-card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Persönliche Daten
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>📝 Profil verwalten</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Name:</span>
-                            <span class="value">{{ current_user.display_name_with_spirit }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">E-Mail:</span>
-                            <span class="value">{{ current_user.email }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Funktion:</span>
-                            <span class="value">{{ current_user.funktion.value if current_user.funktion else 'Member' }}</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('member.profile') }}" class="btn btn-primary">👤 Profil verwalten</a>
-                        </div>
-                    </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Name</span>
+                    <span class="info-row__value">{{ current_user.display_name_with_spirit }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">E-Mail</span>
+                    <span class="info-row__value">{{ current_user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Funktion</span>
+                    <span class="info-row__value">{{ current_user.funktion.value if current_user.funktion else 'Member' }}</span>
                 </div>
             </div>
-        </div>
-        
-       
-        <!-- Merch-Bereich Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🛍️ Merch-Bestellungen</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>📦 Meine letzte Bestellung</h3>
-                    </div>
-                    <div class="card-body">
-                        {% if last_order %}
-                        <div class="stats-item">
-                            <span class="label">Bestellnummer:</span>
-                            <span class="value">{{ last_order.order_number }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Status:</span>
-                            <span class="value">
-                                {% if last_order.status.value == 'BESTELLT' %}
-                                    🟡 Bestellt
-                                {% elif last_order.status.value == 'WIRD_GELIEFERT' %}
-                                    🚚 Wird geliefert
-                                {% elif last_order.status.value == 'GELIEFERT' %}
-                                    ✅ Geliefert
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Bestelldatum:</span>
-                            <span class="value">{{ last_order.created_at.strftime('%d.%m.%Y') }}</span>
-                        </div>
-                        {% else %}
-                        <div class="stats-item">
-                            <span class="label">Keine Bestellungen:</span>
-                            <span class="value">Noch keine Bestellungen aufgegeben</span>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('member.merch') }}" class="btn btn-primary">🛒 Merch-Shop</a>
-                            {% if last_order %}
-                            <a href="{{ url_for('member.merch_orders') }}" class="btn btn-outline">📋 Alle Bestellungen</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+            <div class="card__footer">
+                <a href="{{ url_for('member.profile') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Profil verwalten
+                </a>
             </div>
         </div>
 
-        <!-- Sicherheit Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🔒 Sicherheit & 2FA</h2>
+        <!-- Merch-Bereich -->
+        <div class="card hub-card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                        <path d="M4 22h16"/>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                    </svg>
+                    Merch-Bestellungen
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>🛡️ Sicherheitseinstellungen</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">2FA Status:</span>
-                            <span class="value">
-                                {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
-                                    ✅ Aktiviert
-                                {% else %}
-                                    ❌ Nicht aktiviert
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Letzte Passwort-Änderung:</span>
-                            <span class="value">
-                                {% if current_user.password_changed_at %}
-                                    {{ current_user.password_changed_at.strftime('%d.%m.%Y') }}
-                                {% else %}
-                                    Nie geändert
-                                {% endif %}
-                            </span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('member.security') }}" class="btn btn-primary">🔐 Sicherheit verwalten</a>
-                        </div>
-                    </div>
+            <div class="card__body">
+                {% if last_order %}
+                <div class="info-row">
+                    <span class="info-row__label">Bestellnummer</span>
+                    <span class="info-row__value">{{ last_order.order_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Status</span>
+                    <span class="info-row__value">
+                        {% if last_order.status.value == 'BESTELLT' %}
+                            Bestellt
+                        {% elif last_order.status.value == 'WIRD_GELIEFERT' %}
+                            Wird geliefert
+                        {% elif last_order.status.value == 'GELIEFERT' %}
+                            Geliefert
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Bestelldatum</span>
+                    <span class="info-row__value">{{ last_order.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+                {% else %}
+                <div class="info-row">
+                    <span class="info-row__label">Keine Bestellungen</span>
+                    <span class="info-row__value">Noch keine Bestellungen aufgegeben</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('member.merch') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                        <path d="M4 22h16"/>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                    </svg>
+                    Merch-Shop
+                </a>
+                {% if last_order %}
+                <a href="{{ url_for('member.merch_orders') }}" class="btn btn--outline">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 5 2 14h14l2-14H3Z"/>
+                        <path d="M16 11a4 4 0 0 1-8 0"/>
+                    </svg>
+                    Alle Bestellungen
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sicherheit & 2FA -->
+        <div class="card hub-card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Sicherheit & 2FA
+                </h2>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">2FA Status</span>
+                    <span class="info-row__value">
+                        {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
+                            Aktiviert
+                        {% else %}
+                            Nicht aktiviert
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Letzte Passwort-Änderung</span>
+                    <span class="info-row__value">
+                        {% if current_user.password_changed_at %}
+                            {{ current_user.password_changed_at.strftime('%d.%m.%Y') }}
+                        {% else %}
+                            Nie geändert
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('member.security') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Sicherheit verwalten
+                </a>
+            </div>
+        </div>
+
+        <!-- Technische Einstellungen -->
+        <div class="card hub-card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.325 4.317a4.13 4.13 0 0 1 3.35 0l.45.2a4.13 4.13 0 0 0 3.893-.376l.05-.034a4.13 4.13 0 0 1 5.734 1.2 4.13 4.13 0 0 1-1.2 5.734l-.05.034a4.13 4.13 0 0 0-1.743 3.682l.033.5a4.13 4.13 0 0 1-3.993 4.367 4.13 4.13 0 0 1-1.741-.367l-.45-.2a4.13 4.13 0 0 0-3.35 0l-.45.2a4.13 4.13 0 0 1-3.893-.376l-.05-.034a4.13 4.13 0 0 0-5.734 1.2 4.13 4.13 0 0 0 1.2 5.734l.05.034a4.13 4.13 0 0 1 1.743 3.682l-.033.5"/>
+                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                    </svg>
+                    Technische Einstellungen
+                </h2>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Service Worker</span>
+                    <span class="info-row__value">Aktiv</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Push-Benachrichtigungen</span>
+                    <span class="info-row__value">Verfügbar</span>
+                </div>
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('member.technical') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.325 4.317a4.13 4.13 0 0 1 3.35 0l.45.2a4.13 4.13 0 0 0 3.893-.376l.05-.034a4.13 4.13 0 0 1 5.734 1.2 4.13 4.13 0 0 1-1.2 5.734l-.05.034a4.13 4.13 0 0 0-1.743 3.682l.033.5a4.13 4.13 0 0 1-3.993 4.367 4.13 4.13 0 0 1-1.741-.367l-.45-.2a4.13 4.13 0 0 0-3.35 0l-.45.2a4.13 4.13 0 0 1-3.893-.376l-.05-.034a4.13 4.13 0 0 0-5.734 1.2 4.13 4.13 0 0 0 1.2 5.734l.05.034a4.13 4.13 0 0 1 1.743 3.682l-.033.5"/>
+                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                    </svg>
+                    Technische Einstellungen
+                </a>
+            </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="card hub-card">
+            <div class="card__body">
+                <div class="page-actions page-actions--right" style="margin: 0;">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn--danger">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 3h-2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/>
+                            <path d="M10 12h11l-3-3"/>
+                            <path d="M18 15l3-3"/>
+                        </svg>
+                        Logout
+                    </a>
                 </div>
             </div>
         </div>
-        
-        <!-- Technische Einstellungen Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚙️ Technische Einstellungen</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>🔧 Service Worker & PWA</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Service Worker:</span>
-                            <span class="value">Aktiv</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Push-Benachrichtigungen:</span>
-                            <span class="value">Verfügbar</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('member.technical') }}" class="btn btn-primary">⚙️ Technische Einstellungen</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Logout Action unten auf der Member-Seite -->
-        <div class="page-actions" style="margin-top: 16px;">
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">🚪 Logout</a>
         </div>
     </div>
 </div>

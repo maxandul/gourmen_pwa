@@ -1,3 +1,56 @@
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.hub-card .card__header {
+  padding: var(--space-4);
+}
+
+.hub-card .card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.hub-card .card__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.hub-card .card__footer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.hub-card .info-row {
+  padding: var(--space-2) 0;
+}
+
+.hub-card--featured {
+  background: linear-gradient(135deg, var(--brand-primary-800), var(--brand-primary-700));
+  color: #fff;
+  border: 1px solid var(--brand-primary-700);
+  box-shadow: var(--shadow-md);
+}
+
+.hub-card--featured .card__title,
+.hub-card--featured .info-row__label,
+.hub-card--featured .info-row__value {
+  color: #fff;
+}
+
+.hub-card--featured .card__footer {
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
 /* ================================================================
    GOURMEN PWA - COMPONENTS V2
    ================================================================

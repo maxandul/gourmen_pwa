@@ -819,5 +819,39 @@ static/
 
 ---
 
+## 🧭 HUB PAGES (NEU)
+
+- Verwendung für Sammel-/Einstiegsseiten (z. B. Member-Hub, Admin-Hub).
+- Pattern:
+  - Grid: `.hub-grid` → `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-5);`
+  - Kachel: `.card.hub-card` nutzt die normalen Card-Styles, mit leicht kompakter Header/Body/Actions.
+  - Optional: `.hub-card--featured` (Gradient auf Brand Primary, weiße Schrift) für Hauptaktion.
+  - Inhalt: `card__header` + `card__body` (Info-Rows, kurze Listen) + `card__footer` (Actions).
+  - Icons 24px Lucide links im Titel.
+- Beispiel:
+```html
+<div class="hub-grid">
+  <div class="card hub-card">
+    <div class="card__header">
+      <h2 class="card__title">
+        <svg class="icon"><use href="#user"/></svg>
+        Profil
+      </h2>
+    </div>
+    <div class="card__body">
+      <div class="info-row">
+        <span class="info-row__label">Name</span>
+        <span class="info-row__value">Max Mustermann</span>
+      </div>
+    </div>
+    <div class="card__footer">
+      <a class="btn btn--primary" href="/member/profile">Öffnen</a>
+    </div>
+  </div>
+</div>
+```
+
+---
+
 **Next Steps:** See `COMPONENT_LIBRARY.md` for component implementations.
 

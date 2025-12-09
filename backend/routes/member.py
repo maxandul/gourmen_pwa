@@ -68,7 +68,7 @@ def index():
     from backend.models.merch_order import MerchOrder
     last_order = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).first()
     
-    return render_template('member/index.html', last_order=last_order)
+    return render_template('member/index.html', last_order=last_order, use_v2_design=True)
 
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -254,13 +254,13 @@ def profile():
 @login_required
 def security():
     """Security settings page"""
-    return render_template('member/security.html')
+    return render_template('member/security.html', use_v2_design=True)
 
 @bp.route('/technical')
 @login_required
 def technical():
     """Technical settings page"""
-    return render_template('member/technical.html')
+    return render_template('member/technical.html', use_v2_design=True)
 
 @bp.route('/merch')
 @login_required
@@ -275,7 +275,7 @@ def merch():
     # Get user's orders
     user_orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
     
-    return render_template('member/merch/index.html', articles=articles, orders=user_orders)
+    return render_template('member/merch/index.html', articles=articles, orders=user_orders, use_v2_design=True)
 
 @bp.route('/merch/order', methods=['GET', 'POST'])
 @login_required
@@ -369,7 +369,7 @@ def merch_order():
         # Get unique colors for this article
         article.available_colors = list(set([variant.color for variant in article.variants]))
     
-    return render_template('member/merch/order.html', articles=articles)
+    return render_template('member/merch/order.html', articles=articles, use_v2_design=True)
 
 @bp.route('/merch/orders')
 @login_required
@@ -379,7 +379,7 @@ def merch_orders():
     
     orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
     
-    return render_template('member/merch/orders.html', orders=orders)
+    return render_template('member/merch/orders.html', orders=orders, use_v2_design=True)
 
 @bp.route('/merch/order/<int:order_id>')
 @login_required
@@ -389,7 +389,7 @@ def merch_order_detail(order_id):
     
     order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
     
-    return render_template('member/merch/order_detail.html', order=order)
+    return render_template('member/merch/order_detail.html', order=order, use_v2_design=True)
 
 @bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -491,14 +491,14 @@ def merch_order_edit(order_id):
         # Pre-fill existing data if available (now as a list)
         article.existing_items = existing_items.get(article.id, [])
     
-    return render_template('member/merch/order_edit.html', articles=articles, order=order)
+    return render_template('member/merch/order_edit.html', articles=articles, order=order, use_v2_design=True)
 
 @bp.route('/members')
 @login_required
 def members():
     """Members list"""
     members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
-    return render_template('member/members.html', members=members)
+    return render_template('member/members.html', members=members, use_v2_design=True)
 
 # Import here to avoid circular imports
 from datetime import datetime

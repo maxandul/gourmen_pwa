@@ -723,48 +723,266 @@
 
                 <!-- Tab: Bewertungen -->
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'ratings' else '' }}" id="tab-ratings" role="tabpanel">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="card" style="margin-bottom: var(--space-4);">
+                        <div class="card__body">
+                            {% for category, message in messages %}
+                                <div class="alert alert--{{ 'error' if category == 'error' else ('success' if category == 'success' else 'info') }}">
+                                    <div class="alert__content">
+                                        <div class="alert__message">{{ message }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                                 </svg>
-                                Bewertungen
+                                Gesamtbewertung
                             </h2>
                         </div>
                         <div class="card__body">
-                            {% set user_participation = participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                            {% if user_participation and user_participation.teilnahme %}
-                                {% if event.has_rating_from_participant(current_user.id) %}
-                                <a href="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="btn btn--primary">
+                            {% if average_ratings.count > 0 %}
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamt</span>
+                                <span class="info-row__value">{{ average_ratings.overall }}/5 ({{ average_ratings.count }} Bewertungen)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Essen</span>
+                                <span class="info-row__value">{{ average_ratings.food }}/5</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Getränke</span>
+                                <span class="info-row__value">{{ average_ratings.drinks }}/5</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Service</span>
+                                <span class="info-row__value">{{ average_ratings.service }}/5</span>
+                            </div>
+                            {% else %}
+                            <p>Für dieses Event liegen noch keine Bewertungen vor.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if can_rate %}
+                        {% if user_rating %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 21 12 17.77 7.82 21 9 14.14l-5-4.87 5.91-.99L12 2z"></path>
+                                    </svg>
+                                    Deine Bewertung
+                                </h2>
+                            </div>
+                            <div class="card__body">
+                                {% if rating_edit_mode %}
+                                <form method="POST" action="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="form-row">
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="food_rating_edit">Essen</label>
+                                            <select id="food_rating_edit" name="food_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}" {% if user_rating.food_rating == score %}selected{% endif %}>{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="drinks_rating_edit">Getränke</label>
+                                            <select id="drinks_rating_edit" name="drinks_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}" {% if user_rating.drinks_rating == score %}selected{% endif %}>{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="service_rating_edit">Service</label>
+                                            <select id="service_rating_edit" name="service_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}" {% if user_rating.service_rating == score %}selected{% endif %}>{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="highlights_edit">Highlights (optional)</label>
+                                        <textarea id="highlights_edit" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?">{{ user_rating.highlights or '' }}</textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <a class="btn btn--outline" href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}">Abbrechen</a>
+                                        <button type="submit" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                            </svg>
+                                            Änderungen speichern
+                                        </button>
+                                    </div>
+                                </form>
+                                {% else %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Durchschnitt</span>
+                                    <span class="info-row__value">{{ user_rating.average_rating }}/5</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Essen</span>
+                                    <span class="info-row__value">{{ user_rating.food_rating }}/5</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Getränke</span>
+                                    <span class="info-row__value">{{ user_rating.drinks_rating }}/5</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Service</span>
+                                    <span class="info-row__value">{{ user_rating.service_rating }}/5</span>
+                                </div>
+                                {% if user_rating.highlights %}
+                                <p style="margin-top: var(--space-3); color: var(--color-text-secondary);">
+                                    {{ user_rating.highlights }}
+                                </p>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="card__footer">
+                                {% if not rating_edit_mode %}
+                                <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                     Bewertung bearbeiten
                                 </a>
-                                {% else %}
-                                <a href="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                    </svg>
-                                    Event bewerten
-                                </a>
                                 {% endif %}
-                            {% else %}
-                            <p>Bewertungen stehen nur Teilnehmenden zur Verfügung.</p>
-                            {% endif %}
-
-                            <div style="margin-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-4);">
-                                <a href="{{ url_for('ratings.view_ratings', event_id=event.id) }}" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="18" y1="20" x2="18" y2="10"/>
-                                        <line x1="12" y1="20" x2="12" y2="4"/>
-                                        <line x1="6" y1="20" x2="6" y2="14"/>
-                                    </svg>
-                                    Bewertungen anzeigen
-                                </a>
+                                <form method="POST" action="{{ url_for('ratings.delete_rating', event_id=event.id) }}" class="form" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn--danger" onclick="return confirm('Bewertung wirklich löschen?');">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                        Löschen
+                                    </button>
+                                </form>
                             </div>
+                        </div>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="card">
+                                <div class="card__header">
+                                    <h2 class="card__title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                        </svg>
+                                        Jetzt bewerten
+                                    </h2>
+                                </div>
+                                <div class="card__body">
+                                    <div class="form-row">
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="food_rating">Essen</label>
+                                            <select id="food_rating" name="food_rating" class="form-field__select" required>
+                                                <option value="" disabled selected>Bitte wählen</option>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="drinks_rating">Getränke</label>
+                                            <select id="drinks_rating" name="drinks_rating" class="form-field__select" required>
+                                                <option value="" disabled selected>Bitte wählen</option>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="service_rating">Service</label>
+                                            <select id="service_rating" name="service_rating" class="form-field__select" required>
+                                                <option value="" disabled selected>Bitte wählen</option>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="highlights">Highlights (optional)</label>
+                                        <textarea id="highlights" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?"></textarea>
+                                    </div>
+                                </div>
+                                <div class="card__footer">
+                                    <button type="submit" class="btn btn--primary">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                        </svg>
+                                        Bewertung speichern
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                    <div class="card">
+                        <div class="card__body">
+                            <p>Bewertungen stehen nur Teilnehmenden oder Organisatoren zur Verfügung.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                                Bewertungen der anderen Teilnehmer
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% if other_ratings %}
+                                {% for rating in other_ratings %}
+                                <div class="rating-entry" style="margin-bottom: var(--space-4);">
+                                    <div class="info-row">
+                                    <span class="info-row__label">{{ rating.participant.display_name_with_spirit if rating.participant else 'Mitglied' }}</span>
+                                    <span class="info-row__value">{{ rating.average_rating }}/5</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-row__label">Essen</span>
+                                        <span class="info-row__value">{{ rating.food_rating }}/5</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-row__label">Getränke</span>
+                                        <span class="info-row__value">{{ rating.drinks_rating }}/5</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-row__label">Service</span>
+                                        <span class="info-row__value">{{ rating.service_rating }}/5</span>
+                                    </div>
+                                    {% if rating.highlights %}
+                                    <p style="margin-top: var(--space-3); color: var(--color-text-secondary);">
+                                        {{ rating.highlights }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <p>Noch keine weiteren Bewertungen vorhanden.</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

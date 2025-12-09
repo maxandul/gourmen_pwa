@@ -408,6 +408,14 @@ def detail(event_id):
     billbro_form = None
     if (participation and participation.teilnahme) or is_organizer:
         billbro_form = BillBroForm()
+
+    ratings = event.get_ratings()
+    ratings_sorted = sorted(ratings, key=lambda r: r.created_at or datetime.min, reverse=True)
+    user_rating = next((r for r in ratings_sorted if r.participant_id == current_user.id), None)
+    other_ratings = [r for r in ratings_sorted if r.participant_id != current_user.id]
+    average_ratings = event.get_average_ratings()
+    can_rate = ((participation and participation.teilnahme) or is_organizer)
+    rating_edit_mode = request.args.get('edit_rating') == '1' if (user_rating and can_rate) else False
     
     return render_template('events/detail.html', 
                          event=event, 
@@ -416,6 +424,11 @@ def detail(event_id):
                          all_members=all_members,
                          active_tab=active_tab,
                          form=billbro_form,
+                         average_ratings=average_ratings,
+                         user_rating=user_rating,
+                         other_ratings=other_ratings,
+                         can_rate=can_rate,
+                         rating_edit_mode=rating_edit_mode,
                          use_v2_design=True)
 
 @bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])

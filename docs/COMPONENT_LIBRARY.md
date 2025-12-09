@@ -36,6 +36,40 @@ ORGANISMS (Complex Components)
 ├── Data Table
 └── Tabs
 
+---
+
+## 🧭 HUB GRID & HUB CARD (NEU)
+
+**Einsatz:** Einstiegs-/Übersichtsseiten (Member-Hub, Admin-Hub, Settings-Hubs).
+
+- Grid: `.hub-grid` → `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-5);`
+- Kacheln: `.card.hub-card` (nutzt Card-Basis), `card__header`, `card__body`, `card__footer`.
+- Optional: `.hub-card--featured` (Brand-Primary-Gradient, weiße Schrift) für hervorzuhebende Kachel.
+- Inhalt: Info-Rows im Body, Aktionen im Footer; Icons 24px links im Titel.
+
+**HTML-Beispiel:**
+```html
+<div class="hub-grid">
+  <div class="card hub-card">
+    <div class="card__header">
+      <h2 class="card__title">
+        <svg class="icon"><use href="#user"/></svg>
+        Profil
+      </h2>
+    </div>
+    <div class="card__body">
+      <div class="info-row">
+        <span class="info-row__label">Name</span>
+        <span class="info-row__value">Max Mustermann</span>
+      </div>
+    </div>
+    <div class="card__footer">
+      <a class="btn btn--primary" href="/member/profile">Öffnen</a>
+    </div>
+  </div>
+</div>
+```
+
 TEMPLATES (Page Layouts)
 ├── Dashboard Layout
 ├── Detail Layout
