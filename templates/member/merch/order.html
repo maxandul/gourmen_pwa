@@ -5,10 +5,20 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🛒 Merch bestellen</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            Merch bestellen
+        </h1>
         <p class="page-subtitle">Wähle deine gewünschten Artikel aus</p>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch') }}" class="btn btn-outline">← Zurück zum Shop</a>
+            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">Zurück zum Shop</a>
         </div>
     </div>
     
@@ -19,11 +29,11 @@
             {% if articles %}
                 {% for article in articles %}
                 <div class="card">
-                    <div class="card-header">
-                        <h2>{{ article.name }}</h2>
+                    <div class="card__header">
+                        <h2 class="card__title">{{ article.name }}</h2>
                         <p class="card-subtitle">{{ article.description }}</p>
                     </div>
-                    <div class="card-body">
+                    <div class="card__body">
                         <!-- Container für mehrere Varianten-Zeilen -->
                         <div id="variants_container_{{ article.id }}" class="variants-container">
                             <!-- Erste Zeile (Standard) -->
@@ -87,12 +97,12 @@
                         </div>
                         
                         <!-- Button zum Hinzufügen weiterer Varianten -->
-                        <div class="card-actions primary">
+                        <div class="card__footer">
                             <button type="button" 
-                                    class="btn btn-secondary" 
+                                    class="btn btn--outline" 
                                     onclick="addVariantRow({{ article.id }})"
                                     title="Weitere Variante hinzufügen">
-                                ➕ Weitere Variante hinzufügen
+                                Weitere Variante hinzufügen
                             </button>
                         </div>
                     </div>
@@ -101,45 +111,44 @@
                 
                 <!-- Bestellzusammenfassung -->
                 <div class="card">
-                    <div class="card-header">
-                        <h2>📋 Bestellzusammenfassung</h2>
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v18"/>
+                                <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            Bestellzusammenfassung
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="card__body">
                         <div id="order-summary">
-                            <div class="stats-item">
-                                <span class="label">Ausgewählte Artikel:</span>
-                                <span class="value" id="selected-items">0</span>
+                            <div class="info-row">
+                                <span class="info-row__label">Ausgewählte Artikel</span>
+                                <span class="info-row__value" id="selected-items">0</span>
                             </div>
-                            <div class="stats-item">
-                                <span class="label">Gesamtbetrag:</span>
-                                <span class="value" id="total-price">0.00 CHF</span>
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamtbetrag</span>
+                                <span class="info-row__value" id="total-price">0.00 CHF</span>
                             </div>
                         </div>
                         
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" id="submit-order-btn" disabled>
-                                🛒 Bestellung aufgeben
+                        <div class="card__footer" style="padding-left: 0; padding-right: 0;">
+                            <button type="submit" class="btn btn--primary" id="submit-order-btn" disabled>
+                                Bestellung aufgeben
                             </button>
                         </div>
                     </div>
                 </div>
             {% else %}
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Keine Artikel verfügbar</h2>
+                    <div class="card__header">
+                        <h2 class="card__title">Keine Artikel verfügbar</h2>
                     </div>
-                    <div class="card-body">
-                        <div class="card card-secondary variant-warning">
-                            <div class="card-header">
-                                <h3>Derzeit keine Artikel</h3>
-                            </div>
-                            <div class="card-body">
-                                <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
-                                <div class="card-actions primary">
-                                    <a href="{{ url_for('member.merch') }}" class="btn btn-outline">← Zurück zum Shop</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="card__body">
+                        <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                    </div>
+                    <div class="card__footer">
+                        <a href="{{ url_for('member.merch') }}" class="btn btn--outline">Zurück zum Shop</a>
                     </div>
                 </div>
             {% endif %}

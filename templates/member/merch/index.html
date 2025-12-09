@@ -5,143 +5,180 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🛍️ Merch-Shop</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            Merch-Shop
+        </h1>
         <p class="page-subtitle">Gourmen Merchandise bestellen</p>
         <div class="page-actions">
-            <a href="{{ url_for('member.index') }}" class="btn btn-outline">← Zurück zur Übersicht</a>
-            <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Neue Bestellung</a>
+            <a href="{{ url_for('member.index') }}" class="btn btn--outline">Zurück zur Übersicht</a>
+            <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">Neue Bestellung</a>
         </div>
     </div>
     
+    {% set tab_param = request.args.get('tab', 'shop') %}
     <div class="page-content">
-        <!-- Verfügbare Artikel Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📦 Verfügbare Artikel</h2>
-            </div>
-            <div class="card-body">
-                {% if articles %}
-                    {% for article in articles %}
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>{{ article.name }}</h3>
+        <div class="tabs">
+            <nav class="tabs__nav" role="tablist">
+                <a href="{{ url_for('member.merch', tab='shop') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'shop' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'shop' else 'false' }}">
+                    Shop
+                </a>
+                <a href="{{ url_for('member.merch', tab='orders') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'orders' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'orders' else 'false' }}">
+                    Meine Bestellungen
+                </a>
+            </nav>
+
+            <div class="tabs__content">
+                <!-- Tab: Shop -->
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'shop' else '' }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                    <path d="M12 9v4M12 17h.01"/>
+                                </svg>
+                                Verfügbare Artikel
+                            </h2>
                         </div>
-                        <div class="card-body">
-                            <div class="stats-item">
-                                <span class="label">Beschreibung:</span>
-                                <span class="value">{{ article.description }}</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Preis:</span>
-                                <span class="value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Farbvarianten:</span>
-                                <span class="value">
-                                    {% set colors = article.variants | map(attribute='color') | unique | sort | list %}
-                                    {{ colors | join(', ') }}
-                                </span>
-                            </div>
-                            
-                            <div class="card-actions primary">
-                                <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Bestellen</a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="card card-secondary variant-warning">
-                        <div class="card-header">
-                            <h3>Keine Artikel verfügbar</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Meine Bestellungen Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📋 Meine Bestellungen</h2>
-            </div>
-            <div class="card-body">
-                {% if orders %}
-                    {% for order in orders %}
-                    <div class="card card-secondary variant-accent">
-                        <div class="card-header">
-                            <h3>Bestellung #{{ order.order_number }}</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="stats-item">
-                                <span class="label">Status:</span>
-                                <span class="value">
-                                    {% if order.status.value == 'BESTELLT' %}
-                                        🟡 {{ order.status_display }}
-                                    {% elif order.status.value == 'WIRD_GELIEFERT' %}
-                                        🔵 {{ order.status_display }}
-                                    {% elif order.status.value == 'GELIEFERT' %}
-                                        🟢 {{ order.status_display }}
-                                    {% else %}
-                                        {{ order.status_display }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Gesamtbetrag:</span>
-                                <span class="value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Bestellt am:</span>
-                                <span class="value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Artikel:</span>
-                                <span class="value">{{ order.get_item_count() }} Stück</span>
-                            </div>
-                            
-                            <div class="card-actions primary">
-                                <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn-primary">🔍 Details anzeigen</a>
-                            </div>
+                        <div class="card__body">
+                            {% if articles %}
+                                {% for article in articles %}
+                                <div class="card">
+                                    <div class="card__header">
+                                        <h3 class="card__title">{{ article.name }}</h3>
+                                    </div>
+                                    <div class="card__body">
+                                        <div class="info-row">
+                                            <span class="info-row__label">Beschreibung</span>
+                                            <span class="info-row__value">{{ article.description }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Preis</span>
+                                            <span class="info-row__value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Farbvarianten</span>
+                                            <span class="info-row__value">
+                                                {% set colors = article.variants | map(attribute='color') | unique | sort | list %}
+                                                {{ colors | join(', ') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card__footer">
+                                        <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                <path d="M4 22h16"/>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                            </svg>
+                                            Bestellen
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="card">
+                                    <div class="card__body">
+                                        <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>Noch keine Bestellungen</h3>
+                </div>
+
+                <!-- Tab: Orders -->
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'orders' else '' }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m3 5 2 14h14l2-14H3Z"/>
+                                    <path d="M16 11a4 4 0 0 1-8 0"/>
+                                </svg>
+                                Meine Bestellungen
+                            </h2>
                         </div>
-                        <div class="card-body">
-                            <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
-                            <div class="card-actions primary">
-                                <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Erste Bestellung aufgeben</a>
-                            </div>
+                        <div class="card__body">
+                            {% if orders %}
+                                {% for order in orders %}
+                                <div class="card">
+                                    <div class="card__header">
+                                        <h3 class="card__title">Bestellung #{{ order.order_number }}</h3>
+                                    </div>
+                                    <div class="card__body">
+                                        <div class="info-row">
+                                            <span class="info-row__label">Status</span>
+                                            <span class="info-row__value">{{ order.status_display }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Gesamtbetrag</span>
+                                            <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Bestellt am</span>
+                                            <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Artikel</span>
+                                            <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+                                        </div>
+                                    </div>
+                                    <div class="card__footer">
+                                        <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                            </svg>
+                                            Details anzeigen
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="card">
+                                    <div class="card__body">
+                                        <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
+                                    </div>
+                                    <div class="card__footer">
+                                        <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                <path d="M4 22h16"/>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                            </svg>
+                                            Erste Bestellung aufgeben
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.stats-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.stats-item .label {
-    text-align: left;
-}
-
-.stats-item .value {
-    text-align: right;
-    margin-left: auto;
-}
-</style>
 {% endblock %}
 

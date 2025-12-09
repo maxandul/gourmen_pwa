@@ -5,11 +5,17 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📋 Meine Bestellungen</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m3 5 2 14h14l2-14H3Z"/>
+                <path d="M16 11a4 4 0 0 1-8 0"/>
+            </svg>
+            Meine Bestellungen
+        </h1>
         <p class="page-subtitle">Übersicht aller deiner Merch-Bestellungen</p>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch') }}" class="btn btn-outline">← Zurück zum Shop</a>
-            <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Neue Bestellung</a>
+            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">Zurück zum Shop</a>
+            <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">Neue Bestellung</a>
         </div>
     </div>
     
@@ -17,42 +23,36 @@
         {% if orders %}
             {% for order in orders %}
             <div class="card">
-                <div class="card-header">
-                    <h2>Bestellung #{{ order.order_number }}</h2>
+                <div class="card__header">
+                    <h2 class="card__title">Bestellung #{{ order.order_number }}</h2>
                     <div class="order-status">
-                        {% if order.status.value == 'BESTELLT' %}
-                            <span class="status-badge status-pending">🟡 {{ order.status_display }}</span>
-                        {% elif order.status.value == 'WIRD_GELIEFERT' %}
-                            <span class="status-badge status-progress">🔵 {{ order.status_display }}</span>
-                        {% elif order.status.value == 'GELIEFERT' %}
-                            <span class="status-badge status-delivered">🟢 {{ order.status_display }}</span>
-                        {% else %}
-                            <span class="status-badge">{{ order.status_display }}</span>
-                        {% endif %}
+                        <span class="status-badge">
+                            {{ order.status_display }}
+                        </span>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card__body">
                     <div class="order-info">
-                        <div class="stats-item">
-                            <span class="label">Bestellt am:</span>
-                            <span class="value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Bestellt am</span>
+                            <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Gesamtbetrag:</span>
-                            <span class="value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtbetrag</span>
+                            <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Anzahl Artikel:</span>
-                            <span class="value">{{ order.get_item_count() }} Stück</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Anzahl Artikel</span>
+                            <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
                         </div>
-                        <div class="stats-item">
-                            <span class="label">Einzigartige Artikel:</span>
-                            <span class="value">{{ order.get_unique_articles_count() }} verschiedene</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Einzigartige Artikel</span>
+                            <span class="info-row__value">{{ order.get_unique_articles_count() }} verschiedene</span>
                         </div>
                         {% if order.delivered_at %}
-                        <div class="stats-item">
-                            <span class="label">Geliefert am:</span>
-                            <span class="value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        <div class="info-row">
+                            <span class="info-row__label">Geliefert am</span>
+                            <span class="info-row__value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
                         </div>
                         {% endif %}
                     </div>
@@ -61,108 +61,65 @@
                     <div class="order-items">
                         <h4>Bestellte Artikel:</h4>
                         {% for item in order.order_items %}
-                        <div class="card card-secondary variant-info">
-                            <div class="card-header">
-                                <h5>{{ item.display_name }}</h5>
+                        <div class="card">
+                            <div class="card__header">
+                                <h5 class="card__title">{{ item.display_name }}</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="stats-item">
-                                    <span class="label">Anzahl:</span>
-                                    <span class="value">{{ item.quantity }}x</span>
+                            <div class="card__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Anzahl</span>
+                                    <span class="info-row__value">{{ item.quantity }}x</span>
                                 </div>
-                                <div class="stats-item">
-                                    <span class="label">Einzelpreis:</span>
-                                    <span class="value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
+                                <div class="info-row">
+                                    <span class="info-row__label">Einzelpreis</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
                                 </div>
-                                <div class="stats-item">
-                                    <span class="label">Gesamtpreis:</span>
-                                    <span class="value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamtpreis</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     
-                    <div class="card-actions primary">
-                        <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn-primary">🔍 Details anzeigen</a>
-                    </div>
+                </div>
+                <div class="card__footer">
+                    <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        Details anzeigen
+                    </a>
                 </div>
             </div>
             {% endfor %}
         {% else %}
             <div class="card">
-                <div class="card-header">
-                    <h2>📋 Keine Bestellungen</h2>
+                <div class="card__header">
+                    <h2 class="card__title">Keine Bestellungen</h2>
                 </div>
-                <div class="card-body">
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>Noch keine Bestellungen</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
-                            <div class="card-actions primary">
-                                <a href="{{ url_for('member.merch_order') }}" class="btn btn-primary">🛒 Erste Bestellung aufgeben</a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card__body">
+                    <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
+                </div>
+                <div class="card__footer">
+                    <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                            <path d="M4 22h16"/>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                        </svg>
+                        Erste Bestellung aufgeben
+                    </a>
                 </div>
             </div>
         {% endif %}
     </div>
 </div>
-
-<style>
-.order-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.status-pending {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid #ffc107;
-}
-
-.status-progress {
-    background: rgba(23, 162, 184, 0.2);
-    color: #17a2b8;
-    border: 1px solid #17a2b8;
-}
-
-.status-delivered {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-    border: 1px solid #28a745;
-}
-
-.order-info {
-    margin-bottom: 20px;
-}
-
-.order-items {
-    margin-bottom: 20px;
-}
-
-.order-items h4 {
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-@media (max-width: 768px) {
-    .order-status {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-</style>
 {% endblock %}
 

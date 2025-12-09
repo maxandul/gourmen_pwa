@@ -16,157 +16,173 @@
     </nav>
 
     <div class="page-header">
-        <h1>🔒 Sicherheit & 2FA</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Sicherheit & 2FA
+        </h1>
         <p class="page-subtitle">Verwalte deine Sicherheitseinstellungen</p>
     </div>
     
     <div class="page-content">
         <!-- 2FA Status Card -->
         <div class="card">
-            <div class="card-header">
-                <h2>🛡️ Zwei-Faktor-Authentifizierung</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Zwei-Faktor-Authentifizierung
+                </h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
-                <div class="card card-secondary variant-success">
-                    <div class="card-header">
-                        <h3>✅ 2FA ist aktiviert</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Status:</span>
-                            <span class="value">Aktiv</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Aktiviert am:</span>
-                            <span class="value">{{ current_user.mfa.created_at.strftime('%d.%m.%Y %H:%M') if current_user.mfa.created_at else 'Unbekannt' }}</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn-danger">❌ 2FA deaktivieren</a>
-                        </div>
-                    </div>
+                <div class="info-row">
+                    <span class="info-row__label">Status</span>
+                    <span class="info-row__value">Aktiv</span>
                 </div>
-                {% else %}
-                <div class="card card-secondary variant-warning">
-                    <div class="card-header">
-                        <h3>❌ 2FA ist nicht aktiviert</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Status:</span>
-                            <span class="value">Nicht aktiv</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Sicherheit:</span>
-                            <span class="value">Niedrig</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('auth.enroll_2fa') }}" class="btn btn-primary">🔐 2FA aktivieren</a>
-                        </div>
-                    </div>
+                <div class="info-row">
+                    <span class="info-row__label">Aktiviert am</span>
+                    <span class="info-row__value">{{ current_user.mfa.created_at.strftime('%d.%m.%Y %H:%M') if current_user.mfa.created_at else 'Unbekannt' }}</span>
                 </div>
-                {% endif %}
             </div>
+            <div class="card__footer">
+                <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn--danger">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    2FA deaktivieren
+                </a>
+            </div>
+                {% else %}
+                <div class="info-row">
+                    <span class="info-row__label">Status</span>
+                    <span class="info-row__value">Nicht aktiv</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Sicherheit</span>
+                    <span class="info-row__value">Niedrig</span>
+                </div>
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('auth.enroll_2fa') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 0 10 0v4"/>
+                    </svg>
+                    2FA aktivieren
+                </a>
+            </div>
+                {% endif %}
         </div>
         
         <!-- Passwort Card -->
         <div class="card">
-            <div class="card-header">
-                <h2>🔑 Passwort</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    </svg>
+                    Passwort
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>🔒 Passwort verwalten</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Letzte Änderung:</span>
-                            <span class="value">
-                                {% if current_user.password_changed_at %}
-                                    {{ current_user.password_changed_at.strftime('%d.%m.%Y %H:%M') }}
-                                {% else %}
-                                    Nie geändert
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Status:</span>
-                            <span class="value">
-                                {% if current_user.needs_password_change %}
-                                    ⚠️ Änderung erforderlich
-                                {% else %}
-                                    ✅ Aktuell
-                                {% endif %}
-                            </span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('auth.change_password') }}" class="btn btn-primary">🔑 Passwort ändern</a>
-                        </div>
-                    </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Letzte Änderung</span>
+                    <span class="info-row__value">
+                        {% if current_user.password_changed_at %}
+                            {{ current_user.password_changed_at.strftime('%d.%m.%Y %H:%M') }}
+                        {% else %}
+                            Nie geändert
+                        {% endif %}
+                    </span>
                 </div>
+                <div class="info-row">
+                    <span class="info-row__label">Status</span>
+                    <span class="info-row__value">
+                        {% if current_user.needs_password_change %}
+                            Änderung erforderlich
+                        {% else %}
+                            Aktuell
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    </svg>
+                    Passwort ändern
+                </a>
             </div>
         </div>
         
         <!-- Backup Codes Card -->
         {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
         <div class="card">
-            <div class="card-header">
-                <h2>🔐 Backup-Codes</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Backup-Codes
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-warning">
-                    <div class="card-header">
-                        <h3>📋 Notfall-Zugang</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Verfügbare Codes:</span>
-                            <span class="value">{{ current_user.backup_codes|length if current_user.backup_codes else 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Status:</span>
-                            <span class="value">
-                                {% if current_user.backup_codes and current_user.backup_codes|length > 0 %}
-                                    ✅ Verfügbar
-                                {% else %}
-                                    ❌ Nicht verfügbar
-                                {% endif %}
-                            </span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('auth.backup_codes') }}" class="btn btn-warning">📋 Backup-Codes anzeigen</a>
-                        </div>
-                    </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Verfügbare Codes</span>
+                    <span class="info-row__value">{{ current_user.backup_codes|length if current_user.backup_codes else 0 }}</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-row__label">Status</span>
+                    <span class="info-row__value">
+                        {% if current_user.backup_codes and current_user.backup_codes|length > 0 %}
+                            Verfügbar
+                        {% else %}
+                            Nicht verfügbar
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="card__footer">
+                <a href="{{ url_for('auth.backup_codes') }}" class="btn btn--primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    </svg>
+                    Backup-Codes anzeigen
+                </a>
             </div>
         </div>
         {% endif %}
         
         <!-- Sicherheitshinweise Card -->
         <div class="card">
-            <div class="card-header">
-                <h2>ℹ️ Sicherheitshinweise</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <path d="M12 9v4M12 17h.01"/>
+                    </svg>
+                    Sicherheitshinweise
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>🛡️ Best Practices</h3>
-                    </div>
-                    <div class="card-body">
-                        <ul class="security-tips">
-                            <li>✅ Verwende ein starkes, einzigartiges Passwort</li>
-                            <li>✅ Aktiviere 2FA für zusätzliche Sicherheit</li>
-                            <li>✅ Speichere Backup-Codes sicher auf</li>
-                            <li>✅ Melde verdächtige Aktivitäten sofort</li>
-                            <li>⚠️ Teile niemals deine 2FA-Codes</li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="card__body">
+                <ul class="security-tips">
+                    <li>Verwende ein starkes, einzigartiges Passwort</li>
+                    <li>Aktiviere 2FA für zusätzliche Sicherheit</li>
+                    <li>Speichere Backup-Codes sicher</li>
+                    <li>Melde verdächtige Aktivitäten sofort</li>
+                    <li>Teile niemals deine 2FA-Codes</li>
+                </ul>
             </div>
         </div>
     </div>
