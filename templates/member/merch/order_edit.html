@@ -4,591 +4,247 @@
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.merch') }}" class="breadcrumbs__link">Merch</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="breadcrumbs__link">Bestellung #{{ order.order_number }}</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Bearbeiten</span>
+        </div>
+    </nav>
+
     <div class="page-header">
-        <h1>✏️ Bestellung bearbeiten</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Bestellung bearbeiten
+        </h1>
         <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn-outline">← Abbrechen</a>
+            <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--outline">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Abbrechen
+            </a>
         </div>
     </div>
-    
+
     <div class="page-content">
-        <form method="POST" class="form" id="merch-order-form">
+        <form method="POST" action="{{ url_for('member.merch_order_edit', order_id=order.id) }}" class="form" id="merch-order-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            
+
             {% if articles %}
                 {% for article in articles %}
                 <div class="card">
-                    <div class="card-header">
-                        <h2>{{ article.name }}</h2>
-                        <p class="card-subtitle">{{ article.description }}</p>
+                    <div class="card__header">
+                        <h2 class="card__title">{{ article.name }}</h2>
+                        <p class="page-subtitle" style="margin: var(--space-2) 0 0 0;">{{ article.description }}</p>
                     </div>
-                    <div class="card-body">
-                        <!-- Container für mehrere Varianten-Zeilen -->
-                        <div id="variants_container_{{ article.id }}" class="variants-container">
+                    <div class="card__body">
+                        <div id="variants_container_{{ article.id }}" data-article-id="{{ article.id }}" class="form-row" style="flex-direction: column; gap: var(--space-3);">
                             {% if article.existing_items %}
-                                <!-- Vorhandene Items als Zeilen anzeigen -->
                                 {% for item in article.existing_items %}
-                                <div class="variant-row" data-article-id="{{ article.id }}" data-row-index="{{ loop.index0 }}">
-                                    <div class="variant-row-content">
-                                        <div class="form-group">
-                                            <label>Farbe:</label>
-                                            <select name="color_{{ article.id }}[]" 
-                                                    class="form-control color-select"
-                                                    data-article-id="{{ article.id }}"
-                                                    data-row-index="{{ loop.index0 }}"
-                                                    data-preselect-color="{{ item.color }}"
-                                                    data-preselect-size="{{ item.size }}">
-                                                <option value="">Farbe wählen</option>
-                                                {% for color in article.available_colors %}
-                                                <option value="{{ color }}" {% if color == item.color %}selected{% endif %}>{{ color }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>Größe:</label>
-                                            <select name="size_{{ article.id }}[]" 
-                                                    class="form-control size-select"
-                                                    data-article-id="{{ article.id }}"
-                                                    data-row-index="{{ loop.index0 }}">
-                                                <option value="">Größe wählen</option>
-                                                <option value="{{ item.size }}" selected>{{ item.size }}</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>Anzahl:</label>
-                                            <input type="number" 
-                                                   name="quantity_{{ article.id }}[]" 
-                                                   min="0" 
-                                                   max="10" 
-                                                   value="{{ item.quantity }}" 
-                                                   class="form-control quantity-input"
-                                                   data-article-id="{{ article.id }}"
-                                                   data-row-index="{{ loop.index0 }}">
-                                        </div>
-                                        
-                                        <div class="form-group price-group">
-                                            <label>Preis:</label>
-                                            <div class="price-display">
-                                                <span class="price-value">-</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="form-group remove-group">
-                                            <label>&nbsp;</label>
-                                            <button type="button" 
-                                                    class="btn btn-remove" 
-                                                    onclick="removeVariantRow(this)"
-                                                    title="Zeile entfernen">
-                                                ❌
-                                            </button>
-                                        </div>
+                                <div class="form-row variant-row" data-article-id="{{ article.id }}" data-row-index="{{ loop.index0 }}">
+                                    <div class="form-field">
+                                        <label class="form-field__label">Farbe</label>
+                                        <select name="color_{{ article.id }}[]" 
+                                                class="form-field__select color-select"
+                                                data-article-id="{{ article.id }}"
+                                                data-row-index="{{ loop.index0 }}"
+                                                data-preselect-color="{{ item.color }}"
+                                                data-preselect-size="{{ item.size }}">
+                                            <option value="">Farbe wählen</option>
+                                            {% for color in article.available_colors %}
+                                            <option value="{{ color }}" {% if color == item.color %}selected{% endif %}>{{ color }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Größe</label>
+                                        <select name="size_{{ article.id }}[]" 
+                                                class="form-field__select size-select"
+                                                data-article-id="{{ article.id }}"
+                                                data-row-index="{{ loop.index0 }}">
+                                            <option value="">Größe wählen</option>
+                                            <option value="{{ item.size }}" selected>{{ item.size }}</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Anzahl</label>
+                                        <input type="number" 
+                                               name="quantity_{{ article.id }}[]" 
+                                               min="0" 
+                                               max="10" 
+                                               value="{{ item.quantity }}" 
+                                               class="form-field__input quantity-input"
+                                               data-article-id="{{ article.id }}"
+                                               data-row-index="{{ loop.index0 }}">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Preis</label>
+                                        <div class="info-row__value price-value">-</div>
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <!-- Leere Zeile wenn keine Items vorhanden -->
-                                <div class="variant-row" data-article-id="{{ article.id }}" data-row-index="0">
-                                    <div class="variant-row-content">
-                                        <div class="form-group">
-                                            <label>Farbe:</label>
-                                            <select name="color_{{ article.id }}[]" 
-                                                    class="form-control color-select"
-                                                    data-article-id="{{ article.id }}"
-                                                    data-row-index="0">
-                                                <option value="">Farbe wählen</option>
-                                                {% for color in article.available_colors %}
-                                                <option value="{{ color }}">{{ color }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>Größe:</label>
-                                            <select name="size_{{ article.id }}[]" 
-                                                    class="form-control size-select"
-                                                    data-article-id="{{ article.id }}"
-                                                    data-row-index="0"
-                                                    disabled>
-                                                <option value="">Zuerst Farbe wählen</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>Anzahl:</label>
-                                            <input type="number" 
-                                                   name="quantity_{{ article.id }}[]" 
-                                                   min="0" 
-                                                   max="10" 
-                                                   value="0" 
-                                                   class="form-control quantity-input"
-                                                   data-article-id="{{ article.id }}"
-                                                   data-row-index="0"
-                                                   disabled>
-                                        </div>
-                                        
-                                        <div class="form-group price-group">
-                                            <label>Preis:</label>
-                                            <div class="price-display">
-                                                <span class="price-value">-</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="form-group remove-group">
-                                            <label>&nbsp;</label>
-                                            <button type="button" 
-                                                    class="btn btn-remove" 
-                                                    onclick="removeVariantRow(this)"
-                                                    title="Zeile entfernen">
-                                                ❌
-                                            </button>
-                                        </div>
+                                <div class="form-row variant-row" data-article-id="{{ article.id }}" data-row-index="0">
+                                    <div class="form-field">
+                                        <label class="form-field__label">Farbe</label>
+                                        <select name="color_{{ article.id }}[]" 
+                                                class="form-field__select color-select"
+                                                data-article-id="{{ article.id }}"
+                                                data-row-index="0">
+                                            <option value="">Farbe wählen</option>
+                                            {% for color in article.available_colors %}
+                                            <option value="{{ color }}">{{ color }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Größe</label>
+                                        <select name="size_{{ article.id }}[]" 
+                                                class="form-field__select size-select"
+                                                data-article-id="{{ article.id }}"
+                                                data-row-index="0"
+                                                disabled>
+                                            <option value="">Zuerst Farbe wählen</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Anzahl</label>
+                                        <input type="number" 
+                                               name="quantity_{{ article.id }}[]" 
+                                               min="0" 
+                                               max="10" 
+                                               value="0" 
+                                               class="form-field__input quantity-input"
+                                               data-article-id="{{ article.id }}"
+                                               data-row-index="0"
+                                               disabled>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-field__label">Preis</label>
+                                        <div class="info-row__value price-value">-</div>
                                     </div>
                                 </div>
                             {% endif %}
                         </div>
-                        
-                        <!-- Button zum Hinzufügen weiterer Varianten -->
-                        <div class="card-actions primary">
+
+                        <div class="card__footer" style="justify-content: flex-start;">
                             <button type="button" 
-                                    class="btn btn-secondary" 
-                                    onclick="addVariantRow({{ article.id }})"
-                                    title="Weitere Variante hinzufügen">
-                                ➕ Weitere Variante hinzufügen
+                                    class="btn btn--outline js-add-variant" 
+                                    data-article-id="{{ article.id }}">
+                                Weitere Variante hinzufügen
                             </button>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-                
-                <!-- Bestellzusammenfassung -->
+
                 <div class="card">
-                    <div class="card-header">
-                        <h2>📋 Bestellzusammenfassung</h2>
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v18"/>
+                                <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            Bestellzusammenfassung
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="card__body">
                         <div id="order-summary">
-                            <div class="stats-item">
-                                <span class="label">Ausgewählte Artikel:</span>
-                                <span class="value" id="selected-items">0</span>
+                            <div class="info-row">
+                                <span class="info-row__label">Ausgewählte Artikel</span>
+                                <span class="info-row__value" id="selected-items">0</span>
                             </div>
-                            <div class="stats-item">
-                                <span class="label">Gesamtbetrag:</span>
-                                <span class="value" id="total-price">0.00 CHF</span>
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamtbetrag</span>
+                                <span class="info-row__value" id="total-price">0.00 CHF</span>
                             </div>
                         </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" id="submit-order-btn">
-                                💾 Änderungen speichern
-                            </button>
-                        </div>
+                    </div>
+                    <div class="card__footer">
+                        <button type="submit" class="btn btn--primary" id="submit-order-btn">
+                            Änderungen speichern
+                        </button>
                     </div>
                 </div>
             {% else %}
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Keine Artikel verfügbar</h2>
+                    <div class="card__header">
+                        <h2 class="card__title">Keine Artikel verfügbar</h2>
                     </div>
-                    <div class="card-body">
-                        <div class="card card-secondary variant-warning">
-                            <div class="card-header">
-                                <h3>Derzeit keine Artikel</h3>
-                            </div>
-                            <div class="card-body">
-                                <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
-                                <div class="card-actions primary">
-                                    <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn-outline">← Zurück zur Bestellung</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="card__body">
+                        <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                    </div>
+                    <div class="card__footer">
+                        <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--outline">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6"/>
+                            </svg>
+                            Zurück zur Bestellung
+                        </a>
                     </div>
                 </div>
             {% endif %}
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-// Varianten-Daten für JavaScript
-const variantsData = {
-    {% for article in articles %}
-    {{ article.id }}: {
-        availableColors: [{% for color in article.available_colors %}"{{ color }}"{% if not loop.last %}, {% endif %}{% endfor %}],
-        variants: {
+{% block scripts %}
+    {{ super() }}
+    {% if articles %}
+    <script id="merch-order-edit-data" type="application/json">
+    {
+      "articles": [
+        {% for article in articles %}
+        {
+          "id": {{ article.id }},
+          "available_colors": {{ article.available_colors|tojson }},
+          "variants": [
             {% for variant in article.variants %}
-            "{{ variant.color }}_{{ variant.size }}": {
-                id: {{ variant.id }},
-                price: {{ variant.member_price_rappen }},
-                color: "{{ variant.color }}",
-                size: "{{ variant.size }}"
+            {
+              "id": {{ variant.id }},
+              "color": {{ variant.color|tojson }},
+              "size": {{ variant.size|tojson }},
+              "price": {{ variant.member_price_rappen }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}
-        }
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
-};
-
-// Füge neue Varianten-Zeile hinzu
-function addVariantRow(articleId) {
-    const container = document.getElementById(`variants_container_${articleId}`);
-    const rowCount = container.querySelectorAll('.variant-row').length;
-    const newRowIndex = rowCount;
-    
-    // Hole verfügbare Farben für diesen Artikel
-    const availableColors = variantsData[articleId].availableColors;
-    const colorOptions = availableColors.map(color => 
-        `<option value="${color}">${color}</option>`
-    ).join('');
-    
-    // Erstelle neue Zeile
-    const newRow = document.createElement('div');
-    newRow.className = 'variant-row';
-    newRow.dataset.articleId = articleId;
-    newRow.dataset.rowIndex = newRowIndex;
-    newRow.innerHTML = `
-        <div class="variant-row-content">
-            <div class="form-group">
-                <label>Farbe:</label>
-                <select name="color_${articleId}[]" 
-                        class="form-control color-select"
-                        data-article-id="${articleId}"
-                        data-row-index="${newRowIndex}">
-                    <option value="">Farbe wählen</option>
-                    ${colorOptions}
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Größe:</label>
-                <select name="size_${articleId}[]" 
-                        class="form-control size-select"
-                        data-article-id="${articleId}"
-                        data-row-index="${newRowIndex}"
-                        disabled>
-                    <option value="">Zuerst Farbe wählen</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Anzahl:</label>
-                <input type="number" 
-                       name="quantity_${articleId}[]" 
-                       min="0" 
-                       max="10" 
-                       value="0" 
-                       class="form-control quantity-input"
-                       data-article-id="${articleId}"
-                       data-row-index="${newRowIndex}"
-                       disabled>
-            </div>
-            
-            <div class="form-group price-group">
-                <label>Preis:</label>
-                <div class="price-display">
-                    <span class="price-value">-</span>
-                </div>
-            </div>
-            
-            <div class="form-group remove-group">
-                <label>&nbsp;</label>
-                <button type="button" 
-                        class="btn btn-remove" 
-                        onclick="removeVariantRow(this)"
-                        title="Zeile entfernen">
-                    ❌
-                </button>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(newRow);
-    
-    // Event-Listener für neue Zeile registrieren
-    attachEventListenersToRow(newRow);
-}
-
-// Entferne Varianten-Zeile
-function removeVariantRow(button) {
-    const row = button.closest('.variant-row');
-    const container = row.parentElement;
-    
-    // Mindestens eine Zeile muss bleiben
-    if (container.querySelectorAll('.variant-row').length <= 1) {
-        showToast('Mindestens eine Zeile muss vorhanden bleiben', 'warning');
-        return;
+          ],
+          "existing_items": [
+            {% for item in article.existing_items %}
+            {
+              "color": {{ item.color|tojson }},
+              "size": {{ item.size|tojson }},
+              "quantity": {{ item.quantity }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
     }
-    
-    row.remove();
-    updateOrderSummary();
-}
-
-// Event-Listener für eine Zeile registrieren
-function attachEventListenersToRow(row) {
-    const colorSelect = row.querySelector('.color-select');
-    const sizeSelect = row.querySelector('.size-select');
-    const quantityInput = row.querySelector('.quantity-input');
-    
-    colorSelect.addEventListener('change', function() {
-        handleColorChange(this);
-    });
-    
-    sizeSelect.addEventListener('change', function() {
-        handleSizeChange(this);
-    });
-    
-    quantityInput.addEventListener('change', updateOrderSummary);
-    quantityInput.addEventListener('input', updateOrderSummary);
-}
-
-// Farb-Auswahl geändert
-function handleColorChange(colorSelect) {
-    const row = colorSelect.closest('.variant-row');
-    const articleId = colorSelect.dataset.articleId;
-    const selectedColor = colorSelect.value;
-    
-    const sizeSelect = row.querySelector('.size-select');
-    const quantityInput = row.querySelector('.quantity-input');
-    const priceDisplay = row.querySelector('.price-value');
-    
-    // Merke die vorausgewählte Größe falls vorhanden
-    const preselectSize = colorSelect.dataset.preselectSize;
-    
-    // Reset Size und Quantity
-    sizeSelect.innerHTML = '<option value="">Größe wählen</option>';
-    sizeSelect.disabled = true;
-    quantityInput.disabled = true;
-    priceDisplay.textContent = '-';
-    delete quantityInput.dataset.price;
-    
-    if (selectedColor) {
-        const articleVariants = variantsData[articleId].variants;
-        const availableSizes = new Set();
-        
-        // Finde verfügbare Größen für die gewählte Farbe
-        Object.values(articleVariants).forEach(variant => {
-            if (variant.color === selectedColor) {
-                availableSizes.add(variant.size);
-            }
-        });
-        
-        // Füge Größen-Optionen hinzu
-        availableSizes.forEach(size => {
-            const option = document.createElement('option');
-            option.value = size;
-            option.textContent = size;
-            if (preselectSize && size === preselectSize) {
-                option.selected = true;
-            }
-            sizeSelect.appendChild(option);
-        });
-        
-        sizeSelect.disabled = false;
-        
-        // Wenn eine Größe vorausgewählt war, Preis aktualisieren
-        if (preselectSize) {
-            sizeSelect.value = preselectSize;
-            handleSizeChange(sizeSelect);
-            // Entferne das data-Attribut, damit es nicht erneut getriggert wird
-            delete colorSelect.dataset.preselectSize;
-        }
-    }
-    
-    updateOrderSummary();
-}
-
-// Größen-Auswahl geändert
-function handleSizeChange(sizeSelect) {
-    const row = sizeSelect.closest('.variant-row');
-    const articleId = sizeSelect.dataset.articleId;
-    const selectedSize = sizeSelect.value;
-    
-    const colorSelect = row.querySelector('.color-select');
-    const selectedColor = colorSelect.value;
-    const quantityInput = row.querySelector('.quantity-input');
-    const priceDisplay = row.querySelector('.price-value');
-    
-    if (selectedColor && selectedSize) {
-        const articleVariants = variantsData[articleId].variants;
-        const variantKey = `${selectedColor}_${selectedSize}`;
-        const variant = articleVariants[variantKey];
-        
-        if (variant) {
-            priceDisplay.textContent = (variant.price / 100).toFixed(2) + ' CHF';
-            quantityInput.disabled = false;
-            quantityInput.dataset.price = variant.price;
-        }
-    } else {
-        priceDisplay.textContent = '-';
-        quantityInput.disabled = true;
-        delete quantityInput.dataset.price;
-    }
-    
-    updateOrderSummary();
-}
-
-// Bestellzusammenfassung aktualisieren
-function updateOrderSummary() {
-    let totalItems = 0;
-    let totalPrice = 0;
-    
-    const allQuantityInputs = document.querySelectorAll('.quantity-input');
-    allQuantityInputs.forEach(input => {
-        if (!input.disabled && input.dataset.price) {
-            const quantity = parseInt(input.value) || 0;
-            const price = parseInt(input.dataset.price) || 0;
-            
-            totalItems += quantity;
-            totalPrice += quantity * price;
-        }
-    });
-    
-    document.getElementById('selected-items').textContent = totalItems;
-    document.getElementById('total-price').textContent = (totalPrice / 100).toFixed(2) + ' CHF';
-}
-
-// Initialisierung beim Laden der Seite
-document.addEventListener('DOMContentLoaded', function() {
-    // Event-Listener für alle existierenden Zeilen registrieren
-    document.querySelectorAll('.variant-row').forEach(row => {
-        attachEventListenersToRow(row);
-        
-        // Für vorausgefüllte Zeilen: Initialisiere Größen und Preis
-        const colorSelect = row.querySelector('.color-select');
-        if (colorSelect.value && colorSelect.dataset.preselectSize) {
-            handleColorChange(colorSelect);
-        }
-    });
-    
-    // Initiale Bestellzusammenfassung
-    updateOrderSummary();
-});
-</script>
-
-<style>
-.variants-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.variant-row {
-    background: var(--background-secondary);
-    padding: 15px;
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--background-tertiary);
-}
-
-.variant-row-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr 100px 120px 60px;
-    gap: 15px;
-    align-items: end;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.form-group label {
-    font-weight: 500;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.form-control {
-    padding: 10px 12px;
-    border: 1px solid var(--background-tertiary);
-    border-radius: var(--border-radius-sm);
-    background: var(--background-primary);
-    color: var(--text-primary);
-    font-size: 14px;
-    transition: border-color 0.2s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
-}
-
-.form-control:disabled {
-    background: var(--background-tertiary);
-    color: var(--text-secondary);
-    cursor: not-allowed;
-}
-
-.price-display {
-    background: var(--background-primary);
-    padding: 10px 12px;
-    border-radius: var(--border-radius-sm);
-    border: 1px solid var(--background-tertiary);
-    text-align: center;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.price-display .price-value {
-    font-weight: bold;
-    color: var(--accent-color);
-    font-size: 14px;
-}
-
-.btn-remove {
-    background: transparent;
-    border: 1px solid var(--background-tertiary);
-    padding: 10px;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 18px;
-    min-height: 42px;
-}
-
-.btn-remove:hover {
-    background: rgba(220, 53, 69, 0.1);
-    border-color: #dc3545;
-}
-
-.remove-group {
-    min-width: 60px;
-}
-
-#order-summary {
-    background: var(--background-secondary);
-    padding: 20px;
-    border-radius: var(--border-radius-md);
-    margin-bottom: 20px;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .variant-row-content {
-        grid-template-columns: 1fr 1fr 80px 100px 50px;
-        gap: 10px;
-    }
-}
-
-@media (max-width: 768px) {
-    .variant-row-content {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .remove-group {
-        grid-column: 1;
-    }
-    
-    .btn-remove {
-        width: 100%;
-    }
-}
-</style>
+    </script>
+    <script src="{{ url_for('static', filename='js/v2/merch-order-edit.js') }}?v=2.0.0" defer></script>
+    {% endif %}
 {% endblock %}
+

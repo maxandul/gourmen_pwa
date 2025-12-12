@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container">
+    <!-- Breadcrumbs (eine Ebene unter Member-Hub) -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Merch</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -17,10 +28,6 @@
             Merch-Shop
         </h1>
         <p class="page-subtitle">Gourmen Merchandise bestellen</p>
-        <div class="page-actions">
-            <a href="{{ url_for('member.index') }}" class="btn btn--outline">Zurück zur Übersicht</a>
-            <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">Neue Bestellung</a>
-        </div>
     </div>
     
     {% set tab_param = request.args.get('tab', 'shop') %}
@@ -44,141 +51,205 @@
             <div class="tabs__content">
                 <!-- Tab: Shop -->
                 <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'shop' else '' }}" role="tabpanel">
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                                    <path d="M12 9v4M12 17h.01"/>
-                                </svg>
-                                Verfügbare Artikel
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            {% if articles %}
-                                {% for article in articles %}
-                                <div class="card">
-                                    <div class="card__header">
-                                        <h3 class="card__title">{{ article.name }}</h3>
-                                    </div>
-                                    <div class="card__body">
-                                        <div class="info-row">
-                                            <span class="info-row__label">Beschreibung</span>
-                                            <span class="info-row__value">{{ article.description }}</span>
+                    <form method="POST" action="{{ url_for('member.merch_order') }}" class="form" id="merch-order-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        {% if articles %}
+                            {% for article in articles %}
+                            <div class="card" data-article-id="{{ article.id }}">
+                                <div class="card__header">
+                                    <h3 class="card__title">{{ article.name }}</h3>
+                                    <p class="page-subtitle" style="margin: var(--space-2) 0 0 0;">{{ article.description }}</p>
+                                </div>
+                                <div class="card__body">
+                                    <div id="variants_container_{{ article.id }}" data-article-id="{{ article.id }}" class="form-row" style="flex-direction: column; gap: var(--space-3);">
+                                        <div class="form-row" data-article-id="{{ article.id }}" data-row-index="0">
+                                            <div class="form-field">
+                                                <label class="form-field__label">Farbe</label>
+                                                <select name="color_{{ article.id }}[]" 
+                                                        class="form-field__select color-select"
+                                                        data-article-id="{{ article.id }}"
+                                                        data-row-index="0">
+                                                    <option value="">Farbe wählen</option>
+                                                    {% for color in article.available_colors %}
+                                                    <option value="{{ color }}">{{ color }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-field">
+                                                <label class="form-field__label">Größe</label>
+                                                <select name="size_{{ article.id }}[]" 
+                                                        class="form-field__select size-select"
+                                                        data-article-id="{{ article.id }}"
+                                                        data-row-index="0"
+                                                        disabled>
+                                                    <option value="">Zuerst Farbe wählen</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-field">
+                                                <label class="form-field__label">Anzahl</label>
+                                                <input type="number" 
+                                                       name="quantity_{{ article.id }}[]" 
+                                                       min="0" 
+                                                       max="10" 
+                                                       value="0" 
+                                                       class="form-field__input quantity-input"
+                                                       data-article-id="{{ article.id }}"
+                                                       data-row-index="0"
+                                                       disabled>
+                                            </div>
+                                            
+                                            <div class="form-field">
+                                                <label class="form-field__label">Preis</label>
+                                                <div class="info-row__value price-value">-</div>
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <span class="info-row__label">Preis</span>
-                                            <span class="info-row__value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
-                                        </div>
-                                        <div class="info-row">
-                                            <span class="info-row__label">Farbvarianten</span>
-                                            <span class="info-row__value">
-                                                {% set colors = article.variants | map(attribute='color') | unique | sort | list %}
-                                                {{ colors | join(', ') }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="card__footer">
-                                        <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                                                <path d="M4 22h16"/>
-                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                                            </svg>
-                                            Bestellen
-                                        </a>
                                     </div>
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="card">
-                                    <div class="card__body">
-                                        <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                                <div class="card__footer">
+                                    <button type="button" 
+                                            class="btn btn--outline js-add-variant" 
+                                            data-article-id="{{ article.id }}">
+                                        Weitere Variante hinzufügen
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="card">
+                                <div class="card__header">
+                                    <h3 class="card__title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 3v18"/>
+                                            <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                                        </svg>
+                                        Bestellzusammenfassung
+                                    </h3>
+                                </div>
+                                <div class="card__body">
+                                    <div id="order-summary">
+                                        <div class="info-row">
+                                            <span class="info-row__label">Ausgewählte Artikel</span>
+                                            <span class="info-row__value" id="selected-items">0</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Gesamtbetrag</span>
+                                            <span class="info-row__value" id="total-price">0.00 CHF</span>
+                                        </div>
                                     </div>
                                 </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                                <div class="card__footer">
+                                    <button type="submit" class="btn btn--primary" id="submit-order-btn" disabled>
+                                        Bestellung aufgeben
+                                    </button>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="card">
+                                <div class="card__body">
+                                    <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </form>
+                    
+                    {% if articles %}
+                    <script id="merch-variants-data" type="application/json">
+                    {
+                      "articles": [
+                        {% for article in articles %}
+                        {
+                          "id": {{ article.id }},
+                          "available_colors": {{ article.available_colors|tojson }},
+                          "variants": [
+                            {% for variant in article.variants %}
+                            {
+                              "id": {{ variant.id }},
+                              "color": {{ variant.color|tojson }},
+                              "size": {{ variant.size|tojson }},
+                              "price": {{ variant.member_price_rappen }}
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                          ]
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                      ]
+                    }
+                    </script>
+                    {% endif %}
                 </div>
 
                 <!-- Tab: Orders -->
                 <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'orders' else '' }}" role="tabpanel">
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="m3 5 2 14h14l2-14H3Z"/>
-                                    <path d="M16 11a4 4 0 0 1-8 0"/>
-                                </svg>
-                                Meine Bestellungen
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            {% if orders %}
-                                {% for order in orders %}
-                                <div class="card">
-                                    <div class="card__header">
-                                        <h3 class="card__title">Bestellung #{{ order.order_number }}</h3>
-                                    </div>
-                                    <div class="card__body">
-                                        <div class="info-row">
-                                            <span class="info-row__label">Status</span>
-                                            <span class="info-row__value">{{ order.status_display }}</span>
-                                        </div>
-                                        <div class="info-row">
-                                            <span class="info-row__label">Gesamtbetrag</span>
-                                            <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
-                                        </div>
-                                        <div class="info-row">
-                                            <span class="info-row__label">Bestellt am</span>
-                                            <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                                        </div>
-                                        <div class="info-row">
-                                            <span class="info-row__label">Artikel</span>
-                                            <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
-                                        </div>
-                                    </div>
-                                    <div class="card__footer">
-                                        <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"/>
-                                                <line x1="12" y1="16" x2="12" y2="12"/>
-                                                <line x1="12" y1="8" x2="12.01" y2="8"/>
-                                            </svg>
-                                            Details anzeigen
-                                        </a>
-                                    </div>
+                    {% if orders %}
+                        {% for order in orders %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h3 class="card__title">Bestellung #{{ order.order_number }}</h3>
+                            </div>
+                            <div class="card__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Status</span>
+                                    <span class="info-row__value">{{ order.status_display }}</span>
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="card">
-                                    <div class="card__body">
-                                        <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
-                                    </div>
-                                    <div class="card__footer">
-                                        <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                                                <path d="M4 22h16"/>
-                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                                            </svg>
-                                            Erste Bestellung aufgeben
-                                        </a>
-                                    </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamtbetrag</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
                                 </div>
-                            {% endif %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Bestellt am</span>
+                                    <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Artikel</span>
+                                    <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+                                </div>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="16" x2="12" y2="12"/>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                    </svg>
+                                    Details anzeigen
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="card">
+                            <div class="card__body">
+                                <p>Du hast noch keine Merch-Bestellungen aufgegeben.</p>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                        <path d="M4 22h16"/>
+                                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                    </svg>
+                                    Erste Bestellung aufgeben
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if articles %}
+    <script src="{{ url_for('static', filename='js/v2/merch-order.js') }}?v=2.0.0" defer></script>
+    {% endif %}
 {% endblock %}
 

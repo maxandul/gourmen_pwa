@@ -109,15 +109,6 @@
                     </svg>
                     Merch-Shop
                 </a>
-                {% if last_order %}
-                <a href="{{ url_for('member.merch_orders') }}" class="btn btn--outline">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m3 5 2 14h14l2-14H3Z"/>
-                        <path d="M16 11a4 4 0 0 1-8 0"/>
-                    </svg>
-                    Alle Bestellungen
-                </a>
-                {% endif %}
             </div>
         </div>
 
@@ -199,17 +190,15 @@
 
         <!-- Logout -->
         <div class="card hub-card">
-            <div class="card__body">
-                <div class="page-actions page-actions--right" style="margin: 0;">
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn--danger">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 3h-2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/>
-                            <path d="M10 12h11l-3-3"/>
-                            <path d="M18 15l3-3"/>
-                        </svg>
-                        Logout
-                    </a>
-                </div>
+            <div class="card__footer" style="justify-content: flex-end;">
+                <a href="{{ url_for('auth.logout') }}" class="btn btn--danger">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 3h-2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/>
+                        <path d="M10 12h11l-3-3"/>
+                        <path d="M18 15l3-3"/>
+                    </svg>
+                    Logout
+                </a>
             </div>
         </div>
         </div>

@@ -267,10 +267,16 @@ def technical():
 def merch():
     """Merch overview page"""
     from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
     from backend.models.merch_order import MerchOrder
     
     # Get active articles
     articles = MerchArticle.query.filter_by(is_active=True).all()
+    # Enrich articles with variants and available colors (used by template/JS)
+    for article in articles:
+        variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
+        article.variants = variants
+        article.available_colors = sorted({v.color for v in variants}) if variants else []
     
     # Get user's orders
     user_orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()

@@ -1630,6 +1630,13 @@ def index():
 </form>
 ```
 
+### JS-Daten & Inline-Handling (Best Practice)
+
+- Daten für dynamische Komponenten als JSON-Payload injizieren (z. B. `<script type="application/json" id="component-data">…</script>` oder `data-*` mit `|tojson`).
+- JavaScript in eigene Dateien unter `static/js/v2/` auslagern; kein Inline-JS im Template.
+- Keine Inline-Handler (`onclick`, `onchange`); stattdessen Listener/Event-Delegation im JS.
+- Ergebnis: Saubere Lints und wiederverwendbares Pattern für alle Seiten.
+
 ---
 
 ## ✅ MIGRATION PATTERNS

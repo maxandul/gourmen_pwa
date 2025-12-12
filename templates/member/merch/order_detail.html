@@ -4,6 +4,21 @@
 
 {% block content %}
 <div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('member.merch') }}" class="breadcrumbs__link">Merch</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Bestellung #{{ order.order_number }}</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -15,158 +30,127 @@
         </h1>
         <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch_orders') }}" class="btn btn--outline">Zurück zu Bestellungen</a>
             {% if order.status.value == 'BESTELLT' %}
             <a href="{{ url_for('member.merch_order_edit', order_id=order.id) }}" class="btn btn--primary">Bearbeiten</a>
             {% endif %}
         </div>
     </div>
     
+    {% set tab_param = request.args.get('tab', 'overview') %}
     <div class="page-content">
-        <!-- Bestellübersicht -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m3 5 2 14h14l2-14H3Z"/>
-                        <path d="M16 11a4 4 0 0 1-8 0"/>
-                    </svg>
-                    Bestellübersicht
-                </h2>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Bestellnummer</span>
-                    <span class="info-row__value">#{{ order.order_number }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Bestellt am</span>
-                    <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Letzte Aktualisierung</span>
-                    <span class="info-row__value">{{ order.updated_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                </div>
-                {% if order.delivered_at %}
-                <div class="info-row">
-                    <span class="info-row__label">Geliefert am</span>
-                    <span class="info-row__value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Bestellpositionen -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <path d="M12 9v4M12 17h.01"/>
-                    </svg>
-                    Bestellte Artikel
-                </h2>
-            </div>
-            <div class="card__body">
-                {% for item in order.order_items %}
-                <div class="card">
-                    <div class="card__header">
-                        <h3 class="card__title">{{ item.display_name }}</h3>
+        <div class="tabs">
+            <nav class="tabs__nav" role="tablist">
+                <a href="{{ url_for('member.merch_order_detail', order_id=order.id, tab='overview') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'overview' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'overview' else 'false' }}">
+                    Übersicht
+                </a>
+                <a href="{{ url_for('member.merch_order_detail', order_id=order.id, tab='items') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'items' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'items' else 'false' }}">
+                    Artikel
+                </a>
+            </nav>
+
+            <div class="tabs__content">
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'overview' else '' }}" role="tabpanel">
+                    <!-- Status-Informationen -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                    <path d="M12 9v4M12 17h.01"/>
+                                </svg>
+                                Statusinformationen
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% if order.status.value == 'BESTELLT' %}
+                                <p>Deine Bestellung wurde erfolgreich aufgegeben und wird bearbeitet.</p>
+                            {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                                <p>Deine Bestellung ist unterwegs und wird bald geliefert.</p>
+                            {% elif order.status.value == 'GELIEFERT' %}
+                                <p>Deine Bestellung wurde erfolgreich geliefert. Vielen Dank!</p>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="card__body">
-                        <div class="info-row">
-                            <span class="info-row__label">Artikel</span>
-                            <span class="info-row__value">{{ item.article.name }}</span>
+
+                    <!-- Zusammenfassung -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3v18"/>
+                                    <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                                Zusammenfassung
+                            </h2>
                         </div>
-                        <div class="info-row">
-                            <span class="info-row__label">Variante</span>
-                            <span class="info-row__value">{{ item.variant.color }} {{ item.variant.size }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-row__label">Anzahl</span>
-                            <span class="info-row__value">{{ item.quantity }}x</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-row__label">Einzelpreis</span>
-                            <span class="info-row__value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-row__label">Gesamtpreis</span>
-                            <span class="info-row__value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Bestellt am</span>
+                                <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Letzte Aktualisierung</span>
+                                <span class="info-row__value">{{ order.updated_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Anzahl Artikel</span>
+                                <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Gesamtbetrag</span>
+                                <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <!-- Bestellzusammenfassung -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 3v18"/>
-                        <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Bestellzusammenfassung
-                </h2>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Anzahl Artikel</span>
-                    <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+
+                <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'items' else '' }}" role="tabpanel">
+                    {% if order.order_items %}
+                        {% for item in order.order_items %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h3 class="card__title">{{ item.display_name }}</h3>
+                            </div>
+                            <div class="card__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Artikel</span>
+                                    <span class="info-row__value">{{ item.article.name }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Variante</span>
+                                    <span class="info-row__value">{{ item.variant.color }} {{ item.variant.size }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Anzahl</span>
+                                    <span class="info-row__value">{{ item.quantity }}x</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Einzelpreis</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamtpreis</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="card">
+                            <div class="card__body">
+                                <p>Keine Artikel gefunden.</p>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="info-row">
-                    <span class="info-row__label">Einzigartige Artikel</span>
-                    <span class="info-row__value">{{ order.get_unique_articles_count() }} verschiedene</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Gesamtbetrag</span>
-                    <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
-                </div>
             </div>
         </div>
-        
-        <!-- Status-Informationen -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <path d="M12 9v4M12 17h.01"/>
-                    </svg>
-                    Status-Informationen
-                </h2>
-            </div>
-            <div class="card__body">
-                {% if order.status.value == 'BESTELLT' %}
-                    <p>Deine Bestellung wurde erfolgreich aufgegeben und wird bearbeitet.</p>
-                {% elif order.status.value == 'WIRD_GELIEFERT' %}
-                    <p>Deine Bestellung ist unterwegs und wird bald geliefert.</p>
-                {% elif order.status.value == 'GELIEFERT' %}
-                    <p>Deine Bestellung wurde erfolgreich geliefert. Vielen Dank!</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Notizen -->
-        {% if order.notes %}
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15V5a2 2 0 0 0-2-2h-4l-2-2-2 2H7a2 2 0 0 0-2 2v10"/>
-                        <path d="M3 15h18"/>
-                        <path d="M9 21h6"/>
-                    </svg>
-                    Notizen
-                </h2>
-            </div>
-            <div class="card__body">
-                <p>{{ order.notes }}</p>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
