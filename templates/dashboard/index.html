@@ -124,16 +124,6 @@
                                 Absagen
                             </button>
                         </form>
-                        <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn--billbro">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                <line x1="8" y1="6" x2="16" y2="6"/>
-                                <line x1="8" y1="10" x2="16" y2="10"/>
-                                <line x1="8" y1="14" x2="16" y2="14"/>
-                                <line x1="8" y1="18" x2="16" y2="18"/>
-                            </svg>
-                            BillBro
-                        </a>
                     {% else %}
                         <!-- Abgesagt - Button zum Zusagen -->
                         <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}">
@@ -175,52 +165,7 @@
         </div>
         {% endif %}
         
-        {% if latest_bill_event and latest_bill_participation %}
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="2" x2="12" y2="22"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Letzte Rechnung
-                </h2>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Event:</span>
-                    <span class="info-row__value">{{ latest_bill_event.event_typ.value }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Datum:</span>
-                    <span class="info-row__value">{{ latest_bill_event.display_date }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Restaurant:</span>
-                    <span class="info-row__value">{{ latest_bill_event.restaurant or 'Nicht angegeben' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Esstyp:</span>
-                    <span class="info-row__value">{{ latest_bill_participation.esstyp.value if latest_bill_participation.esstyp else 'Nicht angegeben' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Dein Anteil:</span>
-                    <span class="info-row__value">{{ "%.2f"|format(latest_bill_participation.calculated_share_rappen / 100) }} CHF</span>
-                </div>
-            </div>
-            <div class="card__footer">
-                <a href="{{ url_for('billbro.index', event_id=latest_bill_event.id) }}" class="btn btn--billbro">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                        <line x1="8" y1="6" x2="16" y2="6"/>
-                        <line x1="8" y1="10" x2="16" y2="10"/>
-                        <line x1="8" y1="14" x2="16" y2="14"/>
-                        <line x1="8" y1="18" x2="16" y2="18"/>
-                    </svg>
-                    BillBro
-                </a>
-            </div>
-        </div>
+        {% if false %}
         {% endif %}
         
         <div class="card">

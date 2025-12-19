@@ -4,48 +4,87 @@
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>🏆 Gourmen Guessing League</h1>
-        <p class="page-subtitle">Willkommen zur GGL - der Saisonwertung für den Gourmen-Verein!</p>
-    </div>
-    
-    <div class="page-content">
-        {% for season in available_seasons %}
-        <div class="card">
-            <div class="card-header">
-                <h2>📅 {{ season }}</h2>
-            </div>
-            <div class="card-body">
-                {% if season_stats[season] %}
-                {% set stats = season_stats[season] %}
-                <div class="stats-item">
-                    <span class="label">Dein Rang:</span>
-                    <span class="value">{{ stats.rank or 'N/A' }}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="label">Deine Punkte:</span>
-                    <span class="value">{{ stats.total_points or 0 }}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="label">⊘ Differenz:</span>
-                    <span class="value">{{ "%.1f"|format(stats.avg_diff_rappen / 100) }} CHF</span>
-                </div>
-                <div class="stats-item">
-                    <span class="label">Anzahl Events:</span>
-                    <span class="value">{{ stats.participation_count }}/{{ stats.total_events_in_season }}</span>
-                </div>
-                
-                <div class="card-actions center">
-                    <a href="{{ url_for('ggl.season', season_year=season) }}" class="btn btn-primary">
-                        📈 Saisontabelle anzeigen
-                    </a>
-                </div>
-                {% else %}
-                <p>Noch keine Teilnahme an BillBro-Events in dieser Saison.</p>
-                {% endif %}
-            </div>
+  <div class="page-header">
+    <h1>
+      <svg class="icon" aria-hidden="true">
+        <use href="/static/icons/lucide-sprite.svg#trophy"></use>
+      </svg>
+      Gourmen Guessing League
+    </h1>
+    <p class="page-subtitle">Saisonwertung, Fortschritt und persönliche Rankings.</p>
+  </div>
+
+  <div class="page-content">
+    {% if available_seasons %}
+    <div class="hub-grid">
+      {% for season in available_seasons %}
+      {% set stats = season_stats.get(season) %}
+      <div class="card hub-card {% if season == current_season %}hub-card--featured{% endif %}">
+        <div class="card__header">
+          <h2 class="card__title">
+            <svg class="icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+            </svg>
+            Saison {{ season }}
+          </h2>
+          {% if season == current_season %}
+          <span class="badge badge--success">Aktuelle Saison</span>
+          {% endif %}
         </div>
-        {% endfor %}
+
+        <div class="card__body">
+          {% if stats %}
+          <div class="info-row">
+            <span class="info-row__label">Dein Rang</span>
+            <span class="info-row__value">{{ stats.rank or 'N/A' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Deine Punkte</span>
+            <span class="info-row__value">{{ stats.total_points or 0 }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">⊘ Differenz</span>
+            <span class="info-row__value">{{ "%.1f"|format(stats.avg_diff_rappen / 100) }} CHF</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Anzahl Events</span>
+            <span class="info-row__value">{{ stats.participation_count }}/{{ stats.total_events_in_season }}</span>
+          </div>
+          {% else %}
+          <div class="alert alert--info" role="status">
+            <svg class="alert__icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#info"></use>
+            </svg>
+            <div class="alert__content">
+              <div class="alert__message">
+                Noch keine Teilnahme an BillBro-Events in dieser Saison.
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="card__footer">
+          <a href="{{ url_for('ggl.season', season_year=season) }}" class="btn btn--primary">
+            <svg class="icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#bar-chart-2"></use>
+            </svg>
+            Saisontabelle anzeigen
+          </a>
+        </div>
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+      <div class="alert alert--info" role="status">
+        <svg class="alert__icon" aria-hidden="true">
+          <use href="/static/icons/lucide-sprite.svg#info"></use>
+        </svg>
+        <div class="alert__content">
+          <div class="alert__message">Keine vergangenen oder laufenden Saisons vorhanden.</div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %} 

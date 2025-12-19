@@ -5,73 +5,77 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🔐 2FA Einrichten</h1>
-        <p class="page-subtitle">Vereinfachte Einrichtung - nur Secret-Code</p>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 1.75 6.75 4v5.25L12 12.5l5.25-3.25V4z"/>
+                <path d="M6.75 9.25 12 12.5l5.25-3.25"/>
+                <path d="M6.75 13.5 12 16.75l5.25-3.25"/>
+            </svg>
+            2FA einrichten
+        </h1>
+        <p class="page-subtitle">Vereinfachte Einrichtung – Secret-Code eingeben und verifizieren.</p>
     </div>
     
     <div class="page-content">
         <div class="card">
-            <div class="card-header">
-                <h2>Schritt 1: Authenticator-App einrichten</h2>
+            <div class="card__header">
+                <h2 class="card__title">Schritt 1: Code in der App hinterlegen</h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 <p>Kopiere diesen Secret-Code und füge ihn in deine Authenticator-App ein:</p>
                 
-                <div class="mfa-code-container">
-                    <div class="mfa-code">{{ secret }}</div>
-                    <button class="btn btn-outline" onclick="copyToClipboard('{{ secret }}')">📋 Kopieren</button>
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__body" style="display:flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;">
+                        <code style="padding: var(--space-3); background: var(--color-surface-secondary); border:1px solid var(--color-border-subtle); border-radius: var(--radius-md); font-size: var(--text-lg);">{{ secret }}</code>
+                        <button class="btn btn--outline" type="button" onclick="copyToClipboard('{{ secret }}')">Code kopieren</button>
+                    </div>
                 </div>
                 
-                <div class="mfa-instructions">
-                    <h4>📱 Anleitung für Microsoft Authenticator:</h4>
-                    <ol>
-                        <li>Öffne Microsoft Authenticator</li>
-                        <li>Tippe auf "+"</li>
-                        <li>Wähle "Anderes Konto hinzufügen"</li>
-                        <li>Wähle "QR-Code oder Barcode scannen"</li>
-                        <li>Tippe auf "Secret-Code eingeben"</li>
-                        <li>Kopiere den Code oben und füge ihn ein</li>
-                        <li>Kontoname: <strong>Gourmen</strong></li>
-                        <li>Bestätige mit "Hinzufügen"</li>
-                    </ol>
-                    
-                    <h4>📱 Anleitung für Google Authenticator:</h4>
-                    <ol>
-                        <li>Öffne Google Authenticator</li>
-                        <li>Tippe auf "+"</li>
-                        <li>Wähle "Secret-Code eingeben"</li>
-                        <li>Kopiere den Code oben und füge ihn ein</li>
-                        <li>Kontoname: <strong>Gourmen</strong></li>
-                        <li>Bestätige</li>
-                    </ol>
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">Anleitung</h3>
+                    </div>
+                    <div class="card-section__body">
+                        <h4 style="margin-top:0;">Microsoft Authenticator</h4>
+                        <ol>
+                            <li>App öffnen → "+" → "Anderes Konto hinzufügen"</li>
+                            <li>"Secret-Code eingeben" wählen</li>
+                            <li>Code oben einfügen, Kontoname: <strong>Gourmen</strong></li>
+                        </ol>
+                        <h4>Google Authenticator</h4>
+                        <ol>
+                            <li>App öffnen → "+" → "Secret-Code eingeben"</li>
+                            <li>Code einfügen, Kontoname: <strong>Gourmen</strong></li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2>Schritt 2: Code verifizieren</h2>
+        <div class="card" style="margin-top: var(--space-5);">
+            <div class="card__header">
+                <h2 class="card__title">Schritt 2: Code verifizieren</h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 <p>Gib den 6-stelligen Code aus deiner Authenticator-App ein:</p>
                 
-                <form method="POST">
+                <form method="POST" class="form">
                     {{ form.hidden_tag() }}
                     
-                    <div class="form-group">
-                        {{ form.token.label }}
-                        {{ form.token(class="form-control", placeholder="123456", autocomplete="off") }}
+                    <div class="form-field">
+                        {{ form.token.label(class="form-field__label") }}
+                        {{ form.token(class="form-field__input", placeholder="123456", autocomplete="one-time-code") }}
                         {% if form.token.errors %}
-                        <div class="error-message">
+                        <span class="form-field__error">
                             {% for error in form.token.errors %}
-                            <span>{{ error }}</span>
+                                {{ error }}{% if not loop.last %}<br>{% endif %}
                             {% endfor %}
-                        </div>
+                        </span>
                         {% endif %}
                     </div>
                     
-                    <div class="actions">
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="form-actions">
+                        {{ form.submit(class="btn btn--primary") }}
                     </div>
                 </form>
             </div>

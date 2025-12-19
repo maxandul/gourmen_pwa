@@ -4,153 +4,70 @@
 
 {% block content %}
 <div class="container">
-    <div class="auth-container">
-        <div class="auth-header">
-            <h1>🔐 2FA zurücksetzen</h1>
-            <p>E-Mail-Adresse eingeben, um 2FA zurückzusetzen</p>
-        </div>
+    <div class="page-header">
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 1.75 6.75 4v5.25L12 12.5l5.25-3.25V4z"/>
+                <path d="M6.75 9.25 12 12.5l5.25-3.25"/>
+                <path d="M6.75 13.5 12 16.75l5.25-3.25"/>
+            </svg>
+            2FA zurücksetzen
+        </h1>
+        <p class="page-subtitle">E-Mail-Adresse eingeben, um einen Reset-Link zu erhalten.</p>
+    </div>
 
-        <div class="auth-form">
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                
-                <div class="form-group">
-                    {{ form.email.label }}
-                    {{ form.email(class="form-control", placeholder="ihre.email@example.com", autocomplete="email") }}
-                    {% if form.email.errors %}
-                    <div class="error-message">
-                        {% for error in form.email.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">Reset anfordern</h2>
+            </div>
+            <div class="card__body">
+                <form method="POST" class="form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-field">
+                        {{ form.email.label(class="form-field__label") }}
+                        {{ form.email(class="form-field__input", placeholder="max@example.com", autocomplete="email") }}
+                        {% if form.email.errors %}
+                        <span class="form-field__error">
+                            {% for error in form.email.errors %}
+                                {{ error }}{% if not loop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </span>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                </div>
-                
-                <div class="actions">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
-            
-            <div class="auth-links">
-                <a href="{{ url_for('auth.login') }}" class="btn btn-outline">← Zurück zum Login</a>
+                    
+                    <div class="form-actions">
+                        {{ form.submit(class="btn btn--primary") }}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn--outline">Zurück zum Login</a>
+                    </div>
+                </form>
             </div>
         </div>
-        
-        <div class="info-box">
-            <h3>ℹ️ Wie funktioniert 2FA-Reset?</h3>
-            <ul>
-                <li>Geben Sie Ihre E-Mail-Adresse ein</li>
-                <li>Falls 2FA aktiviert ist, erhalten Sie einen Reset-Link</li>
-                <li>Der Link ist 1 Stunde gültig</li>
-                <li>Nach dem Reset können Sie 2FA neu einrichten</li>
-            </ul>
+
+        <div class="card card-section--subtle" style="margin-top: var(--space-4);">
+            <div class="card__header">
+                <h2 class="card__title">So läuft der Reset</h2>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">1</span>
+                    <span class="info-row__value">E-Mail eingeben</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">2</span>
+                    <span class="info-row__value">Falls 2FA aktiv ist, erhältst du einen Reset-Link</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">3</span>
+                    <span class="info-row__value">Link ist 1 Stunde gültig</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">4</span>
+                    <span class="info-row__value">Nach dem Reset 2FA neu einrichten</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-.auth-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 30px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.auth-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.auth-header h1 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.auth-header p {
-    color: #666;
-    margin: 0;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.error-message {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.actions {
-    text-align: center;
-    margin: 30px 0;
-}
-
-.btn {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-
-.auth-links {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.auth-links a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.auth-links a:hover {
-    text-decoration: underline;
-}
-
-.info-box {
-    margin-top: 30px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border-left: 4px solid #007bff;
-}
-
-.info-box h3 {
-    margin-top: 0;
-    color: #007bff;
-    font-size: 18px;
-}
-
-.info-box ul {
-    margin-bottom: 0;
-    padding-left: 20px;
-}
-
-.info-box li {
-    margin-bottom: 8px;
-    color: #555;
-}
-</style>
 {% endblock %}

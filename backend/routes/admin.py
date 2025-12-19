@@ -72,15 +72,18 @@ def index():
     ).filter(MerchOrder.status == OrderStatus.GELIEFERT).scalar() or 0
     total_revenue_chf = total_revenue / 100
     
-    return render_template('admin/index.html',
-                         members_count=members_count,
-                         admins_count=admins_count,
-                         upcoming_events_count=upcoming_events_count,
-                         current_season_events=current_season_events,
-                         audit_events_count=audit_events_count,
-                         active_articles_count=active_articles_count,
-                         pending_orders_count=pending_orders_count,
-                         total_revenue_chf=total_revenue_chf)
+    return render_template(
+        'admin/index.html',
+        members_count=members_count,
+        admins_count=admins_count,
+        upcoming_events_count=upcoming_events_count,
+        current_season_events=current_season_events,
+        audit_events_count=audit_events_count,
+        active_articles_count=active_articles_count,
+        pending_orders_count=pending_orders_count,
+        total_revenue_chf=total_revenue_chf,
+        use_v2_design=True
+    )
 
 class MemberForm(FlaskForm):
     # Basic info

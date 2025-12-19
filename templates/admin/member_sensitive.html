@@ -1,97 +1,88 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Sensible Daten - {{ member.display_name_with_spirit }} - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🔒 Sensible Daten: {{ member.display_name_with_spirit }}</h1>
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#lock"></use></svg>
+            Sensible Daten
+        </h1>
+        <p class="page-subtitle">{{ member.display_name_with_spirit }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">← Zurück zur Mitgliederliste</a>
+            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
+                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                Zurück zur Mitgliederliste
+            </a>
         </div>
     </div>
     
     <div class="page-content">
         <div class="card">
-            <div class="card-header">
-                <h2>🔒 Sensible Daten bearbeiten</h2>
-            </div>
-            <div class="card-body">
+            <div class="card__header"><h2 class="card__title">Sensible Daten bearbeiten</h2></div>
+            <div class="card__body">
                 <form method="POST" class="form">
                     {{ form.hidden_tag() }}
                     
-                    <!-- Reisepass -->
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>🛂 Reisepass</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="pass_nummer">Passnummer</label>
-                                <input type="text" id="pass_nummer" name="pass_nummer" class="form-control" 
-                                       value="{{ data.pass_nummer or '' }}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="pass_ausgestellt">Pass ausgestellt</label>
-                                <input type="date" id="pass_ausgestellt" name="pass_ausgestellt" class="form-control" 
-                                       value="{{ data.pass_ausgestellt or '' }}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="pass_ablauf">Pass abläuft</label>
-                                <input type="date" id="pass_ablauf" name="pass_ablauf" class="form-control" 
-                                       value="{{ data.pass_ablauf or '' }}">
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__header"><h3 class="card-section__title">Reisepass</h3></div>
+                        <div class="card-section__body">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="pass_nummer">Passnummer</label>
+                                    <input type="text" id="pass_nummer" name="pass_nummer" class="form-field__input" value="{{ data.pass_nummer or '' }}">
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label" for="pass_ausgestellt">Pass ausgestellt</label>
+                                    <input type="date" id="pass_ausgestellt" name="pass_ausgestellt" class="form-field__input" value="{{ data.pass_ausgestellt or '' }}">
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label" for="pass_ablauf">Pass abläuft</label>
+                                    <input type="date" id="pass_ablauf" name="pass_ablauf" class="form-field__input" value="{{ data.pass_ablauf or '' }}">
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Personalausweis -->
-                    <div class="card card-secondary variant-accent">
-                        <div class="card-header">
-                            <h3>🆔 Personalausweis</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="id_nummer">ID-Nummer</label>
-                                <input type="text" id="id_nummer" name="id_nummer" class="form-control" 
-                                       value="{{ data.id_nummer or '' }}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="id_ausgestellt">ID ausgestellt</label>
-                                <input type="date" id="id_ausgestellt" name="id_ausgestellt" class="form-control" 
-                                       value="{{ data.id_ausgestellt or '' }}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="id_ablauf">ID abläuft</label>
-                                <input type="date" id="id_ablauf" name="id_ablauf" class="form-control" 
-                                       value="{{ data.id_ablauf or '' }}">
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__header"><h3 class="card-section__title">Personalausweis</h3></div>
+                        <div class="card-section__body">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="id_nummer">ID-Nummer</label>
+                                    <input type="text" id="id_nummer" name="id_nummer" class="form-field__input" value="{{ data.id_nummer or '' }}">
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label" for="id_ausgestellt">ID ausgestellt</label>
+                                    <input type="date" id="id_ausgestellt" name="id_ausgestellt" class="form-field__input" value="{{ data.id_ausgestellt or '' }}">
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label" for="id_ablauf">ID abläuft</label>
+                                    <input type="date" id="id_ablauf" name="id_ablauf" class="form-field__input" value="{{ data.id_ablauf or '' }}">
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Zusätzliche Informationen -->
-                    <div class="card card-secondary variant-warning">
-                        <div class="card-header">
-                            <h3>⚠️ Zusätzliche Informationen</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="allergien">Allergien</label>
-                                <textarea id="allergien" name="allergien" class="form-control" rows="3">{{ data.allergien or '' }}</textarea>
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__header"><h3 class="card-section__title">Weitere Informationen</h3></div>
+                        <div class="card-section__body">
+                            <div class="form-field">
+                                <label class="form-field__label" for="allergien">Allergien</label>
+                                <textarea id="allergien" name="allergien" class="form-field__textarea" rows="3">{{ data.allergien or '' }}</textarea>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="card-actions primary">
-                        <button type="submit" class="btn btn-success">Speichern</button>
-                        <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Abbrechen</a>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">Speichern</button>
+                        <a href="{{ url_for('admin.members') }}" class="btn btn--outline">Abbrechen</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -127,7 +127,7 @@ def login():
         else:
             flash('Ungültige E-Mail oder Passwort', 'error')
     
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login.html', form=form, use_v2_design=True)
 
 @bp.route('/logout')
 @login_required
@@ -235,7 +235,7 @@ def verify_2fa():
         else:
             flash('Ungültiger Backup-Code', 'error')
     
-    return render_template('auth/verify_2fa.html', totp_form=totp_form, backup_form=backup_form)
+    return render_template('auth/verify_2fa.html', totp_form=totp_form, backup_form=backup_form, use_v2_design=True)
 
 @bp.route('/2fa/enroll', methods=['GET', 'POST'])
 @login_required
@@ -289,7 +289,8 @@ def enroll_2fa():
     return render_template('auth/enroll_2fa_simple.html', 
                          secret=secret, 
                          form=totp_form,
-                         current_user=current_user)
+                         current_user=current_user,
+                         use_v2_design=True)
 
 @bp.route('/2fa/disable', methods=['GET', 'POST'])
 @login_required
@@ -322,7 +323,7 @@ def disable_2fa():
         else:
             flash('Ungültiges Passwort', 'error')
     
-    return render_template('auth/disable_2fa.html', form=step_up_form)
+    return render_template('auth/disable_2fa.html', form=step_up_form, use_v2_design=True)
 
 @bp.route('/step-up', methods=['GET', 'POST'])
 @login_required
@@ -397,7 +398,7 @@ def step_up():
     
     # Always pass the next page to the template (prefer session value)
     template_next = session.get('step_up_next') or next_page
-    return render_template('auth/step_up.html', form=form, next=template_next)
+    return render_template('auth/step_up.html', form=form, next=template_next, use_v2_design=True)
 
 @bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -409,18 +410,18 @@ def change_password():
         # Verify current password
         if not current_user.check_password(form.current_password.data):
             flash('Aktuelles Passwort ist falsch', 'error')
-            return render_template('auth/change_password.html', form=form)
+            return render_template('auth/change_password.html', form=form, use_v2_design=True)
         
         # Validate new password strength
         is_valid, message = SecurityService.validate_password_strength(form.new_password.data)
         if not is_valid:
             flash(message, 'error')
-            return render_template('auth/change_password.html', form=form)
+            return render_template('auth/change_password.html', form=form, use_v2_design=True)
         
         # Check if new password is different from current
         if current_user.check_password(form.new_password.data):
             flash('Neues Passwort muss sich vom aktuellen unterscheiden', 'error')
-            return render_template('auth/change_password.html', form=form)
+            return render_template('auth/change_password.html', form=form, use_v2_design=True)
         
         # Check if this was the first login (password_changed_at was None before)
         was_first_login = current_user.password_changed_at is None
@@ -443,7 +444,7 @@ def change_password():
         else:
             return redirect(url_for('member.profile'))
     
-    return render_template('auth/change_password.html', form=form)
+    return render_template('auth/change_password.html', form=form, use_v2_design=True)
 
 @bp.route('/forgot-password', methods=['GET'])
 @limiter.limit("3 per hour")
@@ -452,7 +453,7 @@ def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
     admins = Member.query.filter_by(is_active=True).filter(Member.role == Role.ADMIN).all()
-    return render_template('auth/forgot_password.html', admins=admins)
+    return render_template('auth/forgot_password.html', admins=admins, use_v2_design=True)
 
 @bp.route('/reset-link')
 def show_reset_link():
@@ -463,7 +464,7 @@ def show_reset_link():
     if not link_data:
         flash('Kein Reset-Link vorhanden. Bitte fordern Sie zuerst einen Link an.', 'info')
         return redirect(url_for('auth.forgot_password'))
-    return render_template('auth/show_reset_link.html', reset_url=link_data.get('url'))
+    return render_template('auth/show_reset_link.html', reset_url=link_data.get('url'), use_v2_design=True)
 
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -511,7 +512,7 @@ def reset_password(token):
         is_valid, message = SecurityService.validate_password_strength(form.new_password.data)
         if not is_valid:
             flash(message, 'error')
-            return render_template('auth/reset_password.html', form=form, token=token)
+            return render_template('auth/reset_password.html', form=form, token=token, use_v2_design=True)
         
         # Update password
         user.set_password(form.new_password.data)
@@ -529,7 +530,7 @@ def reset_password(token):
         flash('Passwort erfolgreich zurücksetzt. Sie können sich jetzt anmelden.', 'success')
         return redirect(url_for('auth.login'))
     
-    return render_template('auth/reset_password.html', form=form, token=token)
+    return render_template('auth/reset_password.html', form=form, token=token, use_v2_design=True)
 
 # Import here to avoid circular imports
 from datetime import datetime 
@@ -585,7 +586,7 @@ def request_2fa_reset():
         # Always redirect to link display page to allow copy without email
         return redirect(url_for('auth.show_reset_link'))
     
-    return render_template('auth/request_2fa_reset.html', form=form)
+    return render_template('auth/request_2fa_reset.html', form=form, use_v2_design=True)
 
 @bp.route('/2fa/reset/<token>', methods=['GET', 'POST'])
 def reset_2fa(token):
@@ -678,7 +679,7 @@ def backup_codes():
         db.session.commit()
         
         # Return the plain codes for display
-        return render_template('auth/backup_codes.html', backup_codes=codes)
+        return render_template('auth/backup_codes.html', backup_codes=codes, use_v2_design=True)
     
     # If backup codes already exist, show a message
     flash('Backup-Codes wurden bereits generiert. Falls Sie sie verloren haben, können Sie 2FA deaktivieren und neu einrichten.', 'info')

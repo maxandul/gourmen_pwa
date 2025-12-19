@@ -1,220 +1,74 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}2FA zurücksetzen - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h1>🔐 2FA zurücksetzen</h1>
-            <p class="text-muted">Mitglied: {{ member.display_name_with_spirit }}</p>
-        </div>
-        
-        <div class="card-body">
-            <div class="warning-box">
-                <h3>⚠️ Wichtiger Hinweis</h3>
-                <p>Sie sind dabei, die 2FA für <strong>{{ member.display_name_with_spirit }}</strong> zurückzusetzen.</p>
-                <ul>
-                    <li>Die 2FA wird komplett deaktiviert</li>
-                    <li>Alle Backup-Codes werden gelöscht</li>
-                    <li>Das Mitglied muss 2FA neu einrichten</li>
-                    <li>Diese Aktion wird im Audit-Log protokolliert</li>
-                </ul>
-            </div>
-            
-            <div class="member-info">
-                <h3>📋 Mitglied-Informationen</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>Name:</strong> {{ member.display_name_with_spirit }}
+    <div class="page-header">
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield-off"></use></svg>
+            2FA zurücksetzen
+        </h1>
+        <p class="page-subtitle">Mitglied: {{ member.display_name_with_spirit }}</p>
+    </div>
+    
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Hinweis</h2></div>
+            <div class="card__body">
+                <div class="alert alert--warning">
+                    <div class="alert__content">
+                        <div class="alert__title">Wichtiger Hinweis</div>
+                        <div class="alert__message">2FA wird deaktiviert, Backup-Codes gelöscht, erneute Einrichtung nötig. Aktion wird geloggt.</div>
                     </div>
-                    <div class="info-item">
-                        <strong>E-Mail:</strong> {{ member.email }}
+                </div>
+
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header"><h3 class="card-section__title">Mitglied-Informationen</h3></div>
+                    <div class="card-section__body">
+                        <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.display_name_with_spirit }}</span></div>
+                        <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
+                        <div class="info-row"><span class="info-row__label">Status</span><span class="info-row__value">{% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}</span></div>
+                        <div class="info-row"><span class="info-row__label">Rolle</span><span class="info-row__value">{% if member.role.value == 'admin' %}<span class="chip chip--accent">Admin</span>{% else %}<span class="chip chip--info">Mitglied</span>{% endif %}</span></div>
                     </div>
-                    <div class="info-item">
-                        <strong>Status:</strong> 
-                        {% if member.is_active %}
-                            <span class="badge badge-success">Aktiv</span>
+                </div>
+
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header"><h3 class="card-section__title">Sicherheitsstatus</h3></div>
+                    <div class="card-section__body" style="display:flex; gap: var(--space-3); align-items: center;">
+                        {% set mfa_data = member.mfa_data %}
+                        {% if mfa_data and mfa_data.is_totp_enabled %}
+                            <span class="chip chip--success">2FA aktiviert</span>
+                            <span class="text-muted">Aktiviert: {{ mfa_data.activated_at.strftime('%d.%m.%Y %H:%M') if mfa_data.activated_at else 'Unbekannt' }}</span>
                         {% else %}
-                            <span class="badge badge-danger">Inaktiv</span>
+                            <span class="chip chip--danger">2FA nicht aktiviert</span>
+                            <span class="text-muted">Keine 2FA eingerichtet</span>
                         {% endif %}
                     </div>
-                    <div class="info-item">
-                        <strong>Rolle:</strong> 
-                        {% if member.role.value == 'admin' %}
-                            <span class="badge badge-warning">Admin</span>
-                        {% else %}
-                            <span class="badge badge-info">Mitglied</span>
-                        {% endif %}
-                    </div>
                 </div>
+
+                <form method="POST" class="form" style="margin-top: var(--space-4);">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="form-field">
+                        <label class="form-field__label" for="confirm">Bestätigung</label>
+                        <input type="text" id="confirm" name="confirm" class="form-field__input" placeholder="Gib 'RESET' ein, um zu bestätigen" required>
+                        <small style="color: var(--color-text-secondary);">Gib "RESET" ein, um 2FA zurückzusetzen.</small>
+                    </div>
+                    
+                    <div class="form-actions" style="flex-wrap: wrap;">
+                        <button type="submit" class="btn btn--danger" onclick="return confirm('2FA wirklich zurücksetzen?')">
+                            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield-off"></use></svg>
+                            2FA zurücksetzen
+                        </button>
+                        <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn--outline">
+                            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                            Abbrechen
+                        </a>
+                    </div>
+                </form>
             </div>
-            
-            <div class="security-status">
-                <h3>🔒 Sicherheitsstatus</h3>
-                {% set mfa_data = member.mfa_data %}
-                {% if mfa_data and mfa_data.is_totp_enabled %}
-                    <div class="status-item status-enabled">
-                        <span class="status-icon">✅</span>
-                        <div class="status-text">
-                            <strong>2FA ist aktiviert</strong>
-                            <small>Aktiviert am: {{ mfa_data.activated_at.strftime('%d.%m.%Y %H:%M') if mfa_data.activated_at else 'Unbekannt' }}</small>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="status-item status-disabled">
-                        <span class="status-icon">❌</span>
-                        <div class="status-text">
-                            <strong>2FA ist nicht aktiviert</strong>
-                            <small>Keine 2FA eingerichtet</small>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-            
-            <form method="POST" class="mt-4">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="form-group">
-                    <label for="confirm">Bestätigung:</label>
-                    <input type="text" 
-                           id="confirm" 
-                           name="confirm" 
-                           class="form-control" 
-                           placeholder="Geben Sie 'RESET' ein, um zu bestätigen"
-                           required>
-                    <small class="form-text text-muted">
-                        Geben Sie "RESET" ein, um die 2FA zurückzusetzen
-                    </small>
-                </div>
-                
-                <div class="actions">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Sind Sie sicher, dass Sie die 2FA zurücksetzen möchten?')">
-                        🔐 2FA zurücksetzen
-                    </button>
-                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-secondary">
-                        ❌ Abbrechen
-                    </a>
-                </div>
-            </form>
         </div>
     </div>
 </div>
-
-<style>
-.warning-box {
-    background: rgba(220, 53, 69, 0.1);
-    border: 1px solid var(--danger-color);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-.warning-box h3 {
-    color: var(--danger-color);
-    margin-bottom: 15px;
-}
-
-.warning-box ul {
-    margin: 10px 0 0 20px;
-}
-
-.warning-box li {
-    margin: 8px 0;
-}
-
-.member-info {
-    background: rgba(23, 162, 184, 0.1);
-    border: 1px solid var(--info-color);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.info-item {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-}
-
-.security-status {
-    background: rgba(40, 167, 69, 0.1);
-    border: 1px solid var(--success-color);
-    border-radius: var(--border-radius-md);
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-    margin-top: 15px;
-}
-
-.status-icon {
-    font-size: 1.5em;
-}
-
-.status-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.status-text small {
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-
-.status-enabled {
-    border-left: 4px solid var(--success-color);
-}
-
-.status-disabled {
-    border-left: 4px solid var(--danger-color);
-}
-
-.actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 30px;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: bold;
-}
-
-.badge-success {
-    background: var(--success-color);
-    color: white;
-}
-
-.badge-danger {
-    background: var(--danger-color);
-    color: white;
-}
-
-.badge-warning {
-    background: var(--warning-color);
-    color: white;
-}
-
-.badge-info {
-    background: var(--info-color);
-    color: white;
-}
-</style>
 {% endblock %}

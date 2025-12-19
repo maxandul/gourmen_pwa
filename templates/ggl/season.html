@@ -4,684 +4,157 @@
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>🏆 GGL Saison {{ season_year }}</h1>
-        <div class="page-actions">
-            <a href="{{ url_for('ggl.index') }}" class="btn btn-primary">← Zurück zur GGL</a>
-        </div>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <div class="breadcrumbs__item">
+      <a href="{{ url_for('ggl.index') }}" class="breadcrumbs__link">GGL</a>
+      <span class="breadcrumbs__separator">/</span>
     </div>
-    
-    
-    <div class="card">
-        <div class="card-header">
-            <h2>📊 Saison-Punktetabelle</h2>
-        </div>
-        <div class="card-body">
-            <div class="events-list">
-                {% if season_ranking %}
-                {% for entry in season_ranking %}
-                <div class="card card-secondary variant-info {% if entry.member_id == current_user.id %}current-user{% endif %}">
-                    <div class="card-header">
-                        <h3>
-                            {% if entry.rank <= 3 %}
-                                {% if entry.rank == 1 %}🥇
-                                {% elif entry.rank == 2 %}🥈
-                                {% elif entry.rank == 3 %}🥉
-                                {% endif %}
-                            {% endif %}
-                            {{ entry.rank }}. {{ entry.member.display_name_with_spirit }}
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Punkte:</span>
-                            <span class="value">{{ entry.total_points }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Events:</span>
-                            <span class="value">{{ entry.participation_count }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">⌀ Punkte:</span>
-                            <span class="value">{{ "%.1f"|format(entry.avg_points) }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">⊘ Differenz:</span>
-                            <span class="value">{{ "%.1f"|format(entry.avg_diff_rappen / 100) }} CHF</span>
-                        </div>
-                    </div>
+    <div class="breadcrumbs__item">
+      <span class="breadcrumbs__current">Saison {{ season_year }}</span>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>
+      <svg class="icon" aria-hidden="true">
+        <use href="/static/icons/lucide-sprite.svg#trophy"></use>
+      </svg>
+      GGL Saison {{ season_year }}
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <div class="tabs">
+      <nav class="tabs__nav" role="tablist">
+        <a href="{{ url_for('ggl.season', season_year=season_year, tab='tabelle') }}"
+           class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'tabelle' else '' }}"
+           role="tab"
+           aria-selected="{{ 'true' if active_tab == 'tabelle' else 'false' }}">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#bar-chart-2"></use>
+          </svg>
+          Tabelle
+        </a>
+        <a href="{{ url_for('ggl.season', season_year=season_year, tab='rennen') }}"
+           class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'rennen' else '' }}"
+           role="tab"
+           aria-selected="{{ 'true' if active_tab == 'rennen' else 'false' }}">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#activity"></use>
+          </svg>
+          Rennen
+        </a>
+      </nav>
+
+      <div class="tabs__content">
+        <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'tabelle' else '' }}" role="tabpanel">
+          {% if season_ranking %}
+          <div class="ggl-ranking-list">
+            {% for entry in season_ranking %}
+            {% set rank_class = 'ggl-ranking-item--rank-' ~ entry.rank if entry.rank <= 3 else '' %}
+            <div class="card ggl-ranking-card {{ rank_class }} {% if entry.member_id == current_user.id %}ggl-ranking-item--current{% endif %}">
+              <div class="card__header">
+                <h3 class="card__title">
+                  <span class="badge badge--info ggl-ranking-card__badge">
+                    {% if entry.rank <= 3 %}
+                    <svg class="icon icon--sm" aria-hidden="true">
+                      <use href="/static/icons/lucide-sprite.svg#award"></use>
+                    </svg>
+                    {% endif %}
+                    #{{ entry.rank }}
+                  </span>
+                  {{ entry.member.display_name_with_spirit }}
+                </h3>
+              </div>
+              <div class="card__body">
+                <div class="info-row">
+                  <span class="info-row__label">Punkte</span>
+                  <span class="info-row__value">{{ entry.total_points }}</span>
                 </div>
+                <div class="info-row">
+                  <span class="info-row__label">Events</span>
+                  <span class="info-row__value">{{ entry.participation_count }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-row__label">⌀ Punkte</span>
+                  <span class="info-row__value">{{ "%.1f"|format(entry.avg_points) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-row__label">⊘ Differenz</span>
+                  <span class="info-row__value">{{ "%.1f"|format(entry.avg_diff_rappen / 100) }} CHF</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="alert alert--info" role="status">
+            <svg class="alert__icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#info"></use>
+            </svg>
+            <div class="alert__content">
+              <div class="alert__message">
+                Noch keine Daten für Saison {{ season_year }} verfügbar. Sobald BillBro-Events stattfinden, erscheinen hier die Ergebnisse.
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'rennen' else '' }}" role="tabpanel">
+          {% if progression_data.events|length > 0 %}
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                <svg class="icon" aria-hidden="true">
+                  <use href="/static/icons/lucide-sprite.svg#activity"></use>
+                </svg>
+                Performance-Verlauf
+              </h2>
+            </div>
+            <div class="card__body">
+              <div class="ggl-chart">
+                <div class="ggl-chart__scroll">
+                  <div class="ggl-chart__container">
+                    <canvas id="ggl-progression-chart" width="400" height="200" aria-label="Punkteverlauf Diagramm" role="img"></canvas>
+                  </div>
+                  <div id="ggl-chart-labels" class="ggl-chart__labels"></div>
+                </div>
+              </div>
+              <div class="ggl-chart__note">Mobile: Tippe auf eine Linie, um Tooltips zu togglen.</div>
+            </div>
+          </div>
+
+          <script type="application/json" id="ggl-progression-data">
+            {
+              "labels": [
+                {% for event in progression_data.events %}
+                "{{ event.datum.strftime('%b') }}"{% if not loop.last %},{% endif %}
                 {% endfor %}
-                {% else %}
-                <div class="card card-secondary variant-info">
-                    <div class="card-body">
-                        <div class="no-data">
-                            <p>Noch keine Daten für Saison {{ season_year }} verfügbar.</p>
-                            <p>Sobald BillBro-Events abgehalten werden, erscheinen hier die Ergebnisse.</p>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+              ],
+              "members": {{ progression_data.members|map(attribute='id')|list|tojson }},
+              "data": {{ progression_data.progression_data|tojson }},
+              "currentUserId": {{ current_user.id }}
+            }
+          </script>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.0" defer></script>
+          {% else %}
+          <div class="alert alert--info" role="status">
+            <svg class="alert__icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#info"></use>
+            </svg>
+            <div class="alert__content">
+              <div class="alert__message">
+                Noch keine Verlaufsdaten für Saison {{ season_year }} verfügbar.
+              </div>
             </div>
+          </div>
+          {% endif %}
         </div>
+      </div>
     </div>
-    
-    {% if progression_data.events|length > 0 %}
-    <div class="card">
-        <div class="card-header">
-            <h2>📈 Performance-Verlauf</h2>
-        </div>
-        <div class="card-body">
-            <div class="chart-scroll-container">
-                <div class="chart-container">
-                    <canvas id="progressionChart" width="400" height="200"></canvas>
-                </div>
-                <div id="chartLabels" class="chart-labels"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+  </div>
 </div>
-
-<style>
-/* GGL Specific Styles */
-.ggl-overview {
-    display: grid;
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.user-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.stat-item .label {
-    color: #666;
-}
-
-/* .stat-item .value styles moved to global base.css */
-
-.season-actions {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.past-seasons {
-    display: grid;
-    gap: 10px;
-}
-
-.season-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #333;
-    transition: background 0.2s;
-}
-
-.season-link:hover {
-    background: #e0e0e0;
-}
-
-.season-year {
-    font-weight: bold;
-}
-
-.arrow {
-    color: var(--accent-color); /* Orange statt blau */
-    font-weight: bold;
-}
-
-/* Season Page Styles */
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 20px;
-    margin: 20px 0;
-}
-
-.stat-box {
-    text-align: center;
-    padding: 15px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.stat-value {
-    display: block;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--accent-color); /* Orange statt blau */
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    text-transform: uppercase;
-}
-
-/* Current User Highlight */
-tr.current-user {
-    background: rgba(76, 175, 80, 0.1) !important;
-    border-left: 4px solid var(--success-color);
-    font-weight: bold;
-}
-
-.medal {
-    font-size: 18px;
-    margin-right: 4px;
-}
-
-/* Center align numeric columns */
-td:nth-child(3),
-td:nth-child(4),
-td:nth-child(5) {
-    text-align: center;
-    font-family: monospace;
-}
-
-.no-data {
-    text-align: center;
-    padding: 40px 20px;
-    color: #666;
-}
-
-.season-summary {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-}
-
-.summary-stats {
-    display: grid;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.summary-item .label {
-    color: #666;
-}
-
-.summary-item .value {
-    font-weight: bold;
-    color: #333;
-}
-
-/* Ranking Cards - now using card-secondary */
-.card-secondary.current-user {
-    background: rgba(76, 175, 80, 0.1) !important;
-    border-left: 4px solid var(--success-color);
-    font-weight: bold;
-}
-
-.ranking-stats {
-    display: grid;
-    gap: 12px;
-}
-
-.ranking-stats .stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-}
-
-.ranking-stats .stat-label {
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-.ranking-stats .stat-value {
-    font-weight: bold;
-    color: var(--accent-color);
-    font-family: monospace;
-    font-size: 16px;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 10px;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    
-    .ranking-stats .stat-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-    
-    .ranking-stats .stat-value {
-        align-self: flex-end;
-    }
-}
-
-/* Chart Container Styles */
-.chart-scroll-container {
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin: 20px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.chart-container {
-    position: relative;
-    height: 500px;
-    min-width: 400px; /* Reduced minimum width for better mobile experience */
-    flex-shrink: 0;
-}
-
-.chart-labels {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
-    min-width: 150px; /* Increased for longer names */
-    flex-shrink: 0;
-}
-
-.chart-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    font-size: 12px;
-}
-
-.chart-legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
-.chart-legend-rank {
-    font-weight: bold;
-    color: #333;
-    min-width: 20px;
-}
-
-.chart-legend-animal {
-    color: #333;
-    font-size: 11px;
-    line-height: 1.2;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-    .chart-container {
-        height: 450px;
-    }
-    
-    .chart-scroll-container {
-        /* Will be set dynamically by JavaScript for >4 events */
-    }
-}
-
-.chart-info {
-    text-align: center;
-    margin-top: 10px;
-    color: var(--text-muted);
-}
-</style>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if we have progression data
-    {% if progression_data.events|length > 0 %}
-    
-    // Prepare chart data
-    const events = [
-        {% for event in progression_data.events %}
-        "{{ event.datum.strftime('%b') }}"{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-    const members = {{ progression_data.members|map(attribute='id')|list|tojson }};
-    const progressionData = {{ progression_data.progression_data|tojson }};
-    
-    // Member colors - different color for each member
-    const memberColors = [
-        '#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
-        '#F8C471', '#FF9F43', '#10AC84', '#EE5A24', '#0984E3'
-    ];
-    
-    // Sort members by total points (descending)
-    const sortedMembers = members.slice().sort((a, b) => {
-        const aData = progressionData[a];
-        const bData = progressionData[b];
-        const aTotal = aData.cumulative_points[aData.cumulative_points.length - 1] || 0;
-        const bTotal = bData.cumulative_points[bData.cumulative_points.length - 1] || 0;
-        return bTotal - aTotal;
-    });
-    
-    // Prepare datasets for Chart.js
-    const datasets = [];
-    let currentUserDataset = null;
-    let colorIndex = 0;
-    
-    sortedMembers.forEach(memberId => {
-        const memberData = progressionData[memberId];
-        if (memberData && memberData.member) {
-            const member = memberData.member;
-            const isCurrentUser = memberId === {{ current_user.id }};
-            
-            // Get color for member (different color for each member)
-            const color = memberColors[colorIndex % memberColors.length];
-            colorIndex++;
-            
-            const dataset = {
-                label: member.spirit_animal + ' ' + member.display_name,
-                data: memberData.cumulative_points,
-                borderColor: color,
-                backgroundColor: color + '20', // 20% opacity
-                borderWidth: isCurrentUser ? 3 : 2,
-                pointRadius: isCurrentUser ? 8 : 6,
-                pointHoverRadius: isCurrentUser ? 10 : 8,
-                tension: 0.1,
-                spanGaps: false, // Don't connect points across null values
-                pointBackgroundColor: color,
-                pointBorderColor: color,
-                pointBorderWidth: 2,
-                pointHoverBackgroundColor: color,
-                pointHoverBorderColor: color
-            };
-            
-            if (isCurrentUser) {
-                currentUserDataset = dataset;
-            } else {
-                datasets.push(dataset);
-            }
-        }
-    });
-    
-    // Add current user dataset last (so it appears on top)
-    if (currentUserDataset) {
-        datasets.push(currentUserDataset);
-    }
-    
-    // Register datalabels plugin
-    Chart.register(ChartDataLabels);
-    
-    // Calculate proper dimensions for mobile and desktop
-    const eventCount = events.length;
-    const isMobile = window.innerWidth <= 768;
-    
-    // Calculate flexible container width based on event count
-    let containerWidth;
-    if (isMobile) {
-        // Mobile: minimum 100px per event, but at least 400px total
-        containerWidth = Math.max(400, eventCount * 100);
-    } else {
-        // Desktop: minimum 150px per event, but at least 600px total
-        containerWidth = Math.max(600, eventCount * 150);
-    }
-    
-    // Chart configuration
-    const ctx = document.getElementById('progressionChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: events,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            aspectRatio: isMobile && eventCount > 4 ? 0.8 : 1.2,
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            // Mobile optimizations - disable hover tooltips on mobile
-            onHover: function(event, elements) {
-                if (isMobile) {
-                    event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
-                }
-            },
-            // Click handler for mobile tooltips
-            onClick: function(event, elements) {
-                if (isMobile) {
-                    const chart = this;
-                    const activeElements = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
-                    
-                    if (activeElements.length > 0) {
-                        // Prevent default click behavior
-                        event.native.preventDefault();
-                        
-                        // Toggle tooltip visibility
-                        const tooltip = chart.tooltip;
-                        const currentActive = tooltip.getActiveElements();
-                        
-                        if (currentActive.length > 0) {
-                            // Hide tooltip if already showing
-                            tooltip.setActiveElements([], {x: 0, y: 0});
-                            chart.update('none');
-                        } else {
-                            // Show tooltip for clicked element
-                            tooltip.setActiveElements(activeElements, {x: event.x, y: event.y});
-                            chart.update('none');
-                        }
-                    }
-                }
-            },
-        plugins: {
-            legend: {
-                display: false
-            },
-            layout: {
-                padding: {
-                    left: 2,
-                    right: 2,
-                    top: 20,
-                    bottom: 20
-                }
-            },
-                tooltip: {
-                    enabled: true, // Enable tooltips for both desktop and mobile
-                    external: isMobile ? function(context) {
-                        // Custom tooltip handling for mobile
-                        return false; // Let Chart.js handle it
-                    } : undefined,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#666',
-                    borderWidth: 1,
-                    cornerRadius: 6,
-                    displayColors: false,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    padding: 12,
-                    // Sort tooltip items by points (descending)
-                    itemSort: function(a, b) {
-                        return b.parsed.y - a.parsed.y; // Descending order
-                    },
-                    callbacks: {
-                        title: function(context) {
-                            return 'Event: ' + context[0].label;
-                        },
-                        label: function(context) {
-                            const fullLabel = context.dataset.label;
-                            const cumulativePoints = context.parsed.y;
-                            const dataIndex = context.dataIndex;
-                            
-                            // Calculate event-specific points (difference from previous cumulative)
-                            let eventPoints = cumulativePoints;
-                            if (dataIndex > 0) {
-                                const previousPoints = context.dataset.data[dataIndex - 1];
-                                if (previousPoints !== null && previousPoints !== undefined) {
-                                    eventPoints = cumulativePoints - previousPoints;
-                                }
-                            }
-                            
-                            // Format: "Name - Punkte: 11 (+3)"
-                            return fullLabel + ' - Punkte: ' + cumulativePoints + ' (+' + eventPoints + ')';
-                        }
-                    }
-                },
-                datalabels: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Events',
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        }
-                    },
-                    grid: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    offset: false,
-                    ticks: {
-                        font: {
-                            size: 11
-                        }
-                    },
-                    // Add padding to the right for labels
-                    offset: true
-                },
-                y: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Kumulative Punkte',
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        }
-                    },
-                    beginAtZero: true,
-                    grid: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        font: {
-                            size: 11
-                        }
-                    },
-                    // Add padding to the top for labels
-                    offset: true
-                }
-            },
-            elements: {
-                point: {
-                    hoverBackgroundColor: isMobile ? undefined : '#fff',
-                    hoverBorderColor: isMobile ? undefined : undefined
-                }
-            }
-        }
-    });
-    
-    // Create custom labels on the right side
-    createChartLabels(chart, datasets);
-    
-    function createChartLabels(chart, datasets) {
-        const labelsContainer = document.getElementById('chartLabels');
-        labelsContainer.innerHTML = '';
-        
-        // Sort datasets by their last data point value (descending)
-        const sortedDatasets = datasets.slice().sort((a, b) => {
-            const aLastValue = a.data[a.data.length - 1] || 0;
-            const bLastValue = b.data[b.data.length - 1] || 0;
-            return bLastValue - aLastValue;
-        });
-        
-        sortedDatasets.forEach((dataset, index) => {
-            const legendItem = document.createElement('div');
-            legendItem.className = 'chart-legend-item';
-            
-            const colorDot = document.createElement('div');
-            colorDot.className = 'chart-legend-dot';
-            colorDot.style.backgroundColor = dataset.borderColor;
-            
-            const rankSpan = document.createElement('span');
-            rankSpan.className = 'chart-legend-rank';
-            rankSpan.textContent = (index + 1) + '.';
-            
-            const spiritAnimalSpan = document.createElement('span');
-            spiritAnimalSpan.className = 'chart-legend-animal';
-            spiritAnimalSpan.textContent = dataset.label;
-            
-            legendItem.appendChild(colorDot);
-            legendItem.appendChild(rankSpan);
-            legendItem.appendChild(spiritAnimalSpan);
-            labelsContainer.appendChild(legendItem);
-        });
-    }
-    
-    // Always make scrollable and add extra space for legend
-    setTimeout(() => {
-        const scrollContainer = document.querySelector('.chart-scroll-container');
-        const chartContainer = document.querySelector('.chart-container');
-        
-        // Set chart container to calculated width with extra space for legend
-        const totalWidth = containerWidth + 180; // Extra 180px for legend (increased for longer names)
-        chartContainer.style.width = totalWidth + 'px';
-        chartContainer.style.minWidth = totalWidth + 'px';
-        
-        // Ensure scroll container is always scrollable
-        scrollContainer.style.overflowX = 'auto';
-        scrollContainer.style.overflowY = 'hidden';
-        
-        // Resize chart to match new container size
-        chart.resize();
-    }, 100);
-    
-    {% endif %}
-});
-</script>
 {% endblock %}

@@ -337,6 +337,122 @@
   border-top: 1px solid var(--color-border-subtle);
 }
 
+/* GGL Season: Ranking & Chart */
+.ggl-ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ggl-ranking-card {
+  border-left: 4px solid transparent;
+}
+
+.ggl-ranking-card .card__header {
+  padding: var(--space-4) var(--space-5);
+}
+
+.ggl-ranking-card .card__body {
+  padding: var(--space-4) var(--space-5);
+}
+
+.ggl-ranking-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ggl-ranking-item--current {
+  border-left-color: var(--brand-secondary-400);
+  box-shadow: var(--shadow-md);
+}
+
+.ggl-ranking-item--rank-1 {
+  border-left-color: var(--brand-accent-500);
+  background: linear-gradient(135deg, rgba(220, 105, 60, 0.08), transparent);
+}
+
+.ggl-ranking-item--rank-2 {
+  border-left-color: var(--brand-primary-600);
+  background: linear-gradient(135deg, rgba(79, 100, 119, 0.08), transparent);
+}
+
+.ggl-ranking-item--rank-3 {
+  border-left-color: var(--brand-secondary-400);
+  background: linear-gradient(135deg, rgba(115, 200, 168, 0.08), transparent);
+}
+
+.ggl-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ggl-chart__scroll {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ggl-chart__container {
+  position: relative;
+  height: 480px;
+  min-width: 400px;
+  flex-shrink: 0;
+}
+
+.ggl-chart__labels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
+.ggl-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.ggl-chart__legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+.ggl-chart__legend-rank {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  min-width: 22px;
+}
+
+.ggl-chart__legend-label {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.ggl-chart__note {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 768px) {
+  .ggl-chart__container {
+    height: 420px;
+    min-width: 360px;
+  }
+}
+
 /* ============================================
    INFO ROW (replaces stats-item)
    ============================================ */

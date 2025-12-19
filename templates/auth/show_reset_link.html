@@ -2,21 +2,39 @@
 
 {% block content %}
 <div class="container">
-  <div class="card">
-    <h1>Passwort zurücksetzen</h1>
-    <p>Der Link wurde generiert. Du kannst ihn hier kopieren oder direkt öffnen.</p>
+  <div class="page-header">
+    <h1>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 2v4"/>
+        <path d="M12 18v4"/>
+        <path d="M4.93 4.93 7.76 7.76"/>
+        <path d="M16.24 16.24l2.83 2.83"/>
+        <path d="M2 12h4"/>
+        <path d="M18 12h4"/>
+      </svg>
+      Passwort zurücksetzen
+    </h1>
+    <p class="page-subtitle">Reset-Link wurde erstellt.</p>
+  </div>
 
-    <div class="form-group">
-      <label for="resetLinkInput">Reset-Link</label>
-      <input id="resetLinkInput" class="form-control" type="text" readonly value="{{ reset_url }}" />
-    </div>
-
-    <div class="actions" style="display:flex; gap:.5rem; flex-wrap:wrap;">
-      <button id="copyResetLinkBtn" class="btn btn-primary" type="button">Link kopieren</button>
-      <a href="{{ reset_url }}" class="btn">Jetzt öffnen</a>
+  <div class="page-content">
+    <div class="card">
+      <div class="card__header">
+        <h2 class="card__title">Reset-Link</h2>
+      </div>
+      <div class="card__body">
+        <p>Du kannst den Link kopieren oder direkt öffnen.</p>
+        <div class="form-field">
+          <label class="form-field__label" for="resetLinkInput">Reset-Link</label>
+          <input id="resetLinkInput" class="form-field__input" type="text" readonly value="{{ reset_url }}" />
+        </div>
+      </div>
+      <div class="card__footer" style="display:flex; gap: var(--space-3); flex-wrap: wrap;">
+        <button id="copyResetLinkBtn" class="btn btn--primary" type="button">Link kopieren</button>
+        <a href="{{ reset_url }}" class="btn btn--outline">Jetzt öffnen</a>
+      </div>
     </div>
   </div>
-  
 </div>
 
 <script>

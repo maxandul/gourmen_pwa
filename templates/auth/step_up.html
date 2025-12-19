@@ -5,16 +5,23 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🔒 Sicherheitsprüfung</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 1v4"/>
+                <rect x="4" y="5" width="16" height="14" rx="2"/>
+                <path d="M4 9h16"/>
+            </svg>
+            Sicherheitsprüfung
+        </h1>
         <p class="page-subtitle">Erneute Authentifizierung erforderlich</p>
     </div>
     
     <div class="page-content">
         <div class="card">
-            <div class="card-header">
-                <h2>🔐 Sicherheitsprüfung erforderlich</h2>
+            <div class="card__header">
+                <h2 class="card__title">Sicherheitsprüfung</h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 <p>Für den Zugriff auf sensible Daten ist eine erneute Authentifizierung erforderlich.</p>
                 
                 <form method="POST" class="form">
@@ -24,21 +31,21 @@
                     <!-- Fallback: Also use next_url -->
                     <input type="hidden" name="next_url" value="{{ next or request.args.get('next', '') }}">
                     
-                    <div class="form-group">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
+                    <div class="form-field">
+                        {{ form.password.label(class="form-field__label") }}
+                        {{ form.password(class="form-field__input", autocomplete="current-password") }}
                         {% if form.password.errors %}
-                            <div class="form-error">
+                            <span class="form-field__error">
                                 {% for error in form.password.errors %}
-                                    {{ error }}
+                                    {{ error }}{% if not loop.last %}<br>{% endif %}
                                 {% endfor %}
-                            </div>
+                            </span>
                         {% endif %}
                     </div>
                     
-                    <div class="card-actions primary">
-                        {{ form.submit(class="btn btn-primary") }}
-                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline">Abbrechen</a>
+                    <div class="form-actions">
+                        {{ form.submit(class="btn btn--primary") }}
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn--outline">Abbrechen</a>
                     </div>
                 </form>
             </div>

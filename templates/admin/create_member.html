@@ -1,14 +1,21 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Neues Mitglied erstellen - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>➕ Neues Mitglied erstellen</h1>
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user-plus"></use></svg>
+            Neues Mitglied erstellen
+        </h1>
         <p class="page-subtitle">Füge ein neues Mitglied zum Gourmen-Verein hinzu</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">← Zurück zur Mitgliederliste</a>
+            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
+                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                Zurück zur Mitgliederliste
+            </a>
         </div>
     </div>
     
@@ -16,116 +23,144 @@
         <form method="POST" class="form">
             {{ form.hidden_tag() }}
 
-            <!-- Persönliche Daten -->
             <div class="card">
-                <div class="card-header">
-                    <h2>👤 Persönliche Daten</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.vorname.label }}{{ form.vorname(class="form-control") }}</div>
-                    <div class="form-group">{{ form.nachname.label }}{{ form.nachname(class="form-control") }}</div>
-                    <div class="form-group">{{ form.rufname.label }}{{ form.rufname(class="form-control") }}</div>
-                    <div class="form-group">{{ form.geburtsdatum.label }}{{ form.geburtsdatum(class="form-control", type="date") }}</div>
-                    <div class="form-group">{{ form.nationalitaet.label }}{{ form.nationalitaet(class="form-control") }}</div>
-                    <div class="form-group">{{ form.telefon.label }}{{ form.telefon(class="form-control") }}</div>
-                    <div class="form-group">{{ form.email.label }}{{ form.email(class="form-control", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}</div>
+                <div class="card__header"><h2 class="card__title">Persönliche Daten</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">{{ form.vorname.label(class="form-field__label") }}{{ form.vorname(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.nachname.label(class="form-field__label") }}{{ form.nachname(class="form-field__input") }}</div>
+                    </div>
+                    <div class="form-field">{{ form.rufname.label(class="form-field__label") }}{{ form.rufname(class="form-field__input") }}</div>
+                    <div class="form-row">
+                        <div class="form-field">{{ form.geburtsdatum.label(class="form-field__label") }}{{ form.geburtsdatum(class="form-field__input", type="date") }}</div>
+                        <div class="form-field">{{ form.nationalitaet.label(class="form-field__label") }}{{ form.nationalitaet(class="form-field__input") }}</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">{{ form.telefon.label(class="form-field__label") }}{{ form.telefon(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.email.label(class="form-field__label") }}{{ form.email(class="form-field__input", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Adresse -->
             <div class="card">
-                <div class="card-header">
-                    <h2>📍 Adresse</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.strasse.label }}{{ form.strasse(class="form-control") }}</div>
-                    <div class="form-group">{{ form.hausnummer.label }}{{ form.hausnummer(class="form-control") }}</div>
-                    <div class="form-group">{{ form.plz.label }}{{ form.plz(class="form-control") }}</div>
-                    <div class="form-group">{{ form.ort.label }}{{ form.ort(class="form-control") }}</div>
+                <div class="card__header"><h2 class="card__title">Adresse</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">{{ form.strasse.label(class="form-field__label") }}{{ form.strasse(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.hausnummer.label(class="form-field__label") }}{{ form.hausnummer(class="form-field__input") }}</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">{{ form.plz.label(class="form-field__label") }}{{ form.plz(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.ort.label(class="form-field__label") }}{{ form.ort(class="form-field__input") }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Körperliche Daten -->
             <div class="card">
-                <div class="card-header">
-                    <h2>📏 Körperliche Daten</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.koerpergroesse.label }}{{ form.koerpergroesse(class="form-control") }}</div>
-                    <div class="form-group">{{ form.koerpergewicht.label }}{{ form.koerpergewicht(class="form-control") }}</div>
-                    <div class="form-group">{{ form.schuhgroesse.label }}{{ form.schuhgroesse(class="form-control") }}</div>
+                <div class="card__header"><h2 class="card__title">Körperliche Daten</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">{{ form.koerpergroesse.label(class="form-field__label") }}{{ form.koerpergroesse(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.koerpergewicht.label(class="form-field__label") }}{{ form.koerpergewicht(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.schuhgroesse.label(class="form-field__label") }}{{ form.schuhgroesse(class="form-field__input") }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Kleidergrössen -->
             <div class="card">
-                <div class="card-header">
-                    <h2>👕 Kleidergrössen</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.kleider_oberteil.label }}{{ form.kleider_oberteil(class="form-control") }}</div>
-                    <div class="form-group">{{ form.kleider_hosen.label }}{{ form.kleider_hosen(class="form-control") }}</div>
-                    <div class="form-group">{{ form.kleider_cap.label }}{{ form.kleider_cap(class="form-control") }}</div>
+                <div class="card__header"><h2 class="card__title">Kleidergrössen</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">{{ form.kleider_oberteil.label(class="form-field__label") }}{{ form.kleider_oberteil(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.kleider_hosen.label(class="form-field__label") }}{{ form.kleider_hosen(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.kleider_cap.label(class="form-field__label") }}{{ form.kleider_cap(class="form-field__input") }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Präferenzen -->
             <div class="card">
-                <div class="card-header">
-                    <h2>⭐ Präferenzen</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.zimmerwunsch.label }}{{ form.zimmerwunsch(class="form-control") }}</div>
-                    <div class="form-group">{{ form.spirit_animal.label }}{{ form.spirit_animal(class="form-control") }}</div>
-                    <div class="form-group">{{ form.fuehrerschein.label }}{{ form.fuehrerschein(class="form-control") }}</div>
+                <div class="card__header"><h2 class="card__title">Präferenzen</h2></div>
+                <div class="card__body">
+                    <div class="form-field">{{ form.zimmerwunsch.label(class="form-field__label") }}{{ form.zimmerwunsch(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.spirit_animal.label(class="form-field__label") }}{{ form.spirit_animal(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.fuehrerschein.label(class="form-field__label") }}{{ form.fuehrerschein(class="form-field__input") }}</div>
                 </div>
             </div>
 
-            <!-- Vereinsdaten und System -->
             <div class="card">
-                <div class="card-header">
-                    <h2>🏛️ Verein & System</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.funktion.label }}{{ form.funktion(class="form-control") }}</div>
-                    <div class="form-group">{{ form.beitrittsjahr.label }}{{ form.beitrittsjahr(class="form-control") }}</div>
-                    <div class="form-group"><label class="form-label">Vorstandsmitglied</label>{{ form.vorstandsmitglied() }}</div>
-                    <div class="form-group">{{ form.role.label }}{{ form.role(class="form-control") }}</div>
-                    <div class="form-group"><label class="form-label">Aktiv</label>{{ form.is_active() }}</div>
+                <div class="card__header"><h2 class="card__title">Verein & System</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">{{ form.funktion.label(class="form-field__label") }}{{ form.funktion(class="form-field__select") }}</div>
+                        <div class="form-field">{{ form.beitrittsjahr.label(class="form-field__label") }}{{ form.beitrittsjahr(class="form-field__input") }}</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label">Vorstandsmitglied</label>
+                            {{ form.vorstandsmitglied() }}
+                        </div>
+                        <div class="form-field">
+                            {{ form.role.label(class="form-field__label") }}
+                            {{ form.role(class="form-field__select") }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label">Aktiv</label>
+                            {{ form.is_active() }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Sicherheit -->
             <div class="card">
-                <div class="card-header">
-                    <h2>🔒 Sicherheit</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">{{ form.password.label }}{{ form.password(class="form-control") }}</div>
+                <div class="card__header"><h2 class="card__title">Sicherheit</h2></div>
+                <div class="card__body">
+                    <div class="form-field">{{ form.password.label(class="form-field__label") }}{{ form.password(class="form-field__input") }}</div>
                 </div>
             </div>
 
-            <!-- Sensible Daten (werden verschlüsselt gespeichert) -->
             <div class="card">
-                <div class="card-header">
-                    <h2>🔑 Sensible Daten</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group"><label for="pass_nummer">Pass-Nummer</label><input class="form-control" type="text" id="pass_nummer" name="pass_nummer"></div>
-                    <div class="form-group"><label for="pass_ausgestellt">Pass ausgestellt am</label><input class="form-control" type="date" id="pass_ausgestellt" name="pass_ausgestellt"></div>
-                    <div class="form-group"><label for="pass_ablauf">Pass gültig bis</label><input class="form-control" type="date" id="pass_ablauf" name="pass_ablauf"></div>
-                    <div class="form-group"><label for="id_nummer">ID-Nummer</label><input class="form-control" type="text" id="id_nummer" name="id_nummer"></div>
-                    <div class="form-group"><label for="id_ausgestellt">ID ausgestellt am</label><input class="form-control" type="date" id="id_ausgestellt" name="id_ausgestellt"></div>
-                    <div class="form-group"><label for="id_ablauf">ID gültig bis</label><input class="form-control" type="date" id="id_ablauf" name="id_ablauf"></div>
-                    <div class="form-group"><label for="allergien">Allergien</label><input class="form-control" type="text" id="allergien" name="allergien"></div>
+                <div class="card__header"><h2 class="card__title">Sensible Daten</h2></div>
+                <div class="card__body">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="pass_nummer">Pass-Nummer</label>
+                            <input class="form-field__input" type="text" id="pass_nummer" name="pass_nummer">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="pass_ausgestellt">Pass ausgestellt am</label>
+                            <input class="form-field__input" type="date" id="pass_ausgestellt" name="pass_ausgestellt">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="pass_ablauf">Pass gültig bis</label>
+                            <input class="form-field__input" type="date" id="pass_ablauf" name="pass_ablauf">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="id_nummer">ID-Nummer</label>
+                            <input class="form-field__input" type="text" id="id_nummer" name="id_nummer">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="id_ausgestellt">ID ausgestellt am</label>
+                            <input class="form-field__input" type="date" id="id_ausgestellt" name="id_ausgestellt">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="id_ablauf">ID gültig bis</label>
+                            <input class="form-field__input" type="date" id="id_ablauf" name="id_ablauf">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-field__label" for="allergien">Allergien</label>
+                        <input class="form-field__input" type="text" id="allergien" name="allergien">
+                    </div>
                 </div>
             </div>
 
             <div class="form-actions">
-                {{ form.submit(class="btn btn-primary") }}
-                <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Abbrechen</a>
+                {{ form.submit(class="btn btn--primary") }}
+                <a href="{{ url_for('admin.members') }}" class="btn btn--outline">Abbrechen</a>
             </div>
         </form>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

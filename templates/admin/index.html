@@ -1,188 +1,226 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Admin - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>⚙️ Admin-Bereich</h1>
-        <p class="page-subtitle">Verwaltung und Systemsteuerung</p>
+  <div class="page-header">
+    <h1>
+      <svg class="icon" aria-hidden="true">
+        <use href="/static/icons/lucide-sprite.svg#settings"></use>
+      </svg>
+      Admin-Bereich
+    </h1>
+    <p class="page-subtitle">Verwaltung und Systemsteuerung</p>
+  </div>
+
+  <div class="page-content hub-grid">
+    <!-- Mitgliederverwaltung -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#users"></use>
+          </svg>
+          Mitgliederverwaltung
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Aktive Mitglieder</span>
+          <span class="info-row__value">{{ members_count or 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Admins</span>
+          <span class="info-row__value">{{ admins_count or 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Letzte Aktivität</span>
+          <span class="info-row__value">Heute</span>
+        </div>
+      </div>
+      <div class="card__footer">
+        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#user-cog"></use>
+          </svg>
+          Mitglieder verwalten
+        </a>
+      </div>
     </div>
-    
-    <div class="page-content">
-        <!-- Mitgliederverwaltung Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>👥 Mitgliederverwaltung</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>👤 Mitglieder verwalten</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Aktive Mitglieder:</span>
-                            <span class="value">{{ members_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Admins:</span>
-                            <span class="value">{{ admins_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Letzte Aktivität:</span>
-                            <span class="value">Heute</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">👥 Mitglieder verwalten</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+    <!-- Merch-Verwaltung -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
+          </svg>
+          Merch-Verwaltung
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Verfügbare Artikel</span>
+          <span class="info-row__value">{{ active_articles_count or 0 }}</span>
         </div>
-        
-        <!-- Merch-Verwaltung Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🛍️ Merch-Verwaltung</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>📦 Merch-Shop verwalten</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Verfügbare Artikel:</span>
-                            <span class="value">{{ active_articles_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Offene Bestellungen:</span>
-                            <span class="value">{{ pending_orders_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Gesamtumsatz (Gewinn):</span>
-                            <span class="value">{{ "%.2f"|format(total_revenue_chf or 0) }} CHF</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('admin.merch') }}" class="btn btn-primary">🛍️ Merch verwalten</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="info-row">
+          <span class="info-row__label">Offene Bestellungen</span>
+          <span class="info-row__value">{{ pending_orders_count or 0 }}</span>
         </div>
-        
-        <!-- Event-Verwaltung Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📅 Event-Verwaltung</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-success">
-                    <div class="card-header">
-                        <h3>🎉 Events verwalten</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Kommende Events:</span>
-                            <span class="value">{{ upcoming_events_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Diese Saison:</span>
-                            <span class="value">{{ current_season_events or 0 }}</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('events.index') }}" class="btn btn-primary">📅 Events verwalten</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="info-row">
+          <span class="info-row__label">Gesamtumsatz (Gewinn)</span>
+          <span class="info-row__value">{{ "%.2f"|format(total_revenue_chf or 0) }} CHF</span>
         </div>
-        
-        <!-- System-Status Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🔧 System-Status</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>📊 System-Übersicht</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Datenbank:</span>
-                            <span class="value">✅ Online</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Service Worker:</span>
-                            <span class="value">✅ Aktiv</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Push-Notifications:</span>
-                            <span class="value">✅ Verfügbar</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('docs.index') }}" class="btn btn-outline">🔍 System-Status</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Sicherheit Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🔒 Sicherheit</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-warning">
-                    <div class="card-header">
-                        <h3>🛡️ Sicherheits-Übersicht</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-item">
-                            <span class="label">Audit-Events:</span>
-                            <span class="value">{{ audit_events_count or 0 }}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="label">Letzte Prüfung:</span>
-                            <span class="value">Heute</span>
-                        </div>
-                        
-                        <div class="card-actions primary">
-                            <a href="{{ url_for('admin.members') }}" class="btn btn-warning">🔍 Audit-Log</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Schnellzugriff Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚡ Schnellzugriff</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>🚀 Häufige Aktionen</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="quick-actions">
-                            <a href="{{ url_for('admin.members') }}" class="btn btn-primary">➕ Neues Mitglied</a>
-                            <a href="{{ url_for('events.index') }}" class="btn btn-primary">📅 Neues Event</a>
-                            <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-primary">🛍️ Neuer Artikel</a>
-                            <a href="{{ url_for('docs.index') }}" class="btn btn-outline">💾 Backup</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="card__footer">
+        <a href="{{ url_for('admin.merch') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#shopping-cart"></use>
+          </svg>
+          Merch verwalten
+        </a>
+      </div>
     </div>
+
+    <!-- Event-Verwaltung -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+          </svg>
+          Event-Verwaltung
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Kommende Events</span>
+          <span class="info-row__value">{{ upcoming_events_count or 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Diese Saison</span>
+          <span class="info-row__value">{{ current_season_events or 0 }}</span>
+        </div>
+      </div>
+      <div class="card__footer">
+        <a href="{{ url_for('events.index') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#calendar-range"></use>
+          </svg>
+          Events verwalten
+        </a>
+      </div>
+    </div>
+
+    <!-- System-Status -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#activity"></use>
+          </svg>
+          System-Status
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Datenbank</span>
+          <span class="info-row__value">Online</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Service Worker</span>
+          <span class="info-row__value">Aktiv</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Push-Notifications</span>
+          <span class="info-row__value">Verfügbar</span>
+        </div>
+      </div>
+      <div class="card__footer">
+        <a href="{{ url_for('docs.index') }}" class="btn btn--outline">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#search"></use>
+          </svg>
+          System-Status ansehen
+        </a>
+      </div>
+    </div>
+
+    <!-- Sicherheit -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#shield"></use>
+          </svg>
+          Sicherheit
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Audit-Events</span>
+          <span class="info-row__value">{{ audit_events_count or 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__label">Letzte Prüfung</span>
+          <span class="info-row__value">Heute</span>
+        </div>
+      </div>
+      <div class="card__footer">
+        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#file-search"></use>
+          </svg>
+          Audit-Log
+        </a>
+      </div>
+    </div>
+
+    <!-- Schnellzugriff -->
+    <div class="card hub-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#zap"></use>
+          </svg>
+          Schnellzugriff
+        </h2>
+      </div>
+      <div class="card__body">
+        <div class="info-row">
+          <span class="info-row__label">Häufige Aktionen</span>
+          <span class="info-row__value">Kurzlinks für Admins</span>
+        </div>
+      </div>
+      <div class="card__footer" style="flex-wrap: wrap; gap: var(--space-2);">
+        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#user-plus"></use>
+          </svg>
+          Neues Mitglied
+        </a>
+        <a href="{{ url_for('events.index') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#plus"></use>
+          </svg>
+          Neues Event
+        </a>
+        <a href="{{ url_for('admin.merch_articles') }}" class="btn btn--primary">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#package-plus"></use>
+          </svg>
+          Neuer Artikel
+        </a>
+        <a href="{{ url_for('docs.index') }}" class="btn btn--outline">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#database"></use>
+          </svg>
+          Backup
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

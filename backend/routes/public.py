@@ -45,6 +45,7 @@ def landing():
             member_count=member_count,
             restaurant_count=restaurant_count,
             days_since_foundation=days_since_foundation,
+            use_v2_design=True,
         )
     except Exception as e:
         # Fallback if database is not ready
@@ -54,6 +55,7 @@ def landing():
             member_count=0,
             restaurant_count=0,
             days_since_foundation=(datetime.utcnow().date() - date(2021, 11, 21)).days,
+            use_v2_design=True,
         )
 
 @bp.route('/health')

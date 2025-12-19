@@ -11,7 +11,8 @@ const DYNAMIC_CACHE = 'gourmen-dynamic-v1.5.9';
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/',
-    '/static/css/main.css',
+    '/static/css/main-v2.css',
+    '/static/css/public.css',
     '/static/manifest.json',
     '/static/img/pwa/icon-16.png',
     '/static/img/pwa/icon-32.png',
@@ -318,69 +319,17 @@ async function networkFirst(request, cacheName) {
         }
         
         // Fallback: Return a simple offline message
-        return new Response(`
-            <!DOCTYPE html>
-            <html lang="de">
-            <head>
-                <title>Offline - Gourmen</title>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta name="theme-color" content="#354e5e">
-                <style>
-                    body { 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center; 
-                        height: 100vh; 
-                        margin: 0; 
-                        background: linear-gradient(135deg, #354e5e, #2c3e50);
-                        color: white;
-                        text-align: center;
-                    }
-                    .offline-message {
-                        background: rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(10px);
-                        padding: 40px;
-                        border-radius: 20px;
-                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-                        max-width: 400px;
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                    }
-                    .offline-icon { font-size: 64px; margin-bottom: 20px; }
-                    h1 { margin-bottom: 16px; font-weight: 600; }
-                    p { line-height: 1.6; opacity: 0.9; }
-                    .retry-btn {
-                        background: rgba(113, 198, 166, 0.8);
-                        color: white;
-                        border: none;
-                        padding: 12px 24px;
-                        border-radius: 25px;
-                        margin-top: 20px;
-                        cursor: pointer;
-                        font-weight: 500;
-                        transition: all 0.3s ease;
-                    }
-                    .retry-btn:hover {
-                        background: rgba(113, 198, 166, 1);
-                        transform: translateY(-2px);
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="offline-message">
-                    <div class="offline-icon">📡</div>
-                    <h1>Keine Internetverbindung</h1>
-                    <p>Bitte überprüfe deine Internetverbindung und versuche es erneut.</p>
-                    <button class="retry-btn" onclick="window.location.reload()">Erneut versuchen</button>
-                </div>
-            </body>
-            </html>
-        `, {
+        // Attempt to return the offline fallback page if cached
+        const offlineResponse = await caches.match('/offline.html');
+        if (offlineResponse) {
+            return offlineResponse;
+        }
+        // Fallback to plain text if offline page is not available
+        return new Response('Offline - Keine Verbindung', {
             status: 503,
             statusText: 'Service Unavailable',
             headers: { 
-                'Content-Type': 'text/html; charset=utf-8',
+                'Content-Type': 'text/plain; charset=utf-8',
                 'Cache-Control': 'no-cache'
             }
         });

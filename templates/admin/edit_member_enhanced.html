@@ -1,14 +1,21 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Mitglied bearbeiten - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>👤 Mitglied bearbeiten</h1>
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user"></use></svg>
+            Mitglied bearbeiten
+        </h1>
         <p class="page-subtitle">{{ member.display_name_with_spirit }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Zurück zur Übersicht</a>
+            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
+                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                Zurück zur Übersicht
+            </a>
         </div>
     </div>
     
@@ -16,270 +23,99 @@
     <form method="POST" class="form">
         {{ form.hidden_tag() }}
         
-        <div class="row" style="gap: 24px 0;">
-            <!-- Grunddaten -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>👤 Grunddaten</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.vorname.label(class="form-label") }}
-                                    {{ form.vorname(class="form-control") }}
-                                    {% if form.vorname.errors %}
-                                        <div class="text-danger">
-                                            {% for error in form.vorname.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.nachname.label(class="form-label") }}
-                                    {{ form.nachname(class="form-control") }}
-                                    {% if form.nachname.errors %}
-                                        <div class="text-danger">
-                                            {% for error in form.nachname.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.rufname.label(class="form-label") }}
-                            {{ form.rufname(class="form-control") }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.geburtsdatum.label(class="form-label") }}
-                                    {{ form.geburtsdatum(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.nationalitaet.label(class="form-label") }}
-                                    {{ form.nationalitaet(class="form-control") }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Grunddaten</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.vorname.label(class="form-field__label") }}{{ form.vorname(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.nachname.label(class="form-field__label") }}{{ form.nachname(class="form-field__input") }}</div>
+                </div>
+                <div class="form-field">{{ form.rufname.label(class="form-field__label") }}{{ form.rufname(class="form-field__input") }}</div>
+                <div class="form-row">
+                    <div class="form-field">{{ form.geburtsdatum.label(class="form-field__label") }}{{ form.geburtsdatum(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.nationalitaet.label(class="form-field__label") }}{{ form.nationalitaet(class="form-field__input") }}</div>
                 </div>
             </div>
-            
-            <!-- Kontaktdaten -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>📞 Kontaktdaten</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control") }}
-                            {% if form.email.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.email.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.telefon.label(class="form-label") }}
-                            {{ form.telefon(class="form-control") }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-group mb-3">
-                                    {{ form.strasse.label(class="form-label") }}
-                                    {{ form.strasse(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.hausnummer.label(class="form-label") }}
-                                    {{ form.hausnummer(class="form-control") }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.plz.label(class="form-label") }}
-                                    {{ form.plz(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group mb-3">
-                                    {{ form.ort.label(class="form-label") }}
-                                    {{ form.ort(class="form-control") }}
-                                </div>
-                            </div>
-                        </div>
+        </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Kontaktdaten</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.email.label(class="form-field__label") }}{{ form.email(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.telefon.label(class="form-field__label") }}{{ form.telefon(class="form-field__input") }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">{{ form.strasse.label(class="form-field__label") }}{{ form.strasse(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.hausnummer.label(class="form-field__label") }}{{ form.hausnummer(class="form-field__input") }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">{{ form.plz.label(class="form-field__label") }}{{ form.plz(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.ort.label(class="form-field__label") }}{{ form.ort(class="form-field__input") }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Vereinsdaten</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.funktion.label(class="form-field__label") }}{{ form.funktion(class="form-field__select") }}</div>
+                    <div class="form-field">{{ form.beitrittsjahr.label(class="form-field__label") }}{{ form.beitrittsjahr(class="form-field__input") }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-field__label">Vorstandsmitglied</label>
+                        {{ form.vorstandsmitglied() }}
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row" style="gap: 24px 0;">
-            <!-- Vereinsdaten -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>🏛️ Vereinsdaten</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">
-                            {{ form.funktion.label(class="form-label") }}
-                            {{ form.funktion(class="form-control") }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.beitrittsjahr.label(class="form-label") }}
-                                    {{ form.beitrittsjahr(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">&nbsp;</label>
-                                    <div class="form-check">
-                                        {{ form.vorstandsmitglied(class="form-check-input") }}
-                                        {{ form.vorstandsmitglied.label(class="form-check-label") }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Körperliche Daten -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>📏 Körperliche Daten</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.koerpergroesse.label(class="form-label") }}
-                                    {{ form.koerpergroesse(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.koerpergewicht.label(class="form-label") }}
-                                    {{ form.koerpergewicht(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.schuhgroesse.label(class="form-label") }}
-                                    {{ form.schuhgroesse(class="form-control") }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Körperliche Daten</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.koerpergroesse.label(class="form-field__label") }}{{ form.koerpergroesse(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.koerpergewicht.label(class="form-field__label") }}{{ form.koerpergewicht(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.schuhgroesse.label(class="form-field__label") }}{{ form.schuhgroesse(class="form-field__input") }}</div>
                 </div>
             </div>
         </div>
-        
-        <div class="row" style="gap: 24px 0;">
-            <!-- Kleidergrössen -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>👕 Kleidergrössen</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.kleider_oberteil.label(class="form-label") }}
-                                    {{ form.kleider_oberteil(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.kleider_hosen.label(class="form-label") }}
-                                    {{ form.kleider_hosen(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.kleider_cap.label(class="form-label") }}
-                                    {{ form.kleider_cap(class="form-control") }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Kleidergrössen</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.kleider_oberteil.label(class="form-field__label") }}{{ form.kleider_oberteil(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.kleider_hosen.label(class="form-field__label") }}{{ form.kleider_hosen(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.kleider_cap.label(class="form-field__label") }}{{ form.kleider_cap(class="form-field__input") }}</div>
                 </div>
             </div>
-            
-            <!-- Präferenzen & System -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2>⚙️ Präferenzen & System</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">
-                            {{ form.zimmerwunsch.label(class="form-label") }}
-                            {{ form.zimmerwunsch(class="form-control") }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.spirit_animal.label(class="form-label") }}
-                            {{ form.spirit_animal(class="form-control") }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form.role.label(class="form-label") }}
-                                    {{ form.role(class="form-control") }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">&nbsp;</label>
-                                    <div class="form-check">
-                                        {{ form.is_active(class="form-check-input") }}
-                                        {{ form.is_active.label(class="form-check-label") }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Präferenzen & System</h2></div>
+            <div class="card__body">
+                <div class="form-row">
+                    <div class="form-field">{{ form.zimmerwunsch.label(class="form-field__label") }}{{ form.zimmerwunsch(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.spirit_animal.label(class="form-field__label") }}{{ form.spirit_animal(class="form-field__input") }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">{{ form.role.label(class="form-field__label") }}{{ form.role(class="form-field__select") }}</div>
+                    <div class="form-field">
+                        <label class="form-field__label">Aktiv</label>
+                        {{ form.is_active() }}
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="form-actions">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('admin.members') }}" class="btn btn-outline">Abbrechen</a>
+            {{ form.submit(class="btn btn--primary") }}
+            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">Abbrechen</a>
         </div>
     </form>
     </div>
 </div>
-
-<style>
-/* nutzt die globalen Styles wie im Profil; spezifische Anpassungen minimiert */
-</style>
 {% endblock %}

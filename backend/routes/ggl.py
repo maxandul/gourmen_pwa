@@ -33,15 +33,19 @@ def index():
             stats['rank'] = user_rank
             season_stats[season] = stats
     
-    return render_template('ggl/index.html',
-                         current_season=current_season,
-                         available_seasons=available_seasons,
-                         season_stats=season_stats)
+    return render_template(
+        'ggl/index.html',
+        current_season=current_season,
+        available_seasons=available_seasons,
+        season_stats=season_stats,
+        use_v2_design=True
+    )
 
 @bp.route('/season/<int:season_year>')
 @login_required
 def season(season_year):
     """Season ranking"""
+    tab = request.args.get('tab', 'tabelle')
     # Get season ranking
     season_ranking = GGLService.get_season_ranking(season_year)
     
@@ -56,8 +60,12 @@ def season(season_year):
     # Get progression data for chart
     progression_data = GGLService.get_season_progression_data(season_year)
     
-    return render_template('ggl/season.html',
-                         season_year=season_year,
-                         season_ranking=season_ranking,
-                         user_stats=user_stats,
-                         progression_data=progression_data) 
+    return render_template(
+        'ggl/season.html',
+        season_year=season_year,
+        season_ranking=season_ranking,
+        user_stats=user_stats,
+        progression_data=progression_data,
+        active_tab=tab,
+        use_v2_design=True
+    )

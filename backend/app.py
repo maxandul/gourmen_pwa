@@ -131,16 +131,16 @@ def register_error_handlers(app):
     
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template('errors/404.html'), 404
+        return render_template('errors/404.html', use_v2_design=True), 404
     
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
-        return render_template('errors/500.html'), 500
+        return render_template('errors/500.html', use_v2_design=True), 500
     
     @app.errorhandler(403)
     def forbidden_error(error):
-        return render_template('errors/403.html'), 403
+        return render_template('errors/403.html', use_v2_design=True), 403
 
 def register_context_processors(app):
     """Register context processors"""

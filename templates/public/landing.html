@@ -1,31 +1,40 @@
 {% extends "base.html" %}
 
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+{% endblock %}
+
 {% block title %}Gourmen - Willkommen{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Landing Hero Section -->
-    <section class="landing-hero">
-        <h1 class="landing-title">Willkommen bei den</h1>
-        <img src="{{ url_for('static', filename='img/logos/logo-primary.png') }}" alt="Gourmen Logo" class="landing-logo" />
-        <div class="landing-actions">
-            {% if current_user.is_authenticated %}
-            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg">Zum Dashboard</a>
-            {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Anmelden</a>
-            {% endif %}
+<div class="container landing">
+    <section class="landing-hero card">
+        <div class="landing-hero__text">
+            <p class="eyebrow">Seit 2021 · Zürich</p>
+            <h1>Gourmen</h1>
+            <p class="lead">Mehr ist mehr – Kulinarik, Events und Freundschaft.</p>
+            <div class="landing-actions">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">Zum Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn--primary">Anmelden</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="landing-hero__visual">
+            <img src="{{ url_for('static', filename='img/logos/logo-primary.png') }}" alt="Gourmen Logo" class="landing-logo" />
         </div>
     </section>
 
-    <!-- Statistics Section -->
-    <section class="landing-stats">
+    <section class="landing-stats card">
         <div class="stat">
             <div class="stat-value">{{ member_count }}</div>
             <div class="stat-label">Mitglieder</div>
         </div>
         <div class="stat">
             <div class="stat-value">{{ days_since_foundation }}</div>
-            <div class="stat-label">Tage "nur mehr ist mehr"</div>
+            <div class="stat-label">Tage „nur mehr ist mehr“</div>
         </div>
         <div class="stat">
             <div class="stat-value">{{ restaurant_count }}</div>
@@ -33,35 +42,49 @@
         </div>
     </section>
 
-    <!-- Next Event Section -->
     {% if latest_event %}
-    <div class="page-content">
+    <section class="landing-event">
         <div class="card">
-            <div class="card-header">
-                <h2>📅 Nächstes Event</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Nächstes Event
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>{{ latest_event.event_typ.value }}</h3>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>📅 Datum:</strong> {{ latest_event.display_date }}</p>
-                        <p><strong>🍴 Restaurant:</strong> {{ latest_event.restaurant or 'TBD' }}</p>
-                        {% if latest_event.kueche %}
-                        <p><strong>🌍 Küche:</strong> {{ latest_event.kueche }}</p>
-                        {% endif %}
-                        {% if latest_event.notizen %}
-                        <p>{{ latest_event.notizen[:200] }}{% if latest_event.notizen|length > 200 %}...{% endif %}</p>
-                        {% endif %}
-                    </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Typ</span>
+                    <span class="info-row__value">{{ latest_event.event_typ.value }}</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-row__label">Datum</span>
+                    <span class="info-row__value">{{ latest_event.display_date }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Restaurant</span>
+                    <span class="info-row__value">{{ latest_event.restaurant or 'TBD' }}</span>
+                </div>
+                {% if latest_event.kueche %}
+                <div class="info-row">
+                    <span class="info-row__label">Küche</span>
+                    <span class="info-row__value">{{ latest_event.kueche }}</span>
+                </div>
+                {% endif %}
+                {% if latest_event.notizen %}
+                <p style="margin-top: var(--space-4); color: var(--color-text-secondary);">
+                    {{ latest_event.notizen[:220] }}{% if latest_event.notizen|length > 220 %}...{% endif %}
+                </p>
+                {% endif %}
             </div>
         </div>
-    </div>
+    </section>
     {% endif %}
 
-    <!-- Footer Section -->
     <footer class="landing-footer">
         <div class="socials">
             <a href="https://instagram.com/gourmen_zh" target="_blank" rel="noopener" class="social-link">Instagram</a>

@@ -1,279 +1,130 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Sicherheitsübersicht - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>🔒 Sicherheitsübersicht</h1>
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield"></use></svg>
+            Sicherheitsübersicht
+        </h1>
         <p class="page-subtitle">Mitglied: {{ member.display_name_with_spirit }}</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-secondary">← Zurück zur Mitgliederliste</a>
+            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
+                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                Zurück zur Mitgliederliste
+            </a>
         </div>
     </div>
     
     <div class="page-content">
-        <!-- Member Info -->
         <div class="card">
-            <div class="card-header">
-                <h2>📋 Mitglied-Informationen</h2>
-            </div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>Name:</strong> {{ member.display_name_with_spirit }}
-                    </div>
-                    <div class="info-item">
-                        <strong>E-Mail:</strong> {{ member.email }}
-                    </div>
-                    <div class="info-item">
-                        <strong>Status:</strong> 
-                        {% if member.is_active %}
-                            <span class="badge badge-success">Aktiv</span>
-                        {% else %}
-                            <span class="badge badge-danger">Inaktiv</span>
-                        {% endif %}
-                    </div>
-                    <div class="info-item">
-                        <strong>Rolle:</strong> 
-                        {% if member.role.value == 'admin' %}
-                            <span class="badge badge-warning">Admin</span>
-                        {% else %}
-                            <span class="badge badge-info">Mitglied</span>
-                        {% endif %}
-                    </div>
+            <div class="card__header"><h2 class="card__title">Mitglied-Informationen</h2></div>
+            <div class="card__body">
+                <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.display_name_with_spirit }}</span></div>
+                <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
+                <div class="info-row"><span class="info-row__label">Status</span>
+                    <span class="info-row__value">
+                        {% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}
+                    </span>
+                </div>
+                <div class="info-row"><span class="info-row__label">Rolle</span>
+                    <span class="info-row__value">
+                        {% if member.role.value == 'admin' %}<span class="chip chip--accent">Admin</span>{% else %}<span class="chip chip--info">Mitglied</span>{% endif %}
+                    </span>
                 </div>
             </div>
         </div>
         
-        <!-- 2FA Status -->
         <div class="card">
-            <div class="card-header">
-                <h2>🔐 2FA-Status</h2>
-            </div>
-            <div class="card-body">
+            <div class="card__header"><h2 class="card__title">2FA-Status</h2></div>
+            <div class="card__body" style="display: flex; flex-direction: column; gap: var(--space-3);">
                 {% if mfa_data and mfa_data.is_totp_enabled %}
-                    <div class="status-item status-enabled">
-                        <span class="status-icon">✅</span>
-                        <div class="status-text">
-                            <strong>2FA ist aktiviert</strong>
-                            <small>Aktiviert am: {{ mfa_data.activated_at.strftime('%d.%m.%Y %H:%M') if mfa_data.activated_at else 'Unbekannt' }}</small>
-                            {% if mfa_data.last_verified_at %}
-                                <small>Zuletzt verifiziert: {{ mfa_data.last_verified_at.strftime('%d.%m.%Y %H:%M') }}</small>
-                            {% endif %}
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__body" style="display:flex; gap: var(--space-3); align-items: flex-start;">
+                            <span class="chip chip--success">2FA aktiviert</span>
+                            <div style="color: var(--color-text-secondary); display:flex; flex-direction:column; gap: 4px;">
+                                <span>Aktiviert: {{ mfa_data.activated_at.strftime('%d.%m.%Y %H:%M') if mfa_data.activated_at else 'Unbekannt' }}</span>
+                                {% if mfa_data.last_verified_at %}<span>Zuletzt verifiziert: {{ mfa_data.last_verified_at.strftime('%d.%m.%Y %H:%M') }}</span>{% endif %}
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="backup-codes-info">
-                        <h4>🔑 Backup-Codes</h4>
-                        <p>Verfügbare Backup-Codes: <strong>{{ unused_backup_codes|length }}</strong> von 10</p>
-                        {% if unused_backup_codes %}
-                            <div class="codes-preview">
-                                <small>Erste 3 Codes: 
-                                    {% for code in unused_backup_codes[:3] %}
-                                        <code>{{ code.code_hash[:8] }}...</code>
-                                        {% if not loop.last %}, {% endif %}
-                                    {% endfor %}
-                                </small>
-                            </div>
-                        {% else %}
-                            <p class="text-warning">⚠️ Keine Backup-Codes verfügbar</p>
-                        {% endif %}
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Backup-Codes</h3>
+                        </div>
+                        <div class="card-section__body">
+                            <p>Verfügbare Backup-Codes: <strong>{{ unused_backup_codes|length }}</strong> von 10</p>
+                            {% if unused_backup_codes %}
+                            <p class="text-muted">Erste 3 Codes (gehashed, gekürzt): 
+                                {% for code in unused_backup_codes[:3] %}
+                                    <code>{{ code.code_hash[:8] }}...</code>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            {% else %}
+                            <p class="text-warning">Keine Backup-Codes verfügbar</p>
+                            {% endif %}
+                        </div>
                     </div>
                 {% else %}
-                    <div class="status-item status-disabled">
-                        <span class="status-icon">❌</span>
-                        <div class="status-text">
-                            <strong>2FA ist nicht aktiviert</strong>
-                            <small>Keine 2FA eingerichtet</small>
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__body" style="display:flex; gap: var(--space-3); align-items: center;">
+                            <span class="chip chip--danger">2FA deaktiviert</span>
+                            <span class="text-muted">Keine 2FA eingerichtet</span>
                         </div>
                     </div>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Recent Audit Events -->
         <div class="card">
-            <div class="card-header">
-                <h2>📊 Letzte Sicherheits-Events</h2>
-            </div>
-            <div class="card-body">
+            <div class="card__header"><h2 class="card__title">Letzte Sicherheits-Events</h2></div>
+            <div class="card__body" style="display:flex; flex-direction:column; gap: var(--space-3); max-height: 320px; overflow:auto;">
                 {% if recent_events %}
-                    <div class="audit-events">
-                        {% for event in recent_events %}
-                            <div class="audit-event">
-                                <div class="event-header">
-                                    <span class="event-action">{{ event.display_action }}</span>
-                                    <span class="event-time">{{ event.at.strftime('%d.%m.%Y %H:%M') }}</span>
-                                </div>
-                                {% if event.extra_json %}
-                                    <div class="event-details">
-                                        <small class="text-muted">
-                                            {% if event.extra_json.ip %}
-                                                IP: {{ event.extra_json.ip }}
-                                            {% endif %}
-                                            {% if event.extra_json.admin_id %}
-                                                | Admin-ID: {{ event.extra_json.admin_id }}
-                                            {% endif %}
-                                        </small>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+                    {% for event in recent_events %}
+                    <div class="card-section card-section--subtle">
+                        <div class="card-section__header" style="display:flex; justify-content: space-between; align-items: center;">
+                            <span class="card-section__title">{{ event.display_action }}</span>
+                            <span class="text-muted">{{ event.at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        {% if event.extra_json %}
+                        <div class="card-section__body">
+                            <small class="text-muted">
+                                {% if event.extra_json.ip %}IP: {{ event.extra_json.ip }}{% endif %}
+                                {% if event.extra_json.admin_id %}{% if event.extra_json.ip %} · {% endif %}Admin-ID: {{ event.extra_json.admin_id }}{% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
                     </div>
+                    {% endfor %}
                 {% else %}
                     <p class="text-muted">Keine Sicherheits-Events gefunden.</p>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Admin Actions -->
         <div class="card">
-            <div class="card-header">
-                <h2>⚙️ Admin-Aktionen</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-actions">
-                    <a href="{{ url_for('admin.reset_member_password', member_id=member.id) }}" 
-                       class="btn btn-danger">
-                        🔐 Passwort zurücksetzen
+            <div class="card__header"><h2 class="card__title">Admin-Aktionen</h2></div>
+            <div class="card__body">
+                <div class="form-actions" style="flex-wrap: wrap;">
+                    <a href="{{ url_for('admin.reset_member_password', member_id=member.id) }}" class="btn btn--danger">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#key"></use></svg>
+                        Passwort zurücksetzen
                     </a>
-                    <a href="{{ url_for('admin.reset_member_2fa', member_id=member.id) }}" 
-                       class="btn btn-danger">
-                        🔐 2FA zurücksetzen
+                    <a href="{{ url_for('admin.reset_member_2fa', member_id=member.id) }}" class="btn btn--danger">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield-off"></use></svg>
+                        2FA zurücksetzen
                     </a>
-                    <a href="{{ url_for('admin.members') }}" 
-                       class="btn btn-outline">
-                        ← Zurück zur Mitgliederliste
+                    <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
+                        Zurück
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.info-item {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-    margin-top: 15px;
-}
-
-.status-icon {
-    font-size: 1.5em;
-}
-
-.status-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.status-text small {
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-
-.status-enabled {
-    border-left: 4px solid var(--success-color);
-}
-
-.status-disabled {
-    border-left: 4px solid var(--danger-color);
-}
-
-.backup-codes-info {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-}
-
-.codes-preview {
-    margin-top: 10px;
-}
-
-.codes-preview code {
-    background: var(--light-color);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: monospace;
-}
-
-.audit-events {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.audit-event {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--border-radius-sm);
-    margin-bottom: 10px;
-    border-left: 3px solid var(--primary-color);
-}
-
-.event-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.event-action {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-.event-time {
-    font-size: 0.9em;
-    color: var(--text-muted);
-}
-
-.event-details {
-    font-size: 0.8em;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: bold;
-}
-
-.badge-success {
-    background: var(--success-color);
-    color: white;
-}
-
-.badge-danger {
-    background: var(--danger-color);
-    color: white;
-}
-
-.badge-warning {
-    background: var(--warning-color);
-    color: white;
-}
-
-.badge-info {
-    background: var(--info-color);
-    color: white;
-}
-</style>
 {% endblock %}

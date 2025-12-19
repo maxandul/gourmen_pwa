@@ -4,59 +4,86 @@
 
 {% block content %}
 <div class="container">
-    <div class="card">
-        <h1>🔓 Zwei-Faktor-Authentifizierung deaktivieren</h1>
-        
-        <div class="warning-message">
-            <h2>⚠️ Sicherheitswarnung</h2>
-            <p>Das Deaktivieren der 2FA reduziert die Sicherheit deines Kontos erheblich. Bist du sicher, dass du fortfahren möchtest?</p>
-        </div>
-        
-        <div class="security-check">
-            <h3>🔐 Identitätsbestätigung erforderlich</h3>
-            <p>Gib dein Passwort ein, um die 2FA-Deaktivierung zu bestätigen:</p>
-            
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                
-                <div class="form-group">
-                    {{ form.password.label }}
-                    {{ form.password(class="form-control", placeholder="Dein Passwort") }}
-                    {% if form.password.errors %}
-                    <div class="error-message">
-                        {% for error in form.password.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+    <div class="page-header">
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 1.75 6.75 4v5.25L12 12.5l5.25-3.25V4z"/>
+                <path d="M6.75 9.25 12 12.5l5.25-3.25"/>
+                <path d="M6.75 13.5 12 16.75l5.25-3.25"/>
+            </svg>
+            2FA deaktivieren
+        </h1>
+        <p class="page-subtitle">Bestätige deine Identität, um 2FA auszuschalten.</p>
+    </div>
+
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">Sicherheitswarnung</h2>
+            </div>
+            <div class="card__body">
+                <div class="alert alert--warning" role="alert">
+                    <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <div class="alert__content">
+                        <div class="alert__title">Reduzierte Sicherheit</div>
+                        <div class="alert__message">Das Deaktivieren der 2FA senkt den Kontoschutz. Bist du sicher?</div>
                     </div>
-                    {% endif %}
                 </div>
-                
-                <div class="actions">
-                    {{ form.submit(class="btn btn-danger") }}
-                    <a href="{{ url_for('member.profile') }}" class="btn btn-outline">Abbrechen</a>
+
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">Identität bestätigen</h3>
+                    </div>
+                    <div class="card-section__body">
+                        <p>Gib dein Passwort ein, um die Deaktivierung zu bestätigen.</p>
+                        <form method="POST" class="form">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="form-field">
+                                {{ form.password.label(class="form-field__label") }}
+                                {{ form.password(class="form-field__input", placeholder="Passwort", autocomplete="current-password") }}
+                                {% if form.password.errors %}
+                                <span class="form-field__error">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-actions">
+                                {{ form.submit(class="btn btn--danger") }}
+                                <a href="{{ url_for('member.profile') }}" class="btn btn--outline">Abbrechen</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </form>
-        </div>
-        
-        <div class="security-info">
-            <h3>🔒 Was passiert nach der Deaktivierung?</h3>
-            <ul>
-                <li>Du kannst dich nur noch mit E-Mail und Passwort anmelden</li>
-                <li>Alle Backup-Codes werden deaktiviert</li>
-                <li>Die Sicherheit deines Kontos wird reduziert</li>
-                <li>Du kannst 2FA jederzeit wieder aktivieren</li>
-            </ul>
-        </div>
-        
-        <div class="recommendation">
-            <h3>💡 Empfehlung</h3>
-            <p>Wir empfehlen, 2FA aktiviert zu lassen, um dein Konto zu schützen. Falls du Probleme mit deiner Authenticator-App hast, kannst du auch Backup-Codes verwenden.</p>
+
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">Was passiert danach?</h3>
+                    </div>
+                    <div class="card-section__body">
+                        <ul>
+                            <li>Anmeldung nur noch mit E-Mail und Passwort</li>
+                            <li>Backup-Codes werden deaktiviert</li>
+                            <li>Du kannst 2FA jederzeit wieder aktivieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert--info" role="status">
+                    <div class="alert__content">
+                        <div class="alert__message">Empfehlung: Nutze weiter 2FA. Bei Problemen helfen Backup-Codes oder ein erneutes Einrichten.</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Styles werden jetzt durch base.css abgedeckt -->
 {% endblock %}
-
-
-

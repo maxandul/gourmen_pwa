@@ -1,175 +1,143 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Mitglieder-Verwaltung - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>👥 Mitglieder-Verwaltung</h1>
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#users"></use></svg>
+            Mitglieder-Verwaltung
+        </h1>
         <p class="page-subtitle">Verwalte alle Gourmen-Mitglieder und deren Daten</p>
         <div class="page-actions">
-            <a href="{{ url_for('admin.create_member') }}" class="btn btn-primary">➕ Neues Mitglied erstellen</a>
+            <a href="{{ url_for('admin.create_member') }}" class="btn btn--primary">
+                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user-plus"></use></svg>
+                Neues Mitglied
+            </a>
         </div>
     </div>
     
     <div class="page-content">
-        
-        <!-- Mitglieder-Liste als Cards (Mobile-First) -->
         <div class="members-grid">
             {% for member in members %}
-            <div class="member-card {% if not member.is_active %}inactive{% endif %}">
-                <div class="member-header">
-                    <h3 class="member-name">{{ member.display_name_with_spirit }}</h3>
-                    <div class="member-status">
-                        {% if member.role.value == 'ADMIN' %}
-                        <span class="badge badge-admin">ADMIN</span>
-                        {% endif %}
-                        {% if member.is_active %}
-                        <span class="badge badge-active">Aktiv</span>
-                        {% else %}
-                        <span class="badge badge-inactive">Inaktiv</span>
-                        {% endif %}
-                        {% if member.vorstandsmitglied %}
-                        <span class="badge badge-vorstand">Vorstand</span>
-                        {% endif %}
+            <div class="card {% if not member.is_active %}member-card--inactive{% endif %}">
+                <div class="card__header">
+                    <h2 class="card__title">{{ member.display_name_with_spirit }}</h2>
+                    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
+                        {% if member.role.value == 'ADMIN' %}<span class="chip chip--accent">Admin</span>{% endif %}
+                        {% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}
+                        {% if member.vorstandsmitglied %}<span class="chip chip--info">Vorstand</span>{% endif %}
                     </div>
                 </div>
                 
-                <div class="member-content">
-                    <!-- Grunddaten -->
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>👤 Grunddaten</h3>
-                        </div>
-                        <div class="card-body">
-                        <p><strong>Name:</strong> {{ member.vorname }} {{ member.nachname }}</p>
-                        {% if member.geburtsdatum %}
-                        <p><strong>Geboren:</strong> {{ member.geburtsdatum.strftime('%d.%m.%Y') }}</p>
-                        {% endif %}
-                        {% if member.nationalitaet %}
-                        <p><strong>Nationalität:</strong> {{ member.nationalitaet }}</p>
-                        {% endif %}
-                        </div>
+                <div class="card__body" style="display:grid; gap: var(--space-4);">
+                    <div>
+                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Grunddaten</h3>
+                        <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.vorname }} {{ member.nachname }}</span></div>
+                        {% if member.geburtsdatum %}<div class="info-row"><span class="info-row__label">Geboren</span><span class="info-row__value">{{ member.geburtsdatum.strftime('%d.%m.%Y') }}</span></div>{% endif %}
+                        {% if member.nationalitaet %}<div class="info-row"><span class="info-row__label">Nationalität</span><span class="info-row__value">{{ member.nationalitaet }}</span></div>{% endif %}
                     </div>
-                    
-                    <!-- Kontakt -->
-                    <div class="card card-secondary variant-success">
-                        <div class="card-header">
-                            <h3>📧 Kontakt</h3>
-                        </div>
-                        <div class="card-body">
-                        <p><strong>E-Mail:</strong> {{ member.email }}</p>
-                        {% if member.telefon %}
-                        <p><strong>Telefon:</strong> {{ member.telefon }}</p>
-                        {% endif %}
+
+                    <div>
+                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Kontakt</h3>
+                        <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
+                        {% if member.telefon %}<div class="info-row"><span class="info-row__label">Telefon</span><span class="info-row__value">{{ member.telefon }}</span></div>{% endif %}
                         {% if member.strasse or member.plz or member.ort %}
-                        <p><strong>Adresse:</strong>
-                            {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
-                            {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
-                        </p>
-                        {% endif %}
+                        <div class="info-row">
+                            <span class="info-row__label">Adresse</span>
+                            <span class="info-row__value">
+                                {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
+                                {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
+                            </span>
                         </div>
+                        {% endif %}
                     </div>
-                    
-                    <!-- Vereinsdaten und Position -->
+
                     {% if member.funktion or member.beitrittsjahr %}
-                    <div class="card card-secondary variant-accent">
-                        <div class="card-header">
-                            <h3>🏢 Vereinsdaten und Position</h3>
-                        </div>
-                        <div class="card-body">
-                        {% if member.funktion %}
-                        <p><strong>Funktion:</strong> {{ member.funktion.value }}</p>
-                        {% endif %}
-                        {% if member.beitrittsjahr %}
-                        <p><strong>Beitritt:</strong> Seit {{ member.beitrittsjahr }}</p>
-                        {% endif %}
-                        </div>
+                    <div>
+                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Verein</h3>
+                        {% if member.funktion %}<div class="info-row"><span class="info-row__label">Funktion</span><span class="info-row__value">{{ member.funktion.value }}</span></div>{% endif %}
+                        {% if member.beitrittsjahr %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitrittsjahr }}</span></div>{% endif %}
                     </div>
                     {% endif %}
-                    
-                    <!-- Körperliche Daten -->
+
                     {% if member.koerpergroesse or member.koerpergewicht or member.schuhgroesse or member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                    <div class="card card-secondary variant-warning">
-                        <div class="card-header">
-                            <h3>📏 Körperliche Daten</h3>
-                        </div>
-                        <div class="card-body">
-                        {% if member.koerpergroesse %}
-                        <p><strong>Größe:</strong> {{ member.koerpergroesse }} cm</p>
-                        {% endif %}
-                        {% if member.koerpergewicht %}
-                        <p><strong>Gewicht:</strong> {{ member.koerpergewicht }} kg</p>
-                        {% endif %}
-                        {% if member.schuhgroesse %}
-                        <p><strong>Schuhgröße:</strong> {{ member.schuhgroesse }}</p>
-                        {% endif %}
+                    <div>
+                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Körperlich</h3>
+                        {% if member.koerpergroesse %}<div class="info-row"><span class="info-row__label">Größe</span><span class="info-row__value">{{ member.koerpergroesse }} cm</span></div>{% endif %}
+                        {% if member.koerpergewicht %}<div class="info-row"><span class="info-row__label">Gewicht</span><span class="info-row__value">{{ member.koerpergewicht }} kg</span></div>{% endif %}
+                        {% if member.schuhgroesse %}<div class="info-row"><span class="info-row__label">Schuhgröße</span><span class="info-row__value">{{ member.schuhgroesse }}</span></div>{% endif %}
                         {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                        <p><strong>Kleidergrößen:</strong>
-                            {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
-                            {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
-                            {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
-                        </p>
-                        {% endif %}
+                        <div class="info-row">
+                            <span class="info-row__label">Kleidergrößen</span>
+                            <span class="info-row__value">
+                                {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
+                                {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
+                                {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
+                            </span>
                         </div>
+                        {% endif %}
                     </div>
                     {% endif %}
-                    
-                    <!-- Präferenzen -->
+
                     {% if member.zimmerwunsch or member.spirit_animal or member.fuehrerschein %}
-                    <div class="card card-secondary variant-info">
-                        <div class="card-header">
-                            <h3>⭐ Präferenzen</h3>
-                        </div>
-                        <div class="card-body">
-                        {% if member.zimmerwunsch %}
-                        <p><strong>Zimmerwunsch:</strong> {{ member.zimmerwunsch }}</p>
-                        {% endif %}
-                        {% if member.spirit_animal %}
-                        <p><strong>Spirit Animal:</strong> {{ member.spirit_animal }}</p>
-                        {% endif %}
-                        {% if member.fuehrerschein %}
-                        <p><strong>Führerschein:</strong> {{ member.fuehrerschein }}</p>
-                        {% endif %}
-                        </div>
+                    <div>
+                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Präferenzen</h3>
+                        {% if member.zimmerwunsch %}<div class="info-row"><span class="info-row__label">Zimmerwunsch</span><span class="info-row__value">{{ member.zimmerwunsch }}</span></div>{% endif %}
+                        {% if member.spirit_animal %}<div class="info-row"><span class="info-row__label">Spirit Animal</span><span class="info-row__value">{{ member.spirit_animal }}</span></div>{% endif %}
+                        {% if member.fuehrerschein %}<div class="info-row"><span class="info-row__label">Führerschein</span><span class="info-row__value">{{ member.fuehrerschein }}</span></div>{% endif %}
                     </div>
                     {% endif %}
                 </div>
                 
-                <!-- Aktionen -->
-                <div class="card-actions primary">
-                    <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn-primary">✏️ Bearbeiten</a>
-                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn-primary">🔒 Sensible Daten</a>
-                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn-primary">🔐 Sicherheit</a>
+                <div class="card__footer" style="flex-wrap: wrap; gap: var(--space-2);">
+                    <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#edit-3"></use></svg>
+                        Bearbeiten
+                    </a>
+                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn--outline">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#lock"></use></svg>
+                        Sensible Daten
+                    </a>
+                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn--outline">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield"></use></svg>
+                        Sicherheit
+                    </a>
                 </div>
             </div>
             {% endfor %}
         </div>
         
-        <!-- Statistiken als Cards -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <h3 class="stat-title">👥 Gesamt</h3>
-                <div class="stat-value">{{ members|length }}</div>
-                <p class="stat-label">Mitglieder</p>
+            <div class="card">
+                <div class="card__header"><h3 class="card__title">Gesamt</h3></div>
+                <div class="card__body">
+                    <div class="stat-value">{{ members|length }}</div>
+                    <p class="stat-label">Mitglieder</p>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3 class="stat-title">✅ Aktiv</h3>
-                <div class="stat-value">{{ members|selectattr('is_active')|list|length }}</div>
-                <p class="stat-label">Aktive Mitglieder</p>
+            <div class="card">
+                <div class="card__header"><h3 class="card__title">Aktiv</h3></div>
+                <div class="card__body">
+                    <div class="stat-value">{{ members|selectattr('is_active')|list|length }}</div>
+                    <p class="stat-label">Aktive Mitglieder</p>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3 class="stat-title">⚙️ Admins</h3>
-                <div class="stat-value">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</div>
-                <p class="stat-label">Admin-Benutzer</p>
+            <div class="card">
+                <div class="card__header"><h3 class="card__title">Admins</h3></div>
+                <div class="card__body">
+                    <div class="stat-value">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</div>
+                    <p class="stat-label">Admin-Benutzer</p>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3 class="stat-title">🏆 Vorstand</h3>
-                <div class="stat-value">{{ members|selectattr('vorstandsmitglied')|list|length }}</div>
-                <p class="stat-label">Vorstandsmitglieder</p>
+            <div class="card">
+                <div class="card__header"><h3 class="card__title">Vorstand</h3></div>
+                <div class="card__body">
+                    <div class="stat-value">{{ members|selectattr('vorstandsmitglied')|list|length }}</div>
+                    <p class="stat-label">Vorstandsmitglieder</p>
+                </div>
             </div>
         </div>
     </div>
