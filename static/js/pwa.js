@@ -92,6 +92,28 @@ class PWA {
             return;
         }
         
+        // Dev-Helfer: Service Worker auf localhost standardmäßig abschalten,
+        // damit keine alten Assets aus dem Cache kommen. Aktivierbar via
+        // `?pwa_sw=1` oder `localStorage.PWA_SW_DEV = '1'`.
+        const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+        const forceEnableSw = (
+            new URLSearchParams(window.location.search).get('pwa_sw') === '1' ||
+            localStorage.getItem('PWA_SW_DEV') === '1'
+        );
+        if (isLocalhost && !forceEnableSw) {
+            console.log('🔧 Service Worker ist auf localhost deaktiviert. Aktiviere mit ?pwa_sw=1 oder localStorage.PWA_SW_DEV="1".');
+            // Bestehende Registrierungen und Caches aufräumen, damit frische Assets geladen werden.
+            if (navigator.serviceWorker?.getRegistrations) {
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    registrations.forEach((registration) => registration.unregister());
+                });
+            }
+            if (typeof caches !== 'undefined' && caches.keys) {
+                caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+            }
+            return;
+        }
+        
         console.log('🔄 Starte Service Worker Registrierung...');
         
         // Registriere Service Worker (oder hole bestehende Registration)

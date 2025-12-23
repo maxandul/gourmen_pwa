@@ -11,7 +11,7 @@
             <span class="breadcrumbs__separator">/</span>
         </div>
         <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">{{ event.event_typ.value }} {{ event.display_date }}</span>
+            <span class="breadcrumbs__current">Event-Details</span>
         </div>
     </nav>
 
@@ -48,25 +48,13 @@
         </h1>
         <p class="page-subtitle">Alle Details zum Event</p>
         {% if current_user.is_admin or event.organisator_id == current_user.id %}
-        <div class="page-actions page-actions--icons page-actions--right">
-            <a href="{{ url_for('events.edit', event_id=event.id) }}"
-               class="btn btn--icon-only"
-               aria-label="Event bearbeiten"
-               title="Event bearbeiten">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-            </a>
+        <div class="page-actions page-actions--right">
             <form method="POST"
                   action="{{ url_for('events.delete', event_id=event.id) }}"
                   onsubmit="return confirm('Willst du dieses Event wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.');"
-                  style="display: inline;">
+                  class="form form--inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit"
-                        class="btn btn--icon-only btn--danger"
-                        aria-label="Event löschen"
-                        title="Event löschen">
+                <button type="submit" class="btn btn--danger">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
@@ -74,6 +62,7 @@
                         <path d="M14 11v6"/>
                         <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
                     </svg>
+                    Event löschen
                 </button>
             </form>
         </div>
@@ -81,12 +70,27 @@
     </div>
     
     <div class="page-content">
-                {% set tab_param = active_tab if active_tab is defined else 'info' %}
+        {% set tab_param = request.args.get('tab', active_tab if active_tab is defined else 'info') %}
         <div class="tabs" data-tabs>
             <nav class="tabs__nav" role="tablist">
-                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'info' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'info' else 'false' }}" data-tab-target="tab-info">Infos</button>
-                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'billbro' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'billbro' else 'false' }}" data-tab-target="tab-billbro">BillBro</button>
-                        <button class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'ratings' else '' }}" type="button" role="tab" aria-selected="{{ 'true' if tab_param == 'ratings' else 'false' }}" data-tab-target="tab-ratings">Bewertungen</button>
+                <a href="{{ url_for('events.detail', event_id=event.id, tab='info') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'info' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'info' else 'false' }}">
+                    Infos
+                </a>
+                <a href="{{ url_for('events.detail', event_id=event.id, tab='billbro') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'billbro' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'billbro' else 'false' }}">
+                    BillBro
+                </a>
+                <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'ratings' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if tab_param == 'ratings' else 'false' }}">
+                    Bewertungen
+                </a>
             </nav>
 
             <div class="tabs__content">
@@ -104,6 +108,17 @@
                                 </svg>
                                 Event-Informationen
                             </h2>
+                            {% if current_user.is_admin or event.organisator_id == current_user.id %}
+                            <div class="card__actions">
+                                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--primary btn--sm">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    Bearbeiten
+                                </a>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="card__body">
                             <div class="info-row">
@@ -178,11 +193,10 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path d="M15 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    <polyline points="16 11 18 13 22 9"/>
                                 </svg>
                                 Deine Teilnahme
                             </h2>
@@ -194,7 +208,7 @@
                             <p>Du nimmst nicht an diesem Event teil.</p>
                             {% endif %}
                             
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form" style="margin-top: var(--space-4);">
+            <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" id="rsvp-form" class="form mt-4">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 {% if participation and participation.teilnahme %}
                                 <button type="submit" class="btn btn--danger">
@@ -317,8 +331,8 @@
                             </div>
                         </div>
                         {% if is_organizer %}
-                        <div class="card__footer" style="justify-content: flex-end;">
-                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form" style="margin:0;">
+                        <div class="card__footer">
+                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--danger" onclick="return confirm('Finalisierung aufheben? Anteile und Gesamtbetrag werden wieder bearbeitbar.')">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -341,6 +355,65 @@
                             | rejectattr('guess_bill_amount_rappen', 'equalto', none)
                             | list %}
                     {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
+                    {% if can_rate and not user_rating %}
+                    <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                    Jetzt bewerten
+                                </h2>
+                            </div>
+                            <div class="card__body">
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="food_rating">Essen</label>
+                                        <select id="food_rating" name="food_rating" class="form-field__select" required>
+                                            <option value="" disabled selected>Bitte wählen</option>
+                                            {% for score in [5,4,3,2,1] %}
+                                            <option value="{{ score }}">{{ score }} / 5</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="drinks_rating">Getränke</label>
+                                        <select id="drinks_rating" name="drinks_rating" class="form-field__select" required>
+                                            <option value="" disabled selected>Bitte wählen</option>
+                                            {% for score in [5,4,3,2,1] %}
+                                            <option value="{{ score }}">{{ score }} / 5</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="service_rating">Service</label>
+                                        <select id="service_rating" name="service_rating" class="form-field__select" required>
+                                            <option value="" disabled selected>Bitte wählen</option>
+                                            {% for score in [5,4,3,2,1] %}
+                                            <option value="{{ score }}">{{ score }} / 5</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label" for="highlights">Highlights (optional)</label>
+                                    <textarea id="highlights" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?"></textarea>
+                                </div>
+                            </div>
+                            <div class="card__footer">
+                                <button type="submit" class="btn btn--primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                    Bewertung speichern
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% endif %}
+
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
@@ -389,7 +462,7 @@
                         </div>
                         <div class="card__footer">
                             {% if not event.billbro_closed %}
-                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form" style="margin:0;">
+                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--outline">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -523,9 +596,9 @@
                         </div>
                         {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
                         {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
-                        <div class="card__footer" style="justify-content: flex-end;">
+                        <div class="card__footer">
                             {% if event.billbro_closed %}
-                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--outline">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -538,7 +611,7 @@
                             {% elif pending_guesses|length > 0 %}
                             <span class="text-muted">Warten auf Schätzungen ({{ pending_guesses|length }})</span>
                             {% else %}
-                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form" style="margin:0;">
+                            <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -876,63 +949,6 @@
                                 </form>
                             </div>
                         </div>
-                        {% else %}
-                        <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <div class="card">
-                                <div class="card__header">
-                                    <h2 class="card__title">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                        </svg>
-                                        Jetzt bewerten
-                                    </h2>
-                                </div>
-                                <div class="card__body">
-                                    <div class="form-row">
-                                        <div class="form-field">
-                                            <label class="form-field__label" for="food_rating">Essen</label>
-                                            <select id="food_rating" name="food_rating" class="form-field__select" required>
-                                                <option value="" disabled selected>Bitte wählen</option>
-                                                {% for score in [5,4,3,2,1] %}
-                                                <option value="{{ score }}">{{ score }} / 5</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="form-field">
-                                            <label class="form-field__label" for="drinks_rating">Getränke</label>
-                                            <select id="drinks_rating" name="drinks_rating" class="form-field__select" required>
-                                                <option value="" disabled selected>Bitte wählen</option>
-                                                {% for score in [5,4,3,2,1] %}
-                                                <option value="{{ score }}">{{ score }} / 5</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="form-field">
-                                            <label class="form-field__label" for="service_rating">Service</label>
-                                            <select id="service_rating" name="service_rating" class="form-field__select" required>
-                                                <option value="" disabled selected>Bitte wählen</option>
-                                                {% for score in [5,4,3,2,1] %}
-                                                <option value="{{ score }}">{{ score }} / 5</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="form-field__label" for="highlights">Highlights (optional)</label>
-                                        <textarea id="highlights" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?"></textarea>
-                                    </div>
-                                </div>
-                                <div class="card__footer">
-                                    <button type="submit" class="btn btn--primary">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                        </svg>
-                                        Bewertung speichern
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
                         {% endif %}
                     {% else %}
                     <div class="card">

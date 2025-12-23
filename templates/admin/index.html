@@ -16,7 +16,6 @@
   </div>
 
   <div class="page-content hub-grid">
-    <!-- Mitgliederverwaltung -->
     <div class="card hub-card">
       <div class="card__header">
         <h2 class="card__title">
@@ -50,7 +49,6 @@
       </div>
     </div>
 
-    <!-- Merch-Verwaltung -->
     <div class="card hub-card">
       <div class="card__header">
         <h2 class="card__title">
@@ -80,144 +78,6 @@
             <use href="/static/icons/lucide-sprite.svg#shopping-cart"></use>
           </svg>
           Merch verwalten
-        </a>
-      </div>
-    </div>
-
-    <!-- Event-Verwaltung -->
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#calendar"></use>
-          </svg>
-          Event-Verwaltung
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Kommende Events</span>
-          <span class="info-row__value">{{ upcoming_events_count or 0 }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row__label">Diese Saison</span>
-          <span class="info-row__value">{{ current_season_events or 0 }}</span>
-        </div>
-      </div>
-      <div class="card__footer">
-        <a href="{{ url_for('events.index') }}" class="btn btn--primary">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#calendar-range"></use>
-          </svg>
-          Events verwalten
-        </a>
-      </div>
-    </div>
-
-    <!-- System-Status -->
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#activity"></use>
-          </svg>
-          System-Status
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Datenbank</span>
-          <span class="info-row__value">Online</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row__label">Service Worker</span>
-          <span class="info-row__value">Aktiv</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row__label">Push-Notifications</span>
-          <span class="info-row__value">Verfügbar</span>
-        </div>
-      </div>
-      <div class="card__footer">
-        <a href="{{ url_for('docs.index') }}" class="btn btn--outline">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#search"></use>
-          </svg>
-          System-Status ansehen
-        </a>
-      </div>
-    </div>
-
-    <!-- Sicherheit -->
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#shield"></use>
-          </svg>
-          Sicherheit
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Audit-Events</span>
-          <span class="info-row__value">{{ audit_events_count or 0 }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row__label">Letzte Prüfung</span>
-          <span class="info-row__value">Heute</span>
-        </div>
-      </div>
-      <div class="card__footer">
-        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#file-search"></use>
-          </svg>
-          Audit-Log
-        </a>
-      </div>
-    </div>
-
-    <!-- Schnellzugriff -->
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#zap"></use>
-          </svg>
-          Schnellzugriff
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Häufige Aktionen</span>
-          <span class="info-row__value">Kurzlinks für Admins</span>
-        </div>
-      </div>
-      <div class="card__footer" style="flex-wrap: wrap; gap: var(--space-2);">
-        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#user-plus"></use>
-          </svg>
-          Neues Mitglied
-        </a>
-        <a href="{{ url_for('events.index') }}" class="btn btn--primary">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#plus"></use>
-          </svg>
-          Neues Event
-        </a>
-        <a href="{{ url_for('admin.merch_articles') }}" class="btn btn--primary">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#package-plus"></use>
-          </svg>
-          Neuer Artikel
-        </a>
-        <a href="{{ url_for('docs.index') }}" class="btn btn--outline">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#database"></use>
-          </svg>
-          Backup
         </a>
       </div>
     </div>

@@ -280,8 +280,23 @@ def merch():
     
     # Get user's orders
     user_orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
+    selected_order_id = request.args.get('order_id', type=int)
+    selected_order = None
+    if user_orders:
+        if selected_order_id:
+            selected_order = next((o for o in user_orders if o.id == selected_order_id), None)
+        if selected_order is None:
+            selected_order = user_orders[0]
+            selected_order_id = selected_order.id
     
-    return render_template('member/merch/index.html', articles=articles, orders=user_orders, use_v2_design=True)
+    return render_template(
+        'member/merch/index.html',
+        articles=articles,
+        orders=user_orders,
+        selected_order=selected_order,
+        selected_order_id=selected_order_id,
+        use_v2_design=True
+    )
 
 @bp.route('/merch/order', methods=['GET', 'POST'])
 @login_required

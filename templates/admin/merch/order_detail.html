@@ -1,89 +1,130 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Bestelldetails - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>🔍 Bestelldetails</h1>
-        <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
-        <div class="page-actions">
-            <a href="{{ url_for('admin.merch_orders') }}" class="btn btn-outline">← Zurück zu Bestellungen</a>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
+            <span class="breadcrumbs__separator">/</span>
         </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.merch', tab='orders') }}" class="breadcrumbs__link">Merch</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Bestelldetail</span>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>
+            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+            Bestelldetails
+        </h1>
+        <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
     </div>
     
     <div class="page-content">
-        <!-- Bestellübersicht -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📋 Bestellübersicht</h2>
-                <div class="order-status">
-                    {% if order.status.value == 'BESTELLT' %}
-                        <span class="status-badge status-pending">🟡 {{ order.status_display }}</span>
-                    {% elif order.status.value == 'WIRD_GELIEFERT' %}
-                        <span class="status-badge status-progress">🔵 {{ order.status_display }}</span>
-                    {% elif order.status.value == 'GELIEFERT' %}
-                        <span class="status-badge status-delivered">🟢 {{ order.status_display }}</span>
-                    {% else %}
-                        <span class="status-badge">{{ order.status_display }}</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="order-info-grid">
-                    <div class="stats-item">
-                        <span class="label">Bestellnummer:</span>
-                        <span class="value">#{{ order.order_number }}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Member:</span>
-                        <span class="value">{{ order.member.display_name_with_spirit }}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">E-Mail:</span>
-                        <span class="value">{{ order.member.email }}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Bestellt am:</span>
-                        <span class="value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Letzte Aktualisierung:</span>
-                        <span class="value">{{ order.updated_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                    </div>
-                    {% if order.delivered_at %}
-                    <div class="stats-item">
-                        <span class="label">Geliefert am:</span>
-                        <span class="value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Status-Änderung -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚙️ Status verwalten</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>Status ändern</h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="status-form">
+        <!-- Status-Änderung (eingeklappt) -->
+        <div class="card card--filter">
+            <div class="card__body">
+                <details class="disclosure">
+                    <summary class="disclosure__summary">
+                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#sliders"></use></svg>
+                        Status verwalten
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </summary>
+                    <div class="disclosure__content">
+                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="form form--inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <div class="status-select">
-                                <label for="status">Neuer Status:</label>
-                                <select name="status" id="status" class="form-control">
-                                    <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Bestellt</option>
-                                    <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Wird geliefert</option>
-                                    <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
-                                </select>
-                                <button type="submit" class="btn btn-primary">✅ Status aktualisieren</button>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="status">Neuer Status</label>
+                                    <select name="status" id="status" class="form-field__select">
+                                        <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Bestellt</option>
+                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Wird geliefert</option>
+                                        <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-field__label">&nbsp;</label>
+                                    <button type="submit" class="btn btn--primary">
+                                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#check"></use></svg>
+                                        Status aktualisieren
+                                    </button>
+                                </div>
                             </div>
                         </form>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <!-- Bestellübersicht & Zusammenfassung kombiniert -->
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
+                    Bestellübersicht
+                </h2>
+                <div class="card__actions">
+                    {% if order.status.value == 'BESTELLT' %}
+                        <span class="chip chip--warning">{{ order.status_display }}</span>
+                    {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                        <span class="chip chip--info">{{ order.status_display }}</span>
+                    {% elif order.status.value == 'GELIEFERT' %}
+                        <span class="chip chip--success">{{ order.status_display }}</span>
+                    {% else %}
+                        <span class="chip">{{ order.status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Bestellnummer</span>
+                            <span class="info-row__value">#{{ order.order_number }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Member</span>
+                            <span class="info-row__value">{{ order.member.display_name_with_spirit }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Bestellt am</span>
+                            <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Letzte Aktualisierung</span>
+                            <span class="info-row__value">{{ order.updated_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        {% if order.delivered_at %}
+                        <div class="info-row">
+                            <span class="info-row__label">Geliefert am</span>
+                            <span class="info-row__value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="info-row">
+                            <span class="info-row__label">Anzahl Artikel</span>
+                            <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtbetrag (Member)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtbetrag (Lieferant)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(order.total_supplier_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtgewinn</span>
+                            <span class="info-row__value">{{ "%.2f"|format(order.total_profit_chf) }} CHF</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,49 +132,50 @@
         
         <!-- Bestellpositionen -->
         <div class="card">
-            <div class="card-header">
-                <h2>📦 Bestellte Artikel</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                    Bestellte Artikel
+                </h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 {% for item in order.order_items %}
-                <div class="card card-secondary variant-info">
-                    <div class="card-header">
-                        <h3>{{ item.display_name }}</h3>
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__header">
+                        <h3 class="card-section__title">{{ item.display_name }}</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="item-details">
-                            <div class="stats-item">
-                                <span class="label">Artikel:</span>
-                                <span class="value">{{ item.article.name }}</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Variante:</span>
-                                <span class="value">{{ item.variant.color }} {{ item.variant.size }}</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Anzahl:</span>
-                                <span class="value">{{ item.quantity }}x</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Einzelpreis (Member):</span>
-                                <span class="value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Einzelpreis (Lieferant):</span>
-                                <span class="value">{{ "%.2f"|format(item.unit_supplier_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Gesamtpreis (Member):</span>
-                                <span class="value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Gesamtpreis (Lieferant):</span>
-                                <span class="value">{{ "%.2f"|format(item.total_supplier_price_chf) }} CHF</span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="label">Gewinn:</span>
-                                <span class="value profit">{{ "%.2f"|format(item.total_profit_chf) }} CHF</span>
-                            </div>
+                    <div class="card-section__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Artikel</span>
+                            <span class="info-row__value">{{ item.article.name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Variante</span>
+                            <span class="info-row__value">{{ item.variant.color }} {{ item.variant.size }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Anzahl</span>
+                            <span class="info-row__value">{{ item.quantity }}x</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Einzelpreis (Member)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(item.unit_member_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Einzelpreis (Lieferant)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(item.unit_supplier_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtpreis (Member)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(item.total_member_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gesamtpreis (Lieferant)</span>
+                            <span class="info-row__value">{{ "%.2f"|format(item.total_supplier_price_chf) }} CHF</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Gewinn</span>
+                            <span class="info-row__value">{{ "%.2f"|format(item.total_profit_chf) }} CHF</span>
                         </div>
                     </div>
                 </div>
@@ -141,46 +183,18 @@
             </div>
         </div>
         
-        <!-- Bestellzusammenfassung -->
-        <div class="card">
-            <div class="card-header">
-                <h2>💰 Bestellzusammenfassung</h2>
-            </div>
-            <div class="card-body">
-                <div class="order-summary">
-                    <div class="stats-item">
-                        <span class="label">Anzahl Artikel:</span>
-                        <span class="value">{{ order.get_item_count() }} Stück</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Einzigartige Artikel:</span>
-                        <span class="value">{{ order.get_unique_articles_count() }} verschiedene</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Gesamtbetrag (Member):</span>
-                        <span class="value total-price">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Gesamtbetrag (Lieferant):</span>
-                        <span class="value">{{ "%.2f"|format(order.total_supplier_price_chf) }} CHF</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="label">Gesamtgewinn:</span>
-                        <span class="value profit">{{ "%.2f"|format(order.total_profit_chf) }} CHF</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- Notizen -->
         {% if order.notes %}
         <div class="card">
-            <div class="card-header">
-                <h2>📝 Notizen</h2>
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#note"></use></svg>
+                    Notizen
+                </h2>
             </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-body">
+            <div class="card__body">
+                <div class="card-section card-section--subtle">
+                    <div class="card-section__body">
                         <p>{{ order.notes }}</p>
                     </div>
                 </div>
@@ -189,97 +203,4 @@
         {% endif %}
     </div>
 </div>
-
-<style>
-.order-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.status-pending {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid #ffc107;
-}
-
-.status-progress {
-    background: rgba(23, 162, 184, 0.2);
-    color: #17a2b8;
-    border: 1px solid #17a2b8;
-}
-
-.status-delivered {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-    border: 1px solid #28a745;
-}
-
-.order-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.status-form {
-    margin: 0;
-}
-
-.status-select {
-    display: flex;
-    align-items: end;
-    gap: 10px;
-}
-
-.status-select label {
-    font-weight: bold;
-    color: var(--text-secondary);
-}
-
-.item-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-}
-
-.order-summary {
-    background: var(--background-secondary);
-    padding: 20px;
-    border-radius: var(--border-radius-md);
-}
-
-.total-price {
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--accent-color);
-}
-
-.profit {
-    color: var(--success-color);
-    font-weight: bold;
-}
-
-@media (max-width: 768px) {
-    .order-info-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .item-details {
-        grid-template-columns: 1fr;
-    }
-    
-    .status-select {
-        flex-direction: column;
-        align-items: stretch;
-    }
-}
-</style>
 {% endblock %}

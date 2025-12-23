@@ -90,6 +90,7 @@
     <!-- CSS -->
     {% if use_v2_design %}
         <!-- Design System V2 -->
+        <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}" as="image" type="image/svg+xml">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.css') }}?v=1.5.9">
     {% else %}
         <!-- Legacy V1 CSS -->

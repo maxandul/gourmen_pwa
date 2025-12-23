@@ -918,6 +918,54 @@ Alle Forms sollten die `.form` Klasse verwenden:
 
 **CSS:** Die `.form` Klasse hat keine spezifischen Styles und dient primär als Container für Form Fields. Sie ermöglicht konsistente Form-Strukturierung.
 
+### Filter Panel (collapsible, reusable)
+
+**Use case:** Mehrere Filter in einer Card, optional eingeklappt. Wiederverwendbar für Listen (z. B. Archiv).
+
+```html
+<div class="card card--filter">
+  <div class="card__body">
+    <details class="disclosure" open>
+      <summary class="disclosure__summary">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        Filter
+        <span class="chip chip--info">Aktiv</span> <!-- optional -->
+      </summary>
+      <div class="disclosure__content">
+        <form method="GET" class="form">
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-field__label" for="year">Jahr</label>
+              <select id="year" class="form-field__select">
+                <option value="">Alle Jahre</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="organizer">Organisator</label>
+              <select id="organizer" class="form-field__select">
+                <option value="">Alle Organisatoren</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <a class="btn btn--outline btn--sm" href="#">Zurücksetzen</a>
+            <button type="submit" class="btn btn--primary btn--sm">Filtern</button>
+          </div>
+        </form>
+      </div>
+    </details>
+  </div>
+</div>
+```
+
+**Guidelines:**
+- Card + Disclosure + Form-Row + Form-Actions; keine Inline-Styles.
+- Debounce/Auto-Apply nur bei kleinen Datenmengen; sonst klarer „Filtern“-Button.
+- Reset-Link beibehalten; „Aktiv“-Chip nur setzen, wenn Filter wirken.
+- Verwende `card--filter` für konsistente Abstände in Card-Body/Disclosure.
+
 ### Form Fields
 
 ```html
@@ -1044,6 +1092,30 @@ Alle Forms sollten die `.form` Klasse verwenden:
   }
 }
 ```
+
+### Utilities (generisch)
+
+```
+.form--inline               → Kleine Inline-Formulare (z. B. RSVP)
+.form-row--stacked          → Gestapelte Zeilen mit vertikalem Gap
+.stack-vertical             → Flex-Stack (column) mit Gap, align start
+.max-320                    → Breitenbegrenzung (max 320px, width 100%)
+.form-field--no-margin      → Entfernt Margin bei Form-Field (z. B. Label-Zeile)
+.mt-4 / .mt-6               → Top-Margins über Token
+.page-actions--centered     → Zentrierte Page-Actions mit Wrap + Gap
+.page-info                  → Zeile mit Text secondary, kleinem Gap
+.text-secondary             → Sekundärer Text-Farbton
+
+.table                      → Basis-Tabelle (full width, collapse)
+.table th, .table td        → Padding nach Tokens
+.table th                   → Semibold, Text primary, align left
+.table td                   → Text secondary
+.table thead tr             → Border-Bottom (color-border-default)
+.table td:last-child/th:last-child → align right
+.table-responsive           → Horizontal scroll bei Overflow
+```
+
+**Warum:** Inline-Styles vermeiden und wiederkehrende Layout-/Abstands- und Tabellenszenarien mit konsistenten Tokens abdecken.
 
 ---
 
@@ -1542,6 +1614,12 @@ def index():
   gap: var(--space-6);
 }
 ```
+
+**Action Placement Best Practices**
+
+- Page-Header: Globale Aktionen (z. B. „Event löschen“) als beschriftete Buttons; destruktive Aktionen nicht icon-only.
+- Lokale Aktionen: Tab-/Card-bezogene Aktionen gehören in die jeweilige `card__header` → `card__actions` (z. B. „Bearbeiten“ nur für Infos).
+- Tabs selbst bleiben frei von globalen Aktionen, damit die Reichweite klar ist.
 
 ### Featured Page Header (for Hub Pages)
 

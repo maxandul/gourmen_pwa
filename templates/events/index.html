@@ -1,4 +1,5 @@
 ﻿{% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Events - Gourmen{% endblock %}
 
@@ -16,6 +17,41 @@
         </h1>
         <p class="page-subtitle">Verwalte und plane deine Gourmen-Events</p>
     </div>
+    
+    {% if current_user.is_admin() %}
+    <div class="card card--filter">
+        <div class="card__body">
+            <details class="disclosure">
+                <summary class="disclosure__summary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    Planung
+                </summary>
+                <div class="disclosure__content">
+                    <div class="form-actions">
+                        <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Event erfassen
+                        </a>
+                        <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Jahresplanung erstellen
+                        </a>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
+    {% endif %}
     
     {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'overview') %}
     <!-- Tabs Navigation -->
@@ -38,8 +74,7 @@
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'kommend' else 'false' }}">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 11 12 14 22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    <polyline points="9 18 15 12 9 6"/>
                 </svg>
                 Kommend
             </a>
@@ -114,7 +149,7 @@
                     </div>
                     <div class="card__footer">
                         {% if my_participation and my_participation.teilnahme %}
-                        <a href="{{ url_for('billbro.index', event_id=current_event.id) }}" class="btn btn--billbro">
+                        <a href="{{ url_for('events.detail', event_id=current_event.id, tab='billbro') }}" class="btn btn--billbro">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
                                 <line x1="8" y1="6" x2="16" y2="6"/>
@@ -130,10 +165,47 @@
                                 <circle cx="11" cy="11" r="8"/>
                                 <path d="m21 21-4.35-4.35"/>
                             </svg>
-                            Details
+                            Zum Event
                         </a>
                     </div>
                 </div>
+                {% endif %}
+                
+                <!-- Letztes Event (Rating Reminder) -->
+                {% if last_event %}
+                    {% set last_participation = last_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                    {% if last_participation and last_participation.teilnahme and not last_event.has_rating_from_participant(current_user.id) %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                Letztes Event bewerten
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Datum:</span>
+                                <span class="info-row__value">{{ last_event.display_date }}</span>
+                            </div>
+                            {% if last_event.restaurant %}
+                            <div class="info-row">
+                                <span class="info-row__label">Restaurant:</span>
+                                <span class="info-row__value">{{ last_event.restaurant }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card__footer">
+                            <a href="{{ url_for('ratings.rate_event', event_id=last_event.id) }}" class="btn btn--primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                Jetzt bewerten
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endif %}
                 
                 <!-- Nächstes Event -->
@@ -181,7 +253,7 @@
                     <div class="card__footer">
                         {% if my_participation %}
                             {% if my_participation.teilnahme %}
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="teilnahme" value="false">
                                 <button type="submit" class="btn btn--danger">
@@ -192,18 +264,8 @@
                                     Absagen
                                 </button>
                             </form>
-                            <a href="{{ url_for('billbro.index', event_id=next_event.id) }}" class="btn btn--billbro">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                    <line x1="8" y1="6" x2="16" y2="6"/>
-                                    <line x1="8" y1="10" x2="16" y2="10"/>
-                                    <line x1="8" y1="14" x2="16" y2="14"/>
-                                    <line x1="8" y1="18" x2="16" y2="18"/>
-                                </svg>
-                                BillBro
-                            </a>
                             {% else %}
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="teilnahme" value="true">
                                 <button type="submit" class="btn btn--success">
@@ -215,7 +277,7 @@
                             </form>
                             {% endif %}
                         {% else %}
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="teilnahme" value="true">
                             <button type="submit" class="btn btn--success">
@@ -225,7 +287,7 @@
                                 Zusagen
                             </button>
                         </form>
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" style="display: inline;">
+                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="teilnahme" value="false">
                             <button type="submit" class="btn btn--danger">
@@ -242,123 +304,20 @@
                                 <circle cx="11" cy="11" r="8"/>
                                 <path d="m21 21-4.35-4.35"/>
                             </svg>
-                            Details
+                            Zum Event
                         </a>
                     </div>
                 </div>
                 {% endif %}
-                
-                <!-- Letztes Event (Rating Reminder) -->
-                {% if last_event %}
-                    {% set last_participation = last_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-                    {% if last_participation and last_participation.teilnahme and not last_event.has_rating_from_participant(current_user.id) %}
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9 11 12 14 22 4"/>
-                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                                </svg>
-                                Letztes Event
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            <div class="alert alert--info">
-                                <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="16" x2="12" y2="12"/>
-                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
-                                </svg>
-                                <div class="alert__content">
-                                    <div class="alert__message">Bitte noch bewerten!</div>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Event:</span>
-                                <span class="info-row__value">{{ last_event.event_typ.value }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Datum:</span>
-                                <span class="info-row__value">{{ last_event.display_date }}</span>
-                            </div>
-                            {% if last_event.restaurant %}
-                            <div class="info-row">
-                                <span class="info-row__label">Restaurant:</span>
-                                <span class="info-row__value">{{ last_event.restaurant }}</span>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="card__footer">
-                            <a href="{{ url_for('ratings.rate_event', event_id=last_event.id) }}" class="btn btn--primary">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                                Jetzt bewerten
-                            </a>
-                            <a href="{{ url_for('billbro.index', event_id=last_event.id) }}" class="btn btn--billbro">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                    <line x1="8" y1="6" x2="16" y2="6"/>
-                                    <line x1="8" y1="10" x2="16" y2="10"/>
-                                    <line x1="8" y1="14" x2="16" y2="14"/>
-                                    <line x1="8" y1="18" x2="16" y2="18"/>
-                                </svg>
-                                BillBro
-                            </a>
-                            <a href="{{ url_for('events.detail', event_id=last_event.id) }}" class="btn btn--outline">
-                                Details
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endif %}
-                
-                <!-- Schnellaktionen -->
-                {% if current_user.is_admin() %}
-                <div class="card">
-                    <div class="card__header">
-                        <h2 class="card__title">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="12" y1="8" x2="12" y2="16"/>
-                                <line x1="8" y1="12" x2="16" y2="12"/>
-                            </svg>
-                            Schnellaktionen
-                        </h2>
-                    </div>
-                    <div class="card__body">
-                        <p>Erstelle neue Events oder plane das ganze Jahr im Voraus.</p>
-                    </div>
-                    <div class="card__footer">
-                        <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                            </svg>
-                            Neues Event
-                        </a>
-                        <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            Jahresplanung erstellen
-                        </a>
-                    </div>
-                </div>
-                {% endif %}
-                
                 <!-- Empty State -->
                 {% if not current_event and not next_event and not (last_event and last_participation and last_participation.teilnahme and not last_event.has_rating_from_participant(current_user.id)) %}
                 <div class="card">
                     <div class="card__body">
                         <p>Keine Events verfügbar.</p>
                         {% if current_user.is_admin() %}
-                        <p style="margin-top: var(--space-4);">
+                        <div class="page-actions mt-4">
                             <a href="{{ url_for('events.year_planning') }}" class="btn btn--outline">Jahresplanung erstellen</a>
-                        </p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -446,9 +405,9 @@
                     <div class="card__body">
                         <p>Keine kommenden Events verfügbar.</p>
                         {% if current_user.is_admin() %}
-                        <p style="margin-top: var(--space-4);">
+                        <div class="page-actions mt-4">
                             <a href="{{ url_for('events.year_planning') }}" class="btn btn--outline">Jahresplanung erstellen</a>
-                        </p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -459,41 +418,64 @@
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
                  role="tabpanel">
                 <!-- Filter Section -->
-                <div class="card">
+                <div class="card card--filter">
                     <div class="card__body">
-                        <form method="GET" class="form" style="display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start;">
-                            <input type="hidden" name="tab" value="archiv">
-                            <div class="form-field" style="margin: 0;">
-                                <span class="form-field__label" style="font-weight: var(--font-semibold);">Events filtern:</span>
-                            </div>
-                            <div class="form-field" style="width: 100%; max-width: 320px;">
-                                <label for="year" class="form-field__label">Jahr:</label>
-                                <select name="year" id="year" class="form-field__select">
-                                    <option value="">Alle Jahre</option>
-                                    {% if years %}
-                                    {% for year in years %}
-                                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
-                                        {{ year }}
-                                    </option>
-                                    {% endfor %}
+                        <details class="disclosure" {% if selected_year or selected_organizer_id %}open{% endif %}>
+                            <summary class="disclosure__summary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                                Filter
+                                {% if selected_year or selected_organizer_id %}
+                                    {% if selected_year %}
+                                    <span class="chip chip--info">{{ selected_year }}</span>
                                     {% endif %}
-                                </select>
-                            </div>
-                            <div class="form-field" style="width: 100%; max-width: 320px;">
-                                <label for="organisator_id" class="form-field__label">Organisator:</label>
-                                <select name="organisator_id" id="organisator_id" class="form-field__select">
-                                    <option value="">Alle Organisatoren</option>
-                                    {% if organizers %}
-                                    {% for organizer in organizers %}
-                                    <option value="{{ organizer.id }}" {% if selected_organizer_id == organizer.id %}selected{% endif %}>
-                                        {{ organizer.display_name_with_spirit }}
-                                    </option>
-                                    {% endfor %}
+                                    {% if selected_organizer_id %}
+                                        {% set selected_organizer = organizers|selectattr('id', 'equalto', selected_organizer_id)|first %}
+                                        {% if selected_organizer %}
+                                        <span class="chip chip--info">{{ selected_organizer.display_name_with_spirit }}</span>
+                                        {% endif %}
                                     {% endif %}
-                                </select>
+                                {% endif %}
+                            </summary>
+                            <div class="disclosure__content">
+                                <form method="GET" class="form">
+                                    <input type="hidden" name="tab" value="archiv">
+                                    <div class="form-row">
+                                        <div class="form-field">
+                                            <label for="year" class="form-field__label">Jahr</label>
+                                            <select name="year" id="year" class="form-field__select">
+                                                <option value="">Alle Jahre</option>
+                                                {% if years %}
+                                                {% for year in years %}
+                                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                                    {{ year }}
+                                                </option>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label for="organisator_id" class="form-field__label">Organisator</label>
+                                            <select name="organisator_id" id="organisator_id" class="form-field__select">
+                                                <option value="">Alle Organisatoren</option>
+                                                {% if organizers %}
+                                                {% for organizer in organizers %}
+                                                <option value="{{ organizer.id }}" {% if selected_organizer_id == organizer.id %}selected{% endif %}>
+                                                    {{ organizer.display_name_with_spirit }}
+                                                </option>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <a class="btn btn--outline" href="{{ url_for('events.index', tab='archiv') }}">Zurücksetzen</a>
+                                        <button type="submit" class="btn btn--primary">Filtern</button>
+                                    </div>
+                                </form>
                             </div>
-                            <button type="submit" class="btn btn--primary">Filtern</button>
-                        </form>
+                        </details>
                     </div>
                 </div>
                 
@@ -566,7 +548,7 @@
                 
                 <!-- Pagination -->
                 {% if events.pages > 1 %}
-                <div class="page-actions" style="margin-top: var(--space-6); justify-content: center; gap: var(--space-4); flex-wrap: wrap;">
+                <div class="page-actions page-actions--centered mt-6">
                     {% if events.has_prev %}
                     <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, year=selected_year if selected_year else '', organisator_id=selected_organizer_id if selected_organizer_id else '') }}" class="btn btn--outline">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -577,7 +559,7 @@
                     </a>
                     {% endif %}
                     
-                    <span style="display: flex; align-items: center; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                    <span class="page-info">
                         Seite {{ events.page }} von {{ events.pages }}
                     </span>
                     
@@ -728,19 +710,19 @@
                         </h2>
                     </div>
                     <div class="card__body">
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse;">
+                        <div class="table-responsive">
+                            <table class="table">
                                 <thead>
-                                    <tr style="border-bottom: 1px solid var(--color-border-default);">
-                                        <th style="text-align: left; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Restaurant</th>
-                                        <th style="text-align: right; padding: var(--space-3); font-weight: var(--font-semibold); color: var(--color-text-primary);">Besuche</th>
+                                    <tr>
+                                        <th>Restaurant</th>
+                                        <th>Besuche</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
-                                    <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-                                        <td style="padding: var(--space-3); color: var(--color-text-primary);">{{ restaurant }}</td>
-                                        <td style="text-align: right; padding: var(--space-3); color: var(--color-text-secondary);">{{ count }}</td>
+                                    <tr>
+                                        <td>{{ restaurant }}</td>
+                                        <td>{{ count }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

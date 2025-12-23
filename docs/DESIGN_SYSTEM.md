@@ -277,6 +277,13 @@ Component Architecture
 ✅ Dark buttons get text-shadow for better contrast
    - Primary button: text-shadow on dark navy gradient
    - Ensures readability without lighter gradient
+
+### Action Placement
+```
+Page-level actions (global scope) → Page Header, labeled buttons; destructive actions nicht icon-only.
+Tab-/Card-spezifische Aktionen → in die entsprechende Card (`card__header` → `card__actions`), damit der Scope klar ist.
+Tabs selbst bleiben frei von globalen Aktionen.
+```
 ```
 
 ---

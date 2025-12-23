@@ -6,49 +6,171 @@
 <div class="container">
   <div class="page-header">
     <h1>
-      <svg class="icon" aria-hidden="true">
-        <use href="/static/icons/lucide-sprite.svg#trophy"></use>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M8 21h8"/>
+        <path d="M12 17v4"/>
+        <path d="M7 4h10"/>
+        <path d="M17 4v4a5 5 0 0 1-10 0V4"/>
+        <path d="M4 4v1a3 3 0 0 0 3 3h1"/>
+        <path d="M20 4v1a3 3 0 0 1-3 3h-1"/>
       </svg>
       Gourmen Guessing League
     </h1>
     <p class="page-subtitle">Saisonwertung, Fortschritt und persönliche Rankings.</p>
   </div>
 
+  {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'aktuell') %}
   <div class="page-content">
-    {% if available_seasons %}
-    <div class="hub-grid">
-      {% for season in available_seasons %}
-      {% set stats = season_stats.get(season) %}
-      <div class="card hub-card {% if season == current_season %}hub-card--featured{% endif %}">
-        <div class="card__header">
-          <h2 class="card__title">
-            <svg class="icon" aria-hidden="true">
-              <use href="/static/icons/lucide-sprite.svg#calendar"></use>
-            </svg>
-            Saison {{ season }}
-          </h2>
-          {% if season == current_season %}
-          <span class="badge badge--success">Aktuelle Saison</span>
-          {% endif %}
+    <div class="tabs">
+      <nav class="tabs__nav" role="tablist">
+        <a href="{{ url_for('ggl.index', tab='aktuell') }}"
+           class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'aktuell' else '' }}"
+           role="tab"
+           aria-selected="{{ 'true' if tab_param == 'aktuell' else 'false' }}">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+          </svg>
+          Deine Rang
+        </a>
+        <a href="{{ url_for('ggl.index', tab='tabelle') }}"
+           class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'tabelle' else '' }}"
+           role="tab"
+           aria-selected="{{ 'true' if tab_param == 'tabelle' else 'false' }}">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#bar-chart-2"></use>
+          </svg>
+          Tabelle
+        </a>
+        <a href="{{ url_for('ggl.index', tab='rennen') }}"
+           class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'rennen' else '' }}"
+           role="tab"
+           aria-selected="{{ 'true' if tab_param == 'rennen' else 'false' }}">
+          <svg class="icon" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#activity"></use>
+          </svg>
+          Rennen
+        </a>
+      </nav>
+
+      <div class="tabs__content">
+        <!-- Tab: Aktuell -->
+        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'aktuell' else '' }}" role="tabpanel">
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                <svg class="icon" aria-hidden="true">
+                  <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+                </svg>
+                Saison {{ current_season }}
+              </h2>
+            </div>
+            <div class="card__body">
+              {% if current_stats %}
+              <div class="info-row">
+                <span class="info-row__label">Dein Rang</span>
+                <span class="info-row__value">{{ current_stats.rank or 'N/A' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-row__label">Deine Punkte</span>
+                <span class="info-row__value">{{ current_stats.total_points or 0 }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-row__label">⊘ Differenz</span>
+                <span class="info-row__value">{{ "%.1f"|format(current_stats.avg_diff_rappen / 100) }} CHF</span>
+              </div>
+              <div class="info-row">
+                <span class="info-row__label">Anzahl Events</span>
+                <span class="info-row__value">{{ current_stats.participation_count }}/{{ current_stats.total_events_in_season }}</span>
+              </div>
+              {% else %}
+              <div class="alert alert--info" role="status">
+                <svg class="alert__icon" aria-hidden="true">
+                  <use href="/static/icons/lucide-sprite.svg#info"></use>
+                </svg>
+                <div class="alert__content">
+                  <div class="alert__message">
+                    Noch keine Teilnahme an BillBro-Events in dieser Saison.
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
         </div>
 
-        <div class="card__body">
-          {% if stats %}
-          <div class="info-row">
-            <span class="info-row__label">Dein Rang</span>
-            <span class="info-row__value">{{ stats.rank or 'N/A' }}</span>
+        <!-- Tab: Tabelle -->
+        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'tabelle' else '' }}" role="tabpanel">
+          <div class="card card--filter">
+            <div class="card__body">
+              <details class="disclosure">
+                <summary class="disclosure__summary">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  Saison wählen
+                  {% if table_selected_season and table_selected_season != current_season %}
+                  <span class="chip chip--info">{{ table_selected_season }}</span>
+                  {% endif %}
+                </summary>
+                <div class="disclosure__content">
+                  <form method="GET" class="form">
+                    <input type="hidden" name="tab" value="tabelle">
+                    <div class="form-field">
+                      <label for="table_season" class="form-field__label">Saison</label>
+                      <select id="table_season" name="table_season" class="form-field__select">
+                        {% for season in available_seasons %}
+                        <option value="{{ season }}" {% if table_selected_season == season %}selected{% endif %}>{{ season }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="form-actions">
+                      <a class="btn btn--outline" href="{{ url_for('ggl.index', tab='tabelle') }}">Zurücksetzen</a>
+                      <button type="submit" class="btn btn--primary">Filtern</button>
+                    </div>
+                  </form>
+                </div>
+              </details>
+            </div>
           </div>
-          <div class="info-row">
-            <span class="info-row__label">Deine Punkte</span>
-            <span class="info-row__value">{{ stats.total_points or 0 }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-row__label">⊘ Differenz</span>
-            <span class="info-row__value">{{ "%.1f"|format(stats.avg_diff_rappen / 100) }} CHF</span>
-          </div>
-          <div class="info-row">
-            <span class="info-row__label">Anzahl Events</span>
-            <span class="info-row__value">{{ stats.participation_count }}/{{ stats.total_events_in_season }}</span>
+
+          {% if season_ranking %}
+          <div class="ggl-ranking-list">
+            {% for entry in season_ranking %}
+            {% set rank_class = 'ggl-ranking-item--rank-' ~ entry.rank if entry.rank <= 3 else '' %}
+            <div class="card ggl-ranking-card {{ rank_class }} {% if entry.member_id == current_user.id %}ggl-ranking-item--current{% endif %}">
+              <div class="card__header">
+                <h3 class="card__title">
+                  <span class="badge badge--info ggl-ranking-card__badge">
+                    {% if entry.rank <= 3 %}
+                    <svg class="icon icon--sm" aria-hidden="true">
+                      <use href="/static/icons/lucide-sprite.svg#award"></use>
+                    </svg>
+                    {% endif %}
+                    #{{ entry.rank }}
+                  </span>
+                  {{ entry.member.display_name_with_spirit }}
+                </h3>
+              </div>
+              <div class="card__body">
+                <div class="info-row">
+                  <span class="info-row__label">Punkte</span>
+                  <span class="info-row__value">{{ entry.total_points }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-row__label">Events</span>
+                  <span class="info-row__value">{{ entry.participation_count }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-row__label">⌀ Punkte</span>
+                  <span class="info-row__value">{{ "%.1f"|format(entry.avg_points) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-row__label">⊘ Differenz</span>
+                  <span class="info-row__value">{{ "%.1f"|format(entry.avg_diff_rappen / 100) }} CHF</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
           </div>
           {% else %}
           <div class="alert alert--info" role="status">
@@ -57,34 +179,104 @@
             </svg>
             <div class="alert__content">
               <div class="alert__message">
-                Noch keine Teilnahme an BillBro-Events in dieser Saison.
+                Noch keine Daten für Saison {{ current_season }} verfügbar.
               </div>
             </div>
           </div>
           {% endif %}
         </div>
 
-        <div class="card__footer">
-          <a href="{{ url_for('ggl.season', season_year=season) }}" class="btn btn--primary">
-            <svg class="icon" aria-hidden="true">
-              <use href="/static/icons/lucide-sprite.svg#bar-chart-2"></use>
+        <!-- Tab: Rennen -->
+        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'rennen' else '' }}" role="tabpanel">
+          <div class="card card--filter">
+            <div class="card__body">
+              <details class="disclosure">
+                <summary class="disclosure__summary">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  Saison wählen
+                  {% if race_selected_season and race_selected_season != current_season %}
+                  <span class="chip chip--info">{{ race_selected_season }}</span>
+                  {% endif %}
+                </summary>
+                <div class="disclosure__content">
+                  <form method="GET" class="form">
+                    <input type="hidden" name="tab" value="rennen">
+                    <div class="form-field">
+                      <label for="race_season" class="form-field__label">Saison</label>
+                      <select id="race_season" name="race_season" class="form-field__select">
+                        {% for season in available_seasons %}
+                        <option value="{{ season }}" {% if race_selected_season == season %}selected{% endif %}>{{ season }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="form-actions">
+                      <a class="btn btn--outline" href="{{ url_for('ggl.index', tab='rennen') }}">Zurücksetzen</a>
+                      <button type="submit" class="btn btn--primary">Filtern</button>
+                    </div>
+                  </form>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          {% if progression_data and progression_data.events|length > 0 %}
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                <svg class="icon" aria-hidden="true">
+                  <use href="/static/icons/lucide-sprite.svg#activity"></use>
+                </svg>
+                Performance-Verlauf (Saison {{ race_selected_season }})
+              </h2>
+            </div>
+            <div class="card__body">
+              <div class="ggl-chart">
+                <div class="ggl-chart__scroll">
+                  <div class="ggl-chart__container">
+                    <canvas id="ggl-progression-chart" width="400" height="200" aria-label="Punkteverlauf Diagramm" role="img"></canvas>
+                  </div>
+                  <div id="ggl-chart-labels" class="ggl-chart__labels"></div>
+                </div>
+              </div>
+              <div class="ggl-chart__note">Mobile: Tippe auf eine Linie, um Tooltips zu togglen.</div>
+            </div>
+          </div>
+
+          <script type="application/json" id="ggl-progression-data">
+            {
+              "labels": [
+                {% for event in progression_data.events %}
+                "{{ event.datum.strftime('%b') }}"{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ],
+              "members": {{ progression_data.members|map(attribute='id')|list|tojson }},
+              "data": {{ progression_data.progression_data|tojson }},
+              "currentUserId": {{ current_user.id }}
+            }
+          </script>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.0" defer></script>
+          {% else %}
+          <div class="alert alert--info" role="status">
+            <svg class="alert__icon" aria-hidden="true">
+              <use href="/static/icons/lucide-sprite.svg#info"></use>
             </svg>
-            Saisontabelle anzeigen
-          </a>
+            <div class="alert__content">
+              <div class="alert__message">
+                Noch keine Verlaufsdaten für Saison {{ race_selected_season }} verfügbar.
+              </div>
+            </div>
+          </div>
+          {% endif %}
         </div>
+
+        <!-- Tab: Archiv -->
+        <!-- Archiv-Tab entfernt -->
       </div>
-      {% endfor %}
     </div>
-    {% else %}
-      <div class="alert alert--info" role="status">
-        <svg class="alert__icon" aria-hidden="true">
-          <use href="/static/icons/lucide-sprite.svg#info"></use>
-        </svg>
-        <div class="alert__content">
-          <div class="alert__message">Keine vergangenen oder laufenden Saisons vorhanden.</div>
-        </div>
-      </div>
-    {% endif %}
   </div>
 </div>
 {% endblock %} 

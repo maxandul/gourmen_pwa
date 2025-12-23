@@ -5,6 +5,16 @@
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Mitglieder</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#users"></use></svg>
@@ -25,74 +35,94 @@
             <div class="card {% if not member.is_active %}member-card--inactive{% endif %}">
                 <div class="card__header">
                     <h2 class="card__title">{{ member.display_name_with_spirit }}</h2>
-                    <div style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
+                    <div class="stack-horizontal">
                         {% if member.role.value == 'ADMIN' %}<span class="chip chip--accent">Admin</span>{% endif %}
                         {% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}
                         {% if member.vorstandsmitglied %}<span class="chip chip--info">Vorstand</span>{% endif %}
                     </div>
                 </div>
                 
-                <div class="card__body" style="display:grid; gap: var(--space-4);">
-                    <div>
-                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Grunddaten</h3>
-                        <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.vorname }} {{ member.nachname }}</span></div>
-                        {% if member.geburtsdatum %}<div class="info-row"><span class="info-row__label">Geboren</span><span class="info-row__value">{{ member.geburtsdatum.strftime('%d.%m.%Y') }}</span></div>{% endif %}
-                        {% if member.nationalitaet %}<div class="info-row"><span class="info-row__label">Nationalität</span><span class="info-row__value">{{ member.nationalitaet }}</span></div>{% endif %}
+                <div class="card__body">
+                    <div class="card-section">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Grunddaten</h3>
+                        </div>
+                        <div class="card-section__body">
+                            <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.vorname }} {{ member.nachname }}</span></div>
+                            {% if member.geburtsdatum %}<div class="info-row"><span class="info-row__label">Geboren</span><span class="info-row__value">{{ member.geburtsdatum.strftime('%d.%m.%Y') }}</span></div>{% endif %}
+                            {% if member.nationalitaet %}<div class="info-row"><span class="info-row__label">Nationalität</span><span class="info-row__value">{{ member.nationalitaet }}</span></div>{% endif %}
+                        </div>
                     </div>
 
-                    <div>
-                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Kontakt</h3>
-                        <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
-                        {% if member.telefon %}<div class="info-row"><span class="info-row__label">Telefon</span><span class="info-row__value">{{ member.telefon }}</span></div>{% endif %}
-                        {% if member.strasse or member.plz or member.ort %}
-                        <div class="info-row">
-                            <span class="info-row__label">Adresse</span>
-                            <span class="info-row__value">
-                                {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
-                                {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
-                            </span>
+                    <div class="card-section">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Kontakt</h3>
                         </div>
-                        {% endif %}
+                        <div class="card-section__body">
+                            <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
+                            {% if member.telefon %}<div class="info-row"><span class="info-row__label">Telefon</span><span class="info-row__value">{{ member.telefon }}</span></div>{% endif %}
+                            {% if member.strasse or member.plz or member.ort %}
+                            <div class="info-row">
+                                <span class="info-row__label">Adresse</span>
+                                <span class="info-row__value">
+                                    {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
+                                    {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     {% if member.funktion or member.beitrittsjahr %}
-                    <div>
-                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Verein</h3>
-                        {% if member.funktion %}<div class="info-row"><span class="info-row__label">Funktion</span><span class="info-row__value">{{ member.funktion.value }}</span></div>{% endif %}
-                        {% if member.beitrittsjahr %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitrittsjahr }}</span></div>{% endif %}
+                    <div class="card-section">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Verein</h3>
+                        </div>
+                        <div class="card-section__body">
+                            {% if member.funktion %}<div class="info-row"><span class="info-row__label">Funktion</span><span class="info-row__value">{{ member.funktion.value }}</span></div>{% endif %}
+                            {% if member.beitrittsjahr %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitrittsjahr }}</span></div>{% endif %}
+                        </div>
                     </div>
                     {% endif %}
 
                     {% if member.koerpergroesse or member.koerpergewicht or member.schuhgroesse or member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                    <div>
-                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Körperlich</h3>
-                        {% if member.koerpergroesse %}<div class="info-row"><span class="info-row__label">Größe</span><span class="info-row__value">{{ member.koerpergroesse }} cm</span></div>{% endif %}
-                        {% if member.koerpergewicht %}<div class="info-row"><span class="info-row__label">Gewicht</span><span class="info-row__value">{{ member.koerpergewicht }} kg</span></div>{% endif %}
-                        {% if member.schuhgroesse %}<div class="info-row"><span class="info-row__label">Schuhgröße</span><span class="info-row__value">{{ member.schuhgroesse }}</span></div>{% endif %}
-                        {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                        <div class="info-row">
-                            <span class="info-row__label">Kleidergrößen</span>
-                            <span class="info-row__value">
-                                {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
-                                {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
-                                {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
-                            </span>
+                    <div class="card-section">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Körperlich</h3>
                         </div>
-                        {% endif %}
+                        <div class="card-section__body">
+                            {% if member.koerpergroesse %}<div class="info-row"><span class="info-row__label">Größe</span><span class="info-row__value">{{ member.koerpergroesse }} cm</span></div>{% endif %}
+                            {% if member.koerpergewicht %}<div class="info-row"><span class="info-row__label">Gewicht</span><span class="info-row__value">{{ member.koerpergewicht }} kg</span></div>{% endif %}
+                            {% if member.schuhgroesse %}<div class="info-row"><span class="info-row__label">Schuhgröße</span><span class="info-row__value">{{ member.schuhgroesse }}</span></div>{% endif %}
+                            {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
+                            <div class="info-row">
+                                <span class="info-row__label">Kleidergrößen</span>
+                                <span class="info-row__value">
+                                    {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
+                                    {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
+                                    {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     {% endif %}
 
                     {% if member.zimmerwunsch or member.spirit_animal or member.fuehrerschein %}
-                    <div>
-                        <h3 style="margin:0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--text-sm); letter-spacing: 0.04em;">Präferenzen</h3>
-                        {% if member.zimmerwunsch %}<div class="info-row"><span class="info-row__label">Zimmerwunsch</span><span class="info-row__value">{{ member.zimmerwunsch }}</span></div>{% endif %}
-                        {% if member.spirit_animal %}<div class="info-row"><span class="info-row__label">Spirit Animal</span><span class="info-row__value">{{ member.spirit_animal }}</span></div>{% endif %}
-                        {% if member.fuehrerschein %}<div class="info-row"><span class="info-row__label">Führerschein</span><span class="info-row__value">{{ member.fuehrerschein }}</span></div>{% endif %}
+                    <div class="card-section">
+                        <div class="card-section__header">
+                            <h3 class="card-section__title">Präferenzen</h3>
+                        </div>
+                        <div class="card-section__body">
+                            {% if member.zimmerwunsch %}<div class="info-row"><span class="info-row__label">Zimmerwunsch</span><span class="info-row__value">{{ member.zimmerwunsch }}</span></div>{% endif %}
+                            {% if member.spirit_animal %}<div class="info-row"><span class="info-row__label">Spirit Animal</span><span class="info-row__value">{{ member.spirit_animal }}</span></div>{% endif %}
+                            {% if member.fuehrerschein %}<div class="info-row"><span class="info-row__label">Führerschein</span><span class="info-row__value">{{ member.fuehrerschein }}</span></div>{% endif %}
+                        </div>
                     </div>
                     {% endif %}
                 </div>
                 
-                <div class="card__footer" style="flex-wrap: wrap; gap: var(--space-2);">
+                <div class="card__footer card__footer--wrap">
                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline">
                         <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#edit-3"></use></svg>
                         Bearbeiten
@@ -110,33 +140,24 @@
             {% endfor %}
         </div>
         
-        <div class="stats-grid">
-            <div class="card">
-                <div class="card__header"><h3 class="card__title">Gesamt</h3></div>
-                <div class="card__body">
-                    <div class="stat-value">{{ members|length }}</div>
-                    <p class="stat-label">Mitglieder</p>
+        <div class="card">
+            <div class="card__header"><h3 class="card__title">Kennzahlen</h3></div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Gesamt</span>
+                    <span class="info-row__value">{{ members|length }}</span>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card__header"><h3 class="card__title">Aktiv</h3></div>
-                <div class="card__body">
-                    <div class="stat-value">{{ members|selectattr('is_active')|list|length }}</div>
-                    <p class="stat-label">Aktive Mitglieder</p>
+                <div class="info-row">
+                    <span class="info-row__label">Aktiv</span>
+                    <span class="info-row__value">{{ members|selectattr('is_active')|list|length }}</span>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card__header"><h3 class="card__title">Admins</h3></div>
-                <div class="card__body">
-                    <div class="stat-value">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</div>
-                    <p class="stat-label">Admin-Benutzer</p>
+                <div class="info-row">
+                    <span class="info-row__label">Admins</span>
+                    <span class="info-row__value">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</span>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card__header"><h3 class="card__title">Vorstand</h3></div>
-                <div class="card__body">
-                    <div class="stat-value">{{ members|selectattr('vorstandsmitglied')|list|length }}</div>
-                    <p class="stat-label">Vorstandsmitglieder</p>
+                <div class="info-row">
+                    <span class="info-row__label">Vorstand</span>
+                    <span class="info-row__value">{{ members|selectattr('vorstandsmitglied')|list|length }}</span>
                 </div>
             </div>
         </div>

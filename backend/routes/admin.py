@@ -635,11 +635,21 @@ def show_temp_password():
 @login_required
 @admin_required
 def merch():
-    """Admin merch overview"""
+    """Admin Merch Übersicht mit Tabs (Bestellungen, Lieferanten, Artikel)"""
     from backend.models.merch_article import MerchArticle
     from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order_item import MerchOrderItem
+    from backend.models.merch_variant import MerchVariant
+    from backend.models.member import Member
+    from sqlalchemy import func
     
-    # Get statistics
+    tab = request.args.get('tab', 'orders')
+    sort_by = request.args.get('sort', 'member')
+    valid_sorts = ['member', 'article']
+    if sort_by not in valid_sorts:
+        sort_by = 'member'
+    
+    # Gemeinsame Stats (können für Summaries genutzt werden)
     total_articles = MerchArticle.query.count()
     active_articles = MerchArticle.query.filter_by(is_active=True).count()
     total_orders = MerchOrder.query.count()
@@ -647,49 +657,231 @@ def merch():
     in_progress_orders = MerchOrder.query.filter_by(status=OrderStatus.WIRD_GELIEFERT).count()
     delivered_orders = MerchOrder.query.filter_by(status=OrderStatus.GELIEFERT).count()
     
-    # Get recent orders
-    recent_orders = MerchOrder.query.order_by(MerchOrder.created_at.desc()).limit(5).all()
+    orders = None
+    articles = None
+    articles_data = None
+    total_stats = None
+    pending_orders_count = None
+    status_filter = None
+    member_filter = ''
+    member_filter_id = None
+    members_for_select = []
+    orders_articles_data = None
+    orders_total_stats = None
+    orders_group_count = None
     
-    return render_template('admin/merch/index.html', 
-                         total_articles=total_articles,
-                         active_articles=active_articles,
-                         total_orders=total_orders,
-                         pending_orders=pending_orders,
-                         in_progress_orders=in_progress_orders,
-                         delivered_orders=delivered_orders,
-                         recent_orders=recent_orders)
+    if tab == 'orders':
+        status_filter = request.args.get('status')
+        member_filter = request.args.get('member', '')
+        member_filter_id = request.args.get('member_id', type=int)
+        members_for_select = Member.query.order_by(Member.vorname.asc(), Member.nachname.asc()).all()
+        
+        query = MerchOrder.query
+        
+        # Status filtern (nur gültige Werte)
+        valid_status = [s.value for s in OrderStatus]
+        if status_filter in valid_status:
+            query = query.filter_by(status=OrderStatus(status_filter))
+        else:
+            status_filter = None
+        
+        # Member-Filter
+        if member_filter_id:
+            query = query.join(Member).filter(Member.id == member_filter_id)
+        elif member_filter:
+            query = query.join(Member).filter(
+                (Member.vorname.contains(member_filter)) |
+                (Member.nachname.contains(member_filter)) |
+                (Member.email.contains(member_filter))
+            )
+        
+        if sort_by == 'member':
+            orders = query.order_by(MerchOrder.created_at.desc()).all()
+        else:
+            # sort_by == 'article' → aggregiert nach Artikel/Variante (wie Lieferanten-Tab)
+            if not status_filter:
+                status_filter = OrderStatus.BESTELLT.value
+                query = query.filter_by(status=OrderStatus.BESTELLT)
+            orders_filtered = query.all()
+            order_ids = [o.id for o in orders_filtered]
+            
+            if order_ids:
+                aggregated = db.session.query(
+                    MerchOrderItem.article_id,
+                    MerchOrderItem.variant_id,
+                    func.sum(MerchOrderItem.quantity).label('total_quantity'),
+                    func.count(func.distinct(MerchOrderItem.order_id)).label('order_count'),
+                    func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
+                    func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
+                    func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
+                ).filter(
+                    MerchOrderItem.order_id.in_(order_ids)
+                ).group_by(
+                    MerchOrderItem.article_id,
+                    MerchOrderItem.variant_id
+                ).all()
+                
+                articles_dict = {}
+                total_supplier_price = 0
+                total_member_price = 0
+                total_profit = 0
+                total_quantity = 0
+                total_variants = 0
+                
+                for item in aggregated:
+                    article = MerchArticle.query.get(item.article_id)
+                    variant = MerchVariant.query.get(item.variant_id)
+                    if not article or not variant:
+                        continue
+                    
+                    if article.id not in articles_dict:
+                        articles_dict[article.id] = {
+                            'article': article,
+                            'variants': [],
+                            'total_quantity': 0,
+                            'total_supplier_price': 0
+                        }
+                    
+                    articles_dict[article.id]['variants'].append({
+                        'variant': variant,
+                        'quantity': item.total_quantity,
+                        'order_count': item.order_count,
+                        'supplier_price': item.total_supplier_price
+                    })
+                    articles_dict[article.id]['total_quantity'] += item.total_quantity
+                    articles_dict[article.id]['total_supplier_price'] += item.total_supplier_price
+                    
+                    total_supplier_price += item.total_supplier_price
+                    total_member_price += item.total_member_price
+                    total_profit += item.total_profit
+                    total_quantity += item.total_quantity
+                    total_variants += 1
+                
+                orders_articles_data = sorted(articles_dict.values(), key=lambda x: x['article'].name)
+                for article_data in orders_articles_data:
+                    article_data['variants'].sort(key=lambda x: (x['variant'].color, x['variant'].size))
+                
+                orders_total_stats = {
+                    'article_count': len(orders_articles_data),
+                    'variant_count': total_variants,
+                    'total_quantity': total_quantity,
+                    'total_supplier_price': total_supplier_price,
+                    'total_member_price': total_member_price,
+                    'total_profit': total_profit
+                }
+                orders_group_count = len(orders_filtered)
+    
+    elif tab == 'supplier':
+        try:
+            pending_orders_list = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
+            pending_ids = [order.id for order in pending_orders_list]
+            
+            if pending_ids:
+                aggregated = db.session.query(
+                    MerchOrderItem.article_id,
+                    MerchOrderItem.variant_id,
+                    func.sum(MerchOrderItem.quantity).label('total_quantity'),
+                    func.count(func.distinct(MerchOrderItem.order_id)).label('order_count'),
+                    func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
+                    func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
+                    func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
+                ).filter(
+                    MerchOrderItem.order_id.in_(pending_ids)
+                ).group_by(
+                    MerchOrderItem.article_id,
+                    MerchOrderItem.variant_id
+                ).all()
+                
+                articles_dict = {}
+                total_supplier_price = 0
+                total_member_price = 0
+                total_profit = 0
+                total_quantity = 0
+                total_variants = 0
+                
+                for item in aggregated:
+                    article = MerchArticle.query.get(item.article_id)
+                    variant = MerchVariant.query.get(item.variant_id)
+                    if not article or not variant:
+                        continue
+                    
+                    if article.id not in articles_dict:
+                        articles_dict[article.id] = {
+                            'article': article,
+                            'variants': [],
+                            'total_quantity': 0,
+                            'total_supplier_price': 0
+                        }
+                    
+                    articles_dict[article.id]['variants'].append({
+                        'variant': variant,
+                        'quantity': item.total_quantity,
+                        'order_count': item.order_count,
+                        'supplier_price': item.total_supplier_price
+                    })
+                    articles_dict[article.id]['total_quantity'] += item.total_quantity
+                    articles_dict[article.id]['total_supplier_price'] += item.total_supplier_price
+                    
+                    total_supplier_price += item.total_supplier_price
+                    total_member_price += item.total_member_price
+                    total_profit += item.total_profit
+                    total_quantity += item.total_quantity
+                    total_variants += 1
+                
+                articles_data = sorted(articles_dict.values(), key=lambda x: x['article'].name)
+                for article_data in articles_data:
+                    article_data['variants'].sort(key=lambda x: (x['variant'].color, x['variant'].size))
+                
+                total_stats = {
+                    'article_count': len(articles_data),
+                    'variant_count': total_variants,
+                    'total_quantity': total_quantity,
+                    'total_supplier_price': total_supplier_price,
+                    'total_member_price': total_member_price,
+                    'total_profit': total_profit
+                }
+                pending_orders_count = len(pending_orders_list)
+            else:
+                articles_data = []
+                total_stats = {}
+                pending_orders_count = 0
+        except Exception as e:
+            flash(f'Fehler beim Laden der Bestellübersicht: {str(e)}', 'error')
+            return redirect(url_for('admin.merch', tab='orders'))
+    
+    elif tab == 'articles':
+        articles = MerchArticle.query.order_by(MerchArticle.created_at.desc()).all()
+    
+    return render_template(
+        'admin/merch/index.html',
+        active_tab=tab,
+        total_articles=total_articles,
+        active_articles=active_articles,
+        total_orders=total_orders,
+        pending_orders=pending_orders,
+        in_progress_orders=in_progress_orders,
+        delivered_orders=delivered_orders,
+        status_filter=status_filter,
+        sort_by=sort_by,
+        member_filter=member_filter,
+        member_filter_id=member_filter_id,
+        members_for_select=members_for_select,
+        orders=orders,
+        orders_articles_data=orders_articles_data,
+        orders_total_stats=orders_total_stats,
+        orders_group_count=orders_group_count,
+        articles=articles,
+        articles_data=articles_data,
+        total_stats=total_stats,
+        pending_orders_count=pending_orders_count
+    )
 
 @bp.route('/merch/orders')
 @login_required
 @admin_required
 def merch_orders():
-    """Admin merch orders management"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    
-    # Get filter parameters
-    status_filter = request.args.get('status')
-    search = request.args.get('search', '')
-    
-    # Build query
-    query = MerchOrder.query
-    
-    if status_filter:
-        query = query.filter_by(status=OrderStatus(status_filter))
-    
-    if search:
-        query = query.join(Member).filter(
-            (Member.vorname.contains(search)) |
-            (Member.nachname.contains(search)) |
-            (Member.email.contains(search)) |
-            (MerchOrder.order_number.contains(search))
-        )
-    
-    orders = query.order_by(MerchOrder.created_at.desc()).all()
-    
-    return render_template('admin/merch/orders.html', 
-                         orders=orders, 
-                         status_filter=status_filter,
-                         search=search)
+    """Admin merch orders management (redirect to new tabbed view)."""
+    return redirect(url_for('admin.merch', tab='orders'))
 
 @bp.route('/merch/orders/<int:order_id>')
 @login_required
@@ -710,6 +902,7 @@ def update_order_status(order_id):
     from backend.models.merch_order import MerchOrder, OrderStatus
     
     print(f"DEBUG: Route reached - Order ID: {order_id}, Method: {request.method}")
+    next_url = request.form.get('next')
     
     if request.method == 'POST':
         try:
@@ -737,6 +930,8 @@ def update_order_status(order_id):
             print(f"DEBUG: Error in update_order_status: {str(e)}")
             flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
         
+        if next_url and next_url.startswith('/'):
+            return redirect(next_url)
         return redirect(url_for('admin.merch_order_detail', order_id=order_id))
     
     # GET request - just redirect back
@@ -935,64 +1130,17 @@ def edit_merch_article(article_id):
 @login_required
 @admin_required
 def create_merch_variant(article_id):
-    """Create new variant for an article"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    
-    article = MerchArticle.query.get_or_404(article_id)
-    
-    if request.method == 'POST':
-        try:
-            variant = MerchVariant(
-                article_id=article_id,
-                color=request.form.get('color'),
-                size=request.form.get('size'),
-                supplier_price_rappen=int(float(request.form.get('supplier_price_chf')) * 100),
-                member_price_rappen=int(float(request.form.get('member_price_chf')) * 100),
-                is_active=request.form.get('is_active') == 'on'
-            )
-            
-            db.session.add(variant)
-            db.session.commit()
-            
-            flash(f'Variante "{variant.color} / {variant.size}" erfolgreich erstellt!', 'success')
-            return redirect(url_for('admin.merch_article_detail', article_id=article_id))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Erstellen der Variante: {str(e)}', 'error')
-    
-    return render_template('admin/merch/variant_form.html', article=article, variant=None)
+    """Legacy: Variants werden über die Artikel-Form gepflegt."""
+    return redirect(url_for('admin.edit_merch_article', article_id=article_id))
 
 @bp.route('/merch/variants/<int:variant_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_merch_variant(variant_id):
-    """Edit merch variant"""
+    """Legacy: Varianten-Bearbeitung entfällt, bitte Artikel-Form nutzen."""
     from backend.models.merch_variant import MerchVariant
-    
     variant = MerchVariant.query.get_or_404(variant_id)
-    article = variant.article
-    
-    if request.method == 'POST':
-        try:
-            variant.color = request.form.get('color')
-            variant.size = request.form.get('size')
-            variant.supplier_price_rappen = int(float(request.form.get('supplier_price_chf')) * 100)
-            variant.member_price_rappen = int(float(request.form.get('member_price_chf')) * 100)
-            variant.is_active = request.form.get('is_active') == 'on'
-            variant.updated_at = datetime.utcnow()
-            
-            db.session.commit()
-            
-            flash(f'Variante "{variant.color} / {variant.size}" erfolgreich aktualisiert!', 'success')
-            return redirect(url_for('admin.merch_article_detail', article_id=variant.article_id))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Aktualisieren der Variante: {str(e)}', 'error')
-    
-    return render_template('admin/merch/variant_form.html', article=article, variant=variant)
+    return redirect(url_for('admin.edit_merch_article', article_id=variant.article_id))
 
 @bp.route('/merch/supplier-order')
 @login_required

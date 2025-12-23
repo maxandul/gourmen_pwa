@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}App-Einstellungen - Gourmen{% endblock %}
 
@@ -82,7 +83,7 @@
                 </button>
             </div>
             <div class="card__body">
-                <div id="sw-status" class="update-status" style="display: none;">
+                <div id="sw-status" class="update-status" hidden>
                     <span class="status-text"></span>
                 </div>
             </div>
@@ -100,13 +101,13 @@
                 </h2>
             </div>
             <div class="card__body">
-                <div id="push-enabled-message" style="display: none;">
+                <div id="push-enabled-message" hidden>
                     <div class="alert alert--success">
                         <div class="alert__content">
                             <div class="alert__title">Push-Benachrichtigungen sind aktiviert</div>
                             <div class="alert__message">
                                 Du erhältst Benachrichtigungen für:
-                                <ul style="margin: var(--space-2) 0 0 var(--space-4);">
+                                <ul>
                                     <li>3-Wochen-Reminder vor Events (Organisatoren)</li>
                                     <li>Montag-Reminder für Teilnehmer</li>
                                     <li>Rating-Erinnerungen nach Events</li>
@@ -117,7 +118,7 @@
                     </div>
                 </div>
                 
-                <div id="push-disabled-message" style="display: none;">
+                <div id="push-disabled-message" hidden>
                     <div class="alert alert--warning">
                         <div class="alert__content">
                             <div class="alert__title">Push-Benachrichtigungen sind nicht aktiviert</div>
@@ -144,7 +145,7 @@
                 </div>
             </div>
             <div class="card__footer">
-                <button id="enable-push-btn" class="btn btn--primary" style="display: none;">
+                <button id="enable-push-btn" class="btn btn--primary" hidden>
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -260,14 +261,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.subscribed) {
                 // User hat Push aktiviert
-                if (enabledMessage) enabledMessage.style.display = 'block';
-                if (disabledMessage) disabledMessage.style.display = 'none';
-                if (enableBtn) enableBtn.style.display = 'none';
+                if (enabledMessage) enabledMessage.hidden = false;
+                if (disabledMessage) disabledMessage.hidden = true;
+                if (enableBtn) enableBtn.hidden = true;
             } else {
                 // User hat Push NICHT aktiviert
-                if (enabledMessage) enabledMessage.style.display = 'none';
-                if (disabledMessage) disabledMessage.style.display = 'block';
-                if (enableBtn) enableBtn.style.display = 'inline-block';
+                if (enabledMessage) enabledMessage.hidden = true;
+                if (disabledMessage) disabledMessage.hidden = false;
+                if (enableBtn) enableBtn.hidden = false;
             }
         } catch (error) {
             console.error('Error checking push status:', error);

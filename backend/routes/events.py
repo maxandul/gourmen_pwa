@@ -241,7 +241,7 @@ def index():
             query = query.filter(Event.organisator_id == organizer_id)
         
         events = query.order_by(Event.datum.desc()).paginate(
-            page=page, per_page=20, error_out=False
+            page=page, per_page=10, error_out=False
         )
         
         # Get available years for filter (always set, even if empty)

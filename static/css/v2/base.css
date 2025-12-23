@@ -238,6 +238,11 @@ li {
   margin-top: var(--space-4);
 }
 
+/* Extra Abstand, wenn Actions direkt in Tabs-Panels sitzen */
+.tabs__panel .page-actions {
+  margin-bottom: var(--space-4);
+}
+
 /* Icon-only Action Group (keine Vollbreite) */
 .page-actions--icons {
   display: flex;

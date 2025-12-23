@@ -8,6 +8,16 @@
 
   const THRESHOLD = 2; // kleine Toleranz für Rundung
 
+  const scrollActiveTabIntoView = (nav) => {
+    const active = nav.querySelector('.tabs__tab--active');
+    if (!active) return;
+    active.scrollIntoView({
+      block: 'nearest',
+      inline: 'center',
+      behavior: 'auto',
+    });
+  };
+
   const update = (container, nav) => {
     const maxScroll = nav.scrollWidth - nav.clientWidth;
     if (maxScroll <= 0) {
@@ -28,6 +38,7 @@
 
     const handler = () => update(container, nav);
     handler();
+    requestAnimationFrame(() => scrollActiveTabIntoView(nav));
 
     nav.addEventListener('scroll', handler, { passive: true });
     window.addEventListener('resize', handler, { passive: true });

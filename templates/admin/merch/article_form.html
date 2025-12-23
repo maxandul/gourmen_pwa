@@ -1,172 +1,198 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }} - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.merch') }}" class="breadcrumbs__link">Merch</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.merch', tab='articles') }}" class="breadcrumbs__link">Artikel</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }}</span>
+        </div>
+    </nav>
+
     <div class="page-header">
-        <h1>{{ '✏️ Artikel bearbeiten' if article else '➕ Neuer Artikel' }}</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 16V8a2 2 0 0 0-1.106-1.789l-7-3.5a2 2 0 0 0-1.788 0l-7 3.5A2 2 0 0 0 3 8v8a2 2 0 0 0 1.106 1.789l7 3.5a2 2 0 0 0 1.788 0l7-3.5A2 2 0 0 0 21 16Z"/>
+            </svg>
+            {{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }}
+        </h1>
         <p class="page-subtitle">Merch-Artikel {{ 'bearbeiten' if article else 'erstellen' }}</p>
     </div>
     
     <div class="page-content">
         <div class="card">
-            <div class="card-header">
-                <h2>Artikel-Informationen</h2>
+            <div class="card__header">
+                <h2 class="card__title">Artikel-Informationen</h2>
             </div>
-            <div class="card-body">
+            <div class="card__body">
                 <form method="POST" class="form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="form-group">
-                        <label for="name">Artikel-Name *</label>
+
+                    <div class="form-field">
+                        <label for="name" class="form-field__label">Artikel-Name *</label>
                         <input type="text" 
                                id="name" 
                                name="name" 
-                               class="form-control" 
+                               class="form-field__input" 
                                value="{{ article.name if article else '' }}" 
                                required>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description">Beschreibung</label>
+                    <div class="form-field">
+                        <label for="description" class="form-field__label">Beschreibung</label>
                         <textarea id="description" 
                                   name="description" 
-                                  class="form-control" 
+                                  class="form-field__textarea" 
                                   rows="4">{{ article.description if article else '' }}</textarea>
                     </div>
                     
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="base_supplier_price_chf">Lieferanten-Preis (CHF) *</label>
+                        <div class="form-field">
+                            <label for="base_supplier_price_chf" class="form-field__label">Lieferanten-Preis (CHF) *</label>
                             <input type="number" 
                                    id="base_supplier_price_chf" 
                                    name="base_supplier_price_chf" 
-                                   class="form-control" 
+                                   class="form-field__input" 
                                    step="0.01" 
                                    min="0" 
                                    value="{{ '%.2f'|format(article.base_supplier_price_chf) if article else '' }}" 
                                    required>
-                            <small class="form-text">Basis-Einkaufspreis vom Lieferanten</small>
+                            <span class="form-field__hint">Basis-Einkaufspreis vom Lieferanten</span>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="base_member_price_chf">Mitglieder-Preis (CHF) *</label>
+                        <div class="form-field">
+                            <label for="base_member_price_chf" class="form-field__label">Mitglieder-Preis (CHF) *</label>
                             <input type="number" 
                                    id="base_member_price_chf" 
                                    name="base_member_price_chf" 
-                                   class="form-control" 
+                                   class="form-field__input" 
                                    step="0.01" 
                                    min="0" 
                                    value="{{ '%.2f'|format(article.base_member_price_chf) if article else '' }}" 
                                    required>
-                            <small class="form-text">Basis-Verkaufspreis für Mitglieder</small>
+                            <span class="form-field__hint">Basis-Verkaufspreis für Mitglieder</span>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="image_url">Bild-URL</label>
+                    <div class="form-field">
+                        <label for="image_url" class="form-field__label">Bild-URL</label>
                         <input type="url" 
                                id="image_url" 
                                name="image_url" 
-                               class="form-control" 
+                               class="form-field__input" 
                                value="{{ article.image_url if article else '' }}" 
                                placeholder="https://example.com/image.jpg">
-                        <small class="form-text">Optionale URL zu einem Produktbild</small>
+                        <span class="form-field__hint">Optionale URL zu einem Produktbild</span>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="colors_input">Verfügbare Farben *</label>
-                        <div id="colors-container" class="dynamic-input-container">
+                    <div class="form-field">
+                        <label class="form-field__label">Verfügbare Farben *</label>
+                        <div id="colors-container">
                             {% if existing_colors %}
                                 {% for color in existing_colors %}
-                                <div class="dynamic-input-item">
-                                    <input type="text" 
-                                           name="colors" 
-                                           class="form-control" 
-                                           value="{{ color }}"
-                                           placeholder="z.B. Schwarz"
-                                           required>
-                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+                                <div class="form-row" data-type="color">
+                                    <div class="form-field" style="margin-bottom: 0;">
+                                        <input type="text" 
+                                               name="colors" 
+                                               class="form-field__input" 
+                                               value="{{ color }}"
+                                               placeholder="z.B. Schwarz"
+                                               required>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen">Entfernen</button>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="dynamic-input-item">
-                                    <input type="text" 
-                                           name="colors" 
-                                           class="form-control" 
-                                           placeholder="z.B. Schwarz"
-                                           required>
-                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                                <div class="form-row" data-type="color">
+                                    <div class="form-field" style="margin-bottom: 0;">
+                                        <input type="text" 
+                                               name="colors" 
+                                               class="form-field__input" 
+                                               placeholder="z.B. Schwarz"
+                                               required>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen" hidden>Entfernen</button>
                                 </div>
                             {% endif %}
                         </div>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="addColorInput()">
-                            ➕ Weitere Farbe hinzufügen
-                        </button>
-                        <small class="form-text">Geben Sie alle verfügbaren Farben ein (z.B. Schwarz, Weiß, Navy, Rot, etc.)</small>
+                        <button type="button" class="btn btn--outline btn--sm" onclick="addColorInput()">Weitere Farbe hinzufügen</button>
+                        <span class="form-field__hint">Geben Sie alle verfügbaren Farben ein (z.B. Schwarz, Weiß, Navy, Rot, etc.)</span>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="sizes_input">Verfügbare Größen *</label>
-                        <div id="sizes-container" class="dynamic-input-container">
+                    <div class="form-field">
+                        <label class="form-field__label">Verfügbare Größen *</label>
+                        <div id="sizes-container">
                             {% if existing_sizes %}
                                 {% for size in existing_sizes %}
-                                <div class="dynamic-input-item">
-                                    <input type="text" 
-                                           name="sizes" 
-                                           class="form-control" 
-                                           value="{{ size }}"
-                                           placeholder="z.B. M"
-                                           required>
-                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+                                <div class="form-row" data-type="size">
+                                    <div class="form-field" style="margin-bottom: 0;">
+                                        <input type="text" 
+                                               name="sizes" 
+                                               class="form-field__input" 
+                                               value="{{ size }}"
+                                               placeholder="z.B. M"
+                                               required>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen">Entfernen</button>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="dynamic-input-item">
-                                    <input type="text" 
-                                           name="sizes" 
-                                           class="form-control" 
-                                           placeholder="z.B. M"
-                                           required>
-                                    <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)" style="display: none;">❌</button>
+                                <div class="form-row" data-type="size">
+                                    <div class="form-field" style="margin-bottom: 0;">
+                                        <input type="text" 
+                                               name="sizes" 
+                                               class="form-field__input" 
+                                               placeholder="z.B. M"
+                                               required>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen" hidden>Entfernen</button>
                                 </div>
                             {% endif %}
                         </div>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="addSizeInput()">
-                            ➕ Weitere Größe hinzufügen
-                        </button>
-                        <small class="form-text">Geben Sie alle verfügbaren Größen ein (z.B. XS, S, M, L, XL, XXL oder One Size, etc.)</small>
+                        <button type="button" class="btn btn--outline btn--sm" onclick="addSizeInput()">Weitere Größe hinzufügen</button>
+                        <span class="form-field__hint">Geben Sie alle verfügbaren Größen ein (z.B. XS, S, M, L, XL, XXL oder One Size, etc.)</span>
                     </div>
                     
-                    <div class="info-box">
-                        <strong>💡 Automatische Varianten:</strong><br>
-                        Alle Kombinationen aus Farben und Größen werden automatisch als Varianten erstellt.<br>
-                        <em>Beispiel: 2 Farben × 4 Größen = 8 Varianten</em>
-                        {% if article %}
-                        <br><br>
-                        <strong>⚠️ Hinweis beim Bearbeiten:</strong><br>
-                        Wenn Sie Farben oder Größen ändern, werden <strong>alle Varianten gelöscht und neu erstellt</strong>.<br>
-                        Individuelle Preis-Anpassungen einzelner Varianten gehen dabei verloren.
-                        {% endif %}
+                    <div class="alert alert--info">
+                        <div class="alert__content">
+                            <div class="alert__title">Automatische Varianten</div>
+                            <div class="alert__message">
+                                Alle Kombinationen aus Farben und Größen werden automatisch als Varianten erstellt.
+                                <br>Beispiel: 2 Farben × 4 Größen = 8 Varianten.
+                                {% if article %}
+                                <br><br>Hinweis: Bei Änderungen an Farben/Größen werden Varianten neu erstellt; individuelle Preise gehen verloren.
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-label">
+                    <div class="form-field">
+                        <label class="form-field__label">
                             <input type="checkbox" 
                                    id="is_active" 
                                    name="is_active" 
                                    {{ 'checked' if not article or article.is_active else '' }}>
-                            <span>Artikel ist aktiv</span>
+                            Artikel ist aktiv
                         </label>
-                        <small class="form-text">Nur aktive Artikel sind für Mitglieder sichtbar</small>
+                        <span class="form-field__hint">Nur aktive Artikel sind für Mitglieder sichtbar</span>
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            💾 {{ 'Aktualisieren' if article else 'Erstellen' }}
+                        <button type="submit" class="btn btn--primary">
+                            {{ 'Aktualisieren' if article else 'Erstellen' }}
                         </button>
-                        <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-outline">
-                            ❌ Abbrechen
+                        <a href="{{ url_for('admin.merch', tab='articles') }}" class="btn btn--outline">
+                            Abbrechen
                         </a>
                     </div>
                 </form>
@@ -175,198 +201,63 @@
     </div>
 </div>
 
-<style>
-.form {
-    max-width: 800px;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.form-text {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.checkbox-group {
-    padding: 1rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    margin-bottom: 0.5rem;
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
-
-.info-box {
-    padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, rgba(255, 102, 0, 0.1), rgba(255, 102, 0, 0.05));
-    border-left: 4px solid var(--primary-color);
-    border-radius: 8px;
-    margin: 1.5rem 0;
-}
-
-.info-box strong {
-    color: var(--primary-color);
-}
-
-.info-box em {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-.dynamic-input-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-
-.dynamic-input-item {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.dynamic-input-item .form-control {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.btn-icon {
-    padding: 0.5rem;
-    background: transparent;
-    border: 1px solid var(--error-color);
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s;
-}
-
-.btn-icon:hover {
-    background: var(--error-color);
-    transform: scale(1.1);
-}
-
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
-</style>
-
 <script>
 function addColorInput() {
     const container = document.getElementById('colors-container');
-    const newItem = document.createElement('div');
-    newItem.className = 'dynamic-input-item';
-    newItem.innerHTML = `
-        <input type="text" 
-               name="colors" 
-               class="form-control" 
-               placeholder="z.B. Navy"
-               required>
-        <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.setAttribute('data-type', 'color');
+    row.innerHTML = `
+        <div class="form-field" style="margin-bottom: 0;">
+            <input type="text" name="colors" class="form-field__input" placeholder="z.B. Navy" required>
+        </div>
+        <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen">Entfernen</button>
     `;
-    container.appendChild(newItem);
-    updateRemoveButtons('colors-container');
+    container.appendChild(row);
+    updateRemoveButtons(container);
 }
 
 function addSizeInput() {
     const container = document.getElementById('sizes-container');
-    const newItem = document.createElement('div');
-    newItem.className = 'dynamic-input-item';
-    newItem.innerHTML = `
-        <input type="text" 
-               name="sizes" 
-               class="form-control" 
-               placeholder="z.B. XL"
-               required>
-        <button type="button" class="btn-icon btn-remove" onclick="removeInput(this)">❌</button>
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.setAttribute('data-type', 'size');
+    row.innerHTML = `
+        <div class="form-field" style="margin-bottom: 0;">
+            <input type="text" name="sizes" class="form-field__input" placeholder="z.B. XL" required>
+        </div>
+        <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen">Entfernen</button>
     `;
-    container.appendChild(newItem);
-    updateRemoveButtons('sizes-container');
+    container.appendChild(row);
+    updateRemoveButtons(container);
 }
 
-function removeInput(button) {
-    const item = button.parentElement;
-    const container = item.parentElement;
-    item.remove();
-    updateRemoveButtons(container.id);
-}
-
-function updateRemoveButtons(containerId) {
-    const container = document.getElementById(containerId);
-    const items = container.querySelectorAll('.dynamic-input-item');
-    
-    items.forEach((item, index) => {
-        const removeBtn = item.querySelector('.btn-remove');
-        if (items.length > 1) {
-            removeBtn.style.display = 'block';
-        } else {
-            removeBtn.style.display = 'none';
-        }
+function updateRemoveButtons(container) {
+    const buttons = container.querySelectorAll('.js-remove');
+    const show = buttons.length > 1;
+    buttons.forEach(btn => {
+        btn.hidden = !show ? btn.closest('.form-row').dataset.type ? true : false : false;
+        btn.hidden = !show;
     });
 }
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', function() {
-    updateRemoveButtons('colors-container');
-    updateRemoveButtons('sizes-container');
+function removeRow(button) {
+    const row = button.closest('.form-row');
+    const container = row.parentElement;
+    row.remove();
+    updateRemoveButtons(container);
+}
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('js-remove')) {
+        e.preventDefault();
+        removeRow(e.target);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateRemoveButtons(document.getElementById('colors-container'));
+    updateRemoveButtons(document.getElementById('sizes-container'));
 });
 </script>
 {% endblock %}
-

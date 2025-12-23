@@ -1,95 +1,430 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}Merch-Verwaltung - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1>🛍️ Merch-Verwaltung</h1>
-        <p class="page-subtitle">Verwaltung des Merch-Shops und Bestellungen</p>
-        <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn-outline">← Zurück zu Admin</a>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
+            <span class="breadcrumbs__separator">/</span>
         </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Merch</span>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>
+            <svg class="icon" aria-hidden="true">
+                <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
+            </svg>
+            Merch-Verwaltung
+        </h1>
+        <p class="page-subtitle">Verwaltung des Merch-Shops und Bestellungen</p>
     </div>
     
     <div class="page-content">
-        <!-- Schnellzugriff Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚡ Schnellzugriff</h2>
-            </div>
-            <div class="card-body">
-                <div class="card card-secondary variant-accent">
-                    <div class="card-header">
-                        <h3>🚀 Häufige Aktionen</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="quick-actions">
-                            <a href="{{ url_for('admin.merch_orders') }}" class="btn btn-primary">📋 Alle Bestellungen</a>
-                            <a href="{{ url_for('admin.merch_supplier_order') }}" class="btn btn-primary">📦 Offene Bestellungen</a>
-                            <a href="{{ url_for('admin.merch_articles') }}" class="btn btn-primary">📦 Artikel verwalten</a>
+        <div class="tabs">
+            <nav class="tabs__nav" role="tablist">
+                <a href="{{ url_for('admin.merch', tab='orders', status=status_filter, member_id=member_filter_id, sort=sort_by) }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'orders' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if active_tab == 'orders' else 'false' }}">
+                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
+                    Bestellungen
+                </a>
+                <a href="{{ url_for('admin.merch', tab='articles') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'articles' else '' }}"
+                   role="tab"
+                   aria-selected="{{ 'true' if active_tab == 'articles' else 'false' }}">
+                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#settings"></use></svg>
+                    Artikel
+                </a>
+            </nav>
+
+            <div class="tabs__content">
+                <!-- Bestellungen -->
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'orders' else '' }}" role="tabpanel">
+                    <div class="card card--filter">
+                        <div class="card__body">
+                            <details class="disclosure">
+                                <summary class="disclosure__summary">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                          <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                        Filter
+                                        {% if status_filter or member_filter_id %}
+                                          {% if status_filter %}
+                                            <span class="chip chip--info">
+                                              {% if status_filter == 'BESTELLT' %}Bestellt{% elif status_filter == 'WIRD_GELIEFERT' %}Wird geliefert{% elif status_filter == 'GELIEFERT' %}Geliefert{% else %}{{ status_filter }}{% endif %}
+                                            </span>
+                                          {% endif %}
+                                          {% if member_filter_id %}
+                                            {% set selected_member = members_for_select|selectattr('id', 'equalto', member_filter_id)|first %}
+                                            {% if selected_member %}
+                                              <span class="chip chip--info">{{ selected_member.display_name_with_spirit }}</span>
+                                            {% endif %}
+                                          {% endif %}
+                                        {% endif %}
+                                </summary>
+                                <div class="disclosure__content">
+                                    <form method="GET" action="{{ url_for('admin.merch') }}" class="form">
+                                        <input type="hidden" name="tab" value="orders">
+                                        <div class="form-row">
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="status">Status</label>
+                                                <select name="status" id="status" class="form-field__select">
+                                                    <option value="">Alle</option>
+                                                    <option value="BESTELLT" {{ 'selected' if status_filter == 'BESTELLT' else '' }}>Bestellt</option>
+                                                    <option value="WIRD_GELIEFERT" {{ 'selected' if status_filter == 'WIRD_GELIEFERT' else '' }}>Wird geliefert</option>
+                                                    <option value="GELIEFERT" {{ 'selected' if status_filter == 'GELIEFERT' else '' }}>Geliefert</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="sort">Sortierung</label>
+                                                <select name="sort" id="sort" class="form-field__select">
+                                                    <option value="member" {{ 'selected' if sort_by == 'member' else '' }}>Nach Member</option>
+                                                    <option value="article" {{ 'selected' if sort_by == 'article' else '' }}>Nach Artikel</option>
+                                                </select>
+                                            </div>
+                        <div class="form-field">
+                          <label class="form-field__label" for="member_id">Member</label>
+                          <select name="member_id" id="member_id" class="form-field__select">
+                            <option value="">Alle</option>
+                            {% for m in members_for_select %}
+                              <option value="{{ m.id }}" {{ 'selected' if member_filter_id == m.id else '' }}>
+                                {{ m.display_name_with_spirit }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn--primary btn--sm">
+                                                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+                                                Filtern
+                                            </button>
+                        <a class="btn btn--outline btn--sm" href="{{ url_for('admin.merch', tab='orders') }}">Zurücksetzen</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
                         </div>
                     </div>
+
+                    {% if sort_by == 'member' %}
+                      {% if orders %}
+                        {% for order in orders %}
+                        {% set next_url = url_for('admin.merch', tab='orders', status=status_filter, member_id=member_filter_id, sort=sort_by) + '#order-' + order.id|string %}
+                        <div class="card" id="order-{{ order.id }}">
+                            <div class="card__header">
+                                <h2 class="card__title">Bestellung #{{ order.order_number }}</h2>
+                                <div class="card__actions">
+                                    {% if order.status.value == 'BESTELLT' %}
+                                        <span class="chip chip--warning">{{ order.status_display }}</span>
+                                    {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                                        <span class="chip chip--info">{{ order.status_display }}</span>
+                                    {% elif order.status.value == 'GELIEFERT' %}
+                                        <span class="chip chip--success">{{ order.status_display }}</span>
+                                    {% else %}
+                                        <span class="chip">{{ order.status_display }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                <div class="card-section card-section--subtle">
+                                    <div class="card-section__body">
+                                        <div class="info-row">
+                                            <span class="info-row__label">Member</span>
+                                            <span class="info-row__value">{{ order.member.display_name_with_spirit }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Gesamtbetrag</span>
+                                            <span class="info-row__value">{{ "%.2f"|format(order.total_member_price_chf) }} CHF</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Artikel</span>
+                                            <span class="info-row__value">{{ order.get_item_count() }} Stück</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-row__label">Bestellt am</span>
+                                            <span class="info-row__value">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                        </div>
+                                        {% if order.delivered_at %}
+                                        <div class="info-row">
+                                            <span class="info-row__label">Geliefert am</span>
+                                            <span class="info-row__value">{{ order.delivered_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-section">
+                                    <div class="card-section__header">
+                                        <h3 class="card-section__title">Status ändern</h3>
+                                    </div>
+                                    <div class="card-section__body">
+                                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="form form--inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="next" value="{{ next_url }}">
+                                            <div class="form-row">
+                                                <div class="form-field">
+                                                    <label class="form-field__label" for="status_{{ order.id }}">Status</label>
+                                                    <select name="status" id="status_{{ order.id }}" class="form-field__select">
+                                                        <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Bestellt</option>
+                                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Wird geliefert</option>
+                                                        <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-field">
+                                                    <label class="form-field__label">&nbsp;</label>
+                                                    <button type="submit" class="btn btn--primary">
+                                                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#check"></use></svg>
+                                                        Aktualisieren
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('admin.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+                                    Details anzeigen
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                      {% else %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">Keine Bestellungen gefunden</h2>
+                            </div>
+                            <div class="card__body">
+                                <p class="text-secondary">Keine Ergebnisse für die aktuellen Filter.</p>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('admin.merch', tab='orders') }}" class="btn btn--outline">Filter zurücksetzen</a>
+                            </div>
+                        </div>
+                      {% endif %}
+                    {% else %}
+                      {% if orders_articles_data %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                                    Nach Artikel (aggregiert)
+                                </h2>
+                                <div class="card__actions">
+                                    <span class="chip chip--info">{{ orders_group_count or 0 }} Bestellungen</span>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                {% if orders_total_stats %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Artikel</span>
+                                    <span class="info-row__value">{{ orders_total_stats.article_count }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Varianten</span>
+                                    <span class="info-row__value">{{ orders_total_stats.variant_count }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamtstückzahl</span>
+                                    <span class="info-row__value">{{ orders_total_stats.total_quantity }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Lieferantenpreis gesamt</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(orders_total_stats.total_supplier_price / 100) }} CHF</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% for article_data in orders_articles_data %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                                    {{ article_data.article.name }}
+                                </h2>
+                                <div class="card__actions">
+                                    <span class="chip chip--secondary">{{ article_data.total_quantity }} Stück</span>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                {% for variant_data in article_data.variants %}
+                                <div class="info-row">
+                                    <span class="info-row__label">{{ variant_data.variant.color }} – {{ variant_data.variant.size }}</span>
+                                    <span class="info-row__value">{{ variant_data.quantity }} Stück</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                      {% else %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">Keine Bestellungen gefunden</h2>
+                            </div>
+                            <div class="card__body">
+                                <p class="text-secondary">Keine Ergebnisse für die aktuellen Filter.</p>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('admin.merch', tab='orders') }}" class="btn btn--outline">Filter zurücksetzen</a>
+                            </div>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Lieferanten -->
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'supplier' else '' }}" role="tabpanel">
+                    {% if pending_orders_count and pending_orders_count > 0 %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                                    Ausstehende Bestellungen
+                                </h2>
+                                <div class="card__actions">
+                                    <span class="chip chip--info">{{ pending_orders_count }} offen</span>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                {% if total_stats %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Artikel</span>
+                                    <span class="info-row__value">{{ total_stats.article_count }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Varianten</span>
+                                    <span class="info-row__value">{{ total_stats.variant_count }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Gesamtstückzahl</span>
+                                    <span class="info-row__value">{{ total_stats.total_quantity }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Lieferantenpreis gesamt</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(total_stats.total_supplier_price / 100) }} CHF</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% for article_data in articles_data %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                                    {{ article_data.article.name }}
+                                </h2>
+                                <div class="card__actions">
+                                    <span class="chip chip--secondary">{{ article_data.total_quantity }} Stück</span>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                {% for variant_data in article_data.variants %}
+                                <div class="info-row">
+                                    <span class="info-row__label">{{ variant_data.variant.color }} – {{ variant_data.variant.size }}</span>
+                                    <span class="info-row__value">{{ variant_data.quantity }} Stück</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">Keine ausstehenden Bestellungen</h2>
+                            </div>
+                            <div class="card__body">
+                                <p class="text-secondary">Es gibt aktuell keine Bestellungen mit Status "Bestellt".</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Artikel -->
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'articles' else '' }}" role="tabpanel">
+                    <div class="page-actions">
+                        <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
+                            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#plus"></use></svg>
+                            Neuer Artikel
+                        </a>
+                    </div>
+
+                    {% if articles %}
+                        {% for article in articles %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                                    {{ article.name }}
+                                </h2>
+                            </div>
+                            <div class="card__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Beschreibung</span>
+                                    <span class="info-row__value">{{ article.description or 'Keine Beschreibung' }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Preis (Lieferant)</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(article.base_supplier_price_chf) }} CHF</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Preis (Member)</span>
+                                    <span class="info-row__value">{{ "%.2f"|format(article.base_member_price_chf) }} CHF</span>
+                                </div>
+                                {% set colors = article.variants|map(attribute='color')|list %}
+                                {% set sizes = article.variants|map(attribute='size')|list %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Farben</span>
+                                    <span class="info-row__value">
+                                        {% if colors %}{{ colors|unique|join(', ') }}{% else %}–{% endif %}
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Grössen</span>
+                                    <span class="info-row__value">
+                                        {% if sizes %}{{ sizes|unique|join(', ') }}{% else %}–{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('admin.merch_article_detail', article_id=article.id) }}" class="btn btn--primary">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+                                    Details anzeigen
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">Keine Artikel verfügbar</h2>
+                            </div>
+                            <div class="card__body">
+                                <p class="text-secondary">Es wurden noch keine Merch-Artikel erstellt.</p>
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
+                                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#plus"></use></svg>
+                                    Neuen Artikel erstellen
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.order-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.status-pending {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid #ffc107;
-}
-
-.status-progress {
-    background: rgba(23, 162, 184, 0.2);
-    color: #17a2b8;
-    border: 1px solid #17a2b8;
-}
-
-.status-delivered {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-    border: 1px solid #28a745;
-}
-
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-}
-
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .quick-actions {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
 {% endblock %}
+
 
