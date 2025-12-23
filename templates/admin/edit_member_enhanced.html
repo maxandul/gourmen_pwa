@@ -5,18 +5,26 @@
 
 {% block content %}
 <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <a href="{{ url_for('admin.members') }}" class="breadcrumbs__link">Mitglieder</a>
+            <span class="breadcrumbs__separator">/</span>
+        </div>
+        <div class="breadcrumbs__item">
+            <span class="breadcrumbs__current">Mitglied bearbeiten</span>
+        </div>
+    </nav>
+
     <div class="page-header">
         <h1>
             <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user"></use></svg>
             Mitglied bearbeiten
         </h1>
         <p class="page-subtitle">{{ member.display_name_with_spirit }}</p>
-        <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
-                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
-                Zurück zur Übersicht
-            </a>
-        </div>
     </div>
     
     <div class="page-content">

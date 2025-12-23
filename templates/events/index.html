@@ -586,7 +586,7 @@
             <!-- Tab 4: Statistiken -->
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'stats' else '' }}"
                  role="tabpanel">
-                <!-- Allgemeine Statistiken -->
+                <!-- Events -->
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
@@ -595,26 +595,14 @@
                                 <line x1="12" y1="20" x2="12" y2="4"/>
                                 <line x1="6" y1="20" x2="6" y2="14"/>
                             </svg>
-                            Allgemeine Statistiken
+                            Events
                         </h2>
                     </div>
                     <div class="card__body">
-                        {% if total_events is defined %}
-                        <div class="info-row">
-                            <span class="info-row__label">Gesamte Events:</span>
-                            <span class="info-row__value">{{ total_events }}</span>
-                        </div>
-                        {% endif %}
                         {% if total_past_events is defined %}
                         <div class="info-row">
                             <span class="info-row__label">Vergangene Events:</span>
                             <span class="info-row__value">{{ total_past_events }}</span>
-                        </div>
-                        {% endif %}
-                        {% if total_future_events is defined %}
-                        <div class="info-row">
-                            <span class="info-row__label">Kommende Events:</span>
-                            <span class="info-row__value">{{ total_future_events }}</span>
                         </div>
                         {% endif %}
                         {% if avg_participation_rate is defined %}
@@ -623,10 +611,16 @@
                             <span class="info-row__value">{{ "%.1f"|format(avg_participation_rate) }}%</span>
                         </div>
                         {% endif %}
+                        {% if organized_by_you is defined %}
+                        <div class="info-row">
+                            <span class="info-row__label">Von dir organisiert:</span>
+                            <span class="info-row__value">{{ organized_by_you }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <!-- BillBro Statistiken -->
+                <!-- Kosten -->
                 {% if total_billbro_events is defined and total_billbro_events > 0 %}
                 <div class="card">
                     <div class="card__header">
@@ -638,99 +632,32 @@
                                 <line x1="8" y1="14" x2="16" y2="14"/>
                                 <line x1="8" y1="18" x2="16" y2="18"/>
                             </svg>
-                            BillBro Statistiken
+                            Kosten
                         </h2>
                     </div>
                     <div class="card__body">
-                        {% if total_billbro_events is defined %}
-                        <div class="info-row">
-                            <span class="info-row__label">Events mit BillBro:</span>
-                            <span class="info-row__value">{{ total_billbro_events }}</span>
-                        </div>
-                        {% endif %}
                         {% if avg_bill_amount is defined %}
                         <div class="info-row">
-                            <span class="info-row__label">Durchschnittlicher Rechnungsbetrag:</span>
+                            <span class="info-row__label">≈ Rechnungsbetrag:</span>
                             <span class="info-row__value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
                         </div>
                         {% endif %}
                         {% if avg_tip_amount is defined %}
                         <div class="info-row">
-                            <span class="info-row__label">Durchschnittliches Trinkgeld:</span>
+                            <span class="info-row__label">≈ Trinkgeld (CHF):</span>
                             <span class="info-row__value">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
                         </div>
                         {% endif %}
-                        {% if confirmed_participations is defined and total_participations is defined %}
+                        {% if avg_tip_percent is defined %}
                         <div class="info-row">
-                            <span class="info-row__label">Gesamte Teilnahmen:</span>
-                            <span class="info-row__value">{{ confirmed_participations }} / {{ total_participations }}</span>
+                            <span class="info-row__label">≈ Trinkgeld (%):</span>
+                            <span class="info-row__value">{{ "%.1f"|format(avg_tip_percent) }}%</span>
                         </div>
                         {% endif %}
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- Event-Typen Verteilung -->
-                <div class="card">
-                    <div class="card__header">
-                        <h2 class="card__title">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                            </svg>
-                            Event-Typen Verteilung
-                        </h2>
-                    </div>
-                    <div class="card__body">
-                        {% if event_types is defined %}
-                        {% for event_type, count in event_types.items() %}
-                        <div class="info-row">
-                            <span class="info-row__label">{{ event_type }}:</span>
-                            <span class="info-row__value">{{ count }}</span>
-                        </div>
-                        {% endfor %}
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Top Restaurants -->
-                {% if restaurants is defined and restaurants %}
-                <div class="card">
-                    <div class="card__header">
-                        <h2 class="card__title">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                                <path d="M4 22h16"/>
-                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                            </svg>
-                            Top Restaurants
-                        </h2>
-                    </div>
-                    <div class="card__body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Restaurant</th>
-                                        <th>Besuche</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for restaurant, count in restaurants.items()|sort(attribute='1', reverse=True) %}
-                                    <tr>
-                                        <td>{{ restaurant }}</td>
-                                        <td>{{ count }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>

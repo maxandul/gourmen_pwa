@@ -7,13 +7,11 @@
             const themeKey = 'theme';
             const defaultTheme = 'dark';
             
-            // Get theme from localStorage or system preference
+            // Get theme from localStorage or fallback to default (dark)
             let theme = localStorage.getItem(themeKey);
             
             if (!theme || (theme !== 'light' && theme !== 'dark')) {
-                // Fallback to system preference
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                theme = prefersDark ? 'dark' : 'light';
+                theme = defaultTheme; // always default to dark if nothing stored
             }
             
             // Apply immediately

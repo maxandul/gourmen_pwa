@@ -300,11 +300,14 @@ def index():
         
         avg_bill_amount = 0
         avg_tip_amount = 0
+        avg_tip_percent = 0
         if billbro_events:
             total_bill_amount = sum(e.rechnungsbetrag_rappen for e in billbro_events)
             total_tip_amount = sum(e.trinkgeld_rappen or 0 for e in billbro_events)
             avg_bill_amount = total_bill_amount / len(billbro_events) / 100
             avg_tip_amount = total_tip_amount / len(billbro_events) / 100
+            if total_bill_amount > 0:
+                avg_tip_percent = (total_tip_amount / total_bill_amount) * 100
         
         # Participation stats
         total_participations = 0
@@ -318,6 +321,9 @@ def index():
         if total_participations > 0:
             avg_participation_rate = (confirmed_participations / total_participations) * 100
         
+        # Organizer stats (current user)
+        organized_by_you = len([e for e in past_events if e.organisator_id == current_user.id])
+        
         context.update({
             'past_events': past_events,
             'future_events': future_events,
@@ -329,9 +335,11 @@ def index():
             'total_billbro_events': total_billbro_events,
             'avg_bill_amount': avg_bill_amount,
             'avg_tip_amount': avg_tip_amount,
+            'avg_tip_percent': avg_tip_percent,
             'total_participations': total_participations,
             'confirmed_participations': confirmed_participations,
-            'avg_participation_rate': avg_participation_rate
+            'avg_participation_rate': avg_participation_rate,
+            'organized_by_you': organized_by_you
         })
     
     return render_template('events/index.html', **context)
