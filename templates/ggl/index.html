@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
 
 {% block title %}GGL - Gourmen Guessing League{% endblock %}
 
@@ -27,8 +28,8 @@
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'aktuell' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'aktuell' else 'false' }}">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#medal"></use>
           </svg>
           Deine Rang
         </a>
@@ -36,8 +37,8 @@
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'tabelle' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'tabelle' else 'false' }}">
-          <svg class="icon" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#bar-chart-2"></use>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <use href="/static/icons/lucide-sprite.svg#table"></use>
           </svg>
           Tabelle
         </a>
@@ -45,7 +46,7 @@
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'rennen' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'rennen' else 'false' }}">
-          <svg class="icon" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <use href="/static/icons/lucide-sprite.svg#activity"></use>
           </svg>
           Rennen
@@ -58,8 +59,8 @@
           <div class="card">
             <div class="card__header">
               <h2 class="card__title">
-                <svg class="icon" aria-hidden="true">
-                  <use href="/static/icons/lucide-sprite.svg#calendar"></use>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <use href="/static/icons/lucide-sprite.svg#award"></use>
                 </svg>
                 Saison {{ current_season }}
               </h2>
@@ -108,7 +109,7 @@
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                   Saison wählen
-                  {% if table_selected_season and table_selected_season != current_season %}
+                  {% if table_selected_season %}
                   <span class="chip chip--info">{{ table_selected_season }}</span>
                   {% endif %}
                 </summary>
@@ -136,20 +137,14 @@
           {% if season_ranking %}
           <div class="ggl-ranking-list">
             {% for entry in season_ranking %}
-            {% set rank_class = 'ggl-ranking-item--rank-' ~ entry.rank if entry.rank <= 3 else '' %}
-            <div class="card ggl-ranking-card {{ rank_class }} {% if entry.member_id == current_user.id %}ggl-ranking-item--current{% endif %}">
+            <div class="card {% if entry.member_id == current_user.id %}ggl-ranking-item--current{% endif %}">
               <div class="card__header">
                 <h3 class="card__title">
-                  <span class="badge badge--info ggl-ranking-card__badge">
-                    {% if entry.rank <= 3 %}
-                    <svg class="icon icon--sm" aria-hidden="true">
-                      <use href="/static/icons/lucide-sprite.svg#award"></use>
-                    </svg>
-                    {% endif %}
-                    #{{ entry.rank }}
-                  </span>
                   {{ entry.member.display_name_with_spirit }}
                 </h3>
+                <div class="card__actions">
+                  <span class="chip chip--accent">#{{ entry.rank }}</span>
+                </div>
               </div>
               <div class="card__body">
                 <div class="info-row">
@@ -161,7 +156,7 @@
                   <span class="info-row__value">{{ entry.participation_count }}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-row__label">⌀ Punkte</span>
+                  <span class="info-row__label">⊘ Punkte</span>
                   <span class="info-row__value">{{ "%.1f"|format(entry.avg_points) }}</span>
                 </div>
                 <div class="info-row">
@@ -196,7 +191,7 @@
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                   Saison wählen
-                  {% if race_selected_season and race_selected_season != current_season %}
+                  {% if race_selected_season %}
                   <span class="chip chip--info">{{ race_selected_season }}</span>
                   {% endif %}
                 </summary>
@@ -228,7 +223,7 @@
                 <svg class="icon" aria-hidden="true">
                   <use href="/static/icons/lucide-sprite.svg#activity"></use>
                 </svg>
-                Performance-Verlauf (Saison {{ race_selected_season }})
+                    Performance-Verlauf
               </h2>
             </div>
             <div class="card__body">

@@ -35,7 +35,7 @@ def create_app(config_name=None):
             # Continue anyway - database might be available later
         
         # Register blueprints
-        from backend.routes import public, auth, dashboard, events, billbro, stats, ggl, member, admin, docs, notifications, ratings, migrate, test_migrate, init_db, demo
+        from backend.routes import public, auth, dashboard, events, billbro, ggl, member, admin, notifications, ratings, migrate, test_migrate, init_db
         
         # Push-Notification und Cron-Blueprints registrieren (Fehler werden in den Endpoints gehandhabt)
         from backend.routes import push_notifications, cron
@@ -44,17 +44,14 @@ def create_app(config_name=None):
         app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
         app.register_blueprint(events.bp, url_prefix='/events')
         app.register_blueprint(billbro.bp, url_prefix='/billbro')
-        app.register_blueprint(stats.bp, url_prefix='/stats')
         app.register_blueprint(ggl.bp, url_prefix='/ggl')
         app.register_blueprint(member.bp, url_prefix='/member')  # Member area
         app.register_blueprint(admin.bp, url_prefix='/admin')
-        app.register_blueprint(docs.bp, url_prefix='/docs')
         app.register_blueprint(notifications.bp, url_prefix='/notifications')
         app.register_blueprint(ratings.bp, url_prefix='/ratings')
         app.register_blueprint(migrate.migrate_bp, url_prefix='/admin')
         app.register_blueprint(test_migrate.test_migrate_bp, url_prefix='/test')
         app.register_blueprint(init_db.init_db_bp, url_prefix='/init')
-        app.register_blueprint(demo.bp)  # Design System V2 Demo
         
         # Registriere Push-Notification und Cron-Blueprints immer
         app.register_blueprint(push_notifications.bp)

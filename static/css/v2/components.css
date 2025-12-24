@@ -1368,8 +1368,8 @@ a.card-link:active {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-secondary); /* match card header bg */
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
@@ -1380,8 +1380,8 @@ a.card-link:active {
 }
 
 .chip:hover {
-  background: var(--color-surface-overlay);
-  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-default);
 }
 
 .chip--active {
@@ -1433,6 +1433,55 @@ a.card-link:active {
 
 .chip__remove:hover {
   opacity: 1;
+}
+
+/* Color variants for semantic chips */
+.chip--accent {
+  background: var(--brand-accent-100);
+  border-color: var(--brand-accent-200);
+  color: var(--brand-accent-900);
+}
+
+.chip--success {
+  background: #e6f6f0;
+  border-color: #c8ecde;
+  color: var(--status-success-light);
+}
+
+.chip--info {
+  background: var(--brand-secondary-100);
+  border-color: var(--brand-secondary-200);
+  color: var(--brand-secondary-800);
+}
+
+.chip--danger {
+  background: var(--brand-warm-50);
+  border-color: var(--brand-warm-200);
+  color: var(--brand-warm-800);
+}
+
+[data-theme="dark"] .chip--accent {
+  background: var(--brand-accent-600);
+  border-color: var(--brand-accent-500);
+  color: #fff;
+}
+
+[data-theme="dark"] .chip--success {
+  background: #155f3e;
+  border-color: #1c8053;
+  color: #e6fff4;
+}
+
+[data-theme="dark"] .chip--info {
+  background: var(--brand-secondary-700);
+  border-color: var(--brand-secondary-600);
+  color: #e9fff6;
+}
+
+[data-theme="dark"] .chip--danger {
+  background: var(--brand-warm-700);
+  border-color: var(--brand-warm-600);
+  color: #ffecec;
 }
 
 /* ============================================

@@ -312,17 +312,34 @@ def index():
         # Participation stats
         total_participations = 0
         confirmed_participations = 0
+        confirmed_participations_past = 0
         for event in past_events + future_events:
             participations = event.participations or []
             total_participations += len(participations)
-            confirmed_participations += len([p for p in participations if p.teilnahme])
+            confirmed_count = len([p for p in participations if p.teilnahme])
+            confirmed_participations += confirmed_count
+            if event in past_events:
+                confirmed_participations_past += confirmed_count
         
         avg_participation_rate = 0
         if total_participations > 0:
             avg_participation_rate = (confirmed_participations / total_participations) * 100
         
+        avg_attendees = 0
+        if total_past_events > 0:
+            avg_attendees = confirmed_participations_past / total_past_events
+        
         # Organizer stats (current user)
         organized_by_you = len([e for e in past_events if e.organisator_id == current_user.id])
+        
+        # User participation rate (past events)
+        user_confirmed_events = len([
+            e for e in past_events
+            if any((p.member_id == current_user.id and p.teilnahme) for p in (e.participations or []))
+        ])
+        user_participation_rate = 0
+        if total_past_events > 0:
+            user_participation_rate = (user_confirmed_events / total_past_events) * 100
         
         context.update({
             'past_events': past_events,
@@ -339,7 +356,9 @@ def index():
             'total_participations': total_participations,
             'confirmed_participations': confirmed_participations,
             'avg_participation_rate': avg_participation_rate,
-            'organized_by_you': organized_by_you
+            'avg_attendees': avg_attendees,
+            'organized_by_you': organized_by_you,
+            'user_participation_rate': user_participation_rate
         })
     
     return render_template('events/index.html', **context)

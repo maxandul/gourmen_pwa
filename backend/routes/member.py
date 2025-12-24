@@ -514,12 +514,5 @@ def merch_order_edit(order_id):
     
     return render_template('member/merch/order_edit.html', articles=articles, order=order, use_v2_design=True)
 
-@bp.route('/members')
-@login_required
-def members():
-    """Members list"""
-    members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
-    return render_template('member/members.html', members=members, use_v2_design=True)
-
 # Import here to avoid circular imports
 from datetime import datetime
