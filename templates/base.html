@@ -96,7 +96,7 @@
     <!-- CSS -->
     {% if use_v2_design %}
         <!-- Design System V2 -->
-        <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
+    <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.61b2daf1.css') }}">
     {% else %}
         <!-- Legacy V1 CSS -->
@@ -110,7 +110,7 @@
     {% block head %}{% endblock %}
     
     <!-- PWA Scripts -->
-    <script src="{{ url_for('static', filename='js/pwa.aebb2b36.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/pwa.563325eb.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/app.fcc48062.js') }}" defer></script>
     
     <!-- CSRF Token for AJAX: immer setzen -->
