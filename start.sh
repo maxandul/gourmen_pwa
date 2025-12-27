@@ -4,7 +4,12 @@
 
 if [ "$SERVICE_TYPE" = "cron" ]; then
     echo "Starting cron service..."
-    exec python run_cron_reminders.py
+    if [ "${TEST_REMINDER_NOW,,}" = "true" ] || [ "${TEST_REMINDER_NOW,,}" = "1" ]; then
+        echo "TEST_REMINDER_NOW detected - running test reminder..."
+        exec python run_cron_reminders.py --test-reminder
+    else
+        exec python run_cron_reminders.py
+    fi
 elif [ "$SERVICE_TYPE" = "web" ]; then
     echo "Starting web service..."
     exec gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=1 --timeout=300 --worker-class=sync --preload --access-logfile=- --error-logfile=- --log-level=info

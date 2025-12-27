@@ -15,6 +15,24 @@ class CronService:
     """Service für automatische Cron-Jobs"""
     
     @staticmethod
+    def run_test_reminder():
+        """
+        Sendet einen sofortigen Test-Push an aktive Subscriptions (limitiert).
+        Dient nur zum manuellen Test via `run_cron_reminders.py --test-reminder`.
+        """
+        try:
+            logger.info("Starting test reminder cron job...")
+            result = PushNotificationService.send_test_push_to_active_subscriptions()
+            if result.get("success"):
+                logger.info(f"Test reminder sent: {result}")
+                return result
+            logger.error(f"Test reminder failed: {result}")
+            return result
+        except Exception as e:
+            logger.error(f"Error in test reminder: {e}")
+            return {"success": False, "error": str(e)}
+    
+    @staticmethod
     def run_3_week_reminders():
         """
         Cron-Job für 3-Wochen-Erinnerungen

@@ -28,6 +28,49 @@ class PushNotificationService:
     """Service für echte Push-Benachrichtigungen über das Betriebssystem"""
     
     @staticmethod
+    def send_test_push_to_active_subscriptions(limit: int = None) -> dict:
+        """
+        Sendet einen einfachen Test-Push an aktive Subscriptions.
+        Wenn `limit` gesetzt ist, werden max. `limit` Geräte angeschrieben,
+        sonst alle aktiven Subscriptions.
+        """
+        try:
+            query = PushSubscription.query.filter_by(is_active=True)
+            if limit:
+                query = query.limit(limit)
+            subscriptions = query.all()
+            if not subscriptions:
+                return {"success": False, "message": "Keine aktiven Push-Subscriptions gefunden"}
+            
+            payload = {
+                "title": "Test-Reminder 🧪",
+                "body": "Dies ist ein Test-Push aus dem Cron-Job (run now).",
+                "icon": "/static/img/pwa/icon-192.png",
+                "badge": "/static/img/pwa/badge-96.png",
+                "tag": "test-reminder",
+                "data": {
+                    "url": "/",
+                    "type": "test_reminder"
+                }
+            }
+            
+            sent = 0
+            for subscription in subscriptions:
+                if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
+                    subscription.mark_used()
+                    sent += 1
+            
+            return {
+                "success": sent > 0,
+                "sent": sent,
+                "requested": len(subscriptions),
+                "limit": limit
+            }
+        except Exception as e:
+            logger.error(f"Error sending test push: {e}")
+            return {"success": False, "error": str(e)}
+    
+    @staticmethod
     def send_push_notification(subscription_data: Dict, payload: Dict, return_error_details: bool = False):
         """
         Sendet eine echte Push-Benachrichtigung über das Betriebssystem

@@ -10,6 +10,7 @@ Dieses Script wird von Railway's Cron Schedule ausgeführt und prüft:
 import sys
 import os
 import logging
+import argparse
 
 # Füge den Projektpfad hinzu
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +22,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def run_all_reminders():
+def parse_args():
+    parser = argparse.ArgumentParser(description="Railway Cron Job: Event Reminders")
+    parser.add_argument(
+        "--test-reminder",
+        action="store_true",
+        help="Sende einen sofortigen Test-Push an aktive Subscriptions"
+    )
+    return parser.parse_args()
+
+
+def run_all_reminders(test_reminder: bool = False):
     """Führt alle Reminder-Checks aus"""
     try:
         # Importiere Flask App und Services
@@ -31,6 +42,18 @@ def run_all_reminders():
         # Erstelle Flask App Context
         app = create_app()
         
+        # Optionaler, sofortiger Test-Reminder
+        if test_reminder:
+            with app.app_context():
+                logger.info("🧪 Test-Reminder angefordert - sende Test-Push an aktive Subscriptions...")
+                test_result = CronService.run_test_reminder()
+                if test_result.get("success"):
+                    logger.info(f"✅ Test-Reminder gesendet: {test_result}")
+                    return 0
+                else:
+                    logger.error(f"❌ Test-Reminder fehlgeschlagen: {test_result}")
+                    return 1
+
         all_success = True
         
         with app.app_context():
@@ -110,12 +133,18 @@ def run_all_reminders():
         return 1
 
 if __name__ == '__main__':
+    args = parse_args()
+
+    # Auch via Env aktivierbar (z.B. TEST_REMINDER_NOW=1)
+    test_env = os.getenv("TEST_REMINDER_NOW", "").lower() in ("1", "true", "yes", "y")
+    test_reminder = args.test_reminder or test_env
+
     logger.info("=" * 60)
     logger.info("🔔 Railway Cron Job: All Event Reminders")
     logger.info("=" * 60)
     logger.info("")
     
-    exit_code = run_all_reminders()
+    exit_code = run_all_reminders(test_reminder=test_reminder)
     
     logger.info("=" * 60)
     logger.info(f"Cron job finished with exit code: {exit_code}")
