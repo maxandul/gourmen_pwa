@@ -7,15 +7,15 @@ from PIL import Image, ImageDraw
 import os
 
 # Pfade
-SOURCE_LOGO = 'static/img/logos/logo-primary.png'
-OUTPUT_IMAGE = 'static/img/og-image.png'
+SOURCE_LOGO = 'static/img/pwa/icon-512.png'
+OUTPUT_IMAGE = 'static/img/og-image-1200x630.png'
 
 # Open Graph empfohlene Größe
 OG_WIDTH = 1200
 OG_HEIGHT = 630
 
 # Hintergrundfarbe (Gourmen Dark Blue)
-BACKGROUND_COLOR = '#354e5e'
+BACKGROUND_COLOR = '#1b232e'
 
 def create_og_image():
     """Erstellt ein optimiertes Open Graph Bild"""

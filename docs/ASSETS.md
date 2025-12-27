@@ -13,16 +13,18 @@ static/img/
 │   ├── icon-32.png         ✅ Behalten - Browser Favicon
 │   ├── icon-192.png        ✅ Behalten - PWA Icon + Android
 │   ├── icon-512.png        ✅ Behalten - PWA Icon + Android
-│   ├── icon-192-maskable.png  ⚠️ NEU ERSTELLEN - Android Adaptive Icon
-│   ├── icon-512-maskable.png  ⚠️ NEU ERSTELLEN - Android Adaptive Icon
-│   ├── apple-touch-icon.png   ⚠️ NEU ERSTELLEN - iOS Home Screen (180x180)
-│   ├── badge-72.png        ✅ Behalten - Android Status Bar Icon
-│   └── badge-96.png        ✅ Behalten - Notification Badge
+│   ├── icon-192-maskable.png  ✅ Maskable Icon
+│   ├── icon-512-maskable.png  ✅ Maskable Icon
+│   ├── apple-touch-icon-120.png ✅ iOS Home Screen (120x120)
+│   ├── apple-touch-icon-152.png ✅ iOS Home Screen (152x152)
+│   ├── apple-touch-icon-167.png ✅ iOS Home Screen (167x167)
+│   ├── apple-touch-icon-180.png ✅ iOS Home Screen (180x180)
+│   ├── splash/*.png         ✅ iOS Launch Images (device-spezifisch)
+│   ├── badge-72.png         ✅ Behalten - Android Status Bar Icon
+│   └── badge-96.png         ✅ Behalten - Notification Badge
 │
-├── ui/                     # User Interface Assets
-│   └── splash-generic.png  ⚠️ NEU ERSTELLEN - Generischer Splash Screen
-│
-├── og-image.png            ⚠️ NEU ERSTELLEN - Social Media Preview
+├── og-image-1200x630.png   ✅ Social Media Preview (1200x630)
+├── og-image-1200.png       ✅ Social Media Quadratisch (1200x1200)
 └── favicon.ico             ✅ Behalten - Browser Favicon (Root)
 ```
 
@@ -141,13 +143,19 @@ Ein großes Bild funktioniert für alle!
 
 ### 4. 🌐 OPEN GRAPH IMAGE (Social Sharing)
 
-#### **static/img/og-image.png**
+#### **static/img/og-image-1200x630.png**
 - **Größe:** 1200x630 px (Standard für Facebook/WhatsApp/LinkedIn)
-- **Format:** PNG oder JPG
-- **Hintergrund:** Navy Gradient `linear-gradient(135deg, #1b232e, #354e5e)`
-- **Logo:** Links oder zentriert platziert
-- **Text:** "GOURMEN - Seit 2021" oder Claim
-- **Optional:** "Gourmen-Verein Webapp"
+- **Format:** PNG
+- **Hintergrund:** `#1b232e`
+- **Logo:** Zentriert
+- **Text:** optional
+
+#### **static/img/og-image-1200.png**
+- **Größe:** 1200x1200 px (quadratisch)
+- **Format:** PNG
+- **Hintergrund:** `#1b232e`
+- **Logo:** Zentriert
+- **Text:** optional
 
 **Layout Vorschlag:**
 ```
@@ -257,17 +265,21 @@ Verwende [maskable.app](https://maskable.app) um zu prüfen ob dein Logo in der 
 - [ ] V2 Farben (#1b232e, #354e5e) bereit haben
 
 ### **Phase 2: Maskable Icons** (WICHTIG!)
-- [ ] `icon-192-maskable.png` erstellen (40% Safe Zone beachten!)
+- [ ] `icon-192-maskable.png` erstellen (Safe Zone beachten)
 - [ ] `icon-512-maskable.png` erstellen
 - [ ] Auf [maskable.app](https://maskable.app) testen
 - [ ] Ggf. Logo kleiner machen falls abgeschnitten
 
 ### **Phase 3: iOS & Splash**
-- [ ] `apple-touch-icon.png` (180x180) erstellen
-- [ ] `splash-generic.png` (1170x2532) erstellen
+- [ ] `apple-touch-icon-120.png` erstellen
+- [ ] `apple-touch-icon-152.png` erstellen
+- [ ] `apple-touch-icon-167.png` erstellen
+- [ ] `apple-touch-icon-180.png` erstellen
+- [ ] iOS Splash-Set für gängige Geräte generieren (device-spezifische Auflösungen)
 
 ### **Phase 4: Social Media**
-- [ ] `og-image.png` (1200x630) erstellen
+- [ ] `og-image-1200x630.png` (1200x630) erstellen
+- [ ] `og-image-1200.png` (1200x1200) erstellen
 
 ### **Phase 5: Optional - Refresh**
 - [ ] `icon-192.png` mit V2 Design aktualisieren
@@ -290,11 +302,17 @@ Verwende [maskable.app](https://maskable.app) um zu prüfen ob dein Logo in der 
 ### **1. Icons hochladen**
 Kopiere die neuen Icons in die richtigen Verzeichnisse:
 ```
+static/img/pwa/icon-192.png
+static/img/pwa/icon-512.png
 static/img/pwa/icon-192-maskable.png
 static/img/pwa/icon-512-maskable.png
-static/img/pwa/apple-touch-icon.png
-static/img/ui/splash-generic.png
-static/img/og-image.png
+static/img/pwa/apple-touch-icon-120.png
+static/img/pwa/apple-touch-icon-152.png
+static/img/pwa/apple-touch-icon-167.png
+static/img/pwa/apple-touch-icon-180.png
+static/img/pwa/splash/*.png
+static/img/og-image-1200x630.png
+static/img/og-image-1200.png
 ```
 
 ### **2. manifest.json aktualisieren**

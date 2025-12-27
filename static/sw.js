@@ -3,25 +3,35 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const CACHE_NAME = 'gourmen-v2.0.1';
-const STATIC_CACHE = 'gourmen-static-v2.0.1';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v2.0.1';
+const VERSION = '3.0.0';
+const CACHE_NAME = `gourmen-v${VERSION}`;
+const STATIC_CACHE = `gourmen-static-v${VERSION}`;
+const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
 
 // Assets die gecacht werden sollen (nur wirklich statische Dateien!)
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
-    '/',
-    '/static/css/main-v2.css',
-    '/static/css/public.css',
     '/static/manifest.json',
-    '/static/img/pwa/icon-16.png',
-    '/static/img/pwa/icon-32.png',
-    '/static/img/pwa/icon-96.png',
-    '/static/img/pwa/icon-192.png',
-    '/static/img/pwa/icon-512.png',
-    '/static/img/pwa/apple-touch-icon.png',
-    '/static/favicon.ico'
+    '/static/css/main-v2.61b2daf1.css',
+    '/static/css/public.47da10af.css',
+    '/static/favicon.6d319de4.ico',
+    '/static/favicon.0c03bb1d.svg',
+    '/static/img/pwa/icon-16.498c3d3b.png',
+    '/static/img/pwa/icon-32.fc5d4966.png',
+    '/static/img/pwa/icon-192.ee7f0987.png',
+    '/static/img/pwa/icon-512.21a600c7.png',
+    '/static/img/pwa/icon-192-maskable.9cc8e23a.png',
+    '/static/img/pwa/icon-512-maskable.dea3b97a.png',
+    '/static/img/pwa/apple-touch-icon-120.91482342.png',
+    '/static/img/pwa/apple-touch-icon-152.8e3cd071.png',
+    '/static/img/pwa/apple-touch-icon-167.5c73f892.png',
+    '/static/img/pwa/apple-touch-icon-180.8b095258.png',
+    '/static/img/pwa/badge-72.d5fcf4dc.png',
+    '/static/img/pwa/badge-96.054a5b81.png',
+    '/static/offline.90b7cb7b.html'
 ];
+
+const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
 
 // API-Endpunkte die gecacht werden sollen
 const API_CACHE = [
@@ -187,7 +197,7 @@ self.addEventListener('push', (event) => {
         const options = {
             body: data.body,
             icon: data.icon || '/static/img/pwa/icon-192.png',
-            badge: data.badge || '/static/img/pwa/icon-96.png',
+            badge: data.badge || '/static/img/pwa/badge-96.054a5b81.png',
             tag: data.tag || 'gourmen-notification',
             data: data.data || {},
             actions: data.actions || [],
@@ -200,8 +210,8 @@ self.addEventListener('push', (event) => {
         console.error('Service Worker: Error processing push notification:', error);
         event.waitUntil(self.registration.showNotification('Gourmen', {
             body: 'Neue Nachricht von Gourmen',
-            icon: '/static/img/pwa/icon-192.png',
-            badge: '/static/img/pwa/icon-96.png',
+            icon: '/static/img/pwa/icon-192.ee7f0987.png',
+            badge: '/static/img/pwa/badge-96.054a5b81.png',
             tag: 'gourmen-fallback'
         }));
     }
@@ -309,18 +319,9 @@ async function networkFirst(request, cacheName) {
             return cachedResponse;
         }
         
-        // Für Navigations-Requests, versuche die Startseite aus dem Cache
-        if (request.mode === 'navigate') {
-            const homePageResponse = await caches.match('/');
-            if (homePageResponse) {
-                console.log('Service Worker: Serving home page from cache for navigation request');
-                return homePageResponse;
-            }
-        }
-        
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/offline.html');
+        const offlineResponse = await caches.match('/static/offline.90b7cb7b.html');
         if (offlineResponse) {
             return offlineResponse;
         }
@@ -339,13 +340,7 @@ async function networkFirst(request, cacheName) {
 // Check if request is for static assets
 function isStaticAsset(request) {
     const url = new URL(request.url);
-    return STATIC_ASSETS.includes(url.pathname) ||
-           url.pathname.startsWith('/static/') ||
-           url.pathname.endsWith('.css') ||
-           url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.png') ||
-           url.pathname.endsWith('.jpg') ||
-           url.pathname.endsWith('.ico');
+    return STATIC_ASSET_SET.has(url.pathname);
 }
 
 // Check if request is for API

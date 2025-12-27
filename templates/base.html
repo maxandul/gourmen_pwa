@@ -29,13 +29,13 @@
     <title>{% block title %}Gourmen{% endblock %}</title>
     
     <!-- PWA Meta -->
-    <meta name="theme-color" content="{% if use_v2_design %}#1b232e{% else %}#354e5e{% endif %}">
+    <meta name="theme-color" content="#1b232e">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gourmen">
     <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="msapplication-TileColor" content="#354e5e">
+    <meta name="msapplication-TileColor" content="#1b232e">
     <meta name="msapplication-config" content="/static/browserconfig.xml">
     <meta name="description" content="Gourmen-Verein Webapp - Verwaltung und Organisation">
     <meta name="keywords" content="Gourmen, Verein, Events, GGL, BillBro">
@@ -46,7 +46,7 @@
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:title" content="{% block og_title %}Gourmen - Seit 2021{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Gourmen-Verein Webapp - Verwaltung, Events und GGL{% endblock %}">
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-image-1200x630.ae23d0bd.png', _external=True) }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Gourmen">
@@ -57,39 +57,47 @@
     <meta name="twitter:url" content="{{ request.url }}">
     <meta name="twitter:title" content="{% block twitter_title %}Gourmen - Seit 2021{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}Gourmen-Verein Webapp - Verwaltung, Events und GGL{% endblock %}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image-1200x630.ae23d0bd.png', _external=True) }}">
     
     <!-- Manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}?v=2.0.1">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     
     <!-- Icons -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2.0.1">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/pwa/icon-16.png') }}?v=2.0.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/pwa/icon-32.png') }}?v=2.0.1">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}?v=2.0.1">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='img/pwa/icon-512.png') }}?v=2.0.1">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.6d319de4.ico') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.0c03bb1d.svg') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/pwa/icon-16.498c3d3b.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/pwa/icon-32.fc5d4966.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/pwa/icon-192.ee7f0987.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='img/pwa/icon-512.21a600c7.png') }}">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/pwa/apple-touch-icon.png') }}?v=2.0.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/pwa/apple-touch-icon.png') }}?v=2.0.1">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
-    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='img/pwa/icon-192.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-180.8b095258.png') }}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-167.5c73f892.png') }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-152.8e3cd071.png') }}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-120.91482342.png') }}">
     
-    <!-- Splash Screens -->
-    <!-- TODO: splash-generic.png erstellen (siehe docs/ASSETS.md) -->
-    <!-- <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/ui/splash-generic.png') }}"> -->
+    <!-- Splash Screens (iOS) -->
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-640x1136.0905100a.png') }}" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-750x1334.2f203bcb.png') }}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1242x2208.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1125x2436.ad53ee81.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-828x1792.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1080x2340.fc19a065.png') }}" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1170x2532.7cdf1bee.png') }}" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1284x2778.6b83d7f0.png') }}" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1290x2796.b1fbf169.png') }}" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1179x2556.7f002aea.png') }}" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1536x2048.a34a9b07.png') }}" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1620x2160.4030f8f1.png') }}" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1640x2360.84e744a1.png') }}" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1668x2388.ac2cc977.png') }}" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-2048x2732.88abdf66.png') }}" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
     
     <!-- CSS -->
     {% if use_v2_design %}
         <!-- Design System V2 -->
-        <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}" as="image" type="image/svg+xml">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.css') }}?v=2.0.1">
+        <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.61b2daf1.css') }}">
     {% else %}
         <!-- Legacy V1 CSS -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -102,8 +110,8 @@
     {% block head %}{% endblock %}
     
     <!-- PWA Scripts -->
-    <script src="{{ url_for('static', filename='js/pwa.js') }}?v=2.0.1" defer></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.0.1" defer></script>
+    <script src="{{ url_for('static', filename='js/pwa.aebb2b36.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/app.fcc48062.js') }}" defer></script>
     
     <!-- CSRF Token for AJAX: immer setzen -->
     <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
@@ -134,7 +142,7 @@
     {% if current_user.is_authenticated %}
     <div class="user-bar">
         <a href="{{ url_for('public.landing') }}" class="logo-link">
-            <img src="{{ url_for('static', filename='img/logos/logo-primary.png') }}" alt="Gourmen Logo" class="user-bar-logo" />
+            <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="Gourmen Logo" class="user-bar-logo" />
         </a>
         <div class="user-section">
             <div class="user-info">

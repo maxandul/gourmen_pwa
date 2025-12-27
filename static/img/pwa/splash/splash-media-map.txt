@@ -1,0 +1,15 @@
+iphone-se: (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) -> splash-640x1136.png
+iphone-8: (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) -> splash-750x1334.png
+iphone-8-plus: (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) -> splash-1242x2208.png
+iphone-x: (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) -> splash-1125x2436.png
+iphone-xr: (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) -> splash-828x1792.png
+iphone-12-mini: (device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) -> splash-1080x2340.png
+iphone-12: (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) -> splash-1170x2532.png
+iphone-12-pro-max: (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) -> splash-1284x2778.png
+iphone-14-plus: (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) -> splash-1290x2796.png
+iphone-15-pro: (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) -> splash-1179x2556.png
+ipad-mini: (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) -> splash-1536x2048.png
+ipad-10th: (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) -> splash-1620x2160.png
+ipad-air: (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) -> splash-1640x2360.png
+ipad-pro-11: (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) -> splash-1668x2388.png
+ipad-pro-12-9: (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) -> splash-2048x2732.png

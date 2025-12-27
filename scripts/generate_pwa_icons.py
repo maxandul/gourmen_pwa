@@ -3,7 +3,8 @@ from pathlib import Path
 from PIL import Image
 
 
-SOURCE = Path('static/img/logos/logo-square.png')
+# Quelle ist das hochauflösende PWA-Icon (512px) aus dem Master-Export
+SOURCE = Path('static/img/pwa/icon-512.png')
 OUT_DIR = Path('static/img/pwa')
 
 # Zielgrößen
