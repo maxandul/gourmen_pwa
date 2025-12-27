@@ -16,6 +16,11 @@ from backend.services.vapid_service import VAPIDService
 
 logger = logging.getLogger(__name__)
 
+# Badge/Notification-Icon (Pull-Down) bleibt beim bestehenden Logo,
+# für das winzige Statusleisten-Icon nutzen wir ein separates monochromes Schnauz-Icon.
+BADGE_PATH = '/static/img/pwa/badge-96.png'      # Notification-Icon (z.B. Pull-Down)
+ICON_PATH = '/static/img/pwa/mustache-96.png'    # Kleines Statusleisten-Icon (einfarbig)
+
 try:
     from pywebpush import webpush, WebPushException
     from py_vapid import Vapid02
@@ -27,6 +32,32 @@ except ImportError:
 class PushNotificationService:
     """Service für echte Push-Benachrichtigungen über das Betriebssystem"""
     
+    @staticmethod
+    def _send_with_cleanup(subscription, payload) -> dict:
+        """
+        Sendet Push, markiert Nutzung und deaktiviert abgelaufene Subscriptions (410).
+        Gibt ein dict mit success/ status/ error zurück.
+        """
+        result = PushNotificationService.send_push_notification(
+            subscription.subscription_data,
+            payload,
+            return_error_details=True
+        )
+        if isinstance(result, dict) and result.get("success"):
+            subscription.mark_used()
+            return result
+        
+        status = result.get("status") if isinstance(result, dict) else None
+        if status == 410:
+            try:
+                subscription.is_active = False
+                db.session.commit()
+                logger.info(f"Deactivated expired subscription {getattr(subscription, 'endpoint', '')[:50]}...")
+            except Exception as cleanup_error:
+                db.session.rollback()
+                logger.warning(f"Failed to deactivate expired subscription: {cleanup_error}")
+        return result
+
     @staticmethod
     def send_test_push_to_active_subscriptions(limit: int = None) -> dict:
         """
@@ -45,8 +76,8 @@ class PushNotificationService:
             payload = {
                 "title": "Test-Reminder 🧪",
                 "body": "Dies ist ein Test-Push aus dem Cron-Job (run now).",
-                "icon": "/static/img/pwa/icon-192.png",
-                "badge": "/static/img/pwa/badge-96.png",
+                "icon": ICON_PATH,
+                "badge": BADGE_PATH,
                 "tag": "test-reminder",
                 "data": {
                     "url": "/",
@@ -55,16 +86,23 @@ class PushNotificationService:
             }
             
             sent = 0
+            deactivated = 0
             for subscription in subscriptions:
-                if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                    subscription.mark_used()
+                result = PushNotificationService._send_with_cleanup(subscription, payload)
+
+                if isinstance(result, dict) and result.get("success"):
                     sent += 1
+                else:
+                    status = result.get("status") if isinstance(result, dict) else None
+                    if status == 410:
+                        deactivated += 1
             
             return {
                 "success": sent > 0,
                 "sent": sent,
                 "requested": len(subscriptions),
-                "limit": limit
+                "limit": limit,
+                "deactivated": deactivated
             }
         except Exception as e:
             logger.error(f"Error sending test push: {e}")
@@ -179,7 +217,7 @@ class PushNotificationService:
                 return False
             
             # Zähle Mitglieder die noch nicht geantwortet haben
-            total_members = Member.query.filter_by(aktiv=True).count()
+            total_members = Member.query.filter_by(is_active=True).count()
             responded_count = Participation.query.filter_by(event_id=event_id).count()
             non_responded_count = total_members - responded_count
             
@@ -187,8 +225,8 @@ class PushNotificationService:
             payload = {
                 'title': f'{event.event_typ.value} vom [event.display_date]',
                 'body': f"Dein Event findet in 3 Wochen statt. {non_responded_count} Mitglieder haben noch nicht geantwortet und heute einen Reminder erhalten.",
-                'icon': '/static/img/pwa/icon-192.png',
-                'badge': '/static/img/pwa/badge-96.png',  # Monochromes Icon für Android
+                'icon': ICON_PATH,
+                'badge': BADGE_PATH,  # Monochromes Icon für Android
                 'tag': f'event-organizer-{event_id}',
                 'data': {
                     'url': f'/events/{event_id}',
@@ -206,8 +244,8 @@ class PushNotificationService:
             # Sende an alle Subscriptions des Organisators
             success_count = 0
             for subscription in subscriptions:
-                if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                    subscription.mark_used()
+                res = PushNotificationService._send_with_cleanup(subscription, payload)
+                if isinstance(res, dict) and res.get("success"):
                     success_count += 1
             
             logger.info(f"Sent organizer reminder to {success_count}/{len(subscriptions)} subscriptions for {organizer.email}")
@@ -279,8 +317,8 @@ class PushNotificationService:
                 
                 # Sende an alle Subscriptions des Mitglieds
                 for subscription in subscriptions:
-                    if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                        subscription.mark_used()
+                    res = PushNotificationService._send_with_cleanup(subscription, payload)
+                    if isinstance(res, dict) and res.get("success"):
                         sent_count += 1
             
             return {
@@ -306,7 +344,7 @@ class PushNotificationService:
                 return {"error": "Event nicht gefunden"}
             
             # Zähle verschiedene Teilnahme-Status
-            total_members = Member.query.filter_by(aktiv=True).count()
+            total_members = Member.query.filter_by(is_active=True).count()
             participated = Participation.query.filter_by(
                 event_id=event_id, 
                 teilnahme=True
@@ -426,8 +464,8 @@ class PushNotificationService:
             payload = {
                 'title': f'Friendly reminder 🥰',
                 'body': f'Am {weekday} sehen wir uns hier: {restaurant_name}',
-                'icon': '/static/img/pwa/icon-192.png',
-                'badge': '/static/img/pwa/badge-96.png',
+                'icon': ICON_PATH,
+                'badge': BADGE_PATH,
                 'tag': f'event-week-reminder-{event_id}',
                 'data': {
                     'url': f'/events/{event_id}',
@@ -460,8 +498,8 @@ class PushNotificationService:
                 
                 # Sende an alle Subscriptions des Mitglieds
                 for subscription in subscriptions:
-                    if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                        subscription.mark_used()
+                    res = PushNotificationService._send_with_cleanup(subscription, payload)
+                    if isinstance(res, dict) and res.get("success"):
                         sent_count += 1
             
             return {
@@ -580,8 +618,8 @@ class PushNotificationService:
             payload = {
                 'title': 'Schön, dass du gestern dabei warst 🥰',
                 'body': f'Vergiss nicht das Event zu bewerten! 🌟',
-                'icon': '/static/img/pwa/icon-192.png',
-                'badge': '/static/img/pwa/badge-96.png',
+                'icon': ICON_PATH,
+                'badge': BADGE_PATH,
                 'tag': f'event-rating-reminder-{event_id}',
                 'data': {
                     'url': f'/ratings/{event_id}/submit',
@@ -614,8 +652,8 @@ class PushNotificationService:
                 
                 # Sende an alle Subscriptions des Mitglieds
                 for subscription in subscriptions:
-                    if PushNotificationService.send_push_notification(subscription.subscription_data, payload):
-                        subscription.mark_used()
+                    res = PushNotificationService._send_with_cleanup(subscription, payload)
+                    if isinstance(res, dict) and res.get("success"):
                         sent_count += 1
             
             return {

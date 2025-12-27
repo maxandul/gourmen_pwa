@@ -47,6 +47,10 @@ class PWA {
             e.preventDefault();
             this.deferredPrompt = e;
             this.showInstallButton();
+            // Zeige Android-Install-/Push-Hinweis als Banner
+            if (this.isAndroid() && !this.isInstalled) {
+                this.showAndroidInstallPrompt();
+            }
         });
 
         // App installiert Event
@@ -281,8 +285,11 @@ class PWA {
         return /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
+    isAndroid() {
+        return /Android/i.test(navigator.userAgent) && !this.isIOS();
+    }
+
     showIOSInstallPrompt() {
-        // Zeige dezenten Hinweis für iOS-User
         // Nur einmal anzeigen (localStorage)
         if (localStorage.getItem('ios-install-prompt-shown')) {
             return;
@@ -290,18 +297,88 @@ class PWA {
 
         // Warte 3 Sekunden nach Seitenload
         setTimeout(() => {
-            const message = '💡 Tipp: Installiere die Gourmen-App auf deinem iPhone!\n\n' +
-                          '1. Tippe auf das Teilen-Symbol ↗️\n' +
-                          '2. Wähle "Zum Home-Bildschirm"\n' +
-                          '3. Tippe auf "Hinzufügen"';
-            
-            this.showToast(message, 'info', 12000);
-            
-            // Markiere als angezeigt
-            localStorage.setItem('ios-install-prompt-shown', 'true');
-            
+            const existing = document.querySelector('.alert.install-ios-alert');
+            if (existing) return;
+
+            const banner = document.createElement('div');
+            banner.className = 'alert alert--info install-ios-alert';
+            banner.innerHTML = `
+                <div class="alert__content">
+                    <div class="alert__title">iOS: App installieren & Push aktivieren</div>
+                    <div class="alert__message">
+                        <ol class="stack-vertical" style="margin: 0; padding-left: 1rem;">
+                            <li>In Safari öffnen.</li>
+                            <li>Teilen-Symbol ↗️ tippen.</li>
+                            <li>"Zum Home-Bildschirm" wählen, dann "Hinzufügen".</li>
+                            <li>App vom Homescreen starten und Push erlauben.</li>
+                        </ol>
+                    </div>
+                </div>
+                <button class="alert__close" aria-label="Schließen">×</button>
+            `;
+
+            const close = () => {
+                banner.remove();
+                localStorage.setItem('ios-install-prompt-shown', 'true');
+            };
+
+            banner.querySelector('.alert__close').addEventListener('click', close);
+
+            // Einfügen oben im Body
+            document.body.prepend(banner);
+
             console.log('📱 iOS-Installationshinweis angezeigt');
         }, 3000);
+    }
+
+    showAndroidInstallPrompt() {
+        // Nur einmal anzeigen (localStorage)
+        if (localStorage.getItem('android-install-prompt-shown')) {
+            return;
+        }
+
+        setTimeout(() => {
+            const existing = document.querySelector('.alert.install-android-alert');
+            if (existing) return;
+
+            const banner = document.createElement('div');
+            banner.className = 'alert alert--info install-android-alert';
+            banner.innerHTML = `
+                <div class="alert__content">
+                    <div class="alert__title">Android: App installieren & Push aktivieren</div>
+                    <div class="alert__message">
+                        <div class="stack-vertical" style="gap: 8px; margin: 0;">
+                            <span>Installiere die PWA und aktiviere Benachrichtigungen für Updates.</span>
+                            <div class="alert__actions" style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn btn--primary btn--sm" type="button" data-action="install">Installieren</button>
+                                <button class="btn btn--outline btn--sm" type="button" data-action="push">Push aktivieren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="alert__close" aria-label="Schließen">×</button>
+            `;
+
+            const close = () => {
+                banner.remove();
+                localStorage.setItem('android-install-prompt-shown', 'true');
+            };
+
+            banner.querySelector('.alert__close').addEventListener('click', close);
+
+            // Actions
+            banner.querySelector('[data-action="install"]').addEventListener('click', () => {
+                this.installApp();
+                close();
+            });
+            banner.querySelector('[data-action="push"]').addEventListener('click', () => {
+                this.requestNotificationPermission();
+                close();
+            });
+
+            document.body.prepend(banner);
+            console.log('📱 Android-Install-/Push-Hinweis angezeigt');
+        }, 2000);
     }
 
     showInstallButton() {
