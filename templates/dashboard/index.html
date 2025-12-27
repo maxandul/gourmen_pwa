@@ -49,14 +49,14 @@
                     Nächstes Event
                 </h2>
                 <div class="card__actions">
-                    {% if my_participation %}
-                        {% if my_participation.teilnahme %}
-                            <span class="chip chip--success">Teilnahme zugesagt</span>
+                        {% if my_participation %}
+                            {% if my_participation.teilnahme %}
+                            <span class="chip chip--success">Zugesagt</span>
                         {% else %}
                             <span class="chip chip--danger">Abgesagt</span>
                         {% endif %}
                     {% else %}
-                        <span class="chip chip--info">Noch keine Antwort</span>
+                        <span class="chip chip--accent">Zu-/Absagen</span>
                     {% endif %}
                 </div>
             </div>

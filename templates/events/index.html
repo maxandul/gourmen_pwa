@@ -122,12 +122,12 @@
                         <div class="card__actions">
                             {% if my_participation %}
                                 {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Teilnahme zugesagt</span>
+                                    <span class="chip chip--success">Zugesagt</span>
                                 {% else %}
                                     <span class="chip chip--danger">Abgesagt</span>
                                 {% endif %}
                             {% else %}
-                                <span class="chip chip--info">Noch keine Antwort</span>
+                                <span class="chip chip--accent">Zu-/Absagen</span>
                             {% endif %}
                         </div>
                     </div>
@@ -222,12 +222,12 @@
                         <div class="card__actions">
                             {% if my_participation %}
                                 {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Teilnahme zugesagt</span>
+                                    <span class="chip chip--success">Zugesagt</span>
                                 {% else %}
                                     <span class="chip chip--danger">Abgesagt</span>
                                 {% endif %}
                             {% else %}
-                                <span class="chip chip--info">Noch keine Antwort</span>
+                                <span class="chip chip--accent">Zu-/Absagen</span>
                             {% endif %}
                         </div>
                     </div>
@@ -328,6 +328,15 @@
                 {% for event in events %}
                 {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                 <div class="card">
+                    {% set avg_ratings = event.get_average_ratings() %}
+                    {% set overall = avg_ratings.overall if avg_ratings.overall is defined else avg_ratings['overall'] %}
+                    {% if overall >= 4 %}
+                        {% set chip_color = '#10b981' %}
+                    {% elif overall >= 3 %}
+                        {% set chip_color = '#f59e0b' %}
+                    {% else %}
+                        {% set chip_color = '#ef4444' %}
+                    {% endif %}
                     <div class="card__header">
                         <h2 class="card__title">
                             {% if event.event_typ.value == 'MONATSESSEN' %}
@@ -339,15 +348,15 @@
                             </svg>
                             {% elif event.event_typ.value == 'GENERALVERSAMMLUNG' %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                <path d="M9 22v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
-                                <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"/>
+                                <path d="M3 3h18v7H3z"/>
+                                <path d="M12 10v7"/>
+                                <path d="M9 14h6"/>
                             </svg>
                             {% elif event.event_typ.value == 'AUSFLUG' %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/>
-                                <path d="M14 2v6h6"/>
-                                <path d="M10.5 7.5 13 10M8 17l6-6 2 2-6 6Z"/>
+                                <path d="M3 11h18"/>
+                                <path d="M5 11l2.5-4.5a2 2 0 0 1 1.74-1H15a2 2 0 0 1 1.8 1.1L19 11"/>
+                                <path d="M7 11v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-5"/>
                             </svg>
                             {% else %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -357,21 +366,25 @@
                                 <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                             {% endif %}
-                            {{ event.event_typ.value }} - {{ event.display_date }}
+                            {{ event.display_date }}
                         </h2>
                         <div class="card__actions">
                             {% if my_participation %}
                                 {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Teilnahme zugesagt</span>
+                                    <span class="chip chip--success">Zugesagt</span>
                                 {% else %}
                                     <span class="chip chip--danger">Abgesagt</span>
                                 {% endif %}
                             {% else %}
-                                <span class="chip chip--info">Noch keine Antwort</span>
+                                <span class="chip chip--accent">Zu-/Absagen</span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="card__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Event:</span>
+                            <span class="info-row__value">{{ event.event_typ.value }}</span>
+                        </div>
                         <div class="info-row">
                             <span class="info-row__label">Organisator:</span>
                             <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
@@ -477,6 +490,17 @@
                 {% if events and events.items %}
                 {% for event in events.items %}
                 {% set rating_done = event.has_rating_from_participant(current_user.id) if event.has_rating_from_participant is defined else False %}
+                {% set avg_ratings = event.get_average_ratings() or {} %}
+                {% set overall = avg_ratings.get('overall', 0) %}
+                {% set rating_count = avg_ratings.get('count', 0) %}
+                {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first if event.participations is defined else None %}
+                {% set can_rate = (current_user.is_admin() or event.organisator_id == current_user.id or (my_participation and my_participation.teilnahme)) %}
+                {% set chip_color = '#ef4444' %}
+                {% if overall >= 4 %}
+                    {% set chip_color = '#10b981' %}
+                {% elif overall >= 3 %}
+                    {% set chip_color = '#f59e0b' %}
+                {% endif %}
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
@@ -489,15 +513,15 @@
                             </svg>
                             {% elif event.event_typ.value == 'GENERALVERSAMMLUNG' %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                <path d="M9 22v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
-                                <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"/>
+                                <path d="M3 3h18v7H3z"/>
+                                <path d="M12 10v7"/>
+                                <path d="M9 14h6"/>
                             </svg>
                             {% elif event.event_typ.value == 'AUSFLUG' %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/>
-                                <path d="M14 2v6h6"/>
-                                <path d="M10.5 7.5 13 10M8 17l6-6 2 2-6 6Z"/>
+                                <path d="M3 11h18"/>
+                                <path d="M5 11l2.5-4.5a2 2 0 0 1 1.74-1H15a2 2 0 0 1 1.8 1.1L19 11"/>
+                                <path d="M7 11v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-5"/>
                             </svg>
                             {% else %}
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -507,15 +531,30 @@
                                 <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                             {% endif %}
-                            {{ event.event_typ.value }} - {{ event.display_date }}
+                            {{ event.display_date }}
                         </h2>
                         <div class="card__actions">
-                            {% if not rating_done %}
-                                <span class="chip chip--accent">Bewertung ausstehend</span>
+                            {% if can_rate and not rating_done %}
+                                <a class="chip chip--accent"
+                                   href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}">
+                                    Bewerten
+                                </a>
+                            {% elif rating_count > 0 %}
+                                <span class="chip"
+                                      style="background: linear-gradient(90deg, {{ chip_color }} 0%, {{ chip_color }}cc 100%); border-color: {{ chip_color }}; color: #fff;">
+                                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                    {{ "%.1f"|format(overall) }}
+                                </span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="card__body">
+                        <div class="info-row">
+                            <span class="info-row__label">Event:</span>
+                            <span class="info-row__value">{{ event.event_typ.value }}</span>
+                        </div>
                         {% if event.restaurant %}
                         <div class="info-row">
                             <span class="info-row__label">Restaurant:</span>

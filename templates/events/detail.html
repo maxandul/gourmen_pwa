@@ -977,6 +977,61 @@
                             </div>
                         </div>
                         {% endif %}
+                        {% if not user_rating %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                    Deine Bewertung
+                                </h2>
+                            </div>
+                            <div class="card__body">
+                                <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="form-row">
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="food_rating_new">Essen</label>
+                                            <select id="food_rating_new" name="food_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="drinks_rating_new">Getränke</label>
+                                            <select id="drinks_rating_new" name="drinks_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-field__label" for="service_rating_new">Service</label>
+                                            <select id="service_rating_new" name="service_rating" class="form-field__select" required>
+                                                {% for score in [5,4,3,2,1] %}
+                                                <option value="{{ score }}">{{ score }} / 5</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="highlights_new">Highlights (optional)</label>
+                                        <textarea id="highlights_new" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?"></textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn--primary">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                            </svg>
+                                            Bewertung speichern
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
                     {% else %}
                     <div class="card">
                         <div class="card__body">
