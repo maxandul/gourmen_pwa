@@ -119,7 +119,8 @@ class PWA {
         console.log('🔄 Starte Service Worker Registrierung...');
         
         // Registriere Service Worker (oder hole bestehende Registration)
-        navigator.serviceWorker.register('/static/sw.js', { scope: '/static/' })
+        // Ohne Scope-Override, damit Browser automatisch /static/ als Scope setzt
+        navigator.serviceWorker.register('/static/sw.js')
             .then(registration => {
                 console.log('✅ Service Worker registriert:', registration);
                 this.serviceWorkerRegistration = registration;
