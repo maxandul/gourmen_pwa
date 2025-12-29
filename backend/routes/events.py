@@ -433,7 +433,7 @@ def cleanup():
             use_v2_design=True
         )
 
-    can_rate = ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
+    can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
     rating_form = EventRatingForm()
 
     return render_template(
@@ -487,12 +487,44 @@ def cleanup_rsvp(event_id):
     focus = 'rating' if status == 'yes' else None
     return redirect(url_for('events.cleanup', focus=focus))
 
+@bp.route('/<int:event_id>/ratings/enable', methods=['POST'])
+@login_required
+def enable_event_ratings(event_id):
+    """Erlaubt Bewertungen für ein Event."""
+    event = Event.query.get_or_404(event_id)
+
+    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+        flash('Keine Berechtigung.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+
+    event.allow_ratings = True
+    db.session.commit()
+    flash('Bewertungen für dieses Event wurden zugelassen.', 'success')
+    return redirect(url_for('events.detail', event_id=event_id))
+
+@bp.route('/<int:event_id>/ratings/disable', methods=['POST'])
+@login_required
+def disable_event_ratings(event_id):
+    """Verhindert Bewertungen für ein Event."""
+    event = Event.query.get_or_404(event_id)
+
+    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+        flash('Keine Berechtigung.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+
+    event.allow_ratings = False
+    db.session.commit()
+    flash('Bewertungen für dieses Event wurden deaktiviert.', 'success')
+    return redirect(url_for('events.detail', event_id=event_id))
+
 @bp.route('/<int:event_id>')
 @login_required
 def detail(event_id):
     """Event detail"""
     event = Event.query.get_or_404(event_id)
     active_tab = request.args.get('tab', 'info')
+    if not event.allow_ratings and active_tab == 'ratings':
+        active_tab = 'info'
     
     # Get user's participation
     participation = Participation.query.filter_by(
@@ -516,8 +548,8 @@ def detail(event_id):
     user_rating = next((r for r in ratings_sorted if r.participant_id == current_user.id), None)
     other_ratings = [r for r in ratings_sorted if r.participant_id != current_user.id]
     average_ratings = event.get_average_ratings()
-    # Bewertungen nur für bestätigte Teilnehmende oder den tatsächlichen Organisator
-    can_rate = ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
+    # Bewertungen nur wenn erlaubt und für bestätigte Teilnehmende oder den tatsächlichen Organisator
+    can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
     rating_edit_mode = request.args.get('edit_rating') == '1' if (user_rating and can_rate) else False
     
     return render_template('events/detail.html', 

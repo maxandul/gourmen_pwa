@@ -68,6 +68,7 @@ class Event(db.Model):
     
     # Publication status
     published = db.Column(db.Boolean, default=False, nullable=False)
+    allow_ratings = db.Column(db.Boolean, default=True, nullable=False)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

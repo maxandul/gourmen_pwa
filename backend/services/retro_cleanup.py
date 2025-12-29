@@ -33,9 +33,12 @@ class RetroCleanupService:
 
     @staticmethod
     def _is_completed(event, participation, has_rating: bool, member_id: int) -> bool:
-        """Erledigt wenn Zu-/Absage gesetzt und falls Zusage (oder Organisator) auch bewertet."""
+        """Erledigt wenn Zu-/Absage gesetzt und falls Rating erlaubt + Zusage (oder Org) auch bewertet."""
         if not participation or not participation.responded_at:
             return False
+
+        if not getattr(event, 'allow_ratings', True):
+            return True
 
         # Organisator darf bewerten; Pflicht nur wenn zugesagt
         if participation.teilnahme:
@@ -46,11 +49,11 @@ class RetroCleanupService:
 
     @staticmethod
     def _is_open(event, participation, has_rating: bool, member_id: int) -> bool:
-        """Offen wenn keine Antwort oder bei Zusage (oder Org) noch ohne Rating."""
+        """Offen wenn keine Antwort oder bei Zusage (oder Org) noch ohne Rating (falls erlaubt)."""
         if participation is None or participation.responded_at is None:
             return True
 
-        if participation.teilnahme and not has_rating:
+        if getattr(event, 'allow_ratings', True) and participation.teilnahme and not has_rating:
             return True
 
         return False

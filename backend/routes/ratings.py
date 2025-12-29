@@ -15,6 +15,10 @@ def rate_event(event_id):
     event = Event.query.get_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
     next_url = request.args.get('next') or request.form.get('next')
+
+    if not event.allow_ratings:
+        flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
+        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='info'))
     
     # Check if user participated in this event
     participation = Participation.query.filter_by(
@@ -64,6 +68,10 @@ def view_ratings(event_id):
     """View all ratings for an event"""
     event = Event.query.get_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
+
+    if not event.allow_ratings:
+        flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='info'))
     
     # Check if user participated in this event or is admin
     participation = Participation.query.filter_by(
@@ -83,6 +91,9 @@ def get_ratings_api(event_id):
     """API endpoint to get ratings for an event"""
     event = Event.query.get_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
+
+    if not event.allow_ratings:
+        return jsonify({'error': 'Bewertungen deaktiviert'}), 403
     
     # Check if user participated in this event or is admin
     participation = Participation.query.filter_by(
@@ -106,6 +117,10 @@ def get_ratings_api(event_id):
 def edit_rating(event_id):
     """Edit existing rating (inline im Event-Tab)"""
     event = Event.query.get_or_404(event_id)
+
+    if not event.allow_ratings:
+        flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='info'))
     
     # Get existing rating
     rating = EventRating.query.filter_by(
@@ -144,6 +159,11 @@ def delete_rating(event_id):
         event_id=event_id, 
         participant_id=current_user.id
     ).first()
+    
+    event = Event.query.get_or_404(event_id)
+    if not event.allow_ratings:
+        flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='info'))
     
     if not rating:
         flash('Keine Bewertung gefunden.', 'error')

@@ -534,12 +534,12 @@
                             {{ event.display_date }}
                         </h2>
                         <div class="card__actions">
-                            {% if can_rate and not rating_done %}
+                            {% if event.allow_ratings and can_rate and not rating_done %}
                                 <a class="chip chip--accent"
                                    href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}">
                                     Bewerten
                                 </a>
-                            {% elif rating_count > 0 %}
+                            {% elif event.allow_ratings and rating_count > 0 %}
                                 <a class="{{ rating_chip_class }}" href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}">
                                     <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
