@@ -150,6 +150,19 @@ def register_context_processors(app):
     @app.context_processor
     def inject_config():
         return dict(config=app.config)
+
+    @app.context_processor
+    def inject_retro_cleanup():
+        """Stellt Fortschritt für Datenbereinigung bereit (für Header-Button)."""
+        from flask_login import current_user
+        from backend.services.retro_cleanup import RetroCleanupService
+
+        if current_user.is_authenticated:
+            progress = RetroCleanupService.get_progress(current_user.id)
+            return dict(retro_cleanup_progress=progress)
+
+        # Default: kein Login, kein Bedarf
+        return dict(retro_cleanup_progress={'total': 0, 'completed': 0, 'pending': 0})
     
     # Register custom Jinja2 filters
     @app.template_filter('cuisine_type_mapper')

@@ -15,6 +15,8 @@ from backend.models.member import Member, Role
 from backend.services.places import PlacesService
 from backend.services.notifier import NotifierService
 from backend.services.push_notifications import PushNotificationService
+from backend.services.retro_cleanup import RetroCleanupService
+from backend.forms.rating import EventRatingForm
 
 bp = Blueprint('events', __name__)
 
@@ -412,6 +414,79 @@ def archive():
     """Redirect to archive tab"""
     return redirect(url_for('events.index', tab='archiv', **request.args))
 
+@bp.route('/cleanup')
+@login_required
+def cleanup():
+    """Einfacher Flow zur Nachpflege von Teilnahmen/Bewertungen vergangener Events."""
+    data = RetroCleanupService.get_next_open_event(current_user.id)
+    event = data.get('event')
+    participation = data.get('participation')
+    has_rating = data.get('has_rating')
+    progress = data.get('progress') or {'total': 0, 'completed': 0, 'pending': 0}
+    focus = request.args.get('focus')
+
+    if not event:
+        return render_template(
+            'events/cleanup.html',
+            no_events=True,
+            progress=progress,
+            use_v2_design=True
+        )
+
+    can_rate = ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
+    rating_form = EventRatingForm()
+
+    return render_template(
+        'events/cleanup.html',
+        event=event,
+        participation=participation,
+        has_rating=has_rating,
+        can_rate=can_rate,
+        form=rating_form,
+        progress=progress,
+        focus=focus,
+        use_v2_design=True
+    )
+
+@bp.route('/<int:event_id>/cleanup/rsvp', methods=['POST'])
+@login_required
+def cleanup_rsvp(event_id):
+    """Setzt Teilnahme explizit im Datenbereinigungs-Flow."""
+    status = request.form.get('status')
+    if status not in ('yes', 'no'):
+        flash('Ungültige Auswahl.', 'error')
+        return redirect(url_for('events.cleanup'))
+
+    event = Event.query.get_or_404(event_id)
+
+    # Nur vergangene Events mit Stichtag berücksichtigen
+    cutoff = RetroCleanupService.cutoff_date()
+    if event.datum > cutoff:
+        flash('Dieses Event ist noch nicht zur Datenbereinigung freigegeben.', 'error')
+        return redirect(url_for('events.cleanup'))
+
+    participation = Participation.query.filter_by(
+        member_id=current_user.id,
+        event_id=event_id
+    ).first()
+
+    if not participation:
+        participation = Participation(
+            member_id=current_user.id,
+            event_id=event_id,
+            teilnahme=(status == 'yes')
+        )
+        db.session.add(participation)
+
+    participation.teilnahme = (status == 'yes')
+    participation.responded_at = datetime.utcnow()
+
+    db.session.commit()
+
+    # Bei Zusage direkt zur Bewertungs-Karte scrollen
+    focus = 'rating' if status == 'yes' else None
+    return redirect(url_for('events.cleanup', focus=focus))
+
 @bp.route('/<int:event_id>')
 @login_required
 def detail(event_id):
@@ -441,7 +516,8 @@ def detail(event_id):
     user_rating = next((r for r in ratings_sorted if r.participant_id == current_user.id), None)
     other_ratings = [r for r in ratings_sorted if r.participant_id != current_user.id]
     average_ratings = event.get_average_ratings()
-    can_rate = ((participation and participation.teilnahme) or is_organizer)
+    # Bewertungen nur für bestätigte Teilnehmende oder den tatsächlichen Organisator
+    can_rate = ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
     rating_edit_mode = request.args.get('edit_rating') == '1' if (user_rating and can_rate) else False
     
     return render_template('events/detail.html', 

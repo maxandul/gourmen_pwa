@@ -13,7 +13,8 @@ bp = Blueprint('ratings', __name__)
 def rate_event(event_id):
     """Rate an event (handled inline im Event-Tab)"""
     event = Event.query.get_or_404(event_id)
-    is_organizer = current_user.is_admin() or event.organisator_id == current_user.id
+    is_organizer = event.organisator_id == current_user.id
+    next_url = request.args.get('next') or request.form.get('next')
     
     # Check if user participated in this event
     participation = Participation.query.filter_by(
@@ -23,7 +24,7 @@ def rate_event(event_id):
     
     if not ((participation and participation.teilnahme) or is_organizer):
         flash('Bewertungen sind nur für Teilnehmende oder Organisatoren möglich.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
     
     # Check if user has already rated this event
     existing_rating = EventRating.query.filter_by(
@@ -33,7 +34,7 @@ def rate_event(event_id):
     
     if existing_rating:
         flash('Sie haben dieses Event bereits bewertet.', 'info')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
     
     form = EventRatingForm()
     if form.validate_on_submit():
@@ -48,21 +49,21 @@ def rate_event(event_id):
         db.session.add(rating)
         db.session.commit()
         flash('Vielen Dank für Ihre Bewertung!', 'success')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
     
     # GET oder Validierungsfehler → zurück in den Ratings-Tab
     if form.errors:
         for field, errors in form.errors.items():
             for error in errors:
                 flash(error, 'error')
-    return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+    return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
 
 @bp.route('/event/<int:event_id>/ratings')
 @login_required
 def view_ratings(event_id):
     """View all ratings for an event"""
     event = Event.query.get_or_404(event_id)
-    is_organizer = current_user.is_admin() or event.organisator_id == current_user.id
+    is_organizer = event.organisator_id == current_user.id
     
     # Check if user participated in this event or is admin
     participation = Participation.query.filter_by(
@@ -70,7 +71,7 @@ def view_ratings(event_id):
         member_id=current_user.id
     ).first()
     
-    if not participation and not is_organizer and not current_user.is_admin():
+    if not ((participation and participation.teilnahme) or is_organizer):
         flash('Sie haben keine Berechtigung, die Bewertungen zu sehen.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
     
@@ -81,7 +82,7 @@ def view_ratings(event_id):
 def get_ratings_api(event_id):
     """API endpoint to get ratings for an event"""
     event = Event.query.get_or_404(event_id)
-    is_organizer = current_user.is_admin() or event.organisator_id == current_user.id
+    is_organizer = event.organisator_id == current_user.id
     
     # Check if user participated in this event or is admin
     participation = Participation.query.filter_by(
@@ -89,7 +90,7 @@ def get_ratings_api(event_id):
         member_id=current_user.id
     ).first()
     
-    if not participation and not is_organizer and not current_user.is_admin():
+    if not ((participation and participation.teilnahme) or is_organizer):
         return jsonify({'error': 'Keine Berechtigung'}), 403
     
     ratings = event.get_ratings()

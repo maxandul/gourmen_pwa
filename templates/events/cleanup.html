@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Datenbereinigung{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 21h18"></path>
+                <path d="M9.5 17h5"></path>
+                <path d="M4 21l5-14a2 2 0 0 1 3.8-.1l.3 1.1L20 21"></path>
+                <path d="M9 9l-4.5 3"></path>
+            </svg>
+            Datenbereinigung
+        </h1>
+        <p class="page-subtitle">Fehlende Angaben (Teilnahme/Bewertung) zu vergangenen Events ({{ progress.completed }}/{{ progress.total }}).</p>
+    </div>
+
+    <div class="page-content">
+        {% if no_events %}
+        <div class="card">
+            <div class="card__body">
+                <p>Alle vergangenen Events bereinigt. Muchas gracias ♥️</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    {% if event.event_typ.value == 'MONATSESSEN' %}
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 10h16"/>
+                        <path d="M4 14h16"/>
+                        <path d="M10 6v12"/>
+                        <path d="M14 6v12"/>
+                        <path d="M3 4h18v16H3z"/>
+                    </svg>
+                    {% elif event.event_typ.value == 'AUSFLUG' %}
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M3 11h18"/>
+                        <path d="M5 11l2.5-4.5a2 2 0 0 1 1.74-1H15a2 2 0 0 1 1.8 1.1L19 11"/>
+                        <path d="M7 11v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-5"/>
+                    </svg>
+                    {% else %}
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {% endif %}
+                    {{ event.display_date }}
+                </h2>
+                <div class="card__actions">
+                    {% if participation %}
+                        {% if participation.teilnahme %}
+                            <span class="chip chip--success">Zugesagt</span>
+                        {% else %}
+                            <span class="chip chip--danger">Abgesagt</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="chip chip--accent">Offen</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Event</span>
+                    <span class="info-row__value">{{ event.event_typ.value }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Organisator</span>
+                    <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
+                </div>
+                {% if event.restaurant %}
+                <div class="info-row">
+                    <span class="info-row__label">Restaurant</span>
+                    <span class="info-row__value">{{ event.restaurant }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card__footer" style="display: flex; flex-wrap: wrap; gap: var(--space-3);">
+                {% if participation and participation.teilnahme %}
+                    <!-- Bereits zugesagt: nur Absagen anbieten -->
+                    <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="no">
+                        <button type="submit" class="btn btn--danger">Nicht dabei</button>
+                    </form>
+                {% elif participation and not participation.teilnahme %}
+                    <!-- Bereits abgesagt: nur Zusagen anbieten -->
+                    <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="yes">
+                        <button type="submit" class="btn btn--success">War dabei</button>
+                    </form>
+                {% else %}
+                    <!-- Noch keine Antwort: beide Optionen -->
+                    <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="yes">
+                        <button type="submit" class="btn btn--success">War dabei</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="no">
+                        <button type="submit" class="btn btn--danger">Nicht dabei</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if can_rate %}
+        <div class="card" id="rating-card" style="scroll-margin-top: 120px;">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 21 12 17.77 7.82 21 9 14.14l-5-4.87 5.91-.99L12 2z"></path>
+                    </svg>
+                    Deine Bewertung
+                </h2>
+            </div>
+            <div class="card__body">
+                <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ url_for('events.cleanup', focus='next') }}">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="food_rating_cleanup">Essen</label>
+                            <select id="food_rating_cleanup" name="food_rating" class="form-field__select" required>
+                                {% for score in [5,4,3,2,1] %}
+                                <option value="{{ score }}">{{ score }} / 5</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="drinks_rating_cleanup">Getränke</label>
+                            <select id="drinks_rating_cleanup" name="drinks_rating" class="form-field__select" required>
+                                {% for score in [5,4,3,2,1] %}
+                                <option value="{{ score }}">{{ score }} / 5</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="service_rating_cleanup">Service</label>
+                            <select id="service_rating_cleanup" name="service_rating" class="form-field__select" required>
+                                {% for score in [5,4,3,2,1] %}
+                                <option value="{{ score }}">{{ score }} / 5</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-field__label" for="highlights_rating_cleanup">Highlights (optional)</label>
+                        <textarea id="highlights_rating_cleanup" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            Bewertung speichern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+  (function() {
+    const focus = {{ (focus or '')|tojson }};
+    if (focus === 'rating') {
+      const ratingCard = document.getElementById('rating-card');
+      if (ratingCard) {
+        ratingCard.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+    }
+  })();
+</script>
+{% endblock %}
+

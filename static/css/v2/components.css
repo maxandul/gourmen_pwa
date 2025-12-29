@@ -1743,7 +1743,8 @@ a.card-link:active {
    THEME TOGGLE BUTTON
    ============================================ */
 
-#theme-toggle {
+#theme-toggle,
+#cleanup-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1758,12 +1759,14 @@ a.card-link:active {
   color: white;
 }
 
-#theme-toggle:hover {
+#theme-toggle:hover,
+#cleanup-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-#theme-toggle .icon {
+#theme-toggle .icon,
+#cleanup-toggle .icon {
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;

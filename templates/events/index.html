@@ -494,12 +494,12 @@
                 {% set overall = avg_ratings.get('overall', 0) %}
                 {% set rating_count = avg_ratings.get('count', 0) %}
                 {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first if event.participations is defined else None %}
-                {% set can_rate = (current_user.is_admin() or event.organisator_id == current_user.id or (my_participation and my_participation.teilnahme)) %}
-                {% set chip_color = '#ef4444' %}
+                {% set can_rate = ((my_participation and my_participation.teilnahme) or event.organisator_id == current_user.id) %}
+                {% set rating_chip_class = 'chip chip--danger' %}
                 {% if overall >= 4 %}
-                    {% set chip_color = '#10b981' %}
+                    {% set rating_chip_class = 'chip chip--success' %}
                 {% elif overall >= 3 %}
-                    {% set chip_color = '#f59e0b' %}
+                    {% set rating_chip_class = 'chip chip--warning' %}
                 {% endif %}
                 <div class="card">
                     <div class="card__header">
@@ -540,13 +540,12 @@
                                     Bewerten
                                 </a>
                             {% elif rating_count > 0 %}
-                                <span class="chip"
-                                      style="background: linear-gradient(90deg, {{ chip_color }} 0%, {{ chip_color }}cc 100%); border-color: {{ chip_color }}; color: #fff;">
+                                <a class="{{ rating_chip_class }}" href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}">
                                     <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                                     </svg>
                                     {{ "%.1f"|format(overall) }}
-                                </span>
+                                </a>
                             {% endif %}
                         </div>
                     </div>
