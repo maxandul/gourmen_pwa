@@ -31,25 +31,39 @@
   box-shadow: var(--shadow-md);
 }
 
-/* User Bar: Same dark gradient in both themes (as requested) */
+/* Light Mode - Heller Theme-aware User Bar */
 [data-theme="light"] .user-bar {
-  background: linear-gradient(135deg, var(--brand-primary-800), var(--brand-primary-700));
+  background: linear-gradient(135deg, var(--brand-primary-100), #ffffff);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-default);
+  box-shadow: 0 2px 8px rgba(27, 35, 46, 0.08);
 }
 
 .logo-link {
   display: flex;
   align-items: center;
+  justify-content: center;
   text-decoration: none;
-  transition: opacity var(--transition-fast);
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  background: #1b232e;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
 }
 
 .logo-link:hover {
-  opacity: 0.9;
+  background: #243241;
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .user-bar-logo {
-  height: 50px;
-  width: auto;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 .user-section {
@@ -67,6 +81,21 @@
   font-weight: var(--font-medium);
   font-size: var(--text-base);
   color: white;
+}
+
+/* Light Mode - Anpassungen für Buttons und Text */
+[data-theme="light"] .logo-link {
+  background: #1b232e;
+  border-color: var(--color-border-default);
+}
+
+[data-theme="light"] .logo-link:hover {
+  background: #243241;
+  border-color: var(--brand-primary-600);
+}
+
+[data-theme="light"] .user-name {
+  color: var(--color-text-primary);
 }
 
 .user-actions {

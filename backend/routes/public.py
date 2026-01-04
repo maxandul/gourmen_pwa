@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, jsonify, current_app, send_from_directory
+from flask import Blueprint, render_template, jsonify, current_app, send_from_directory, redirect, url_for, request
+from flask_login import current_user
 from backend.extensions import db
 from backend.models.event import Event
 from backend.models.member import Member
@@ -8,7 +9,13 @@ bp = Blueprint('public', __name__)
 
 @bp.route('/')
 def landing():
-    """Landing page"""
+    """Landing page - redirects to dashboard if user is logged in (unless explicitly requested)"""
+    # Only redirect to dashboard if user is authenticated AND didn't explicitly request landing page
+    show_landing = request.args.get('show', '0') == '1'
+    
+    if current_user.is_authenticated and not show_landing:
+        return redirect(url_for('dashboard.index'))
+    
     try:
         # Get next upcoming published event
         latest_event = Event.query.filter_by(published=True).filter(

@@ -87,39 +87,45 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-4) var(--space-6);
-  min-height: 300px;
   z-index: 1;
 }
 
-/* Logo Background Circle - Matches logo background #1b232e */
+/* Logo Background Circle - Theme-aware */
 .landing-hero__visual::before {
   content: '';
   position: absolute;
-  width: 240px;
-  height: 240px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
-  background: var(--logo-navy-dark);  /* #1b232e - matches logo background! */
+  background: radial-gradient(
+    circle at center,
+    var(--brand-primary-700) 0%,
+    var(--brand-primary-800) 100%
+  );
   box-shadow: 
     0 20px 60px rgba(27, 35, 46, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 0;
 }
 
-/* Light Mode: Same navy color to match logo */
+/* Light Mode: Lighter background circle */
 [data-theme="light"] .landing-hero__visual::before {
-  background: var(--logo-navy-dark);  /* #1b232e - stays consistent! */
+  background: radial-gradient(
+    circle at center,
+    var(--brand-primary-100) 0%,
+    var(--brand-primary-200) 100%
+  );
   box-shadow: 
-    0 20px 60px rgba(27, 35, 46, 0.2),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    0 20px 60px rgba(27, 35, 46, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Accent Ring around Logo - with proper spacing */
+/* Accent Ring around Logo */
 .landing-hero__visual::after {
   content: '';
   position: absolute;
-  width: 260px;
-  height: 260px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
   border: 2px solid var(--brand-accent-500);
   opacity: 0.3;
@@ -182,29 +188,14 @@
 }
 
 .social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  background: var(--color-surface-secondary);
-  border: 1px solid var(--color-border-subtle);
+  font-weight: var(--font-medium);
 }
 
 .social-link:hover {
-  color: var(--color-interactive-primary);
-  background: var(--color-surface-hover);
-  border-color: var(--color-interactive-primary);
-  transform: translateY(-2px);
-}
-
-.social-link .icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  color: var(--color-text-link);
+  text-decoration: underline;
 }
 
 /* ============================================
@@ -221,8 +212,6 @@
   .landing-hero__visual {
     order: -1;
     margin-bottom: var(--space-4);
-    min-height: 260px;
-    padding: var(--space-3) var(--space-5);
   }
   
   .landing-hero__visual::before {

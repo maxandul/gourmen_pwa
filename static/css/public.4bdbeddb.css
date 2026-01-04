@@ -87,8 +87,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-4) var(--space-6);
-  min-height: 300px;
+  padding: var(--space-6);
+  min-height: 320px;
   z-index: 1;
 }
 
@@ -182,29 +182,14 @@
 }
 
 .social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  background: var(--color-surface-secondary);
-  border: 1px solid var(--color-border-subtle);
+  font-weight: var(--font-medium);
 }
 
 .social-link:hover {
-  color: var(--color-interactive-primary);
-  background: var(--color-surface-hover);
-  border-color: var(--color-interactive-primary);
-  transform: translateY(-2px);
-}
-
-.social-link .icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  color: var(--color-text-link);
+  text-decoration: underline;
 }
 
 /* ============================================
@@ -221,8 +206,8 @@
   .landing-hero__visual {
     order: -1;
     margin-bottom: var(--space-4);
-    min-height: 260px;
-    padding: var(--space-3) var(--space-5);
+    min-height: 280px;
+    padding: var(--space-5);
   }
   
   .landing-hero__visual::before {

@@ -182,29 +182,14 @@
 }
 
 .social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  background: var(--color-surface-secondary);
-  border: 1px solid var(--color-border-subtle);
+  font-weight: var(--font-medium);
 }
 
 .social-link:hover {
-  color: var(--color-interactive-primary);
-  background: var(--color-surface-hover);
-  border-color: var(--color-interactive-primary);
-  transform: translateY(-2px);
-}
-
-.social-link .icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  color: var(--color-text-link);
+  text-decoration: underline;
 }
 
 /* ============================================

@@ -1,4 +1,4 @@
-﻿"""Add allow_ratings flag to events"""
+﻿"""Add allow_ratings flag to events
 
 Revision ID: 49b1c0a8c9b1
 Revises: 
@@ -16,7 +16,9 @@ depends_on = None
 
 def upgrade():
     op.add_column('events', sa.Column('allow_ratings', sa.Boolean(), nullable=False, server_default=sa.true()))
-    op.alter_column('events', 'allow_ratings', server_default=None)
+    bind = op.get_bind()
+    if bind.dialect.name != 'sqlite':
+        op.alter_column('events', 'allow_ratings', server_default=None)
 
 
 def downgrade():
