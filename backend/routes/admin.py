@@ -17,6 +17,13 @@ from backend.services.security import SecurityService, AuditAction, require_step
 
 bp = Blueprint('admin', __name__)
 
+
+def normalize_to_month_start(value):
+    """Stellt auf den Monatsbeginn (01.) ein, wenn ein Datum vorhanden ist."""
+    if not value:
+        return None
+    return value.replace(day=1)
+
 def admin_required(f):
     """Decorator to require admin access"""
     from functools import wraps
@@ -113,7 +120,7 @@ class MemberForm(FlaskForm):
         (Funktion.REISEKOMMISSAR.value, 'Reisekommissar'),
         (Funktion.RECHNUNGSPRUEFER.value, 'Rechnungsprüfer')
     ])
-    beitrittsjahr = StringField('Beitrittsjahr')
+    beitritt = DateField('Beitritt', format='%Y-%m-%d')
     vorstandsmitglied = BooleanField('Vorstandsmitglied')
     
     # Physical data
@@ -213,7 +220,7 @@ def create_member():
             
             # Association data
             funktion=form.funktion.data if form.funktion.data else None,
-            beitrittsjahr=int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None,
+            beitritt=normalize_to_month_start(form.beitritt.data),
             vorstandsmitglied=form.vorstandsmitglied.data,
             
             # Physical data
@@ -293,7 +300,7 @@ def edit_member(member_id):
         form.plz.data = member.plz
         form.ort.data = member.ort
         form.funktion.data = member.funktion if member.funktion else Funktion.MEMBER.value
-        form.beitrittsjahr.data = str(member.beitrittsjahr) if member.beitrittsjahr else ''
+        form.beitritt.data = member.beitritt
         form.vorstandsmitglied.data = member.vorstandsmitglied
         form.koerpergroesse.data = str(member.koerpergroesse) if member.koerpergroesse else ''
         form.koerpergewicht.data = str(member.koerpergewicht) if member.koerpergewicht else ''
@@ -331,7 +338,7 @@ def edit_member(member_id):
         
         # Association data
         member.funktion = form.funktion.data if form.funktion.data else None
-        member.beitrittsjahr = int(form.beitrittsjahr.data) if form.beitrittsjahr.data and form.beitrittsjahr.data.strip() and form.beitrittsjahr.data.strip() != '' else None
+        member.beitritt = normalize_to_month_start(form.beitritt.data)
         member.vorstandsmitglied = form.vorstandsmitglied.data
         
         # Physical data

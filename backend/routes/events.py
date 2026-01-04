@@ -270,6 +270,12 @@ def index():
             Event.published == True,
             Event.datum < now
         ).order_by(Event.datum.desc()).all() or []
+        # Beitrittsfilter für user-spezifische Kennzahlen
+        user_join_date = current_user.beitritt
+        eligible_past_events = [
+            e for e in past_events
+            if (not user_join_date or e.datum.date() >= user_join_date)
+        ]
         
         future_events = Event.query.filter(
             Event.published == True,
@@ -336,12 +342,13 @@ def index():
         
         # User participation rate (past events)
         user_confirmed_events = len([
-            e for e in past_events
+            e for e in eligible_past_events
             if any((p.member_id == current_user.id and p.teilnahme) for p in (e.participations or []))
         ])
         user_participation_rate = 0
-        if total_past_events > 0:
-            user_participation_rate = (user_confirmed_events / total_past_events) * 100
+        user_eligible_count = len(eligible_past_events)
+        if user_eligible_count > 0:
+            user_participation_rate = (user_confirmed_events / user_eligible_count) * 100
         
         context.update({
             'past_events': past_events,

@@ -73,14 +73,14 @@
                         </div>
                     </div>
 
-                    {% if member.funktion or member.beitrittsjahr %}
+                    {% if member.funktion or member.beitritt %}
                     <div class="card-section">
                         <div class="card-section__header">
                             <h3 class="card-section__title">Verein</h3>
                         </div>
                         <div class="card-section__body">
                             {% if member.funktion %}<div class="info-row"><span class="info-row__label">Funktion</span><span class="info-row__value">{{ member.funktion.value }}</span></div>{% endif %}
-                            {% if member.beitrittsjahr %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitrittsjahr }}</span></div>{% endif %}
+                            {% if member.beitritt %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitritt.strftime('%m.%Y') }}</span></div>{% endif %}
                         </div>
                     </div>
                     {% endif %}

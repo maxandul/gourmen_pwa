@@ -121,8 +121,18 @@
                         <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
                         <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
                     </svg>
-                    Saison {{ ggl_stats.season }}
+                    GGL - Saison {{ ggl_stats.season }}
                 </h2>
+                <div class="card__actions">
+                    <a href="{{ url_for('ggl.index', tab='tabelle', season=ggl_stats.season) }}" class="btn btn--primary">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        Tabelle anzeigen
+                    </a>
+                </div>
             </div>
             <div class="card__body">
                 <div class="info-row">

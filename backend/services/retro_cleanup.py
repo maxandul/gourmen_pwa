@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+from typing import Optional
 from backend.models.event import Event
 from backend.models.participation import Participation
 from backend.models.rating import EventRating
+from backend.models.member import Member
 
 
 class RetroCleanupService:
@@ -14,14 +16,24 @@ class RetroCleanupService:
         return datetime.utcnow() - timedelta(days=cls.CUTOFF_DAYS)
 
     @classmethod
-    def _eligible_events_query(cls):
+    def _member_join_date(cls, member_id: int):
+        member = Member.query.get(member_id)
+        if not member or not member.beitritt:
+            return None
+        # Event.datum ist DateTime; wir normalisieren das Beitrittsdatum auf 00:00 desselben Tages
+        return datetime.combine(member.beitritt, time.min)
+
+    @classmethod
+    def _eligible_events_query(cls, member_join_dt: Optional[datetime] = None):
         cutoff = cls.cutoff_date()
-        return (
+        query = (
             Event.query
             .filter(Event.datum <= cutoff)
             .filter(Event.published == True)  # noqa: E712
-            .order_by(Event.datum.asc())
         )
+        if member_join_dt:
+            query = query.filter(Event.datum >= member_join_dt)
+        return query.order_by(Event.datum.asc())
 
     @staticmethod
     def _get_participation(event_id: int, member_id: int):
@@ -60,7 +72,8 @@ class RetroCleanupService:
 
     @classmethod
     def get_progress(cls, member_id: int) -> dict:
-        events = cls._eligible_events_query().all()
+        join_dt = cls._member_join_date(member_id)
+        events = cls._eligible_events_query(join_dt).all()
         total = len(events)
         completed = 0
 
@@ -81,7 +94,8 @@ class RetroCleanupService:
     @classmethod
     def get_next_open_event(cls, member_id: int):
         """Liefert das älteste offene Event plus Statusdaten."""
-        events = cls._eligible_events_query().all()
+        join_dt = cls._member_join_date(member_id)
+        events = cls._eligible_events_query(join_dt).all()
         progress = cls.get_progress(member_id)
 
         for event in events:

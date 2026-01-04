@@ -29,6 +29,7 @@ MANIFEST_OUT = STATIC / "asset-manifest.json"
 FILES = [
     "css/main-v2.css",
     "css/public.css",
+    "css/v2/components.css",
     "js/app.js",
     "js/pwa.js",
     "icons/lucide-sprite.svg",

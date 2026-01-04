@@ -450,12 +450,10 @@
                 {% set rating_count = avg_ratings.get('count', 0) %}
                 {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first if event.participations is defined else None %}
                 {% set can_rate = ((my_participation and my_participation.teilnahme) or event.organisator_id == current_user.id) %}
-                {% set rating_chip_class = 'chip chip--danger' %}
-                {% if overall >= 4 %}
-                    {% set rating_chip_class = 'chip chip--success' %}
-                {% elif overall >= 3 %}
-                    {% set rating_chip_class = 'chip chip--warning' %}
-                {% endif %}
+                {% set rating_bucket = overall|round(0, 'common') %}
+                {% if rating_bucket < 1 %}{% set rating_bucket = 1 %}{% endif %}
+                {% if rating_bucket > 5 %}{% set rating_bucket = 5 %}{% endif %}
+                {% set rating_chip_class = 'chip rating-chip--' ~ rating_bucket %}
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
@@ -619,7 +617,7 @@
                     </div>
                 </div>
 
-                <!-- Kosten -->
+                <!-- Rechnungen -->
                 {% if total_billbro_events is defined and total_billbro_events > 0 %}
                 <div class="card">
                     <div class="card__header">
@@ -631,7 +629,7 @@
                                 <line x1="8" y1="14" x2="16" y2="14"/>
                                 <line x1="8" y1="18" x2="16" y2="18"/>
                             </svg>
-                            Kosten
+                            Rechnungen
                         </h2>
                     </div>
                     <div class="card__body">

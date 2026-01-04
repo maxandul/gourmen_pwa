@@ -179,6 +179,8 @@
                                 </svg>
                                 Event-Informationen
                             </h2>
+                            {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
+                            {% if beitritt_ok %}
                             <div class="card__actions">
                                 <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -191,6 +193,7 @@
                                     </span>
                                 </form>
                             </div>
+                            {% endif %}
                         </div>
                         <div class="card__body">
                             <div class="info-row">
@@ -278,21 +281,23 @@
                         </div>
                         <div class="card__body">
                             {% for member in all_members %}
-                            {% set member_participation = participations|selectattr('member_id', 'equalto', member.id)|first %}
-                            <div class="info-row">
-                                <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
-                                <span class="info-row__value">
-                                    {% if member_participation %}
-                                        {% if member_participation.teilnahme %}
-                                            <span class="participation-status participation-status--confirmed">Teilnehmer</span>
+                            {% if not member.beitritt or member.beitritt <= event.datum.date() %}
+                                {% set member_participation = participations|selectattr('member_id', 'equalto', member.id)|first %}
+                                <div class="info-row">
+                                    <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
+                                    <span class="info-row__value">
+                                        {% if member_participation %}
+                                            {% if member_participation.teilnahme %}
+                                                <span class="participation-status participation-status--confirmed">Teilnehmer</span>
+                                            {% else %}
+                                                <span class="participation-status participation-status--declined">Absage</span>
+                                            {% endif %}
                                         {% else %}
-                                            <span class="participation-status participation-status--declined">Absage</span>
+                                            <span class="participation-status participation-status--pending">Keine Antwort</span>
                                         {% endif %}
-                                    {% else %}
-                                        <span class="participation-status participation-status--pending">Keine Antwort</span>
-                                    {% endif %}
-                                </span>
-                            </div>
+                                    </span>
+                                </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>

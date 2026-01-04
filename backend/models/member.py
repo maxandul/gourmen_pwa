@@ -61,6 +61,7 @@ class Member(db.Model, UserMixin):
     funktion = db.Column(db.Enum(Funktion), default=Funktion.MEMBER)
     vorstandsmitglied = db.Column(db.Boolean, default=False)
     beitrittsjahr = db.Column(db.Integer)
+    beitritt = db.Column(db.Date)  # Monatsbeginn (01.MM.YYYY)
     
     # Physical data
     koerpergroesse = db.Column(db.Integer)  # in cm
