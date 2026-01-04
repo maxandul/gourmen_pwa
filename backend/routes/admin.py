@@ -850,7 +850,7 @@ def merch():
             return redirect(url_for('admin.merch', tab='orders'))
     
     elif tab == 'articles':
-        articles = MerchArticle.query.order_by(MerchArticle.created_at.desc()).all()
+        articles = MerchArticle.query.order_by(MerchArticle.is_active.desc(), MerchArticle.created_at.desc()).all()
     
     return render_template(
         'admin/merch/index.html',
@@ -1099,7 +1099,7 @@ def edit_merch_article(article_id):
             db.session.commit()
             
             flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich aktualisiert!', 'success')
-            return redirect(url_for('admin.merch_article_detail', article_id=article.id))
+            return redirect(url_for('member.merch', tab='shop'))
             
         except Exception as e:
             db.session.rollback()

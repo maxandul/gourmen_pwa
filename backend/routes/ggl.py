@@ -20,6 +20,7 @@ def index():
 
     # Get current season
     current_season = GGLService.get_current_season()
+    selected_season = request.args.get('season', type=int) or current_season
 
     # Get available seasons (only past and current, no future seasons)
     available_seasons = GGLService.get_available_seasons()
@@ -42,27 +43,23 @@ def index():
             stats['rank'] = user_rank
             season_stats[season] = stats
 
-    current_stats = season_stats.get(current_season)
+    current_stats = season_stats.get(selected_season) or season_stats.get(current_season)
 
     season_ranking = None
-    table_selected_season = current_season
-    if tab == 'tabelle':
-        table_selected_season = request.args.get('table_season', type=int) or current_season
-        season_ranking = GGLService.get_season_ranking(table_selected_season)
-        _attach_member_to_ranking(season_ranking)
-    elif tab == 'aktuell':
-        season_ranking = GGLService.get_season_ranking(current_season)
+    table_selected_season = selected_season
+    if tab in ('tabelle', 'aktuell'):
+        season_ranking = GGLService.get_season_ranking(selected_season)
         _attach_member_to_ranking(season_ranking)
 
     progression_data = None
-    race_selected_season = current_season
+    race_selected_season = selected_season
     if tab == 'rennen':
-        race_selected_season = request.args.get('race_season', type=int) or current_season
-        progression_data = GGLService.get_season_progression_data(race_selected_season)
+        progression_data = GGLService.get_season_progression_data(selected_season)
 
     return render_template(
         'ggl/index.html',
         current_season=current_season,
+        selected_season=selected_season,
         available_seasons=available_seasons,
         season_stats=season_stats,
         current_stats=current_stats,

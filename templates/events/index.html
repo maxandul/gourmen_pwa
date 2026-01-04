@@ -27,7 +27,7 @@
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
-                        Planung
+                        Planung (für Admins)
                     </summary>
                     <div class="disclosure__content">
                         <div class="form-actions">
@@ -120,15 +120,16 @@
                             Aktuelles Event
                         </h2>
                         <div class="card__actions">
-                            {% if my_participation %}
-                                {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Zugesagt</span>
-                                {% else %}
-                                    <span class="chip chip--danger">Abgesagt</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="chip chip--accent">Zu-/Absagen</span>
-                            {% endif %}
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=current_event.id) }}" class="status-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <span class="chip-select-wrap">
+                                    <select name="teilnahme" class="chip-select {% if my_participation %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
+                                        <option value="" disabled {% if not my_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                        <option value="true" {% if my_participation and my_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                        <option value="false" {% if my_participation and not my_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                    </select>
+                                </span>
+                            </form>
                         </div>
                     </div>
                     <div class="card__body">
@@ -220,15 +221,16 @@
                             Nächstes Event
                         </h2>
                         <div class="card__actions">
-                            {% if my_participation %}
-                                {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Zugesagt</span>
-                                {% else %}
-                                    <span class="chip chip--danger">Abgesagt</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="chip chip--accent">Zu-/Absagen</span>
-                            {% endif %}
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="status-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <span class="chip-select-wrap">
+                                    <select name="teilnahme" class="chip-select {% if my_participation %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
+                                        <option value="" disabled {% if not my_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                        <option value="true" {% if my_participation and my_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                        <option value="false" {% if my_participation and not my_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                    </select>
+                                </span>
+                            </form>
                         </div>
                     </div>
                     <div class="card__body">
@@ -248,54 +250,6 @@
                         {% endif %}
                     </div>
                     <div class="card__footer">
-                        {% if my_participation %}
-                            {% if my_participation.teilnahme %}
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="teilnahme" value="false">
-                                <button type="submit" class="btn btn--danger">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="18" y1="6" x2="6" y2="18"/>
-                                        <line x1="6" y1="6" x2="18" y2="18"/>
-                                    </svg>
-                                    Absagen
-                                </button>
-                            </form>
-                            {% else %}
-                            <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="teilnahme" value="true">
-                                <button type="submit" class="btn btn--success">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="20 6 9 17 4 12"/>
-                                    </svg>
-                                    Zusagen
-                                </button>
-                            </form>
-                            {% endif %}
-                        {% else %}
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="teilnahme" value="true">
-                            <button type="submit" class="btn btn--success">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                                Zusagen
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="form form--inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="teilnahme" value="false">
-                            <button type="submit" class="btn btn--danger">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                                Absagen
-                            </button>
-                        </form>
-                        {% endif %}
                         <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn--primary">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"/>
@@ -369,15 +323,16 @@
                             {{ event.display_date }}
                         </h2>
                         <div class="card__actions">
-                            {% if my_participation %}
-                                {% if my_participation.teilnahme %}
-                                    <span class="chip chip--success">Zugesagt</span>
-                                {% else %}
-                                    <span class="chip chip--danger">Abgesagt</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="chip chip--accent">Zu-/Absagen</span>
-                            {% endif %}
+                            <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <span class="chip-select-wrap">
+                                    <select name="teilnahme" class="chip-select {% if my_participation %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
+                                        <option value="" disabled {% if not my_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                        <option value="true" {% if my_participation and my_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                        <option value="false" {% if my_participation and not my_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                    </select>
+                                </span>
+                            </form>
                         </div>
                     </div>
                     <div class="card__body">

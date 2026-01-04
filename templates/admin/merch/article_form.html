@@ -11,10 +11,6 @@
             <span class="breadcrumbs__separator">/</span>
         </div>
         <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.merch', tab='articles') }}" class="breadcrumbs__link">Artikel</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
             <span class="breadcrumbs__current">{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }}</span>
         </div>
     </nav>
@@ -85,14 +81,13 @@
                     </div>
                     
                     <div class="form-field">
-                        <label for="image_url" class="form-field__label">Bild-URL</label>
-                        <input type="url" 
+                        <label for="image_url" class="form-field__label">Bild-URL (noch nicht aktiv)</label>
+                        <input type="text" 
                                id="image_url" 
                                name="image_url" 
                                class="form-field__input" 
                                value="{{ article.image_url if article else '' }}" 
                                placeholder="https://example.com/image.jpg">
-                        <span class="form-field__hint">Optionale URL zu einem Produktbild</span>
                     </div>
                     
                     <div class="form-field">
@@ -100,8 +95,8 @@
                         <div id="colors-container">
                             {% if existing_colors %}
                                 {% for color in existing_colors %}
-                                <div class="form-row" data-type="color">
-                                    <div class="form-field" style="margin-bottom: 0;">
+                                <div class="form-row form-row--inline-remove" data-type="color">
+                                    <div class="form-field">
                                         <input type="text" 
                                                name="colors" 
                                                class="form-field__input" 
@@ -109,24 +104,39 @@
                                                placeholder="z.B. Schwarz"
                                                required>
                                     </div>
-                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen">Entfernen</button>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="form-row" data-type="color">
-                                    <div class="form-field" style="margin-bottom: 0;">
+                                <div class="form-row form-row--inline-remove" data-type="color">
+                                    <div class="form-field">
                                         <input type="text" 
                                                name="colors" 
                                                class="form-field__input" 
                                                placeholder="z.B. Schwarz"
                                                required>
                                     </div>
-                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen" hidden>Entfernen</button>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Farbe entfernen" hidden>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             {% endif %}
                         </div>
                         <button type="button" class="btn btn--outline btn--sm" onclick="addColorInput()">Weitere Farbe hinzufügen</button>
-                        <span class="form-field__hint">Geben Sie alle verfügbaren Farben ein (z.B. Schwarz, Weiß, Navy, Rot, etc.)</span>
                     </div>
                     
                     <div class="form-field">
@@ -134,8 +144,8 @@
                         <div id="sizes-container">
                             {% if existing_sizes %}
                                 {% for size in existing_sizes %}
-                                <div class="form-row" data-type="size">
-                                    <div class="form-field" style="margin-bottom: 0;">
+                                <div class="form-row form-row--inline-remove" data-type="size">
+                                    <div class="form-field">
                                         <input type="text" 
                                                name="sizes" 
                                                class="form-field__input" 
@@ -143,38 +153,42 @@
                                                placeholder="z.B. M"
                                                required>
                                     </div>
-                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen">Entfernen</button>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="form-row" data-type="size">
-                                    <div class="form-field" style="margin-bottom: 0;">
+                                <div class="form-row form-row--inline-remove" data-type="size">
+                                    <div class="form-field">
                                         <input type="text" 
                                                name="sizes" 
                                                class="form-field__input" 
                                                placeholder="z.B. M"
                                                required>
                                     </div>
-                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen" hidden>Entfernen</button>
+                                    <button type="button" class="btn btn--outline btn--sm js-remove" aria-label="Größe entfernen" hidden>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             {% endif %}
                         </div>
                         <button type="button" class="btn btn--outline btn--sm" onclick="addSizeInput()">Weitere Größe hinzufügen</button>
-                        <span class="form-field__hint">Geben Sie alle verfügbaren Größen ein (z.B. XS, S, M, L, XL, XXL oder One Size, etc.)</span>
                     </div>
                     
-                    <div class="alert alert--info">
-                        <div class="alert__content">
-                            <div class="alert__title">Automatische Varianten</div>
-                            <div class="alert__message">
-                                Alle Kombinationen aus Farben und Größen werden automatisch als Varianten erstellt.
-                                <br>Beispiel: 2 Farben × 4 Größen = 8 Varianten.
-                                {% if article %}
-                                <br><br>Hinweis: Bei Änderungen an Farben/Größen werden Varianten neu erstellt; individuelle Preise gehen verloren.
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                    
                     
                     <div class="form-field">
                         <label class="form-field__label">

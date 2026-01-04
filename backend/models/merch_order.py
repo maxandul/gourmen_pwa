@@ -50,8 +50,8 @@ class MerchOrder(db.Model):
     def status_display(self):
         """Get display name for status"""
         status_names = {
-            OrderStatus.BESTELLT: 'Bestellt',
-            OrderStatus.WIRD_GELIEFERT: 'Wird geliefert',
+            OrderStatus.BESTELLT: 'Offen',
+            OrderStatus.WIRD_GELIEFERT: 'Bestellt',
             OrderStatus.GELIEFERT: 'Geliefert'
         }
         return status_names.get(self.status, self.status.value)

@@ -237,6 +237,97 @@
   color: var(--color-text-primary);
 }
 
+.card__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+}
+
+.card__title-group .card__subtitle {
+  margin: 0;
+}
+
+.card__subtitle {
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.variant-row + .variant-row {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.form-row--inline-remove {
+  display: flex;
+  gap: var(--space-3);
+  align-items: stretch;
+  flex-wrap: nowrap;
+  grid-template-columns: none !important;
+}
+
+.form-row--inline-remove .form-field {
+  margin-bottom: 0;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.form-row--inline-remove .btn {
+  align-self: center;
+  white-space: nowrap;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .form-row--inline-remove {
+    flex-wrap: nowrap;
+  }
+}
+
+.card--collapsible .card__header {
+  cursor: pointer;
+}
+
+.card__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card__toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.card--collapsible.is-collapsed .card__toggle {
+  transform: rotate(-180deg);
+}
+
+.card--collapsible .card__collapsible-content {
+  display: block;
+}
+
+.card--collapsible.is-collapsed .card__collapsible-content {
+  display: none;
+}
+
 /* Icons in Card Titles - fixed size */
 .card__title .icon {
   width: 1.25rem;
@@ -1478,9 +1569,9 @@ a.card-link:active {
 }
 
 .chip--info {
-  background: var(--brand-secondary-100);
-  border-color: var(--brand-secondary-200);
-  color: var(--brand-secondary-800);
+  background: var(--color-surface-secondary);
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary);
 }
 
 .chip--danger {
@@ -1502,15 +1593,145 @@ a.card-link:active {
 }
 
 [data-theme="dark"] .chip--info {
-  background: var(--brand-secondary-700);
-  border-color: var(--brand-secondary-600);
-  color: #e9fff6;
+  background: var(--color-surface);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-secondary);
 }
 
 [data-theme="dark"] .chip--danger {
   background: var(--brand-warm-700);
   border-color: var(--brand-warm-600);
   color: #ffecec;
+}
+
+/* Chip-Select (Dropdown-Chips mit Arrow) */
+.chip-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chip-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.chip-select {
+  position: relative;
+  display: inline-block;
+  padding: var(--space-2) var(--space-5) var(--space-2) var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: auto;
+  min-width: max-content;
+  max-width: 100%;
+  white-space: nowrap;
+  background: none;
+}
+
+.chip-select:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.chip-select:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* Varianten analog zu chip danger/warning/success */
+.chip-select--bestellt { /* Offen → Danger */
+  background: var(--brand-warm-50);
+  border-color: var(--brand-warm-200);
+  color: var(--brand-warm-800);
+}
+
+.chip-select--wird_geliefert { /* Bestellt → Warning/Orange */
+  background: var(--brand-accent-100);
+  border-color: var(--brand-accent-200);
+  color: var(--brand-accent-900);
+}
+
+.chip-select--geliefert { /* Geliefert → Success */
+  background: #e6f6f0;
+  border-color: #c8ecde;
+  color: var(--status-success-light);
+}
+
+.chip-select--yes {
+  background: #e6f6f0;
+  border-color: #c8ecde;
+  color: var(--status-success-light);
+}
+
+.chip-select--no {
+  background: var(--brand-warm-50);
+  border-color: var(--brand-warm-200);
+  color: var(--brand-warm-800);
+}
+
+.chip-select--neutral {
+  background: var(--brand-accent-100);
+  border-color: var(--brand-accent-200);
+  color: var(--brand-accent-900);
+}
+
+[data-theme="dark"] .chip-select-wrap::after {
+  background-color: #fff;
+}
+
+[data-theme="dark"] .chip-select--bestellt {
+  background: var(--brand-warm-700);
+  border-color: var(--brand-warm-600);
+  color: #ffecec;
+}
+
+[data-theme="dark"] .chip-select--wird_geliefert {
+  background: var(--brand-accent-600);
+  border-color: var(--brand-accent-500);
+  color: #fff;
+}
+
+[data-theme="dark"] .chip-select--geliefert {
+  background: #155f3e;
+  border-color: #1c8053;
+  color: #e6fff4;
+}
+
+[data-theme="dark"] .chip-select--yes {
+  background: #155f3e;
+  border-color: #1c8053;
+  color: #e6fff4;
+}
+
+[data-theme="dark"] .chip-select--no {
+  background: var(--brand-warm-700);
+  border-color: var(--brand-warm-600);
+  color: #ffecec;
+}
+
+[data-theme="dark"] .chip-select--neutral {
+  background: var(--brand-accent-600);
+  border-color: var(--brand-accent-500);
+  color: #fff;
 }
 
 /* ============================================

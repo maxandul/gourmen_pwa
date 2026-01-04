@@ -17,6 +17,17 @@
     </div>
     
     <div class="page-content">
+        <div class="page-actions" style="justify-content: flex-end;">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn--danger">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 3h-2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/>
+                    <path d="M10 12h11l-3-3"/>
+                    <path d="M18 15l3-3"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+
         <div class="hub-grid">
         <!-- Persönliche Daten -->
         <div class="card hub-card">
@@ -59,54 +70,29 @@
             <div class="card__header">
                 <h2 class="card__title">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                        <path d="M4 22h16"/>
-                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                        <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
                     </svg>
-                    Merch-Bestellungen
+                    Gourmen Merch
                 </h2>
             </div>
             <div class="card__body">
-                {% if last_order %}
                 <div class="info-row">
-                    <span class="info-row__label">Bestellnummer</span>
-                    <span class="info-row__value">{{ last_order.order_number }}</span>
+                    <span class="info-row__label">Offene Bestellungen</span>
+                    <span class="info-row__value">{{ open_orders_count or 0 }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row__label">Status</span>
-                    <span class="info-row__value">
-                        {% if last_order.status.value == 'BESTELLT' %}
-                            Bestellt
-                        {% elif last_order.status.value == 'WIRD_GELIEFERT' %}
-                            Wird geliefert
-                        {% elif last_order.status.value == 'GELIEFERT' %}
-                            Geliefert
-                        {% endif %}
-                    </span>
+                    <span class="info-row__label">Bestellte Artikel (insgesamt)</span>
+                    <span class="info-row__value">{{ ordered_variants_count or 0 }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row__label">Bestelldatum</span>
-                    <span class="info-row__value">{{ last_order.created_at.strftime('%d.%m.%Y') }}</span>
+                    <span class="info-row__label">Gesamtbetrag (insgesamt)</span>
+                    <span class="info-row__value">{{ "%.2f"|format(total_amount_chf or 0) }} CHF</span>
                 </div>
-                {% else %}
-                <div class="info-row">
-                    <span class="info-row__label">Keine Bestellungen</span>
-                    <span class="info-row__value">Noch keine Bestellungen aufgegeben</span>
-                </div>
-                {% endif %}
             </div>
             <div class="card__footer">
                 <a href="{{ url_for('member.merch') }}" class="btn btn--primary">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                        <path d="M4 22h16"/>
-                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                        <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
                     </svg>
                     Merch-Shop
                 </a>
@@ -189,20 +175,8 @@
             </div>
         </div>
 
-        <!-- Logout -->
-        <div class="card hub-card">
-            <div class="card__footer" style="justify-content: flex-end;">
-                <a href="{{ url_for('auth.logout') }}" class="btn btn--danger">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M13 3h-2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/>
-                        <path d="M10 12h11l-3-3"/>
-                        <path d="M18 15l3-3"/>
-                    </svg>
-                    Logout
-                </a>
-            </div>
-        </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

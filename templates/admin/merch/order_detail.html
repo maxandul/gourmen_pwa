@@ -21,7 +21,7 @@
 
     <div class="page-header">
         <h1>
-            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
             Bestelldetails
         </h1>
         <p class="page-subtitle">Bestellung #{{ order.order_number }}</p>
@@ -33,7 +33,7 @@
             <div class="card__body">
                 <details class="disclosure">
                     <summary class="disclosure__summary">
-                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#sliders"></use></svg>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#sliders"></use></svg>
                         Status verwalten
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -46,15 +46,15 @@
                                 <div class="form-field">
                                     <label class="form-field__label" for="status">Neuer Status</label>
                                     <select name="status" id="status" class="form-field__select">
-                                        <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Bestellt</option>
-                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Wird geliefert</option>
+                                        <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Offen</option>
+                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Bestellt</option>
                                         <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
                                     </select>
                                 </div>
                                 <div class="form-field">
                                     <label class="form-field__label">&nbsp;</label>
                                     <button type="submit" class="btn btn--primary">
-                                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#check"></use></svg>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#check"></use></svg>
                                         Status aktualisieren
                                     </button>
                                 </div>
@@ -69,14 +69,14 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
                     Bestellübersicht
                 </h2>
                 <div class="card__actions">
                     {% if order.status.value == 'BESTELLT' %}
-                        <span class="chip chip--warning">{{ order.status_display }}</span>
+                        <span class="chip chip--danger">{{ order.status_display }}</span>
                     {% elif order.status.value == 'WIRD_GELIEFERT' %}
-                        <span class="chip chip--info">{{ order.status_display }}</span>
+                        <span class="chip chip--warning">{{ order.status_display }}</span>
                     {% elif order.status.value == 'GELIEFERT' %}
                         <span class="chip chip--success">{{ order.status_display }}</span>
                     {% else %}
@@ -134,7 +134,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
                     Bestellte Artikel
                 </h2>
             </div>
@@ -188,7 +188,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#note"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#note"></use></svg>
                     Notizen
                 </h2>
             </div>

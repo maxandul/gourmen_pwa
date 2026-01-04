@@ -25,10 +25,16 @@
             <div class="card">
                 <div class="card__header">
                     <h2 class="card__title">Bestellung #{{ order.order_number }}</h2>
-                    <div class="order-status">
-                        <span class="status-badge">
-                            {{ order.status_display }}
-                        </span>
+                    <div class="card__actions">
+                        {% if order.status.value == 'BESTELLT' %}
+                            <span class="chip chip--danger">{{ order.status_display }}</span>
+                        {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                            <span class="chip chip--warning">{{ order.status_display }}</span>
+                        {% elif order.status.value == 'GELIEFERT' %}
+                            <span class="chip chip--success">{{ order.status_display }}</span>
+                        {% else %}
+                            <span class="chip">{{ order.status_display }}</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card__body">

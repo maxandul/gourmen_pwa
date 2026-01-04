@@ -176,42 +176,6 @@
             </div>
         </div>
 
-        <!-- Schnellübersicht -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M3 3v18h18"/>
-                        <path d="m19 9-5 5-4-4-3 3"/>
-                    </svg>
-                    Schnellübersicht
-                </h2>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Aktive Varianten</span>
-                    <span class="info-row__value">{{ variants|selectattr('is_active')|list|length }}</span>
-                    </div>
-                <div class="info-row">
-                    <span class="info-row__label">Verfügbare Farben</span>
-                    <span class="info-row__value">{{ variants|map(attribute='color')|unique|list|length }}</span>
-                    </div>
-                <div class="info-row">
-                    <span class="info-row__label">Verfügbare Größen</span>
-                    <span class="info-row__value">{{ variants|map(attribute='size')|unique|list|length }}</span>
-                    </div>
-                <div class="info-row">
-                    <span class="info-row__label">Ø Gewinn/Variante</span>
-                    <span class="info-row__value">
-                            {% if variants %}
-                                {{ "%.2f"|format((variants|sum(attribute='profit_rappen') / variants|length) / 100) }} CHF
-                            {% else %}
-                                0.00 CHF
-                            {% endif %}
-                    </span>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

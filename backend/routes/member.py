@@ -64,11 +64,34 @@ class SensitiveDataForm(FlaskForm):
 @login_required
 def index():
     """Member main overview page"""
-    # Get the last order for the current user
-    from backend.models.merch_order import MerchOrder
-    last_order = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).first()
-    
-    return render_template('member/index.html', last_order=last_order, use_v2_design=True)
+    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order_item import MerchOrderItem
+
+    # Bestellungen des Users
+    member_orders = MerchOrder.query.filter_by(member_id=current_user.id).all()
+    last_order = None
+    if member_orders:
+        last_order = sorted(member_orders, key=lambda o: o.created_at, reverse=True)[0]
+
+    open_orders_count = sum(
+        1 for o in member_orders if o.status in (OrderStatus.BESTELLT, OrderStatus.WIRD_GELIEFERT)
+    )
+    ordered_variants_count = 0
+    total_amount_chf = 0.0
+
+    for order in member_orders:
+        total_amount_chf += getattr(order, "total_member_price_chf", 0) or 0
+        if hasattr(order, "order_items") and order.order_items:
+            ordered_variants_count += sum((item.quantity or 0) for item in order.order_items)
+
+    return render_template(
+        'member/index.html',
+        last_order=last_order,
+        open_orders_count=open_orders_count,
+        ordered_variants_count=ordered_variants_count,
+        total_amount_chf=total_amount_chf,
+        use_v2_design=True
+    )
 
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
