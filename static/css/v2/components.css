@@ -1674,6 +1674,19 @@ a.card-link:active {
   color: #e6fff4;
 }
 
+/* Rating Chips (dynamisch via CSS-Variable --rating-hue; 0=Rot, 120=Grün) */
+.chip.rating-chip--dynamic {
+  background: hsl(var(--rating-hue, 0), 85%, 90%);
+  border-color: hsl(var(--rating-hue, 0), 70%, 65%);
+  color: hsl(var(--rating-hue, 0), 45%, 25%);
+}
+
+[data-theme="dark"] .chip.rating-chip--dynamic {
+  background: hsl(var(--rating-hue, 0), 35%, 25%);
+  border-color: hsl(var(--rating-hue, 0), 45%, 35%);
+  color: hsl(var(--rating-hue, 0), 85%, 92%);
+}
+
 /* Chip-Select (Dropdown-Chips mit Arrow) */
 .chip-select-wrap {
   position: relative;
