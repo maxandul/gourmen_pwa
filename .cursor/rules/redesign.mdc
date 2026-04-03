@@ -1,0 +1,64 @@
+---
+description: "Gourmen UX Redesign — Konventionen für Template- und CSS-Änderungen im Redesign"
+globs:
+  - "templates/**/*.html"
+  - "static/css/**/*.css"
+  - "static/js/**/*.js"
+alwaysApply: false
+---
+
+# Gourmen Redesign — Agent-Regeln
+
+Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen).
+
+## Pre-Flight (Pflicht)
+
+1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog.
+2. **`git branch`**: Du musst auf Branch **`redesign`** sein. Sonst: `git checkout redesign`.
+3. **`git status`**: Uncommittete Änderungen mit User klären (committen oder verwerfen), bevor du weiter machst.
+4. Nur die **nächste dokumentierte Aufgabe** bearbeiten — nicht den Umfang eigenmächtig ausweiten.
+
+## Während der Arbeit
+
+- HTML/CSS an **Komponenten-Katalog** und **Naming** in `REDESIGN.md` ausrichten; keine neuen Pattern-Namen ohne User-OK und Registry-Update.
+- **Eine** inhaltliche Änderung pro Test-Zyklus; User prüft lokal, dann erst committen.
+- Abweichung vom Plan oder neues Pattern: **stoppen**, User fragen, Entscheidung ins **Entscheidungslog** in `REDESIGN.md`.
+- Keine hardcodierten Farben/Abstände — nur **Design Tokens** (`static/css/v2/tokens.css` / semantische Variablen).
+
+## Git (Redesign)
+
+- **Alle** Redesign-Commits nur auf **`redesign`**, niemals direkt auf **`master`**.
+- **`git push origin master`** nicht ausführen (außer der User fordert ausdrücklich Bugfixes auf master).
+- Vor Beginn einer neuen Phase: `git tag pre-phase-N` (wie in `REDESIGN.md` dokumentiert).
+- Commit-Message: `redesign: [Phase X] kurze Beschreibung`
+
+## Nach Änderungen
+
+- User bitten: lokal `http://localhost:5000/...` auf **Desktop und Handy** prüfen.
+- Nach Bestätigung: committen, **Fortschritts-Tracker** in `REDESIGN.md` aktualisieren.
+
+## Session-Ende / knapper Kontext
+
+- Anhalten, fertiges committen, Unfertiges mit User klären oder `git checkout -- .` nach Absprache.
+- **Session-Notiz** und Tracker in `REDESIGN.md` aktualisieren.
+
+## Notfall (User)
+
+- Lokale Änderungen verwerfen: `git checkout -- .`
+- Letzten Commit rückgängig (Commit weg, Dateien behalten): `git reset --soft HEAD~1`
+- Zum Tag zurück: `git reset --hard pre-phase-X`
+- Branch redesign verwerfen: `git checkout master` dann `git branch -D redesign`
+
+## Component Registry (Kurzform)
+
+Erlaubt / vorgesehen (Details + HTML in `REDESIGN.md`):
+
+**Bestehend (V2, BEM):** `.btn` (+ Modifikatoren), `.card` (+ `__header` `__body` `__footer`), `.info-row`, `.tabs` / `.tabs__nav` / `.tabs__tab`, `.form`, `.form-field`, `.disclosure`, `.alert`, `.page-header`, `.container`, `.icon`, `.chip`, `.bottom-nav`, `.sidebar`, `.user-bar`
+
+**Neu (Redesign — umsetzen laut Tracker):** `.context-actions` (Kontextleiste Admin/Organisator), `.settings-nav` / `.settings-nav__section` / `.settings-nav__row` (Member- und Admin-Hubs statt KPI-Karten)
+
+Vor neuer Klasse: Registry in `REDESIGN.md` prüfen; Duplikate vermeiden.
+
+## Wesentliche UX-Entscheidungen
+
+Bei Tab-Splits, Primäraktionen, neuer Navigation, neuen Komponenten: **2–3 Optionen** mit Begründung an den User (siehe Heuristiken in `REDESIGN.md`), **Empfehlung** aussprechen.
