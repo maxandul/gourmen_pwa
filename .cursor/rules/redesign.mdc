@@ -24,7 +24,7 @@ Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder i
 
 - HTML/CSS an **Komponenten-Katalog** und **Naming** in `REDESIGN.md` ausrichten; keine neuen Pattern-Namen ohne User-OK und Registry-Update.
 - **Eine** inhaltliche Änderung pro Test-Zyklus; User prüft lokal, dann erst committen.
-- Abweichung vom Plan oder neues Pattern: **stoppen**, User fragen, Entscheidung ins **Entscheidungslog** in `REDESIGN.md`.
+- Abweichung vom Plan oder neues Pattern: **stoppen**, User fragen, Entscheidung dokumentieren: **Entscheidungslog** in `REDESIGN.md` mit **Klartext** (was gilt konkret?); betroffene Abschnitte (Grundsatz, IA, Registry …) anpassen. **Nicht** nur interne Arbeitsbezeichnungen („Option X“) hinterlassen — nachfolgende Agents kennen den Chat nicht (siehe `REDESIGN.md` Abschnitt 6.1).
 - Keine hardcodierten Farben/Abstände — nur **Design Tokens** (`static/css/v2/tokens.css` / semantische Variablen).
 
 ## Git (Redesign)

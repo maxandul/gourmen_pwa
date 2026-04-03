@@ -1,6 +1,6 @@
 # Gourmen PWA — UX Redesign (Master-Dokument)
 
-Operatives Handbuch für Agents und Menschen. **Vor jeder Redesign-Änderung** die für die Aufgabe relevanten Abschnitte lesen.
+Operatives Handbuch für Agents und Menschen. **Vor jeder Redesign-Änderung** die für die Aufgabe relevanten Abschnitte lesen. **Neue Agents:** Chat-Verläufe sind nicht verfügbar — verbindliche Regeln und Entscheidungen stehen **hier** und im **Entscheidungslog** (Abschnitt 12); Handoff-Regeln in **Abschnitt 6.1**.
 
 ---
 
@@ -143,6 +143,21 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 
 ## 6. Konventionen
 
+### 6.1 Entscheidungen dokumentieren (Agent-Handoff)
+
+Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindliche muss in **`REDESIGN.md`** (und bei Bedarf Registry / andere Abschnitte) **ohne versteckte Arbeitsbezeichnungen** stehen.
+
+**Pflicht, sobald der User oder du eine Entscheidung getroffen hast:**
+
+1. **Entscheidungslog** (Abschnitt 12): neue Zeile mit Datum, Phase, **Entscheidung in Klartext** (was gilt ab jetzt konkret?), **Begründung**. Kein Verweis der Art „wie Option B besprochen“ ohne Wiederholung des Inhalts.
+2. **Betroffene Abschnitte aktualisieren:** Wenn die Entscheidung Grundsatz, IA, Komponenten oder Phasen betrifft, die **Tabelle oder Liste dort anpassen** — nicht nur den Log pflegen.
+3. **Keine Chat-only Codes** im aktiven Regelteil: Interne Namen aus der Planung („Option A“, „Konzept B“, Codenamen) höchstens **einmalig in Klammern** zur Historie; die **normative Formulierung** muss für einen fremden Agenten allein verständlich sein.
+4. **Cursor-Rule** (`.cursor/rules/redesign.mdc`): nur **Kurzregeln**; wenn sich eine Grundregel ändert, Kurzform dort spiegeln oder Verweis auf den konkreten Abschnitt in `REDESIGN.md`.
+
+**Prüfung:** Kann ein Agent, der nur `REDESIGN.md` liest, die nächste Aufgabe umsetzen, **ohne** Begriffe aus einem früheren Gespräch zu kennen? Wenn nein — nachschärfen.
+
+### 6.2 Technik und Qualität
+
 - **CSS-Klassen:** englisch, **BEM**, keine willkürlichen Kürzel.
 - **Kein Mischen** mit anderen Frameworks.
 - **Responsive:** Mobile zuerst; Breakpoints testen (320+, 768+, 1024+).
@@ -159,6 +174,7 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 - [ ] Touch-Ziele ausreichend  
 - [ ] Links/Formulare funktionsfähig  
 - [ ] Tracker unten aktualisiert  
+- [ ] Falls User-Entscheidung: Entscheidungslog + betroffene Abschnitte im **Klartext** (Abschnitt 6.1)  
 
 ---
 
@@ -217,6 +233,8 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 ---
 
 ## 12. Entscheidungslog
+
+Jede Zeile muss **ohne Chat-Kontext** verständlich sein (siehe Abschnitt 6.1). Keine alleinigen Verweise auf Arbeitsbezeichnungen ohne Klartext in derselben Zelle.
 
 | Datum | Phase | Entscheidung | Begründung |
 |-------|--------|--------------|------------|
