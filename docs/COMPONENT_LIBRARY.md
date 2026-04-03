@@ -1458,28 +1458,24 @@ def index():
 ```html
 <div class="tabs">
   <nav class="tabs__nav" role="tablist">
-    <a href="{{ url_for('events.index', tab='overview') }}"
-       class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'overview' else '' }}"
+    <a href="{{ url_for('events.index', tab='kommend') }}"
+       class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'kommend' else '' }}"
        role="tab"
-       aria-selected="{{ 'true' if active_tab == 'overview' else 'false' }}">
+       aria-selected="{{ 'true' if active_tab == 'kommend' else 'false' }}">
       <svg class="icon">...</svg>
-      Übersicht
+      Kommend
     </a>
     <!-- More tabs -->
   </nav>
   
   <div class="tabs__content">
-    <!-- Tab 1: Overview -->
-    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'overview' else '' }}"
+    <!-- Tab: Kommend -->
+    <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'kommend' else '' }}"
          role="tabpanel">
-      {% if current_event %}
-      <div class="card">
-        <!-- Current event content -->
-      </div>
-      {% endif %}
+      <!-- Tab-spezifischer Inhalt (z. B. Liste/Tabelle) -->
     </div>
     
-    <!-- Tab 2: Stats -->
+    <!-- Tab: Stats -->
     <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'stats' else '' }}"
          role="tabpanel">
       <!-- WICHTIG: Variablen nur verwenden wenn definiert! -->
@@ -1504,7 +1500,7 @@ def index():
 #### Best Practices
 
 ✅ **DO:**
-- Default-Tab setzen: `tab = request.args.get('tab', 'overview')`
+- Default-Tab setzen: `tab = request.args.get('tab', 'kommend')` (Events-Übersicht ohne separaten „Übersicht“-Tab)
 - Nur benötigte Daten pro Tab laden (Performance)
 - Variablen im Template prüfen: `{% if variable is defined %}`
 - `active_tab` immer im Context setzen (für Template-Logik)

@@ -564,8 +564,8 @@
   color: var(--color-text-secondary);
 }
 
-/* GGL: kompakte Rang-Tabelle statt N Cards */
-.ggl-ranking-table-wrap {
+/* „Card“-Tabelle — gemeinsame Hülle + Basis (GGL-Rangliste, Events Kommend/Archiv, …) */
+.data-table-wrap {
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   background: var(--card-bg);
@@ -573,13 +573,13 @@
   overflow: hidden;
 }
 
-.ggl-ranking-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
 }
 
-.ggl-ranking-table thead th {
+.data-table thead th {
   padding: var(--space-3) var(--space-3);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
@@ -588,7 +588,7 @@
   border-bottom: 1px solid var(--color-border-default);
 }
 
-.ggl-ranking-table tbody td {
+.data-table tbody td {
   padding: var(--space-3) var(--space-3);
   color: var(--color-text-secondary);
   border-bottom: 1px solid var(--color-border-subtle);
@@ -596,10 +596,28 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ggl-ranking-table tbody tr:last-child td {
+.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+.data-table td:last-child,
+.data-table th:last-child {
+  text-align: right;
+}
+
+/* Events-Übersicht: Event-Typ nur als Icon (Text sr-only) */
+.data-table__cell--event-type {
+  width: 3rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.data-table__cell--event-type .icon {
+  display: block;
+  margin-inline: auto;
+}
+
+/* GGL: Spalten- und Zeilen-Modifier (Tabelle zusätzlich mit .data-table) */
 .ggl-ranking-table .ggl-ranking-table__col-rank {
   width: 3.25rem;
   text-align: center;
@@ -964,6 +982,17 @@
 
 .table-responsive {
   overflow-x: auto;
+}
+
+/* RSVP-Formular in Tabellenzellen (Events-Übersicht Kommend/Archiv) */
+.table td:has(.status-form),
+.data-table td:has(.status-form) {
+  vertical-align: middle;
+}
+
+.table td .status-form,
+.data-table td .status-form {
+  margin: 0;
 }
 
 @media (max-width: 640px) {

@@ -170,54 +170,45 @@ def create_monthly_events(year):
 @login_required
 def index():
     """Events main page with tabs"""
-    tab = request.args.get('tab', 'overview')  # Default: overview
-    
+    tab = request.args.get('tab', 'kommend')
+    if tab == 'overview':
+        # Alter Tab entfernt — gleiche Infos wie Dashboard; Bookmarks weiterleiten
+        params = request.args.to_dict(flat=True)
+        params['tab'] = 'kommend'
+        return redirect(url_for('events.index', **params))
+
     today = datetime.utcnow().date()
     now = datetime.utcnow()
-    
-    # Common data for all tabs
+
+    # Bewertungs-Hinweis (ohne ehemaligen Tab „Übersicht“)
+    last_completed = Event.query.filter(
+        Event.published == True,
+        Event.datum < now
+    ).order_by(Event.datum.desc()).first()
+
+    rating_prompt_event = None
+    if last_completed:
+        last_completed.participations
+        user_p = next(
+            (p for p in (last_completed.participations or []) if p.member_id == current_user.id),
+            None,
+        )
+        if (
+            last_completed.allow_ratings
+            and user_p
+            and user_p.teilnahme
+            and not last_completed.has_rating_from_participant(current_user.id)
+        ):
+            rating_prompt_event = last_completed
+
     context = {
         'active_tab': tab,
-        'use_v2_design': True
+        'use_v2_design': True,
+        'rating_prompt_event': rating_prompt_event,
     }
-    
+
     # Tab-specific data
-    if tab == 'overview':
-        # Get current event (today or in last 3 days)
-        three_days_ago = datetime.combine(today - timedelta(days=3), datetime.min.time())
-        current_event = Event.query.filter(
-            Event.published == True,
-            Event.datum >= three_days_ago,
-            Event.datum <= now
-        ).order_by(Event.datum.desc()).first()
-        
-        # Get next upcoming event
-        next_event = Event.query.filter(
-            Event.published == True,
-            Event.datum > now
-        ).order_by(Event.datum.asc()).first()
-        
-        # Get last event (for rating reminder)
-        last_event = Event.query.filter(
-            Event.published == True,
-            Event.datum < now
-        ).order_by(Event.datum.desc()).first()
-        
-        # Get participations for events (eager load to avoid N+1 queries)
-        if current_event:
-            current_event.participations  # Load relationship
-        if next_event:
-            next_event.participations  # Load relationship
-        if last_event:
-            last_event.participations  # Load relationship
-        
-        context.update({
-            'current_event': current_event,
-            'next_event': next_event,
-            'last_event': last_event
-        })
-        
-    elif tab == 'kommend':
+    if tab == 'kommend':
         # All upcoming events
         upcoming_events = Event.query.filter(
             Event.published == True,

@@ -55,7 +55,7 @@ Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder i
 
 Erlaubt / vorgesehen (Details + HTML in `REDESIGN.md`):
 
-**Bestehend (V2, BEM):** `.btn` (+ Modifikatoren), `.card` (+ `__header` `__body` `__footer`), `.info-row`, `.tabs` / `.tabs__nav` / `.tabs__tab`, `.form`, `.form-field`, `.disclosure`, `.alert`, `.page-header`, `.container`, `.icon`, `.chip`, `.bottom-nav`, `.sidebar`, `.user-bar`, **`.stat-tiles` / `.stat-tile`**, **`.ggl-ranking-table`** (siehe `REDESIGN.md` §5.1)
+**Bestehend (V2, BEM):** `.btn` (+ Modifikatoren), `.card` (+ `__header` `__body` `__footer`), `.info-row`, `.tabs` / `.tabs__nav` / `.tabs__tab`, `.form`, `.form-field`, `.disclosure`, `.alert`, `.page-header`, `.container`, `.icon`, `.chip`, `.bottom-nav`, `.sidebar`, `.user-bar`, **`.stat-tiles` / `.stat-tile`**, **`.data-table-wrap`**, **`.data-table`** (+ optional **`.data-table__cell--event-type`** für Icon-Spalte Events), **`.ggl-ranking-table`** (+ Spalten/Zeilen-Modifier), `.table` (siehe `REDESIGN.md` §5.1)
 
 **Neu (Redesign):** `.context-actions` (+ `__title`, `__buttons`) — CSS in `components.css`; HTML siehe `REDESIGN.md` §5.2.1. **`.settings-nav`** (+ `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron`) — gleiche Quellen.
 
