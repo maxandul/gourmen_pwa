@@ -12,7 +12,22 @@ Operatives Handbuch für Agents und Menschen. **Vor jeder Redesign-Änderung** d
 
 **Relevante Pfade:** `templates/**/*.html`, `static/css/v2/*.css`, `static/js/v2/*.js`, gebündelt u. a. als `static/css/main-v2.*.css`.
 
-**Technischer Ansatz (Grundsatz):** **Option A** — eigenes CSS (**BEM**), **Design Tokens** (`tokens.css`), **kein Tailwind**. Raster/Breakpoints orientieren sich an gängigen Praktiken (4/8-Spacing, dokumentierte Breakpoints), Umsetzung aber **nur** über Tokens und benannte Komponenten.
+### Verbindliche technische Grundentscheidung (Phase 0a)
+
+In der Konzeptionsphase als **„Option A“** bezeichnet — **vom Product Owner am 2026-04-03 bestätigt.** Das ist keine offene Alternative mehr, sondern die **Projektregel** für dieses Redesign.
+
+**Inhalt:** Eigenes CSS mit **BEM**-Klassen und **Design Tokens** (`static/css/v2/tokens.css`); **kein** Tailwind CSS, **kein** DaisyUI/Shoelace o. ä. Raster und Breakpoints orientieren sich an gängigen Praktiken (z. B. 4/8-Spacing, 768px / 1024px), die **Umsetzung** erfolgt aber **ausschließlich** über bestehende oder neu definierte **CSS-Variablen** und **benannte Komponenten** laut Registry (Abschnitt 5).
+
+**Für neue Agents — umsetzen:**
+
+- Arbeit an `static/css/v2/*.css` und Templates; neue Bausteine als BEM-Klassen; Snippets in Abschnitt 5 pflegen.
+- Farben, Abstände, Schatten nur über **Tokens** / semantische Variablen, keine beliebigen Hex-Werte oder Magic Numbers.
+
+**Für neue Agents — nicht tun (ohne ausdrücklichen User-Auftrag):**
+
+- Kein neues CSS-Utility-Framework einführen oder parallel schalten.
+- Keine neuen Komponenten-Klassen „nebenbei“ erfinden: Registry prüfen; bei Lücke User fragen und Registry aktualisieren.
+- Keinen erneuten „CSS-Ansatz wählen“-Diskurs starten — die Entscheidung ist dokumentiert; Änderung nur nach User-Vorgabe + Eintrag ins Entscheidungslog.
 
 ---
 
@@ -205,7 +220,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 | Datum | Phase | Entscheidung | Begründung |
 |-------|--------|--------------|------------|
-| 2026-04-03 | 0a | Option A (Custom CSS + Tokens, kein Tailwind) | Kontrolle, bestehende V2-Basis, kein Build-Zwang; Agent-Arbeit über Registry |
+| 2026-04-03 | 0a | Technischer Ansatz: Custom BEM + Tokens, kein Tailwind/Framework (Konzept „Option A“, vom PO bestätigt) | Kontrolle, bestehende V2-Basis, kein Build-Zwang; Agent-Arbeit über Registry |
 | 2026-04-03 | 0a | Member/Admin-Hub: Settings-Liste statt KPI-Karten | KPIs unnötig; schnellere Navigation |
 | 2026-04-03 | 0b | Kontextleiste `context-actions` für Planung auf Event-Seiten | Sichtbarkeit, ein Muster statt Disclosure-Cards |
 | 2026-04-03 | 0a/IA | Organisator nur in Events; Admin-Jahresplanung + Backup im Admin-Bereich; eine Bearbeitungslogik, zwei Admin-Einstiege ok | Rollenklarheit, Merch-Parallele |

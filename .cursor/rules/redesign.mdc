@@ -11,6 +11,8 @@ alwaysApply: false
 
 Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen).
 
+**Technik:** Nur **Custom CSS (BEM + Design Tokens)** wie in `REDESIGN.md` Abschnitt 1 festgelegt — **kein** Tailwind o. ä. ohne ausdrücklichen User-Auftrag und Entscheidungslog.
+
 ## Pre-Flight (Pflicht)
 
 1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog.
