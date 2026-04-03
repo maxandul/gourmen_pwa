@@ -9,20 +9,20 @@ alwaysApply: false
 
 # Gourmen Redesign — Agent-Regeln
 
-Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen).
+Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen). Layout + Head: **`templates/partials/`** (Shell + `_head_*`, Übersicht `REDESIGN.md` §13.2).
 
 **Technik:** Nur **Custom CSS (BEM + Design Tokens)** wie in `REDESIGN.md` Abschnitt 1 festgelegt — **kein** Tailwind o. ä. ohne ausdrücklichen User-Auftrag und Entscheidungslog.
 
 ## Pre-Flight (Pflicht)
 
-1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog.
+1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog. **Phase 7 oder Aufräumen:** immer **§16** (Ende-Kriterium + Cleanup-Backlog) lesen und bei erkannten Altlasten Backlog pflegen.
 2. **`git branch`**: Du musst auf Branch **`redesign`** sein. Sonst: `git checkout redesign`.
 3. **`git status`**: Uncommittete Änderungen mit User klären (committen oder verwerfen), bevor du weiter machst.
 4. Nur die **nächste dokumentierte Aufgabe** bearbeiten — nicht den Umfang eigenmächtig ausweiten.
 
 ## Während der Arbeit
 
-- HTML/CSS an **Komponenten-Katalog** und **Naming** in `REDESIGN.md` ausrichten; keine neuen Pattern-Namen ohne User-OK und Registry-Update.
+- HTML/CSS an **Komponenten-Katalog** und **Naming** in `REDESIGN.md` ausrichten; keine neuen Pattern-Namen ohne User-OK und Registry-Update. **Page-Header:** nur `h1` (kein `page-subtitle` als Standard); **Filter:** `card card--filter` + `disclosure` (§3).
 - **Eine** inhaltliche Änderung pro Test-Zyklus; User prüft lokal, dann erst committen.
 - Abweichung vom Plan oder neues Pattern: **stoppen**, User fragen, Entscheidung dokumentieren: **Entscheidungslog** in `REDESIGN.md` mit **Klartext** (was gilt konkret?); betroffene Abschnitte (Grundsatz, IA, Registry …) anpassen. **Nicht** nur interne Arbeitsbezeichnungen („Option X“) hinterlassen — nachfolgende Agents kennen den Chat nicht (siehe `REDESIGN.md` Abschnitt 6.1).
 - Keine hardcodierten Farben/Abstände — nur **Design Tokens** (`static/css/v2/tokens.css` / semantische Variablen).
@@ -37,7 +37,7 @@ Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder i
 ## Nach Änderungen
 
 - User bitten: lokal `http://localhost:5000/...` auf **Desktop und Handy** prüfen.
-- Nach Bestätigung: committen, **Fortschritts-Tracker** in `REDESIGN.md` aktualisieren.
+- Nach Bestätigung: committen, **Fortschritts-Tracker** in `REDESIGN.md` aktualisieren; bei abgeschlossener Seiten-Migration: **§13** Status nur `pending` oder `done` (siehe `REDESIGN.md` §13.1). Wenn Altlasten aufgefallen sind: **§16.2** Cleanup-Backlog ergänzen oder Status anpassen.
 
 ## Session-Ende / knapper Kontext
 
@@ -55,9 +55,9 @@ Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder i
 
 Erlaubt / vorgesehen (Details + HTML in `REDESIGN.md`):
 
-**Bestehend (V2, BEM):** `.btn` (+ Modifikatoren), `.card` (+ `__header` `__body` `__footer`), `.info-row`, `.tabs` / `.tabs__nav` / `.tabs__tab`, `.form`, `.form-field`, `.disclosure`, `.alert`, `.page-header`, `.container`, `.icon`, `.chip`, `.bottom-nav`, `.sidebar`, `.user-bar`
+**Bestehend (V2, BEM):** `.btn` (+ Modifikatoren), `.card` (+ `__header` `__body` `__footer`), `.info-row`, `.tabs` / `.tabs__nav` / `.tabs__tab`, `.form`, `.form-field`, `.disclosure`, `.alert`, `.page-header`, `.container`, `.icon`, `.chip`, `.bottom-nav`, `.sidebar`, `.user-bar`, **`.stat-tiles` / `.stat-tile`**, **`.ggl-ranking-table`** (siehe `REDESIGN.md` §5.1)
 
-**Neu (Redesign — umsetzen laut Tracker):** `.context-actions` (Kontextleiste Admin/Organisator), `.settings-nav` / `.settings-nav__section` / `.settings-nav__row` (Member- und Admin-Hubs statt KPI-Karten)
+**Neu (Redesign):** `.context-actions` (+ `__title`, `__buttons`) — CSS in `components.css`; HTML siehe `REDESIGN.md` §5.2.1. **`.settings-nav`** (+ `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron`) — gleiche Quellen.
 
 Vor neuer Klasse: Registry in `REDESIGN.md` prüfen; Duplikate vermeiden.
 

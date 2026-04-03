@@ -8,9 +8,8 @@
     <div class="page-header">
         <h1>
             <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#lock"></use></svg>
-            Sensible Daten
+            Sensible Daten · {{ member.display_name_with_spirit }}
         </h1>
-        <p class="page-subtitle">{{ member.display_name_with_spirit }}</p>
         <div class="page-actions">
             <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
                 <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>

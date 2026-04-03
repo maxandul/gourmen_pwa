@@ -1,47 +1,14 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <!-- CRITICAL: Theme must be set BEFORE CSS loads to prevent FOUC -->
-    <script>
-        (function() {
-            const themeKey = 'theme';
-            const defaultTheme = 'dark';
-            
-            // Get theme from localStorage or fallback to default (dark)
-            let theme = localStorage.getItem(themeKey);
-            
-            if (!theme || (theme !== 'light' && theme !== 'dark')) {
-                theme = defaultTheme; // always default to dark if nothing stored
-            }
-            
-            // Apply immediately
-            document.documentElement.setAttribute('data-theme', theme);
-            
-            // Update meta theme-color
-            const metaThemeColor = document.createElement('meta');
-            metaThemeColor.setAttribute('name', 'theme-color');
-            metaThemeColor.setAttribute('content', theme === 'dark' ? '#1b232e' : '#ffffff');
-            document.head.appendChild(metaThemeColor);
-        })();
-    </script>
+    {% include 'partials/_head_theme_script.html' %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gourmen{% endblock %}</title>
-    
-    <!-- PWA Meta -->
-    <meta name="theme-color" content="#1b232e">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gourmen">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="msapplication-TileColor" content="#1b232e">
-    <meta name="msapplication-config" content="/static/browserconfig.xml">
-    <meta name="description" content="Gourmen-Verein Webapp - Verwaltung und Organisation">
-    <meta name="keywords" content="Gourmen, Verein, Events, GGL, BillBro">
-    <meta name="author" content="Gourmen Verein">
-    
-    <!-- Open Graph / Facebook / WhatsApp -->
+
+    {% include 'partials/_head_pwa_meta.html' %}
+
+    <!-- Open Graph / Facebook / WhatsApp — Blöcke müssen im Layout (extends) überschreibbar bleiben -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:title" content="{% block og_title %}Gourmen - Seit 2021{% endblock %}">
@@ -51,70 +18,21 @@
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Gourmen">
     <meta property="og:locale" content="de_CH">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ request.url }}">
     <meta name="twitter:title" content="{% block twitter_title %}Gourmen - Seit 2021{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}Gourmen-Verein Webapp - Verwaltung, Events und GGL{% endblock %}">
     <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image-1200x630.ae23d0bd.png', _external=True) }}">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    
-    <!-- Icons -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon.6d319de4.ico') }}">
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.0c03bb1d.svg') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/pwa/icon-16.498c3d3b.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/pwa/icon-32.fc5d4966.png') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/pwa/icon-192.ee7f0987.png') }}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='img/pwa/icon-512.21a600c7.png') }}">
-    
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-180.8b095258.png') }}">
-    <link rel="apple-touch-icon" sizes="167x167" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-167.5c73f892.png') }}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-152.8e3cd071.png') }}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-120.91482342.png') }}">
-    
-    <!-- Splash Screens (iOS) -->
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-640x1136.0905100a.png') }}" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-750x1334.2f203bcb.png') }}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1242x2208.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1125x2436.ad53ee81.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-828x1792.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1080x2340.fc19a065.png') }}" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1170x2532.7cdf1bee.png') }}" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1284x2778.6b83d7f0.png') }}" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1290x2796.b1fbf169.png') }}" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1179x2556.7f002aea.png') }}" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1536x2048.a34a9b07.png') }}" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1620x2160.4030f8f1.png') }}" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1640x2360.84e744a1.png') }}" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1668x2388.ac2cc977.png') }}" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-2048x2732.88abdf66.png') }}" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
-    
-    <!-- CSS -->
-    {% if use_v2_design %}
-        <!-- Design System V2 -->
-    <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.a26c9864.css') }}">
-    {% else %}
-        <!-- Legacy V1 CSS -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    {% endif %}
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    {% include 'partials/_head_manifest_icons.html' %}
+    {% include 'partials/_head_stylesheets.html' %}
 
     <!-- Custom Head Block -->
     {% block head %}{% endblock %}
-    
-    <!-- PWA Scripts -->
-    <script src="{{ url_for('static', filename='js/pwa.563325eb.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/app.fcc48062.js') }}" defer></script>
-    
-    <!-- CSRF Token for AJAX: immer setzen -->
-    <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
+
+    {% include 'partials/_head_deferred_scripts.html' %}
 </head>
 <body {% if current_user.is_authenticated %}data-authenticated="true"{% endif %}>
     <!-- Top Notifications Container -->
@@ -122,166 +40,14 @@
     
     <!-- Main Content -->
     <main class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
+        {% include 'partials/_flash_messages.html' %}
+
         {% block content %}{% endblock %}
     </main>
-    
-    <!-- Top User Bar -->
-    {% if current_user.is_authenticated %}
-    <div class="user-bar">
-        <a href="{{ url_for('public.landing', show='1') }}" class="logo-link">
-            <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="Gourmen Logo" class="user-bar-logo" />
-        </a>
-        <div class="user-section">
-            <div class="user-info">
-                <span class="user-name">{{ current_user.display_name_with_spirit }}</span>
-            </div>
-            <div class="user-actions">
-                {% if use_v2_design %}
-                {% if retro_cleanup_progress.pending > 0 %}
-                <a href="{{ url_for('events.cleanup') }}" class="btn" id="cleanup-toggle" aria-label="Datenbereinigung">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                </a>
-                {% endif %}
-                <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
-                    <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1" x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1" y1="12" x2="3" y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </svg>
-                    <svg class="icon icon--theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                </button>
-                {% endif %}
-                {% if current_user.is_admin() %}
-                    <a href="{{ url_for('admin.index') }}" 
-                       id="admin-button" 
-                       class="btn btn--icon-only" 
-                       aria-label="Admin-Bereich">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                            <path d="M17.8 20.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.413-2.411L13.567 17.3a.392.392 0 0 1 .228-.671l2.428-.035 1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193 2.428.035a.392.392 0 0 1 .228.67l-1.725 1.844.413 2.411a.392.392 0 0 1-.568.411L17.8 20.817z"/>
-                        </svg>
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
-    <!-- Sidebar (Desktop only) -->
-    {% if current_user.is_authenticated %}
-    <aside class="sidebar">
-        <nav class="sidebar__nav" aria-label="Hauptnavigation">
-            <a href="{{ url_for('dashboard.index') }}" 
-               class="sidebar__item {% if request.endpoint == 'dashboard.index' %}sidebar__item--active{% endif %}"
-               aria-label="Dashboard">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <span class="sidebar__label">Dashboard</span>
-            </a>
-            <a href="{{ url_for('events.index') }}" 
-               class="sidebar__item {% if request.endpoint and request.endpoint.startswith('events.') %}sidebar__item--active{% endif %}"
-               aria-label="Events">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span class="sidebar__label">Events</span>
-            </a>
-            <a href="{{ url_for('ggl.index') }}" 
-               class="sidebar__item {% if request.endpoint and request.endpoint.startswith('ggl.') %}sidebar__item--active{% endif %}"
-               aria-label="GGL">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                    <path d="M4 22h16"/>
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                </svg>
-                <span class="sidebar__label">GGL</span>
-            </a>
-            <a href="{{ url_for('member.index') }}" 
-               class="sidebar__item {% if request.endpoint and (request.endpoint.startswith('member.') or request.endpoint.startswith('account.') or request.endpoint.startswith('admin.') or request.endpoint.startswith('docs.')) %}sidebar__item--active{% endif %}"
-               aria-label="Member">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span class="sidebar__label">Member</span>
-            </a>
-        </nav>
-    </aside>
-    {% endif %}
-
-    <!-- Bottom Navigation -->
-    {% if current_user.is_authenticated %}
-    <nav class="bottom-nav">
-        <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" aria-label="Dashboard">
-            <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span class="nav-text">Dashboard</span>
-        </a>
-        <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}" aria-label="Events">
-            <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <span class="nav-text">Events</span>
-        </a>
-        <a href="{{ url_for('ggl.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('ggl.') %}active{% endif %}" aria-label="GGL">
-            <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                <path d="M4 22h16"/>
-                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-            </svg>
-            <span class="nav-text">GGL</span>
-        </a>
-        <a href="{{ url_for('member.index') }}" class="nav-item {% if request.endpoint and (request.endpoint.startswith('member.') or request.endpoint.startswith('account.') or request.endpoint.startswith('admin.') or request.endpoint.startswith('docs.')) %}active{% endif %}" aria-label="Member">
-            <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span class="nav-text">Member</span>
-        </a>
-    </nav>
-    {% endif %}
+    {% include 'partials/_user_bar.html' %}
+    {% include 'partials/_sidebar.html' %}
+    {% include 'partials/_bottom_nav.html' %}
     
     <!-- Toast Messages werden jetzt über Top-Banner angezeigt -->
     

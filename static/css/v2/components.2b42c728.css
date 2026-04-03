@@ -2144,23 +2144,6 @@ a.card-link:active {
   animation: slideDown 200ms ease;
 }
 
-/* Filter: sekundär zur Inhalts-Card — flacher, kein Hover-Lift (REDESIGN) */
-.card.card--filter {
-  box-shadow: none;
-  background: var(--color-surface-secondary);
-  border-color: var(--color-border-subtle);
-  margin-bottom: var(--space-4);
-}
-
-.card.card--filter:hover {
-  box-shadow: none;
-}
-
-[data-theme="light"] .card.card--filter {
-  background: var(--brand-primary-50);
-  border-color: var(--color-border-default);
-}
-
 .card--filter .card__body {
   padding: var(--space-3);
 }

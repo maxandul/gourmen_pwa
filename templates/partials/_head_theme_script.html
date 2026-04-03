@@ -1,0 +1,20 @@
+    <!-- CRITICAL: Theme must be set BEFORE CSS loads to prevent FOUC -->
+    <script>
+        (function() {
+            const themeKey = 'theme';
+            const defaultTheme = 'dark';
+
+            let theme = localStorage.getItem(themeKey);
+
+            if (!theme || (theme !== 'light' && theme !== 'dark')) {
+                theme = defaultTheme;
+            }
+
+            document.documentElement.setAttribute('data-theme', theme);
+
+            const metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            metaThemeColor.setAttribute('content', theme === 'dark' ? '#1b232e' : '#ffffff');
+            document.head.appendChild(metaThemeColor);
+        })();
+    </script>

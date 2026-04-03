@@ -518,129 +518,6 @@
   background: linear-gradient(135deg, rgba(115, 200, 168, 0.08), transparent);
 }
 
-/* Stat tiles (2–4 Kennzahlen, REDESIGN §5.3) */
-.stat-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-@media (min-width: 640px) {
-  .stat-tiles {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-.stat-tile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  min-height: 5.5rem;
-}
-
-.stat-tile__label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
-  line-height: 1.3;
-}
-
-.stat-tile__value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-tile__value--muted {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-secondary);
-}
-
-/* GGL: kompakte Rang-Tabelle statt N Cards */
-.ggl-ranking-table-wrap {
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  background: var(--card-bg);
-  box-shadow: var(--card-shadow);
-  overflow: hidden;
-}
-
-.ggl-ranking-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.ggl-ranking-table thead th {
-  padding: var(--space-3) var(--space-3);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  text-align: left;
-  background: var(--color-surface-secondary);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.ggl-ranking-table tbody td {
-  padding: var(--space-3) var(--space-3);
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-subtle);
-  vertical-align: middle;
-  font-variant-numeric: tabular-nums;
-}
-
-.ggl-ranking-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.ggl-ranking-table .ggl-ranking-table__col-rank {
-  width: 3.25rem;
-  text-align: center;
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-}
-
-.ggl-ranking-table .ggl-ranking-table__col-name {
-  color: var(--color-text-primary);
-  font-weight: var(--font-medium);
-}
-
-.ggl-ranking-table .ggl-ranking-table__col-num {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.ggl-ranking-table tbody tr.ggl-ranking-table__row--current {
-  background: rgba(115, 200, 168, 0.12);
-}
-
-.ggl-ranking-table tbody tr.ggl-ranking-table__row--current .ggl-ranking-table__col-name {
-  font-weight: var(--font-semibold);
-}
-
-[data-theme="dark"] .ggl-ranking-table tbody tr.ggl-ranking-table__row--current {
-  background: rgba(115, 200, 168, 0.08);
-}
-
-.ggl-ranking-table tbody tr.ggl-ranking-table__row--rank-1 .ggl-ranking-table__col-rank {
-  color: var(--brand-accent-500);
-}
-
-.ggl-ranking-table tbody tr.ggl-ranking-table__row--rank-2 .ggl-ranking-table__col-rank {
-  color: var(--brand-primary-400);
-}
-
-.ggl-ranking-table tbody tr.ggl-ranking-table__row--rank-3 .ggl-ranking-table__col-rank {
-  color: var(--brand-secondary-400);
-}
-
 .ggl-chart {
   display: flex;
   flex-direction: column;
@@ -850,10 +727,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-
-.form-row--align-end {
-  align-items: flex-end;
 }
 
 .form-actions {
@@ -2142,23 +2015,6 @@ a.card-link:active {
 .disclosure__content {
   padding: var(--space-4) 0;
   animation: slideDown 200ms ease;
-}
-
-/* Filter: sekundär zur Inhalts-Card — flacher, kein Hover-Lift (REDESIGN) */
-.card.card--filter {
-  box-shadow: none;
-  background: var(--color-surface-secondary);
-  border-color: var(--color-border-subtle);
-  margin-bottom: var(--space-4);
-}
-
-.card.card--filter:hover {
-  box-shadow: none;
-}
-
-[data-theme="light"] .card.card--filter {
-  background: var(--brand-primary-50);
-  border-color: var(--color-border-default);
 }
 
 .card--filter .card__body {

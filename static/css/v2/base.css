@@ -210,6 +210,11 @@ li {
   margin-bottom: var(--space-8);
 }
 
+/* Engerer Abstand, wenn direkt eine Kontextleiste folgt (REDESIGN: context-actions) */
+.page-header:has(+ .context-actions) {
+  margin-bottom: var(--space-3);
+}
+
 .page-header h1 {
   display: flex;
   align-items: center;
@@ -226,6 +231,7 @@ li {
   flex-shrink: 0;
 }
 
+/* Optional; Standard: nur Seitentitel (REDESIGN — keine Pflicht-Untertitel) */
 .page-subtitle {
   font-size: var(--text-base);
   color: var(--color-text-secondary);

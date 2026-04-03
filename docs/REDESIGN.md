@@ -10,7 +10,7 @@ Operatives Handbuch für Agents und Menschen. **Vor jeder Redesign-Änderung** d
 
 **Redesign-Ziel:** Starke **Usability** und **visuelle Differenzierung** — nicht alles als gleiche Card mit `info-row`. Mobile und Desktop gleichwertig. Langfristig erweiterbar (weitere Hauptbereiche).
 
-**Relevante Pfade:** `templates/**/*.html`, `static/css/v2/*.css`, `static/js/v2/*.js`, gebündelt u. a. als `static/css/main-v2.*.css`.
+**Relevante Pfade:** `templates/**/*.html`, `static/css/v2/*.css`, `static/js/v2/*.js`, gebündelt u. a. als `static/css/main-v2.*.css`. **Abschluss und Aufräumen:** §16.
 
 ### Verbindliche technische Grundentscheidung (Phase 0a)
 
@@ -61,7 +61,9 @@ Bei **wesentlichen** UX-Fragen: dem User **Optionen** nennen, **Empfehlung** geb
 | **Hauptnavigation** | **Bottom-Nav** (4) + **Sidebar** ab 1024px; **Admin** über User-Bar-Icon, nicht als 5. Tab. Skalierung neuer Bereiche: **„Mehr“** / Drawer o. ä. |
 | **Dark/Light** | **Beibehalten** (`data-theme`, Tokens). |
 | **Icons** | **Konsolidierung auf Lucide (Sprite)**; Font Awesome langfristig entfernen. |
-| **Templates** | `base.html` in **Partials** splitten (`_user_bar`, `_sidebar`, `_bottom_nav`, …); wiederkehrende Fragmente als **Jinja-Macros**. |
+| **Templates** | `base.html` in **Partials** splitten — **Shell + `<head>`** unter `templates/partials/` (siehe **§13.2**). `{% block title %}`, `{% block og_* %}`, `{% block twitter_* %}`, `{% block head %}` bleiben in **`base.html`** (Jinja-Vererbung). Wiederkehrende Fragmente zusätzlich als **Jinja-Macros**. |
+| **Page-Header** | **Standard: nur `h1`** (Seitentitel). Kein verpflichtendes `page-subtitle`; Kurz-Kontext bei Bedarf **in der `h1`-Zeile** (z. B. „Mitglied bearbeiten · Max M.“) oder im Inhalt — nicht als zweite Intro-Zeile unter dem Titel. |
+| **Filter-UI** | Überall gleiches Muster: **`card card--filter`** + **`disclosure`**. Visuell **sekundär zur Inhalts-Card**: flach, **ohne** Schatten/Hover-Lift (`components.css`: `.card.card--filter`). |
 | **Design-Raster** | Nur **`--space-*`**, Typo- und Farb-Tokens aus `tokens.css`; keine willkürlichen Pixelwerte. Breakpoints wie in `DESIGN_SYSTEM.md` / Layout (u. a. 768, 1024). |
 
 ---
@@ -117,24 +119,65 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 | Formular | `.form`, `.form-field`, … | Eingaben |
 | Disclosure | `.disclosure`, … | Filter, einklappbare Bereiche (nicht für Planung ersetzen, wenn `context-actions` aktiv) |
 | Layout | `.container`, `.page-header`, `.page-content` | Seitenstruktur |
+| Stat-Kacheln | `.stat-tiles`, `.stat-tile`, `.stat-tile__label`, `.stat-tile__value`, `.stat-tile__value--muted` | 2–4 Kennzahlen prominent (z. B. GGL „Dein Rang“) |
+| Rangliste (Tabelle) | `.ggl-ranking-table-wrap`, `.ggl-ranking-table`, Spalten `__col-rank` / `__col-name` / `__col-num`, Zeilen `__row--current`, `__row--rank-1` … `__row--rank-3` | Homogene Rankings statt N gleicher Cards (GGL Tabelle-Tab) |
 
 **HTML-Referenz:** bestehende Templates + `static/css/v2/components.css`.
 
-### 5.2 Neu — im Redesign einführen (CSS + Snippets in späteren Schritten vervollständigen)
+### 5.2 Neu — im Redesign einführen
 
-| Muster | Klassen (Ziel-BEM) | Verwendung |
-|--------|---------------------|------------|
-| Kontextleiste | `.context-actions`, `.context-actions__title`, `.context-actions__buttons` (feinjustierbar) | Admin/Organisator unter Seitentitel |
-| Settings-Navigation | `.settings-nav`, `.settings-nav__section`, `.settings-nav__section-title`, `.settings-nav__row`, `.settings-nav__icon`, `.settings-nav__meta` | Member-Hub, Admin-Hub |
+| Muster | Klassen (BEM) | Verwendung |
+|--------|----------------|------------|
+| Kontextleiste | `.context-actions`, `.context-actions__title`, `.context-actions__buttons` | Admin/Organisator direkt unter `.page-header` (siehe auch `base.css`: `:has(+ .context-actions)`) |
+| Settings-Navigation | `.settings-nav`, `.settings-nav__section`, `.settings-nav__section-title`, `.settings-nav__list`, `.settings-nav__row`, `.settings-nav__icon`, `.settings-nav__meta`, `.settings-nav__label`, `.settings-nav__description`, `.settings-nav__badge`, `.settings-nav__badge--warning`, `.settings-nav__chevron` | Member-Hub, Admin-Hub (Listen-Navigation statt KPI-Karten) |
 
-**Nach Implementierung:** hier **exakte HTML-Snippets** einfügen und ggf. in `.cursor/rules/redesign.mdc` Kurzform ergänzen.
+**CSS:** `static/css/v2/components.css` (ab Abschnitt „CONTEXT ACTIONS“ / „SETTINGS NAV“).
+
+#### 5.2.1 HTML-Snippets (Referenz)
+
+**`context-actions`** — unmittelbar nach `.page-header`, vor Tabs oder `.page-content`. Titelzeile optional (nur Buttons reicht).
+
+```html
+<nav class="context-actions" aria-label="Aktionen zu dieser Seite">
+  <p class="context-actions__title">Planung</p>
+  <div class="context-actions__buttons">
+    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--outline">Bearbeiten</a>
+    <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">Jahresplanung</a>
+  </div>
+</nav>
+```
+
+**`settings-nav`** — Sektionen mit Überschrift und Liste von Zeilen (`<a>` oder `<button>`). Badge und Beschreibung optional.
+
+```html
+<div class="settings-nav">
+  <section class="settings-nav__section" aria-labelledby="settings-konto">
+    <h2 id="settings-konto" class="settings-nav__section-title">Konto</h2>
+    <ul class="settings-nav__list" role="list">
+      <li>
+        <a href="{{ url_for('member.profile') }}" class="settings-nav__row">
+          <span class="settings-nav__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!-- … --></svg>
+          </span>
+          <span class="settings-nav__meta">
+            <span class="settings-nav__label">Profil</span>
+            <span class="settings-nav__description">Name und Kontakt</span>
+          </span>
+          <span class="settings-nav__badge settings-nav__badge--warning">2FA aus</span>
+          <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true"><!-- chevron-right --></svg>
+        </a>
+      </li>
+    </ul>
+  </section>
+</div>
+```
 
 ### 5.3 Entscheidungshilfe: welches Pattern?
 
 | Situation | Richtung |
 |-----------|----------|
-| 2–4 Kennzahlen prominent | **stat-tile** (noch anzulegen) statt 4× `info-row` in einer Card |
-| Viele gleichartige Einträge (Ranking, Liste) | **compact-list** / Tabellenzeilen (noch anzulegen) statt N gleicher Cards |
+| 2–4 Kennzahlen prominent | **stat-tiles** / **stat-tile** (§5.1) statt 4× `info-row` in einer Card |
+| Viele gleichartige Einträge (Ranking, Liste) | **Tabelle** mit `.ggl-ranking-table` (GGL) oder `.table` / eigene Liste — keine N gleichen Cards |
 | Workflow (BillBro) | Stepper / Phasen-UI (Phase 4b) |
 | Filter / Selten genutzt | `disclosure` oder kompakte Leiste |
 | Admin/Organisator auf einer Event-Seite | **`context-actions`** |
@@ -153,6 +196,7 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 2. **Betroffene Abschnitte aktualisieren:** Wenn die Entscheidung Grundsatz, IA, Komponenten oder Phasen betrifft, die **Tabelle oder Liste dort anpassen** — nicht nur den Log pflegen.
 3. **Keine Chat-only Codes** im aktiven Regelteil: Interne Namen aus der Planung („Option A“, „Konzept B“, Codenamen) höchstens **einmalig in Klammern** zur Historie; die **normative Formulierung** muss für einen fremden Agenten allein verständlich sein.
 4. **Cursor-Rule** (`.cursor/rules/redesign.mdc`): nur **Kurzregeln**; wenn sich eine Grundregel ändert, Kurzform dort spiegeln oder Verweis auf den konkreten Abschnitt in `REDESIGN.md`.
+5. **Cleanup-Backlog (§16.2):** bei erkannten Altlasten **eintragen** oder bestehende Zeilen **aktualisieren** (Status, Blockiert bis).
 
 **Prüfung:** Kann ein Agent, der nur `REDESIGN.md` liest, die nächste Aufgabe umsetzen, **ohne** Begriffe aus einem früheren Gespräch zu kennen? Wenn nein — nachschärfen.
 
@@ -173,8 +217,9 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 - [ ] Mobile + Desktop geprüft  
 - [ ] Touch-Ziele ausreichend  
 - [ ] Links/Formulare funktionsfähig  
-- [ ] Tracker unten aktualisiert  
+- [ ] **§13 Template-Übersicht:** passende Zeile(n) von `pending` → `done` (nur diese beiden Statuswerte; siehe §13 Legende)  
 - [ ] Falls User-Entscheidung: Entscheidungslog + betroffene Abschnitte im **Klartext** (Abschnitt 6.1)  
+- [ ] Falls beim Arbeiten **ersetzbare Altlasten** sichtbar werden: **§16 Cleanup-Backlog** um eine konkrete Zeile ergänzen (nicht nur mental notieren)  
 
 ---
 
@@ -183,13 +228,13 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 | Phase | Inhalt |
 |-------|--------|
 | **0c** | Dieses Dokument + Cursor-Rule (erledigt mit Erstanlage) |
-| **1** | Technisches Fundament: neue Komponenten (`context-actions`, `settings-nav`), Partials, Tab-JS optional, Tokens bei Bedarf |
+| **1** | Technisches Fundament: neue Komponenten (`context-actions`, `settings-nav`), Partials (Shell + `<head>`), Tab-JS optional, Tokens bei Bedarf |
 | **2** | GGL-Pilot |
 | **3** | Events-Übersicht |
 | **4a–c** | Event-Detail (Info, BillBro, Bewertungen) |
 | **5** | Dashboard |
 | **6** | Member- + Admin-Hub (Settings-Pattern) |
-| **7** | Rest-Templates, Cleanup, Performance |
+| **7** | Rest-Templates, Cleanup, Performance — verbindlich mit **§16** (Backlog + Ende-Kriterium) |
 
 Detail-Schritte werden während der Phasen hier nachgetragen.
 
@@ -215,20 +260,27 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 | Phase | Status | Anmerkungen |
 |-------|--------|----------------|
 | 0a Grundsatz + IA | erledigt | Option A, IA + Settings-Hubs dokumentiert |
-| 0b Admin-Kontext | erledigt | `context-actions` |
+| 0b Admin-Kontext | erledigt | Muster **`context-actions`** in IA + Konventionen festgelegt (§4.4); **CSS** gehört zu Phase 1 (nicht mit „0b“ verwechseln) |
 | 0c Doku | erledigt | `REDESIGN.md`, `.cursor/rules/redesign.mdc` |
-| 1 Fundament | offen | CSS-Komponenten, Partials, ggf. Tabs |
-| 2–7 | offen | siehe Abschnitt 8 |
+| 1 Fundament | erledigt | CSS/Snippets, Shell-Partials, **Head-Partials** (§13.2); Tab-JS für Bereichs-Tabs bleibt **optional** und kann bei Bedarf in späteren Phasen nachgerüstet werden |
+| 2 GGL-Pilot | erledigt | `ggl/index.html`: **stat-tiles** (Tab Dein Rang), **Rang-Tabelle** statt Card-Liste; Lucide-Sprite per `url_for`; CSS in `components.css`; Tag **`pre-phase-2`** gesetzt |
+| 3–7 | offen | siehe Abschnitt 8 |
 
 ### NAECHSTER SCHRITT
 
-**Phase 1 starten:** `context-actions` und `settings-nav` in `components.css` definieren, HTML-Snippets in **Abschnitt 5** ergänzen, `base.html` in Partials splitten (schrittweise, rückwärtskompatibel), Branch `redesign` beibehalten.
+**Phase 3:** `templates/events/index.html` gemäß Redesign (Cards/Listen/Tabs konsolidieren, §5.3); §13 Status nach Migration auf **done**. Branch **`redesign`** beibehalten.
 
 ---
 
 ## 11. Letzte Session-Notiz
 
-- *Wird von Agents bei Bedarf gefüllt.*
+- **2026-04-03:** Phase-1-CSS für `context-actions` und `settings-nav` ergänzt; Tracker 0b/1 präzisiert; §5.2.1 Snippets; `main-v2` Fingerprint + `base.html`-Link aktualisiert.
+- **2026-04-03:** §16 Ende-Kriterium + Cleanup-Backlog (P0/P1); Starteinträge C-001/C-002.
+- **2026-04-03:** §13.1 — Status nur `pending` \| `done`; §7/§16.1 angeglichen.
+- **2026-04-03:** Phase 1 — Shell-Partials für `base.html` (`_user_bar`, `_sidebar`, `_bottom_nav`, `_flash_messages`); §13.2; Login-Seite 200 (Smoke).
+- **2026-04-03:** Phase 1 — `<head>` in `_head_*.html` Partials; OG/Twitter/Title-Blöcke bleiben in `base.html`; Smoke Login 200.
+- **2026-04-03:** Phase 2 — GGL `index.html` Pilot; `stat-tiles` + `ggl-ranking-table`; `main-v2.04743a90.css`; `git tag pre-phase-2`.
+- **2026-04-03:** UX — keine verpflichtenden `page-subtitle` mehr (Kontext in `h1` wo nötig); Filter-Cards dezent (`.card.card--filter`); `main-v2` Fingerprint aktualisiert.
 
 ---
 
@@ -242,12 +294,49 @@ Jede Zeile muss **ohne Chat-Kontext** verständlich sein (siehe Abschnitt 6.1). 
 | 2026-04-03 | 0a | Member/Admin-Hub: Settings-Liste statt KPI-Karten | KPIs unnötig; schnellere Navigation |
 | 2026-04-03 | 0b | Kontextleiste `context-actions` für Planung auf Event-Seiten | Sichtbarkeit, ein Muster statt Disclosure-Cards |
 | 2026-04-03 | 0a/IA | Organisator nur in Events; Admin-Jahresplanung + Backup im Admin-Bereich; eine Bearbeitungslogik, zwei Admin-Einstiege ok | Rollenklarheit, Merch-Parallele |
+| 2026-04-03 | 1 | `context-actions` und `settings-nav` sind in `static/css/v2/components.css` umgesetzt; Referenz-Snippets in §5.2.1; Abstandregel `.page-header:has(+ .context-actions)` in `base.css` | Tracker-Klarheit (0b = Spezifikation, 1 = Umsetzung); Agenten können Templates anbinden |
+| 2026-04-03 | Doku | Abschluss des Redesigns: verbindliches **Ende-Kriterium** und gemeinsames **Cleanup-Backlog** in §16; Pflege in §6.1 und §7 | Agents ohne Chat-Kontext wissen, wann „fertig“ ist und welche Altlasten dokumentiert abgearbeitet werden |
+| 2026-04-03 | Doku | **§13 Template-Übersicht:** Status-Spalte normiert auf ausschließlich **pending** \| **done** (Legende §13.1); **done** inkl. dokumentierter User-Exempts via §12 | Einheitliche Agent-Handoffs ohne parallele Status-Begriffe |
+| 2026-04-03 | 1 | Layout-Shell aus `base.html` in `templates/partials/` ausgelagert (`_user_bar`, `_sidebar`, `_bottom_nav`, `_flash_messages`); Referenz **§13.2** | Phase-1-Rückbau; kleinere `base.html`, gleiche Laufzeitsemantik |
+| 2026-04-03 | 1 | `<head>`-Inhalt (Theme-Script, PWA-Meta, Manifest/Icons, Stylesheets, deferred Scripts) in `_head_*.html`; vererbbare **Blöcke** (`title`, `og_*`, `twitter_*`, `head`) verbleiben in `base.html` | Jinja-`extends` bleibt korrekt; Partials ohne eigene `{% block %}` |
+| 2026-04-03 | 2 | GGL-Hauptseite: KPIs als **stat-tiles**; Saison-Ranking als **eine Tabelle** (`ggl-ranking-table`) statt pro Zeile eine Card; Referenz **§5.1** | REDESIGN §5.3; bessere Mobile/Desktop-Nutzung, weniger visuelles Gewicht |
+| 2026-04-03 | UX | **Page-Header:** kein Standard-`page-subtitle`; nur `h1`, ggf. Kontext in derselben Zeile (z. B. „Bearbeiten · Name“). **`card--filter`:** optisch abgeschwächt (kein Schatten/Hover-Lift, Surface-Hintergrund) — einheitlich mit bestehendem Disclosure-Muster | Weniger Höhe und Redundanz; Filter bleibt erkennbar, Inhalts-Cards visuell im Vordergrund |
 
 ---
 
 ## 13. Template-Übersicht (Kern)
 
-Status: **pending** = noch nicht auf neues Muster migriert.
+### 13.1 Status-Spalte (nur diese zwei Werte)
+
+| Wert | Bedeutung |
+|------|-----------|
+| **pending** | Für diesen Eintrag ist die Migration auf das in der **Phase**-Spalte vorgesehene Redesign-Muster **noch nicht** abgeschlossen. |
+| **done** | **Entweder:** Migration erledigt und gegen **§7** geprüft. **Oder:** vom User **ausdrücklich** von der visuellen/IA-Migration ausgenommen — dann **zusätzlich** ein Eintrag im **Entscheidungslog §12** (welches Template, warum exempt). |
+
+**Nicht verwenden:** Zwischenstände wie „wip“, „teilweise“, „in Arbeit“ — Details in **§11** Session-Notiz oder **§16.2** Backlog, nicht in dieser Spalte.
+
+### 13.2 Layout-Partials (`templates/partials/`)
+
+Einbindung in `base.html`: `{% include 'partials/_….html' %}`. **Keine** `{% block %}` in Partials — überschreibbare Blöcke nur im Layout (`base.html`), sonst funktioniert `{% extends %}` nicht.
+
+**Body / Shell**
+
+| Datei | Inhalt |
+|-------|--------|
+| `_user_bar.html` | Obere Leiste: Logo, Name, V2-Cleanup/Theme/Admin-Aktionen |
+| `_sidebar.html` | Desktop-Sidebar (Hauptnavigation) |
+| `_bottom_nav.html` | Mobile Bottom-Navigation (4 Tabs) |
+| `_flash_messages.html` | Flask Flash-Messages im `<main>` |
+
+**`<head>`** (Reihenfolge: Theme-Script zuerst, dann charset/viewport/titel und OG/Twitter-**Blöcke** in `base.html`, danach Includes)
+
+| Datei | Inhalt |
+|-------|--------|
+| `_head_theme_script.html` | Inline-Script: `data-theme` + dynamisches `theme-color` vor CSS (FOUC) |
+| `_head_pwa_meta.html` | Statische PWA-/SEO-Basis-Meta (ohne OG/Twitter-Blöcke) |
+| `_head_manifest_icons.html` | Manifest, Favicons, Apple-Touch, iOS-Splash |
+| `_head_stylesheets.html` | V2/V1-CSS, Lucide-Preload, Font Awesome |
+| `_head_deferred_scripts.html` | `pwa.js`, `app.js`, CSRF-`meta` (nach `{% block head %}`) |
 
 | Pfad | Phase | Status |
 |------|-------|--------|
@@ -255,7 +344,7 @@ Status: **pending** = noch nicht auf neues Muster migriert.
 | `templates/dashboard/index.html` | 5 | pending |
 | `templates/events/index.html` | 3 | pending |
 | `templates/events/detail.html` | 4 | pending |
-| `templates/ggl/index.html` | 2 | pending |
+| `templates/ggl/index.html` | 2 | done |
 | `templates/member/index.html` | 6 | pending |
 | `templates/admin/index.html` | 6 | pending |
 | übrige `templates/**` | 7 | pending |
@@ -275,3 +364,45 @@ Bis zur Konsolidierung dient `DESIGN_SYSTEM.md` als **Referenz** für Farben und
 - Vor Phase 2+: `git tag pre-phase-2` usw. setzen.  
 
 Notfall-Befehle: siehe `.cursor/rules/redesign.mdc`.
+
+---
+
+## 16. Ende-Kriterium und Cleanup-Backlog (agentschaftlich)
+
+Dieser Abschnitt ist die **einzige verbindliche Stelle** für „wann ist das Redesign fertig“ und **welcher Alt-Code** noch weg muss. Jeder Agent pflegt ihn **ohne** Zugriff auf frühere Chats weiter.
+
+### 16.1 Ende-Kriterium (GO für Abschluss / Merge nach außen)
+
+Das Redesign gilt **nur dann als abgeschlossen**, wenn **alle** folgenden Punkte erfüllt sind **und** der **User** den Abschluss ausdrücklich bestätigt hat (Agent ersetzt keine PO-Freigabe).
+
+1. **Template-Übersicht (§13):** Alle dort genannten Kern-Templates und die Kategorie „übrige `templates/**`“ haben Status **done** (siehe **§13.1**; Ausnahmen nur mit **§12**-Eintrag).
+2. **Kein paralleles Legacy-UI für die produktive App:** Sämtliche für eingeloggte Nutzung relevanten Routen/Templates nutzen **einheitlich V2** (`use_v2_design` bzw. Backend-Flag entsprechend); es gibt **keinen** zweiten „Haupt“-Stylesheet-Pfad mehr für denselben Zweck.
+3. **V1-CSS/Assets:** `static/css/main.css` (und nur noch von V1 genutzte Reste) sind **entfernt oder archiviert**; `base.html` (bzw. das finale Layout-Partial) referenziert **nur noch** das V2-Bundle. *(Bis dahin bleibt V1 bewusst stehen — siehe Backlog.)*
+4. **Cleanup-Backlog (§16.2):** Alle Einträge mit Priorität **P0** sind auf **done**; Einträge **P1** sind entweder **done** oder im **Entscheidungslog (§12)** mit Datum und Klartext **vom User zurückgestellt**.
+5. **Dokumentation:** Fortschritts-Tracker (§10) und Phase **7** auf **erledigt**; optional §14 (Konsolidierung mit `DESIGN_SYSTEM.md`) nach User-Vorgabe erledigt oder Referenz gesetzt.
+
+Erst danach: Branch-Strategie mit dem User klären (z. B. Merge `redesign` → `master`), **kein** stillschweigendes „fertig“ durch Agenten.
+
+### 16.2 Cleanup-Backlog — schriftliche Checkliste
+
+**Zweck:** Sicherstellen, dass am Ende **kein unkoordinierter Totcode** liegen bleibt. Jede Zeile ist **konkret** (was, wo, wann löschbar).
+
+**Pflege-Regeln (für jeden Agenten):**
+
+- **Neuen Eintrag anlegen**, wenn du beim Migrieren **Duplikate**, **nur noch von alter UI genutzte** Dateien, **ersetzte** CSS-Klassen-Muster oder **CDN/Framework-Reste** (z. B. Font Awesome nach Lucide-Umstellung) erkennst — auch wenn das Entfernen erst **später** erlaubt ist.
+- Spalte **Blockiert bis:** z. B. „§13 `events/detail` = done“ oder „nach Lucide in `templates/auth/*`“ — damit niemand zu früh bricht.
+- Status auf **done** setzen **nur**, wenn die Zeile erledigt ist (Datei gelöscht, Referenz entfernt, Fingerprint bei CSS-Änderungen wie üblich).
+- Keine vagen Einträge („Code aufräumen“); immer **messbar**.
+
+| ID | Priorität | Was entfernen / konsolidieren | Ort (Pfade, Muster) | Blockiert bis | Status |
+|----|-----------|------------------------------|---------------------|---------------|--------|
+| C-001 | P1 | Font Awesome CDN entfernen, wenn alle Icons auf Lucide/Sprite | `templates/base.html` | Lucide in allen V2-Templates; Agent prüft per Suche `fa-` / `font-awesome` | open |
+| C-002 | P0 | V1-CSS und Verzweigung `use_v2_design` / Legacy-Zweig in `base.html` entfernen | `templates/base.html`, `static/css/main.css`, ggf. `backend/**` Render-Flags | §13 vollständig **done**; §16.1 Punkt 2–3 | open |
+| C-003 | P1 | Alte GGL-Ranking-**Card**-Styles entfernen (ersetzt durch `.ggl-ranking-table`) | `static/css/v2/components.css` (`.ggl-ranking-list`, `.ggl-ranking-card`, …) | Suche im Repo: keine Template-Referenz mehr auf diese Klassen; nach User-Check Layout Phase 7 | open |
+
+*(Weitere Zeilen bei Bedarf fortlaufend nummerieren: C-004 …)*
+
+**Priorität:**
+
+- **P0:** Blockiert das Ende-Kriterium (§16.1) — muss vor Abschluss erledigt oder per §12 vom User befreit werden.
+- **P1:** Soll vor Merge erledigt sein; technische oder optische Schulden, die das GO nicht zwingend blockieren, aber dokumentiert abgearbeitet werden sollen.
