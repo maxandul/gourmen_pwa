@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}GGL - Gourmen Guessing League{% endblock %}
 
 {% block content %}
@@ -18,18 +24,16 @@
   <div class="page-content">
     <div class="card card--filter tool-surface">
       <div class="card__body">
-        <details class="disclosure">
+        <details id="ggl-filter-disclosure" class="disclosure">
           <summary class="disclosure__summary">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            {{ lucide_icon('chevron-down') }}
             Filter
             <span class="chip chip--info">{{ selected_season }}</span>
           </summary>
           <div class="disclosure__content">
             <form method="GET" class="form">
               <input type="hidden" name="tab" value="{{ tab_param }}">
-              <div class="form-row form-row--align-end">
+              <div class="form-row">
                 <div class="form-field">
                   <label for="season" class="form-field__label">Saison</label>
                   <select id="season" name="season" class="form-field__select">
@@ -39,42 +43,39 @@
                   </select>
                 </div>
               </div>
-              <div class="form-actions">
+              <div class="form-actions form-actions--start">
+                <button type="submit" class="btn btn--primary">
+                  {{ lucide_icon('funnel') }}
+                  Filtern
+                </button>
                 <a class="btn btn--outline" href="{{ url_for('ggl.index', tab=tab_param) }}">Zurücksetzen</a>
-                <button type="submit" class="btn btn--primary">Filtern</button>
               </div>
             </form>
           </div>
         </details>
       </div>
     </div>
-    <div class="tabs">
+    <div class="tabs tabs--panel" aria-label="Guessing League — Ansichten">
       <nav class="tabs__nav" role="tablist">
         <a href="{{ url_for('ggl.index', tab='aktuell', season=selected_season) }}"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'aktuell' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'aktuell' else 'false' }}">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#medal"></use>
-          </svg>
+          {{ lucide_icon('medal') }}
           Dein Rang
         </a>
         <a href="{{ url_for('ggl.index', tab='tabelle', season=selected_season) }}"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'tabelle' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'tabelle' else 'false' }}">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#table"></use>
-          </svg>
+          {{ lucide_icon('table') }}
           Tabelle
         </a>
         <a href="{{ url_for('ggl.index', tab='rennen', season=selected_season) }}"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'rennen' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'rennen' else 'false' }}">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#activity"></use>
-          </svg>
+          {{ lucide_icon('activity') }}
           Rennen
         </a>
       </nav>
@@ -218,4 +219,29 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  function bindDisclosure(id, key, defaultOpen) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var stored = sessionStorage.getItem(key);
+    if (stored === '1') {
+      el.open = true;
+    } else if (stored === '0') {
+      el.open = false;
+    } else {
+      el.open = defaultOpen;
+    }
+    el.addEventListener('toggle', function () {
+      try {
+        sessionStorage.setItem(key, el.open ? '1' : '0');
+      } catch (e) { /* private mode etc. */ }
+    });
+  }
+  bindDisclosure('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen', false);
+})();
+</script>
 {% endblock %}
