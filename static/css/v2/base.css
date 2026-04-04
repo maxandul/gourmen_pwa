@@ -210,8 +210,9 @@ li {
   margin-bottom: var(--space-8);
 }
 
-/* Engerer Abstand, wenn direkt eine Kontextleiste folgt (REDESIGN: context-actions) */
-.page-header:has(+ .context-actions) {
+/* Engerer Abstand, wenn direkt eine Kontextleiste folgt (REDESIGN: context-actions / Planungs-Card) */
+.page-header:has(+ .context-actions),
+.page-header:has(+ .events-planning-strip) {
   margin-bottom: var(--space-3);
 }
 

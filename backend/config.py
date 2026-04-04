@@ -52,7 +52,8 @@ class Config:
     CRYPTO_KEY = os.environ.get('CRYPTO_KEY')
     SENSITIVE_ACCESS_TTL_SECONDS = int(os.environ.get('SENSITIVE_ACCESS_TTL_SECONDS', '300'))
     
-    # Rate limiting
+    # Rate limiting (Flask-Limiter)
+    RATELIMIT_ENABLED = True
     RATE_LIMIT_LOGIN = os.environ.get('RATE_LIMIT_LOGIN', '5 per minute')
     RATE_LIMIT_STEPUP = os.environ.get('RATE_LIMIT_STEPUP', '5 per minute')
     
@@ -103,6 +104,8 @@ class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     TESTING = False
+    # Lokal kein Rate-Limit (vermeidet „429 Too Many Requests“ bei vielen Reloads / Hot-Reload)
+    RATELIMIT_ENABLED = False
 
 class ProductionConfig(Config):
     """Production configuration"""
@@ -125,6 +128,7 @@ class TestingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    RATELIMIT_ENABLED = False
 
 config = {
     'development': DevelopmentConfig,

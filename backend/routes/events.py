@@ -207,60 +207,93 @@ def index():
         'rating_prompt_event': rating_prompt_event,
     }
 
+    # Globale Filter (Jahr / Organisator) — alle Tabs, URL-Parameter identisch wie bisher
+    filter_year = request.args.get('year', type=int)
+    filter_organizer_id = request.args.get('organisator_id', type=int)
+
+    years_query = (
+        db.session.query(Event.season)
+        .filter(Event.published == True)
+        .distinct()
+        .order_by(Event.season.desc())
+        .all()
+    )
+    filter_years = [row[0] for row in years_query] if years_query else []
+    filter_organizers = (
+        Member.query.filter_by(is_active=True)
+        .order_by(Member.nachname, Member.vorname)
+        .all()
+    )
+    events_filter_args = {}
+    if filter_year:
+        events_filter_args['year'] = filter_year
+    if filter_organizer_id:
+        events_filter_args['organisator_id'] = filter_organizer_id
+    events_filters_active = bool(filter_year or filter_organizer_id)
+    selected_organizer_label = None
+    if filter_organizer_id:
+        org_member = db.session.get(Member, filter_organizer_id)
+        if org_member:
+            selected_organizer_label = org_member.display_name_with_spirit
+
+    context.update(
+        {
+            'years': filter_years,
+            'organizers': filter_organizers,
+            'selected_year': filter_year,
+            'selected_organizer_id': filter_organizer_id,
+            'events_filter_args': events_filter_args,
+            'events_filters_active': events_filters_active,
+            'selected_organizer_label': selected_organizer_label,
+            'events_tab_urls': {
+                'kommend': url_for('events.index', tab='kommend', **events_filter_args),
+                'archiv': url_for('events.index', tab='archiv', **events_filter_args),
+                'stats': url_for('events.index', tab='stats', **events_filter_args),
+            },
+            'events_filter_reset_url': url_for('events.index', tab=tab),
+        }
+    )
+
+    def _apply_event_filters(query):
+        if filter_year:
+            query = query.filter(Event.season == filter_year)
+        if filter_organizer_id:
+            query = query.filter(Event.organisator_id == filter_organizer_id)
+        return query
+
     # Tab-specific data
     if tab == 'kommend':
-        # All upcoming events
-        upcoming_events = Event.query.filter(
+        upcoming_query = Event.query.filter(
             Event.published == True,
-            Event.datum > now
-        ).order_by(Event.datum.asc()).all()
-        context['events'] = upcoming_events
-        
+            Event.datum > now,
+        )
+        upcoming_query = _apply_event_filters(upcoming_query)
+        context['events'] = upcoming_query.order_by(Event.datum.asc()).all()
+
     elif tab == 'archiv':
         # Past events with pagination
         page = request.args.get('page', 1, type=int)
-        year = request.args.get('year', type=int)
-        organizer_id = request.args.get('organisator_id', type=int)
-        
+
         query = Event.query.filter(
             Event.published == True,
-            Event.datum < now
+            Event.datum < now,
         )
-        
-        if year:
-            query = query.filter(Event.season == year)
-        
-        if organizer_id:
-            query = query.filter(Event.organisator_id == organizer_id)
-        
+        query = _apply_event_filters(query)
+
         events = query.order_by(Event.datum.desc()).paginate(
             page=page, per_page=10, error_out=False
         )
-        
-        # Get available years for filter (always set, even if empty)
-        years_query = db.session.query(Event.season).filter(
-            Event.published == True,
-            Event.datum < now
-        ).distinct().order_by(Event.season.desc()).all()
-        years = [year[0] for year in years_query] if years_query else []
-        
-        # Organizer list for filter
-        organizers = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
-        
-        context.update({
-            'events': events,
-            'years': years,
-            'selected_year': year if year else None,
-            'organizers': organizers,
-            'selected_organizer_id': organizer_id if organizer_id else None
-        })
-        
+
+        context['events'] = events
+
     elif tab == 'stats':
-        # Statistics data
-        past_events = Event.query.filter(
+        # Statistics data (gefiltert wie Archiv/Kommend)
+        past_query = Event.query.filter(
             Event.published == True,
-            Event.datum < now
-        ).order_by(Event.datum.desc()).all() or []
+            Event.datum < now,
+        )
+        past_query = _apply_event_filters(past_query)
+        past_events = past_query.order_by(Event.datum.desc()).all() or []
         # Beitrittsfilter für user-spezifische Kennzahlen
         user_join_date = current_user.beitritt
         eligible_past_events = [
@@ -268,10 +301,12 @@ def index():
             if (not user_join_date or e.datum.date() >= user_join_date)
         ]
         
-        future_events = Event.query.filter(
+        future_query = Event.query.filter(
             Event.published == True,
-            Event.datum >= now
-        ).order_by(Event.datum.asc()).all() or []
+            Event.datum >= now,
+        )
+        future_query = _apply_event_filters(future_query)
+        future_events = future_query.order_by(Event.datum.asc()).all() or []
         
         # Calculate general stats
         total_events = len(past_events) + len(future_events)

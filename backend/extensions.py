@@ -30,25 +30,36 @@ def init_extensions(app):
     login_manager.init_app(app)
     csrf.init_app(app)
     
-    # Initialize Flask-Limiter with Redis if available, otherwise in-memory
+    # Flask-Limiter: optional deaktivierbar (development/testing → RATELIMIT_ENABLED=False)
+    limit_enabled = app.config.get('RATELIMIT_ENABLED', True)
     redis_url = app.config.get('REDIS_URL')
-    if redis_url:
-        # Use Redis storage
+    default_limits = ["200 per day", "50 per hour"] if limit_enabled else []
+
+    if not limit_enabled:
         limiter = Limiter(
             app=app,
             key_func=get_remote_address,
-            default_limits=["200 per day", "50 per hour"],
-            storage_uri=redis_url
+            default_limits=[],
+            enabled=False,
         )
-        app.logger.info(f"Flask-Limiter initialized with Redis storage")
+        app.logger.info("Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)")
+    elif redis_url:
+        limiter = Limiter(
+            app=app,
+            key_func=get_remote_address,
+            default_limits=default_limits,
+            storage_uri=redis_url,
+        )
+        app.logger.info("Flask-Limiter initialized with Redis storage")
     else:
-        # Fallback to in-memory storage (not recommended for production)
         limiter = Limiter(
             app=app,
             key_func=get_remote_address,
-            default_limits=["200 per day", "50 per hour"]
+            default_limits=default_limits,
         )
-        app.logger.warning("Flask-Limiter initialized with in-memory storage (not recommended for production)")
+        app.logger.warning(
+            "Flask-Limiter initialized with in-memory storage (not recommended for production)"
+        )
     
     # Configure login manager
     @login_manager.user_loader

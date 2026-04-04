@@ -49,8 +49,8 @@
     </div>
     
     <div class="page-content">
-        {% if current_user.is_admin or event.organisator_id == current_user.id %}
-        <div class="card card--filter">
+        {% if current_user.is_admin() or event.organisator_id == current_user.id %}
+        <div class="card card--filter tool-surface">
             <div class="card__body">
                 <details class="disclosure">
                     <summary class="disclosure__summary">
@@ -60,7 +60,7 @@
                         Planung (Organisator/Admin)
                     </summary>
                     <div class="disclosure__content">
-                        <div class="form-actions">
+                        <div class="tool-strip__actions" role="group" aria-label="Planung">
                             <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--primary">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -99,6 +99,7 @@
                                 </button>
                             </form>
                             {% endif %}
+                            {% if current_user.is_admin() %}
                             <form method="POST"
                                   action="{{ url_for('events.delete', event_id=event.id) }}"
                                   onsubmit="return confirm('Willst du dieses Event wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.');"
@@ -115,6 +116,7 @@
                                     Event löschen
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </details>

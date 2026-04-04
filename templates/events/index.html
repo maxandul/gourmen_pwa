@@ -27,20 +27,29 @@
         </h1>
     </div>
     
-        {% if current_user.is_admin() %}
-    <nav class="context-actions" aria-label="Planung und Administration">
-        <p class="context-actions__title">Planung</p>
-        <div class="context-actions__buttons">
-                            <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
-                {{ lucide_icon('plus') }}
-                                Event erfassen
-                            </a>
-                            <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
-                {{ lucide_icon('calendar') }}
-                                Jahresplanung erstellen
-                            </a>
-                        </div>
-    </nav>
+    {% if current_user.is_admin() %}
+    <div class="card card--filter tool-surface events-planning-strip">
+        <div class="card__body">
+            <details id="events-planning-disclosure" class="disclosure">
+                <summary class="disclosure__summary">
+                    {{ lucide_icon('chevron-down') }}
+                    Events erfassen
+                </summary>
+                <div class="disclosure__content">
+                    <nav class="tool-strip__actions" aria-label="Planung und Administration">
+                        <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
+                            {{ lucide_icon('square-plus') }}
+                            Einzelnes Event
+                        </a>
+                        <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
+                            {{ lucide_icon('calendar-plus') }}
+                            Jahresplanung erstellen
+                        </a>
+                    </nav>
+                </div>
+            </details>
+        </div>
+    </div>
     {% endif %}
 
     {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'kommend') %}
@@ -60,24 +69,83 @@
             </div>
         </div>
         {% endif %}
+
+        <div class="card card--filter tool-surface">
+            <div class="card__body">
+                <details id="events-index-filter-disclosure" class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down') }}
+                        Filter
+                        {% if selected_year or selected_organizer_id %}
+                            {% if selected_year %}
+                            <span class="chip chip--info">{{ selected_year }}</span>
+                            {% endif %}
+                            {% if selected_organizer_id and selected_organizer_label %}
+                            <span class="chip chip--info">{{ selected_organizer_label }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </summary>
+                    <div class="disclosure__content">
+                        <form method="GET" action="{{ url_for('events.index') }}" class="form">
+                            <input type="hidden" name="tab" value="{{ tab_param }}">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="year" class="form-field__label">Jahr</label>
+                                    <select name="year" id="year" class="form-field__select">
+                                        <option value="">Alle Jahre</option>
+                                        {% if years %}
+                                        {% for year in years %}
+                                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                            {{ year }}
+                                        </option>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="organisator_id" class="form-field__label">Organisator</label>
+                                    <select name="organisator_id" id="organisator_id" class="form-field__select">
+                                        <option value="">Alle Organisatoren</option>
+                                        {% if organizers %}
+                                        {% for organizer in organizers %}
+                                        <option value="{{ organizer.id }}" {% if selected_organizer_id == organizer.id %}selected{% endif %}>
+                                            {{ organizer.display_name_with_spirit }}
+                                        </option>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions form-actions--start">
+                                <button type="submit" class="btn btn--primary">
+                                    {{ lucide_icon('funnel') }}
+                                    Filtern
+                                </button>
+                                <a class="btn btn--outline" href="{{ events_filter_reset_url }}">Zurücksetzen</a>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+            </div>
+        </div>
         
-        <div class="tabs">
+        <div class="tabs tabs--panel" aria-label="Events-Ansichten">
         <nav class="tabs__nav" role="tablist">
-            <a href="{{ url_for('events.index', tab='kommend') }}"
+            <a href="{{ events_tab_urls.kommend }}"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'kommend' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'kommend' else 'false' }}">
-                {{ lucide_icon('chevron-right') }}
+                {{ lucide_icon('square-chevron-right') }}
                 Kommend
             </a>
-            <a href="{{ url_for('events.index', tab='archiv') }}"
+            <a href="{{ events_tab_urls.archiv }}"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'archiv' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'archiv' else 'false' }}">
                 {{ lucide_icon('archive') }}
                 Archiv
             </a>
-            <a href="{{ url_for('events.index', tab='stats') }}"
+            <a href="{{ events_tab_urls.stats }}"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'stats' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'stats' else 'false' }}">
@@ -135,84 +203,37 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="alert alert--info" role="status">
-                    {{ lucide_icon('info', 'icon alert__icon') }}
-                    <div class="alert__content">
-                        <div class="alert__message">
-                        <p>Keine kommenden Events verfügbar.</p>
-                        {% if current_user.is_admin() %}
-                        <div class="page-actions mt-4">
-                            <a href="{{ url_for('events.year_planning') }}" class="btn btn--outline">Jahresplanung erstellen</a>
+                    {% if events_filters_active %}
+                    <div class="empty-state empty-state--filtered" role="status">
+                        <div class="empty-state__icon" aria-hidden="true">
+                            {{ lucide_icon('calendar-off') }}
                         </div>
-                        {% endif %}
-                        </div>
+                        <p class="empty-state__message">
+                            {% if selected_year and selected_organizer_label %}
+                            Für das Jahr {{ selected_year }} und den Organisator {{ selected_organizer_label }} gibt es keine kommenden Events.
+                            {% elif selected_year %}
+                            Für das Jahr {{ selected_year }} gibt es keine kommenden Events.
+                            {% elif selected_organizer_label %}
+                            Für den Organisator {{ selected_organizer_label }} gibt es keine kommenden Events.
+                            {% else %}
+                            Es gibt keine kommenden Events, die dem gewählten Filter entsprechen.
+                            {% endif %}
+                        </p>
                     </div>
-                </div>
+                    {% else %}
+                    <div class="empty-state" role="status">
+                        <div class="empty-state__icon" aria-hidden="true">
+                            {{ lucide_icon('calendar') }}
+                        </div>
+                        <p class="empty-state__message">Keine kommenden Events verfügbar.</p>
+                    </div>
+                    {% endif %}
                 {% endif %}
             </div>
             
             <!-- Tab 3: Archiv -->
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
                  role="tabpanel">
-                <div class="card card--filter">
-                    <div class="card__body">
-                        <details class="disclosure" {% if selected_year or selected_organizer_id %}open{% endif %}>
-                            <summary class="disclosure__summary">
-                                {{ lucide_icon('chevron-down') }}
-                                Filter
-                                {% if selected_year or selected_organizer_id %}
-                                    {% if selected_year %}
-                                    <span class="chip chip--info">{{ selected_year }}</span>
-                                    {% endif %}
-                                    {% if selected_organizer_id %}
-                                        {% set selected_organizer = organizers|selectattr('id', 'equalto', selected_organizer_id)|first %}
-                                        {% if selected_organizer %}
-                                        <span class="chip chip--info">{{ selected_organizer.display_name_with_spirit }}</span>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endif %}
-                            </summary>
-                            <div class="disclosure__content">
-                                <form method="GET" class="form">
-                                    <input type="hidden" name="tab" value="archiv">
-                                    <div class="form-row">
-                                        <div class="form-field">
-                                            <label for="year" class="form-field__label">Jahr</label>
-                                            <select name="year" id="year" class="form-field__select">
-                                                <option value="">Alle Jahre</option>
-                                                {% if years %}
-                                                {% for year in years %}
-                                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
-                                                    {{ year }}
-                                                </option>
-                                                {% endfor %}
-                                                {% endif %}
-                                            </select>
-                                        </div>
-                                        <div class="form-field">
-                                            <label for="organisator_id" class="form-field__label">Organisator</label>
-                                            <select name="organisator_id" id="organisator_id" class="form-field__select">
-                                                <option value="">Alle Organisatoren</option>
-                                                {% if organizers %}
-                                                {% for organizer in organizers %}
-                                                <option value="{{ organizer.id }}" {% if selected_organizer_id == organizer.id %}selected{% endif %}>
-                                                    {{ organizer.display_name_with_spirit }}
-                                                </option>
-                                                {% endfor %}
-                                                {% endif %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-actions">
-                                        <a class="btn btn--outline" href="{{ url_for('events.index', tab='archiv') }}">Zurücksetzen</a>
-                                        <button type="submit" class="btn btn--primary">Filtern</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-                
                 {% if events and events.items %}
                 <div class="table-responsive data-table-wrap" role="region" aria-label="Archiv vergangener Events">
                     <table class="data-table">
@@ -273,7 +294,7 @@
                 {% if events.pages > 1 %}
                 <div class="page-actions page-actions--centered mt-6">
                     {% if events.has_prev %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, year=selected_year if selected_year else '', organisator_id=selected_organizer_id if selected_organizer_id else '') }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, **events_filter_args) }}" class="btn btn--outline">
                         {{ lucide_icon('chevron-left') }}
                         Vorherige
                     </a>
@@ -284,7 +305,7 @@
                     </span>
                     
                     {% if events.has_next %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, year=selected_year if selected_year else '', organisator_id=selected_organizer_id if selected_organizer_id else '') }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, **events_filter_args) }}" class="btn btn--outline">
                         Nächste
                         {{ lucide_icon('chevron-right') }}
                     </a>
@@ -382,4 +403,31 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  /* Standard: eingeklappt. Nach Tab-Wechsel (Reload) bleibt der Zustand über sessionStorage. */
+  function bindDisclosure(id, key, defaultOpen) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var stored = sessionStorage.getItem(key);
+    if (stored === '1') {
+      el.open = true;
+    } else if (stored === '0') {
+      el.open = false;
+    } else {
+      el.open = defaultOpen;
+    }
+    el.addEventListener('toggle', function () {
+      try {
+        sessionStorage.setItem(key, el.open ? '1' : '0');
+      } catch (e) { /* private mode etc. */ }
+    });
+  }
+  bindDisclosure('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen', false);
+  bindDisclosure('events-planning-disclosure', 'gourmen:eventsIndexPlanningDisclosureOpen', false);
+})();
+</script>
 {% endblock %}
