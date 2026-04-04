@@ -86,30 +86,40 @@
           <div class="card">
             <div class="card__header">
               <h2 class="card__title">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#award"></use>
-                </svg>
-                Deine Kennzahlen
+                {{ lucide_icon('award') }}
+                Deine Saisonleistung
               </h2>
             </div>
             <div class="card__body">
               {% if current_stats %}
-              <div class="stat-tiles" aria-label="Deine Kennzahlen für die gewählte Saison">
-                <div class="stat-tile">
-                  <span class="stat-tile__label">Dein Rang</span>
-                  <span class="stat-tile__value">{{ current_stats.rank or '—' }}</span>
+              <div class="ggl-rank-summary">
+                <p class="ggl-rank-summary__context">Saison <strong>{{ selected_season }}</strong></p>
+                <div class="ggl-rank-summary__hero" aria-label="Rang und Punkte für die gewählte Saison">
+                  <div class="ggl-rank-summary__metric ggl-rank-summary__metric--rank">
+                    <span class="ggl-rank-summary__metric-label">Dein Rang</span>
+                    <span class="ggl-rank-summary__metric-value">{{ current_stats.rank or '—' }}</span>
+                    {% if current_stats.rank and season_ranking and season_ranking|length > 0 %}
+                    <span class="ggl-rank-summary__metric-hint">von {{ season_ranking|length }} in der Wertung</span>
+                    {% endif %}
+                  </div>
+                  <div class="ggl-rank-summary__metric ggl-rank-summary__metric--points">
+                    <span class="ggl-rank-summary__metric-label">Punkte</span>
+                    <span class="ggl-rank-summary__metric-value ggl-rank-summary__metric-value--accent">{{ current_stats.total_points or 0 }}</span>
+                  </div>
                 </div>
-                <div class="stat-tile">
-                  <span class="stat-tile__label">Deine Punkte</span>
-                  <span class="stat-tile__value">{{ current_stats.total_points or 0 }}</span>
-                </div>
-                <div class="stat-tile">
-                  <span class="stat-tile__label">⊘ Differenz</span>
-                  <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(current_stats.avg_diff_rappen / 100) }} CHF</span>
-                </div>
-                <div class="stat-tile">
-                  <span class="stat-tile__label">Events</span>
-                  <span class="stat-tile__value stat-tile__value--muted">{{ current_stats.participation_count }}/{{ current_stats.total_events_in_season }}</span>
+                <div class="stat-tiles stat-tiles--ggl-detail" aria-label="Weitere Kennzahlen">
+                  <div class="stat-tile">
+                    <span class="stat-tile__label">Events mit Schätzung</span>
+                    <span class="stat-tile__value stat-tile__value--muted">{{ current_stats.participation_count }}/{{ current_stats.total_events_in_season }}</span>
+                  </div>
+                  <div class="stat-tile">
+                    <span class="stat-tile__label">Ø Punkte pro Event</span>
+                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(current_stats.avg_points) }}</span>
+                  </div>
+                  <div class="stat-tile">
+                    <span class="stat-tile__label">Ø Abweichung (Rechnung)</span>
+                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(current_stats.avg_diff_rappen / 100) }} CHF</span>
+                  </div>
                 </div>
               </div>
               {% else %}
