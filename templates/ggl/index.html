@@ -20,14 +20,15 @@
     </h1>
   </div>
 
-  {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'aktuell') %}
+  {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'performance') %}
+  {% set perf = performance_context %}
   <div class="page-content">
     <div class="card card--filter tool-surface">
       <div class="card__body">
         <details id="ggl-filter-disclosure" class="disclosure">
           <summary class="disclosure__summary">
             {{ lucide_icon('chevron-down') }}
-            Filter
+            Saison
             <span class="chip chip--info">{{ selected_season }}</span>
           </summary>
           <div class="disclosure__content">
@@ -57,70 +58,63 @@
     </div>
     <div class="tabs tabs--panel" aria-label="Guessing League — Ansichten">
       <nav class="tabs__nav" role="tablist">
-        <a href="{{ url_for('ggl.index', tab='aktuell', season=selected_season) }}"
-           class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'aktuell' else '' }}"
+        <a href="{{ url_for('ggl.index', tab='performance', season=selected_season) }}"
+           class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'performance' else '' }}"
            role="tab"
-           aria-selected="{{ 'true' if tab_param == 'aktuell' else 'false' }}">
-          {{ lucide_icon('medal') }}
-          Dein Rang
+           aria-selected="{{ 'true' if tab_param == 'performance' else 'false' }}">
+          {{ lucide_icon('gauge') }}
+          Deine Performance
         </a>
         <a href="{{ url_for('ggl.index', tab='tabelle', season=selected_season) }}"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'tabelle' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'tabelle' else 'false' }}">
-          {{ lucide_icon('table') }}
+          {{ lucide_icon('table-2') }}
           Tabelle
         </a>
         <a href="{{ url_for('ggl.index', tab='rennen', season=selected_season) }}"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'rennen' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'rennen' else 'false' }}">
-          {{ lucide_icon('activity') }}
-          Rennen
+          {{ lucide_icon('chart-line') }}
+          Spielverlauf
         </a>
       </nav>
 
       <div class="tabs__content">
-        <!-- Tab: Aktuell -->
-        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'aktuell' else '' }}" role="tabpanel">
+        <!-- Tab: Performance (tab=performance; tab=aktuell → Redirect) -->
+        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'performance' else '' }}" role="tabpanel">
           <div class="card">
             <div class="card__header">
               <h2 class="card__title">
-                {{ lucide_icon('award') }}
-                Deine Saisonleistung
+                {{ lucide_icon('clipboard-list') }}
+                Summary
               </h2>
             </div>
             <div class="card__body">
               {% if current_stats %}
-              <div class="ggl-rank-summary">
-                <p class="ggl-rank-summary__context">Saison <strong>{{ selected_season }}</strong></p>
-                <div class="ggl-rank-summary__hero" aria-label="Rang und Punkte für die gewählte Saison">
-                  <div class="ggl-rank-summary__metric ggl-rank-summary__metric--rank">
-                    <span class="ggl-rank-summary__metric-label">Dein Rang</span>
-                    <span class="ggl-rank-summary__metric-value">{{ current_stats.rank or '—' }}</span>
-                    {% if current_stats.rank and season_ranking and season_ranking|length > 0 %}
-                    <span class="ggl-rank-summary__metric-hint">von {{ season_ranking|length }} in der Wertung</span>
+              <div class="metrics-spotlight">
+                <p class="metrics-spotlight__context">Saison <strong>{{ selected_season }}</strong></p>
+                <div class="metrics-spotlight__hero" aria-label="Rang und Punkte für die gewählte Saison">
+                  <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Dein Rang</span>
+                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ perf.rank or '—' }}</span>
+                    {% if perf.rank and perf.rank_total > 0 %}
+                    <span class="metrics-spotlight__metric-hint">von {{ perf.rank_total }}</span>
                     {% endif %}
                   </div>
-                  <div class="ggl-rank-summary__metric ggl-rank-summary__metric--points">
-                    <span class="ggl-rank-summary__metric-label">Punkte</span>
-                    <span class="ggl-rank-summary__metric-value ggl-rank-summary__metric-value--accent">{{ current_stats.total_points or 0 }}</span>
+                  <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Punkte</span>
+                    <span class="metrics-spotlight__metric-value">{{ current_stats.total_points or 0 }}</span>
                   </div>
                 </div>
-                <div class="stat-tiles stat-tiles--ggl-detail" aria-label="Weitere Kennzahlen">
-                  <div class="stat-tile">
-                    <span class="stat-tile__label">Events mit Schätzung</span>
-                    <span class="stat-tile__value stat-tile__value--muted">{{ current_stats.participation_count }}/{{ current_stats.total_events_in_season }}</span>
-                  </div>
-                  <div class="stat-tile">
-                    <span class="stat-tile__label">Ø Punkte pro Event</span>
-                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(current_stats.avg_points) }}</span>
-                  </div>
-                  <div class="stat-tile">
-                    <span class="stat-tile__label">Ø Abweichung (Rechnung)</span>
-                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(current_stats.avg_diff_rappen / 100) }} CHF</span>
-                  </div>
+                {% if perf.insight_paragraphs %}
+                <div class="metrics-insight-panel" aria-label="Einordnung in Abschnitten">
+                  {% for paragraph in perf.insight_paragraphs %}
+                  {{ paragraph|safe }}
+                  {% endfor %}
                 </div>
+                {% endif %}
               </div>
               {% else %}
               <p class="text-secondary">Du hast in der ausgewählten Saison noch an keinem Event mit BillBro teilgenommen.</p>
@@ -148,7 +142,7 @@
                 {% for entry in season_ranking %}
                 <tr class="{% if entry.member_id == current_user.id %}ggl-ranking-table__row--current{% endif %} {% if entry.rank == 1 %}ggl-ranking-table__row--rank-1{% elif entry.rank == 2 %}ggl-ranking-table__row--rank-2{% elif entry.rank == 3 %}ggl-ranking-table__row--rank-3{% endif %}">
                   <td class="ggl-ranking-table__col-rank">{{ entry.rank }}</td>
-                  <td class="ggl-ranking-table__col-name">{{ entry.member.display_name_with_spirit }}</td>
+                  <td class="ggl-ranking-table__col-name">{{ entry.member.display_spirit_rufname }}</td>
                   <td class="ggl-ranking-table__col-num">{{ entry.total_points }}</td>
                   <td class="ggl-ranking-table__col-num">{{ entry.participation_count }}</td>
                   <td class="ggl-ranking-table__col-num">{{ "%.1f"|format(entry.avg_points) }}</td>
@@ -172,6 +166,7 @@
           {% endif %}
         </div>
 
+        {# Phase 2: zweites Chart — kumulierte Summe der Beträge |Diff| je Event, alle Linien wie Rang-Chart (static/js/v2/ggl-season.js). #}
         <!-- Tab: Rennen -->
         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'rennen' else '' }}" role="tabpanel">
           {% if progression_data and progression_data.events|length > 0 %}
@@ -251,7 +246,22 @@
       } catch (e) { /* private mode etc. */ }
     });
   }
+  function collapseDisclosureOnFilterSubmit(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var form = details.querySelector('form');
+    if (!form) return;
+    var method = (form.getAttribute('method') || 'get').toLowerCase();
+    if (method !== 'get') return;
+    form.addEventListener('submit', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
   bindDisclosure('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen');
 })();
 </script>
 {% endblock %}

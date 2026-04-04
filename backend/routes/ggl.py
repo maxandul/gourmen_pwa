@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 from backend.services.ggl_rules import GGLService
 from backend.models.member import Member
@@ -15,8 +15,13 @@ def _attach_member_to_ranking(ranking):
 @bp.route('/')
 @login_required
 def index():
-    """GGL main page with tabs (Aktuell, Tabelle, Rennen, Archiv)."""
-    tab = request.args.get('tab', 'aktuell')
+    """GGL main page with tabs (Performance, Tabelle, Rennen)."""
+    if request.args.get('tab') == 'aktuell':
+        q = request.args.to_dict()
+        q['tab'] = 'performance'
+        return redirect(url_for('ggl.index', **q))
+
+    tab = request.args.get('tab', 'performance')
 
     # Get current season
     current_season = GGLService.get_current_season()
@@ -47,9 +52,13 @@ def index():
 
     season_ranking = None
     table_selected_season = selected_season
-    if tab in ('tabelle', 'aktuell'):
+    if tab in ('tabelle', 'performance'):
         season_ranking = GGLService.get_season_ranking(selected_season)
         _attach_member_to_ranking(season_ranking)
+
+    performance_context = GGLService.get_member_performance_view_context(
+        current_user.id, selected_season
+    )
 
     progression_data = None
     race_selected_season = selected_season
@@ -64,6 +73,7 @@ def index():
         season_stats=season_stats,
         current_stats=current_stats,
         season_ranking=season_ranking,
+        performance_context=performance_context,
         progression_data=progression_data,
         table_selected_season=table_selected_season,
         race_selected_season=race_selected_season,

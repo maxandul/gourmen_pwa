@@ -112,6 +112,15 @@ class Member(db.Model, UserMixin):
         if self.spirit_animal:
             return f"{self.spirit_animal} {name}"
         return name
+
+    @property
+    def display_spirit_rufname(self):
+        """Fließtext: Spirit + Rufname (sonst Vorname, sonst bisheriger Anzeigename)."""
+        name = (self.rufname or '').strip() or (self.vorname or '').strip() or self.display_name
+        sp = (self.spirit_animal or '').strip()
+        if sp:
+            return f'{sp} {name}'.strip()
+        return name
     
     def set_password(self, password):
         """Set password hash"""

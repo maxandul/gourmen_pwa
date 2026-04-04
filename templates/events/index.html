@@ -334,29 +334,37 @@
                     </div>
                     <div class="card__body">
                         {% if total_past_events is defined or avg_attendees is defined or user_participation_rate is defined or organized_by_you is defined %}
-                        <div class="stat-tiles" aria-label="Event-Kennzahlen">
-                        {% if total_past_events is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">Vergangene Events</span>
-                                <span class="stat-tile__value">{{ total_past_events }}</span>
-                        </div>
-                        {% endif %}
-                        {% if avg_attendees is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">⊘ Teilnehmerzahl</span>
-                                <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(avg_attendees) }}</span>
-                        </div>
-                        {% endif %}
-                        {% if user_participation_rate is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">Deine Teilnahmequote</span>
-                                <span class="stat-tile__value">{{ "%.1f"|format(user_participation_rate) }}%</span>
-                        </div>
-                        {% endif %}
-                        {% if organized_by_you is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">Von dir organisiert</span>
-                                <span class="stat-tile__value stat-tile__value--muted">{{ organized_by_you }}</span>
+                        <div class="metrics-spotlight" aria-label="Event-Kennzahlen">
+                            {% if total_past_events is defined or user_participation_rate is defined %}
+                            <div class="metrics-spotlight__hero">
+                                {% if total_past_events is defined %}
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">Vergangene Events</span>
+                                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ total_past_events }}</span>
+                                </div>
+                                {% endif %}
+                                {% if user_participation_rate is defined %}
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">Deine Teilnahmequote</span>
+                                    <span class="metrics-spotlight__metric-value">{{ "%.1f"|format(user_participation_rate) }}%</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% if avg_attendees is defined or organized_by_you is defined %}
+                            <div class="stat-tiles stat-tiles--metrics-follow">
+                                {% if avg_attendees is defined %}
+                                <div class="stat-tile">
+                                    <span class="stat-tile__label">⊘ Teilnehmerzahl</span>
+                                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(avg_attendees) }}</span>
+                                </div>
+                                {% endif %}
+                                {% if organized_by_you is defined %}
+                                <div class="stat-tile">
+                                    <span class="stat-tile__label">Von dir organisiert</span>
+                                    <span class="stat-tile__value stat-tile__value--muted">{{ organized_by_you }}</span>
+                                </div>
+                                {% endif %}
                             </div>
                             {% endif %}
                         </div>
@@ -375,23 +383,29 @@
                         </h2>
                     </div>
                     <div class="card__body">
-                        <div class="stat-tiles" aria-label="BillBro-Kennzahlen">
-                        {% if avg_bill_amount is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">⊘ Rechnungsbetrag</span>
-                                <span class="stat-tile__value">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
-                        </div>
-                        {% endif %}
-                        {% if avg_tip_amount is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">⊘ Trinkgeld (CHF)</span>
-                                <span class="stat-tile__value stat-tile__value--muted">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
-                        </div>
-                        {% endif %}
-                        {% if avg_tip_percent is defined %}
-                            <div class="stat-tile">
-                                <span class="stat-tile__label">⊘ Trinkgeld (%)</span>
-                                <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(avg_tip_percent) }}%</span>
+                        <div class="metrics-spotlight" aria-label="BillBro-Kennzahlen">
+                            {% if avg_bill_amount is defined or avg_tip_percent is defined %}
+                            <div class="metrics-spotlight__hero">
+                                {% if avg_bill_amount is defined %}
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">⊘ Rechnungsbetrag</span>
+                                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
+                                </div>
+                                {% endif %}
+                                {% if avg_tip_percent is defined %}
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">⊘ Trinkgeld (%)</span>
+                                    <span class="metrics-spotlight__metric-value">{{ "%.1f"|format(avg_tip_percent) }}%</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% if avg_tip_amount is defined %}
+                            <div class="stat-tiles stat-tiles--metrics-follow">
+                                <div class="stat-tile">
+                                    <span class="stat-tile__label">⊘ Trinkgeld (CHF)</span>
+                                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
+                                </div>
                             </div>
                             {% endif %}
                         </div>
@@ -426,8 +440,23 @@
       } catch (e) { /* private mode etc. */ }
     });
   }
+  function collapseDisclosureOnFilterSubmit(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var form = details.querySelector('form');
+    if (!form) return;
+    var method = (form.getAttribute('method') || 'get').toLowerCase();
+    if (method !== 'get') return;
+    form.addEventListener('submit', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
   bindDisclosure('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen', false);
   bindDisclosure('events-planning-disclosure', 'gourmen:eventsIndexPlanningDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen');
 })();
 </script>
 {% endblock %}
