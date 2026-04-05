@@ -2,7 +2,10 @@ from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from backend.models.event import Event
 from backend.models.participation import Participation
+from backend.models.merch_order import MerchOrder, OrderStatus
 from backend.services.ggl_rules import GGLService
+from backend.services.rating_prompt import get_rating_prompt_event_for_member
+from backend.services.retro_cleanup import RetroCleanupService
 from datetime import datetime, timedelta
 
 bp = Blueprint('dashboard', __name__)
@@ -22,28 +25,28 @@ def index():
     # Get current season GGL stats for user
     current_season = GGLService.get_current_season()
     ggl_stats = GGLService.get_member_season_stats(current_user.id, current_season)
-    
-    # If user has GGL stats, calculate their rank
+    season_ranking = GGLService.get_season_ranking(current_season)
+    rank_total = len(season_ranking)
+
     if ggl_stats:
-        season_ranking = GGLService.get_season_ranking(current_season)
         user_rank = None
         for i, member_stats in enumerate(season_ranking):
             if member_stats['member_id'] == current_user.id:
                 user_rank = i + 1
                 break
-        
-        # Add rank and points to ggl_stats
+
         ggl_stats['rank'] = user_rank
         ggl_stats['points'] = ggl_stats['total_points']
+        ggl_stats['rank_total'] = rank_total
     else:
-        # If no GGL stats, create empty stats for display
         ggl_stats = {
             'season': current_season,
             'total_points': 0,
             'participation_count': 0,
             'total_events_in_season': 0,
             'rank': None,
-            'points': 0
+            'points': 0,
+            'rank_total': rank_total,
         }
     
     # Get latest event with bill for current user
@@ -60,13 +63,31 @@ def index():
             member_id=current_user.id,
             event_id=latest_bill_event.id
         ).first()
-    
-    return render_template('dashboard/index.html', 
-                         next_event=next_event, 
-                         ggl_stats=ggl_stats,
-                         current_season=current_season,
-                         latest_bill_event=latest_bill_event,
-                         latest_bill_participation=latest_bill_participation,
-                         use_v2_design=True)
+
+    rating_prompt_event = get_rating_prompt_event_for_member(current_user)
+
+    merch_orders = (
+        MerchOrder.query.filter_by(member_id=current_user.id)
+        .order_by(MerchOrder.created_at.desc())
+        .all()
+    )
+    merch_last_order = merch_orders[0] if merch_orders else None
+    merch_open_count = sum(
+        1 for o in merch_orders if o.status in (OrderStatus.BESTELLT, OrderStatus.WIRD_GELIEFERT)
+    )
+
+    return render_template(
+        'dashboard/index.html',
+        next_event=next_event,
+        ggl_stats=ggl_stats,
+        current_season=current_season,
+        latest_bill_event=latest_bill_event,
+        latest_bill_participation=latest_bill_participation,
+        rating_prompt_event=rating_prompt_event,
+        merch_last_order=merch_last_order,
+        merch_open_count=merch_open_count,
+        cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
+        use_v2_design=True,
+    )
 
  

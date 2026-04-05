@@ -78,7 +78,7 @@ Bei **wesentlichen** UX-Fragen: dem User **Optionen** nennen, **Empfehlung** geb
 
 | Bereich                                                                  | Inhalt                                                                                                                                                                                                                                             |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Dashboard**                                                            | Persönlicher **Jetzt**-Einstieg: nächstes Event, RSVP, optional GGL-Kurzlink; kein Ersatz für volle Event-/GGL-Listen.                                                                                                                             |
+| **Dashboard**                                                            | Persönlicher **Überblick** nach **Nutzerintention**: **Zu erledigen** (**Datenbereinigung** **`events.cleanup`** — **§6.3**: Fenster **heute+30 Tage** nur RSVP, **vergangene** ab Stichtag inkl. Bewertung, **jüngstes zuerst**); separate Kachel **Bewertung ausstehend** → Event-Detail **`tab=ratings`** wenn **`rating_prompt`**. **Zur Info** (**Nächstes Event** → Detail **ohne** RSVP auf der Kachel; Zu-/Absage wie bisher **Event-Detail** / **Events-Liste**); **Dein letzter Anteil**; **GGL**; **Merch** (nicht geliefert). **Erkunden** nur **Merch-Shop** und **Statistiken** — **Events** über **Bottom-Nav**. Optional **Push-Banner**.                                                                                                                             |
 | **Events**                                                               | Termine, RSVP, Detail, BillBro, Bewertungen, Archiv, Statistiken.                                                                                                                                                                                  |
 | **GGL**                                                                  | Saison, Rang, Tabelle, Verlauf — ohne Event-Verwaltung.                                                                                                                                                                                            |
 | **Verein** (Nav-Label; technisch z. B. weiter `member.*` / spätere URLs) | **Gemeinsames Vereinsleben:** **Merch-Shop** (kaufen), später **Dokumentablage** und weitere Erweiterungen. **Admins** zusätzlich: **Mitgliederverwaltung**, **Merch-Verwaltung** (Backoffice), später **Buchhaltung** (noch nicht implementiert). |
@@ -168,9 +168,10 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 | Leerzustand (Tab/Liste) | `.empty-state`, `.empty-state__icon`, `.empty-state__message`, optional `**.empty-state--filtered`**                                                                                                                                                                                                          | Wenn absichtlich **kein** Alert mit Aktionen gewünscht: ruhiger Hinweis in Tab-Inhalt (z. B. Events **Kommend** ohne Treffer). **Nicht** für Flash-kritische Meldungen — dafür `**.alert`**. |
 | BillBro-Phasenleiste     | **`.billbro-workflow-block`** (Rahmen), **`.billbro-workflow`**, **`.billbro-workflow__hint`** (`role="status"`), **`.billbro-workflow__step`**, **`__step--done`**, **`__step--current`**, **`.billbro-workflow__index`**                                                                                                                                                               | Event-Detail **BillBro**: Phasen **Schätzrunde → Rechnung → Gesamtbetrag → Abgeschlossen**; unter der Leiste **Kurztext** je **Organisator** vs. **Mitglied** und Phase (was tun / worauf warten). **`components.css`**. |
 | Bewertungsliste (Detail) | `.data-table` + **`.events-ratings-others-table`**, Spalten **`__col-member`** / **`__col-score`** / **`__col-highlight`**, Text **`__highlight-text`** / **`__dash`**, Zeile **`__row--current`** (eigene Bewertung); dazu **`.event-ratings-all`** / **`__heading`**, **`.event-ratings-toolbar`** (Aktionen Bearbeiten/Löschen oberhalb der Tabelle) | Tab **Bewertungen**: Abschnitt **Alle Bewertungen** volle Breite wie Events/GGL; **alle** Einträge in der Tabelle; Formular-Card **nur** bei Neuanlage/Bearbeiten (`#event-ratings-form`); nach gespeicherter Bewertung Toolbar **`#event-ratings-actions`**; Anker **`#event-ratings-all`** für Redirects nach Speichern/Abbrechen (**`ratings.*`** mit **`_anchor`**). |
+| Dashboard (Intent-Layout) | **`.dashboard-intent`**, **`.dashboard-intent__heading`**, **`.dashboard-intent__stack`**, **`.dashboard-intent__grid`**; **`.dashboard-intent-tile`** (+ **`__icon`**, **`__body`**, **`__title`**, **`__meta`**, **`__chev`**), Modifier **`dashboard-intent-tile--static`**. **Legacy / ungenutzt auf Dashboard:** **`.dashboard-next-event*`** (CSS vorhanden), **`a.card--dash-tile__hit`**, **`.card--dash-tile__actions`**, **`.card--dash-tile`**, **`.dashboard-card-link`**, **`.dashboard-hygiene-rows`**, **`.dashboard-row-link`**, **`dashboard-row-link--block-start`**. | Drei Sektionen **Zu erledigen** / **Zur Info** / **Erkunden**; knappe Kacheln. CSS: **`components.css`** „DASHBOARD“. |
 
 
-**CSS:** `static/css/v2/components.css` (Abschnitte „TOOL SURFACE“, „DISCLOSURE“, „CONTEXT ACTIONS“ [Legacy], „TOOL-STRIP“ / **`.tool-strip__actions`**, „SETTINGS NAV“, „EMPTY STATE“, „BILLBRO WORKFLOW“, „EVENT RATINGS“, Modifier **`billbro-guess-ranking-table`** / **`events-ratings-others-table`**).
+**CSS:** `static/css/v2/components.css` (Abschnitte „TOOL SURFACE“, „DISCLOSURE“, „CONTEXT ACTIONS“ [Legacy], „TOOL-STRIP“ / **`.tool-strip__actions`**, „SETTINGS NAV“, „EMPTY STATE“, „BILLBRO WORKFLOW“, „EVENT RATINGS“, „DASHBOARD“, Modifier **`billbro-guess-ranking-table`** / **`events-ratings-others-table`**).
 
 #### 5.2.1 HTML-Snippets (Referenz)
 
@@ -393,6 +394,31 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 - **Touch:** mind. **44px** klickbare Flächen wo sinnvoll (Buttons bereits teils definiert).
 - **A11y:** sinnvolle Labels, `focus-visible`, semantische Überschriften.
 
+### 6.3 Handoff: Dashboard (für den nächsten Agenten ohne Chat-Kontext)
+
+**Wenn du nur diesen Abschnitt liest:** Du hast genug, um das Dashboard weiterzuentwickeln — ergänzend **§4.1** (Tabellenzeile **Dashboard**), **§8.1**, **§12** (alle **Phase-5**-Zeilen **2026-04-05**), **§5.2** (Tabellenzeile **Dashboard-Kacheln**), **`.cursor/rules/redesign.mdc`** (Registry: **Dashboard-**Klassen).
+
+**Implementierte Pfade (Stand 2026-04-05):**
+
+| Bereich | Datei / Ort |
+| --------|-------------|
+| Template | **`templates/dashboard/index.html`** — Push-Banner; **Zu erledigen** (Cleanup mit **`brush-cleaning`**, **„Unvollständige Events: n“**; Bewertung); **Zur Info** wie §4.1; **Erkunden** nur Shop + Statistiken. Jinja-Makro **`dashboard_intent_tile`**. |
+| Route | **`backend/routes/dashboard.py`** — Context: `next_event`, **`ggl_stats`** (inkl. **`rank_total`**), `latest_bill_event`, `latest_bill_participation`, `rating_prompt_event`, `merch_last_order`, `merch_open_count`, `cleanup_cutoff_days`. **`inject_retro_cleanup`** (**`app.py`**) nutzt **`get_progress`** (jetzt Upcoming+Past). |
+| Bewertungs-Logik | **`backend/services/rating_prompt.py`** — **`get_rating_prompt_event_for_member`**. |
+| CSS | **`static/css/v2/components.css`** — Block **„DASHBOARD“** (**`.dashboard-intent*`**, **`.dashboard-next-event*`**, Legacy **`.dashboard-card-link`**, **`.card--dash-tile*`**, **`.dashboard-row-link`** …). Nach Änderung: **`python scripts/fingerprint_assets.py`**. |
+| Events-Übersicht | **`templates/events/index.html`** — **kein** Bewertungs-`alert` mehr. |
+| User-Bar | **`templates/partials/_user_bar.html`** — **kein** Cleanup-Button; Fortschritt nur noch per **`inject_retro_cleanup`** (**`backend/app.py`**) für Templates. |
+
+**Wichtige fachliche Grenze:** **Datenbereinigung** umfasst (1) **kommende** Events im Fenster **heute … + `UPCOMING_WINDOW_DAYS`** (30) nur **Zu-/Absage**, (2) **vergangene** Events mit **`Event.datum ≤ utcnow − CUTOFF_DAYS`** (7) wie bisher inkl. **Bewertung**. **Reihenfolge:** **jüngstes Datum zuerst** (`**merged_candidate_events**` sortiert **`datum` absteigend**). **Ausstehende Bewertung** auf dem Dashboard (**`rating_prompt`**) kann weiterhin **vor** dem 7-Tage-Stichtag liegen.
+
+**IA:** **Zur Info** und **Zu erledigen** verlinken **tiefe** Ziele (Detail, Cleanup, Bestell-Detail, GGL mit **`season=`**). **Erkunden** nur Ziele, die **nicht** schon in der **Bottom-Nav** liegen (**Merch-Shop**, **Statistiken**); **Events** primär über Nav.
+
+**Datenbereinigung (`events.cleanup`, `RetroCleanupService`):** **Kandidaten** = Vereinigung aus **Upcoming-Fenster** (**`datum`** zwischen **Tagesbeginn UTC** und **Ende des Tages heute+30**) und **Retro-Past** (**`datum ≤ utcnow − CUTOFF_DAYS`**), je Mitglied gefiltert nach **Beitritt**. **Nächstes angezeigtes Event:** erstes **Offenes** in absteigender **`datum`**-Reihenfolge. **`allows_cleanup_rsvp`:** Upcoming-Fenster **oder** Retro-Past. **Bewertungskarte** nur wenn **nicht** Upcoming-Fenster. Kurztext + **`cleanup_upcoming_days`** in **`templates/events/cleanup.html`**.
+
+**Nutzer-Status:** Intent-basiertes Layout (**2026-04-05**) — visuelle Feinabstimmung weiter möglich. **§13** **`templates/dashboard/index.html`** bis zur PO-Freigabe typischerweise **pending**.
+
+**Git:** Arbeit auf Branch **`redesign`**; kein Push auf **`master`** ohne ausdrücklichen User-Wunsch (**`.cursor/rules/redesign.mdc`**).
+
 ---
 
 ## 7. Checkliste pro Seiten-Migration
@@ -426,14 +452,14 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 
 Detail-Schritte werden während der Phasen hier nachgetragen.
 
-### 8.1 Phase 5 (Dashboard) — vor Phase 5 mit User/PO klären
+### 8.1 Phase 5 (Dashboard) — §8.1 Klärung (2026-04-05)
 
-Beim Umbau von `**templates/dashboard/index.html`** müssen folgende Punkte **gemeinsam entschieden** und danach im **Entscheidungslog (§12)** im Klartext dokumentiert werden (kein Chat-only):
+**Entscheidung** (vom PO/User bestätigt, Details **§12** letzte Phase-5-Zeilen):
 
-1. **Ausstehende Bewertungen** — Wo und wie der Nutzer daran erinnert wird (ein oder mehrere Events, Priorität, Duplikat zu Hinweisen auf `**templates/events/index.html`** o. ä.), und wie das zum Rollenkonzept passt.
-2. `**templates/events/cleanup.html**` (Datenbereinigung) — Bezug zum Dashboard: z. B. ob der **Cleanup-/Bereinigungs-Fortschritt** oder Verweise dorthin auf dem Dashboard erscheinen sollen, und wie sich das zum Thema **fehlende Bewertungen** und zum bestehenden **Cleanup-Workflow** verhält.
+1. **Nacharbeit (Bewertung + Datenbereinigung):** Auf dem Dashboard eine gemeinsame Card **„Nacharbeit zu Events“** mit **klickbaren Zeilen**: (a) **Datenbereinigung** → **`events.cleanup`**, wenn **`retro_cleanup_progress.pending > 0`**; (b) **Bewertung ausstehend** → **Event-Detail Tab Bewertungen**, wenn **`get_rating_prompt_event_for_member`** ein Event liefert (jüngstes vergangenes Event mit Zusage, `allow_ratings`, noch keine Bewertung — kann zeitlich **vor** dem 7-Tage-Cleanup-Stichtag liegen). Auf **`events/index.html`** **kein** separater Bewertungs-Alert. Logik Bewertung: **`backend/services/rating_prompt.py`**.
+2. **User-Bar:** kein Cleanup-Icon; Fortschritt weiter per **`inject_retro_cleanup`**. Visuelles Redesign **`events/cleanup.html`** = **Phase 7**.
 
-Erst nach diesen Festlegungen Phase 5 umsetzen; bei Abweichung vom Ist-Zustand **§6.1** (Log + betroffene Abschnitte) beachten.
+Weitere Dashboard-Migration (KPI-Muster, Lucide-Konsolidierung, …) bleibt **Phase 5** gemäß Tracker.
 
 ---
 
@@ -465,17 +491,26 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 | 2 GGL-Pilot        | erledigt | Wie zuvor; zusätzlich **Performance-Texte** und Ranglogik in **`backend/services/ggl_rules.py`** (Insights, Tie-Break wie Tabelle, Teilnahme-Nenner, siehe **§11** / **§12** 2026-04-04); **Saison-Filter:** nach **Filtern** einklappen (**§5.2.3**).                                                                                                                                                                                                                    |
 | 3 Events-Übersicht | erledigt | Wie zuvor; **Filter-Leiste** + **Tab Statistiken** erweitert: **Top & Flop**, Restaurant-Tabelle + Organisator-Bewertungs-Chart, **`[hidden]`**-Fix — **§5.3**, **§11**, **§12** (2026-04-05). |
 | 4 Event-Detail     | erledigt | **`detail.html`:** **`tabs--panel`**, Tab Infos **Summary** + RSVP-Zeile **Deine Teilnahme**; Leiste **Bearbeiten** + **`sessionStorage`**; **`data-table`** (Teilnehmer, **`billbro-guess-ranking-table`**); BillBro **Hinweistext** unter Phasenleiste, **Anker** + Redirects, **`billbro-sync`**-Polling; Tab Bewertungen: Hero **`metrics-spotlight`**, **`events-ratings-others-table`** — Details **§11**. |
-| 5–7                | offen    | siehe Abschnitt 8                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 5 Dashboard        | weitgehend erledigt | Intent-Layout (**Zu erledigen** / **Zur Info** / **Erkunden**), **`dashboard_intent_tile`**, Merch-Kachel-Logik, **`rank_total`** in **`dashboard.py`**; visuelle PO-Freigabe optional (**§13** ggf. **`done`**). |
+| 6–7                | offen    | Phase 6 Verein-/Member-Hubs, Phase 7 Sub-Seiten inkl. **`events/cleanup.html`** vollständig V2 — siehe **§8** / Masterplan.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 
 ### NAECHSTER SCHRITT
 
-**Phase 5:** `templates/dashboard/index.html` — vorher **§8.1** (Bewertungen, `cleanup.html`) mit User/PO klären und **§12** pflegen. Branch **`redesign`** beibehalten.
+**Nächster Agent:** Zuerst **§6.3** (Dashboard + **Datenbereinigung**), **§4.1**, **§12** (alle **2026-04-05**-Zeilen zum Dashboard und **`retro_cleanup`**) und diese **§11**-Handoff-Zeile lesen.
+
+**Empfohlene Reihenfolge:** (1) **Phase 6** — **`templates/member/index.html`** / Verein-Hub nach **§8** und **IA §4.2** (`settings-nav`), oder (2) **Phase 7** — **`templates/events/cleanup.html`** auf durchgängiges V2-Layout (Lucide-Sprite, weniger Inline-Styles) und Abgleich mit **`components.css`**. (3) Optional: Dashboard **§13** → **`done`** nach expliziter PO-Freigabe.
+
+**Technische Anker dieses Stands:** **`backend/services/retro_cleanup.py`** — **`UPCOMING_WINDOW_DAYS`**, **`merged_candidate_events`**, **`allows_cleanup_rsvp`**; **`backend/routes/events.py`** — **`cleanup`**, **`cleanup_rsvp`**; Fingerprint **`components.c99fee0f.css`**. Branch **`redesign`**.
 
 ---
 
 ## 11. Letzte Session-Notiz
 
+- **2026-04-05 (Handoff für nächsten Agenten):** **Dashboard** fertig umgesetzt: Intent-Sektionen, **`dashboard_intent_tile`**, Cleanup-Kachel **`brush-cleaning`** / „Unvollständige Events: n“, **Nächstes Event** ohne RSVP (Detail/Liste), **Dein letzter Anteil**, Merch ohne Nr. und ausgeblendet bei **Geliefert**, **Erkunden** nur Shop + Statistiken. **`dashboard.py`:** **`ggl_stats.rank_total`**. **Datenbereinigung:** **`retro_cleanup.py`** — Fenster **heute … +30 Tage** (nur RSVP), Retro-Past **CUTOFF_DAYS 7** (+ Bewertung), Reihenfolge **`datum` absteigend**; **`events.cleanup`** / **`cleanup_rsvp`** / **`can_rate`** / **`cleanup_upcoming_days`**; **`.events-cleanup-intro`**. **Doku:** **§4.1**, **§5.2**, **§6.3**, **§12**. **Assets:** nach CSS-Änderung immer **`python scripts/fingerprint_assets.py`**. Nächster Schritt: **§10 NAECHSTER SCHRITT**.
+- **2026-04-05:** **Dashboard-UX:** Umstellung auf **Intent-Sektionen** (**Zu erledigen** / **Zur Info** / **Erkunden**) mit knappen Kacheln — siehe **§6.3** und **§12** (Intent-Zeile). Weiteres visuelles Feintuning nach PO-Freigabe möglich.
+- **2026-04-05:** **Dashboard inhaltlich + IA:** **Nacharbeit**-Card (Cleanup-Zeile + ggf. Bewertungs-Zeile), **nächstes Event** (Hit-Link + RSVP), **letzter Anteil** (BillBro), **GGL**-Kachel, **Merch**-letzte Bestellung; **keine** Shortcuts zur **Bottom-Nav**; klickbare Kacheln (**`dashboard-card-link`**, **`card--dash-tile`**). Backend: **`merch_*`**, **`cleanup_cutoff_days`**. **`REDESIGN.md`** §4.1, §5.2, §8.1, §12; CSS **DASHBOARD**; Fingerprint **`components.*`**.
+- **2026-04-05:** **Phase 5 / §8.1 (früher):** Bewertung von Events-Index auf Dashboard; später in **Nacharbeit**-Card mit Cleanup zusammengeführt; **User-Bar** ohne Cleanup-Icon; **GGL** **`season=`**.
 - **2026-04-05:** **Events-Index, Tab Statistiken (Erweiterung):** **`details`** **Top & Flop** (Standard **zu**); **`monatsessen_stats.py`:** Aggregation **`restaurantRatings`** (Ø Gesamt/Essen/Getränke/Service, **n** pro Restaurant-Label), **`organizerRatings`** (Mittel der Event-Ø-Gesamtbewertungen je Organisator); **`charts_json`**-Keys; **`events-monatsessen-stats.js`:** sortierbare Tabelle, **Top 10**, Balkenchart **1–5**; Sektion **Bewertungen** ohne Card (**`events-stats-restaurant-block`**); Card-Titel **Teilnahmequote**, **Ø Kosten / Organisator** (**`banknote`**), **Ø Gesamtbewertung** (**`chart-column`**). **`base.css`:** **`[hidden] { display: none !important }`** (Leerzustand vs. **`.empty-state`**). Fingerprint **`components.*`**, JS **`?v=1.1.1`**.
 - **2026-04-05:** **Event-Detail, Tab Bewertungen:** Abschnitt **Alle Bewertungen** ohne verschachtelte Card; **`event_ratings`**; Toolbar **Bearbeiten/Löschen**; Anker **`event-ratings-form`** / **`event-ratings-actions`** / **`event-ratings-all`**; **`ratings.py`** Redirects **`_anchor`**; Flash/Formulartexte **Du**-Form (**`ratings.py`**, **`forms/rating.py`**). Registry **§5.2** / **`redesign.mdc`**.
 - **2026-04-05:** **Event-Detail, Tab Infos:** Card-Titel **„Summary“**; RSVP-**`chip-select`** aus dem Header in die erste **`info-row`** **„Deine Teilnahme:“** im **`card__body`**. Template **`templates/events/detail.html`**.
@@ -564,6 +599,13 @@ Jede Zeile muss **ohne Chat-Kontext** verständlich sein (siehe Abschnitt 6.1). 
 | 2026-04-05 | 3/UX | **Events-Index Tab Statistiken:** Rekorde-Bereich umbenannt **Top & Flop**, **`details`** standard **eingeklappt**; Copy Trinkgeld + beste/schlechteste Restaurant mit **Stern** + Note; neue **Restaurant-Bewertungstabelle** (sortierbar, Top 10, ohne Card) + **Balken Ø Gesamtbewertung je Organisator**; **`charts_json`** um **`restaurantRatings`** und **`organizerRatings`** erweitert. | Nutzerwunsch; Übersicht; Daten im JSON für Client-Sortierung |
 | 2026-04-05 | 1/UX | **`base.css`:** Selektor **`[hidden] { display: none !important }`**, damit das HTML-Attribut **`hidden`** zuverlässig wirkt, wenn Komponenten (z. B. **`.empty-state`**) **`display: flex`** setzen. | Bugfix: Leerzustand und Tabelle gleichzeitig sichtbar |
 | 2026-04-05 | UX    | **Tabellen vs. Cards:** Volle **`data-table`**-Listen **ohne** umschließende **`.card`** im Tab-Inhalt; Cards für Formulare, KPIs, Charts, Summary — Tabelle bringt den Rahmen selbst mit (**§5.1** Prinzip, **§5.3**). | Agent-Handoff; vermeidet doppelte Rahmen und verschachtelte Cards |
+| 2026-04-05 | 5     | **Bewertungs-Erinnerung:** Nur noch auf dem **Dashboard**, in der Card **„Nacharbeit zu Events“** als **Zeile** (Link **Event-Detail `tab=ratings`**, nicht mehr separater **`alert--info`**). **`events/index.html`:** kein Bewertungs-Alert. **Backend:** **`get_rating_prompt_event_for_member`** (**`rating_prompt.py`**). **Ersetzt** den **2026-04-03**-Hinweis auf Events sowie die frühere Dashboard-**`alert`**-Variante (siehe **§12** Zeile **Dashboard-Überblick**). | IA; Prinzip 4 |
+| 2026-04-05 | 5     | **Datenbereinigung:** Bei **`retro_cleanup_progress.pending > 0`** zeigt das Dashboard eine **Card** (Fortschritt **completed**/**total**, Kurztext, Primär-Link **`events.cleanup`**). **Kein** Cleanup-Warn-Button mehr in **`templates/partials/_user_bar.html`** (keine Doppelung zur Card; Einstieg über Dashboard nach Login). **`inject_retro_cleanup`** bleibt für Templates. Visuelles Redesign **`events/cleanup.html`** = **Phase 7**. | Dashboard als kanonische Stelle; ruhigere User-Bar; Prinzip 1 + 8 |
+| 2026-04-05 | 5     | **Dashboard-Überblick (IA):** Eine **Nacharbeit**-Card vereint **Datenbereinigung** (Link **`events.cleanup`**) und **ausstehende Bewertung** jüngstes Event (Link **Event-Detail `tab=ratings`** — kann vor Cleanup-Stichtag liegen). Weitere Kacheln: **nächstes Event** (Klick ins Detail, **RSVP** separat), **letzter Anteil** (BillBro), **GGL** (Rang → Tabelle), **Merch** (letzte Bestellung → Detail). **Keine** generischen Links zu Zielen der **Bottom-Nav** (Events/GGL/Member-Start). Interaktion: überwiegend **klickbare Kacheln** (**`.dashboard-card-link`**, **`.card--dash-tile`**). | Nutzerwunsch; ein mentaler „Daten sauber“-Block neben übrigen Themen; Prinzip 6 + 7 |
+| 2026-04-05 | 5     | **Dashboard — Intent-Gruppierung:** Drei Sektionen **Zu erledigen** / **Zur Info** / **Erkunden**; kompakte **`dashboard-intent-tile`**-Kacheln + Makro **`dashboard_intent_tile`**; CSS **`dashboard-intent*`** ( **`dashboard-next-event*`** weiter im CSS für ältere Referenzen / optional). Details zum aktuellen Copy und RSVP siehe **unmittelbar folgende Zeile**. | Nutzerwunsch; Intent-Scan; Prinzip 6 + 7 + 8 |
+| 2026-04-05 | 5     | **Dashboard Feinschliff:** **Datenbereinigung**-Kachel: Icon **`brush-cleaning`**, Untertitel **„Unvollständige Events: n“**. **Nächstes Event:** Intent-Kachel (**`calendar`**), **„[Typ] am [Datum]“**, **kein RSVP** auf dem Dashboard — Zu-/Absage weiter **Event-Detail** / **Events-Liste**, **nicht** über Datenbereinigung (Cleanup nur **vergangene** Events ab Stichtag, siehe **§6.3**). **BillBro** / **Merch** wie zuvor beschrieben. **Erkunden:** ohne GGL-Duplikat; **Statistiken** mit **`chart-column`**; **Events**-Kachel entfernt (**Bottom-Nav**). | Nutzerwunsch; IA-Klarheit Cleanup vs. kommende Events |
+| 2026-04-05 | 5     | **Erkunden:** **Events**-Kachel vom Dashboard entfernt — Einstieg **Events** über **Bottom-Nav**. | Nutzerwunsch; keine Doppelung zur Navigation |
+| 2026-04-05 | 5     | **Datenbereinigung (`retro_cleanup.py`):** **`UPCOMING_WINDOW_DAYS = 30`** — kommende Events im Fenster nur **RSVP**, **keine** Bewertung. **Vergangene** (wie bisher **`CUTOFF_DAYS = 7`**) inkl. Bewertung. **Reihenfolge:** **`datum` absteigend** (jüngstes zuerst). **`cleanup_rsvp`:** **`allows_cleanup_rsvp`** (Upcoming oder Retro). **`events/cleanup`:** **`can_rate`** nur außerhalb Upcoming; **`has_rating`** berücksichtigt. Template-Einleitung + **`cleanup_upcoming_days`**. | Nutzerwunsch; nächstes Event zuerst, Retro zeitversetzt |
 
 
 ---
@@ -590,7 +632,7 @@ Einbindung in `base.html`: `{% include 'partials/_….html' %}`. **Keine** `{% b
 
 | Datei                  | Inhalt                                                                                                                                       |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_user_bar.html`       | Obere Leiste: Logo, Name, V2-Cleanup, **Theme-Toggle**, **User-Menü** (Zielbild **§4.5**); bis zur Umsetzung ggf. noch Legacy **Admin-Icon** |
+| `_user_bar.html`       | Obere Leiste: Logo, Name, **Theme-Toggle**, **User-Menü** (Zielbild **§4.5**); Datenbereinigung nur Dashboard-Card, nicht in der Bar. Ggf. noch Legacy **Admin-Icon** |
 | `_sidebar.html`        | Desktop-Sidebar (Hauptnavigation)                                                                                                            |
 | `_bottom_nav.html`     | Mobile Bottom-Navigation (4 Tabs)                                                                                                            |
 | `_flash_messages.html` | Flask Flash-Messages im `<main>`                                                                                                             |
@@ -621,7 +663,7 @@ Einbindung in `base.html`: `{% include 'partials/_….html' %}`. **Keine** `{% b
 | übrige `templates/`**            | 7     | pending |
 
 
-**Phase 5:** Vor der Migration von `templates/dashboard/index.html` die offenen Punkte in **§8.1** klären (darunter **ausstehende Bewertungen** und Bezug zu `**templates/events/cleanup.html`**). Die visuelle Migration von `events/cleanup.html` erfolgt in **Phase 7** („übrige `templates/`**“); die **IA-/Produktentscheidung** (ob und wie Cleanup bzw. Bewertungs-Druck mit dem Dashboard verzahnt werden) gehört in die Phase-5-Klärung und danach ins **§12**-Log.
+**Phase 5:** Dashboard-Intent + Cleanup-Logik **umgesetzt**; **`templates/dashboard/index.html`** in **§13** Status **pending** bis PO-Freigabe oder explizit **`done`**. **`events/cleanup.html`:** fachlich + Einleitung aktualisiert, volles V2-/Registry-Polish = **Phase 7**.
 
 ---
 
@@ -674,7 +716,7 @@ Erst danach: Branch-Strategie mit dem User klären (z. B. Merge `redesign` → `
 | C-001 | P1        | Font Awesome CDN entfernen, wenn alle Icons auf Lucide/Sprite                   | `templates/base.html`                                                        | Lucide in allen V2-Templates; Agent prüft per Suche `fa-` / `font-awesome`                    | open   |
 | C-002 | P0        | V1-CSS und Verzweigung `use_v2_design` / Legacy-Zweig in `base.html` entfernen  | `templates/base.html`, `static/css/main.css`, ggf. `backend/`** Render-Flags | §13 vollständig **done**; §16.1 Punkt 2–3                                                     | open   |
 | C-003 | P1        | Alte GGL-Ranking-**Card**-Styles entfernen (ersetzt durch `.ggl-ranking-table`) | `static/css/v2/components.css` (`.ggl-ranking-list`, `.ggl-ranking-card`, …) | Suche im Repo: keine Template-Referenz mehr auf diese Klassen; nach User-Check Layout Phase 7 | open   |
-| C-004 | P1        | **GGL Saison-Deep-Link:** `ggl.season` und ggf. Dashboard-Links nutzen **`season=`** statt **`race_season` / `table_season`** (von **`ggl.index`** ignoriert) | `backend/routes/ggl.py`, `templates/dashboard/index.html`, Suche `table_season`/`race_season` | Kurzer manueller Test GGL mit Saison-URL | open   |
+| C-004 | P1        | **GGL Saison-URL:** **`ggl.index`** liest **`season=`**; **`templates/dashboard/index.html`** nutzt **`season=`** (2026-04-05). Offen: **`ggl.season`**-Redirect in **`ggl.py`** mit **`race_season`/`table_season`** → auf **`season=`** umstellen. | `backend/routes/ggl.py` | Kurzer Test Tab Tabelle/Rennen nach **`/ggl/season/<jahr>`** | open   |
 
 
 *(Weitere Zeilen bei Bedarf fortlaufend nummerieren: C-005 …)*

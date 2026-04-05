@@ -153,7 +153,7 @@ def register_context_processors(app):
 
     @app.context_processor
     def inject_retro_cleanup():
-        """Stellt Fortschritt für Datenbereinigung bereit (für Header-Button)."""
+        """Stellt Fortschritt für Datenbereinigung bereit (z. B. Dashboard-Card)."""
         from flask_login import current_user
         from backend.services.retro_cleanup import RetroCleanupService
 

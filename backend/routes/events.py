@@ -178,34 +178,11 @@ def index():
         params['tab'] = 'kommend'
         return redirect(url_for('events.index', **params))
 
-    today = datetime.utcnow().date()
     now = datetime.utcnow()
-
-    # Bewertungs-Hinweis (ohne ehemaligen Tab „Übersicht“)
-    last_completed = Event.query.filter(
-        Event.published == True,
-        Event.datum < now
-    ).order_by(Event.datum.desc()).first()
-
-    rating_prompt_event = None
-    if last_completed:
-        last_completed.participations
-        user_p = next(
-            (p for p in (last_completed.participations or []) if p.member_id == current_user.id),
-            None,
-        )
-        if (
-            last_completed.allow_ratings
-            and user_p
-            and user_p.teilnahme
-            and not last_completed.has_rating_from_participant(current_user.id)
-        ):
-            rating_prompt_event = last_completed
 
     context = {
         'active_tab': tab,
         'use_v2_design': True,
-        'rating_prompt_event': rating_prompt_event,
     }
 
     # Globale Filter (Jahr / Organisator) — alle Tabs, URL-Parameter identisch wie bisher
@@ -350,7 +327,7 @@ def archive():
 @bp.route('/cleanup')
 @login_required
 def cleanup():
-    """Einfacher Flow zur Nachpflege von Teilnahmen/Bewertungen vergangener Events."""
+    """Nachpflege: kommende Events (30-Tage-Fenster) Zu-/Absage; vergangene inkl. Bewertung — jüngstes zuerst."""
     data = RetroCleanupService.get_next_open_event(current_user.id)
     event = data.get('event')
     participation = data.get('participation')
@@ -363,10 +340,17 @@ def cleanup():
             'events/cleanup.html',
             no_events=True,
             progress=progress,
+            cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
+            cleanup_upcoming_days=RetroCleanupService.UPCOMING_WINDOW_DAYS,
             use_v2_design=True
         )
 
-    can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
+    can_rate = (
+        not RetroCleanupService._is_upcoming_scope(event)
+        and event.allow_ratings
+        and ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
+        and not has_rating
+    )
     rating_form = EventRatingForm()
 
     return render_template(
@@ -378,6 +362,8 @@ def cleanup():
         form=rating_form,
         progress=progress,
         focus=focus,
+        cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
+        cleanup_upcoming_days=RetroCleanupService.UPCOMING_WINDOW_DAYS,
         use_v2_design=True
     )
 
@@ -392,10 +378,8 @@ def cleanup_rsvp(event_id):
 
     event = Event.query.get_or_404(event_id)
 
-    # Nur vergangene Events mit Stichtag berücksichtigen
-    cutoff = RetroCleanupService.cutoff_date()
-    if event.datum > cutoff:
-        flash('Dieses Event ist noch nicht zur Datenbereinigung freigegeben.', 'error')
+    if not RetroCleanupService.allows_cleanup_rsvp(event):
+        flash('Dieses Event gehört nicht zur Datenbereinigung.', 'error')
         return redirect(url_for('events.cleanup'))
 
     participation = Participation.query.filter_by(
@@ -416,8 +400,15 @@ def cleanup_rsvp(event_id):
 
     db.session.commit()
 
-    # Bei Zusage direkt zur Bewertungs-Karte scrollen
-    focus = 'rating' if status == 'yes' else None
+    focus = (
+        'rating'
+        if (
+            status == 'yes'
+            and not RetroCleanupService._is_upcoming_scope(event)
+            and event.allow_ratings
+        )
+        else None
+    )
     return redirect(url_for('events.cleanup', focus=focus))
 
 @bp.route('/<int:event_id>/ratings/enable', methods=['POST'])

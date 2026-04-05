@@ -1,25 +1,35 @@
 ﻿{% extends "base.html" %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% macro dashboard_intent_tile(href, icon_id, title, meta=None) -%}
+<a class="dashboard-intent-tile" href="{{ href }}">
+    <span class="dashboard-intent-tile__icon" aria-hidden="true">{{ lucide_icon(icon_id, 'icon') }}</span>
+    <span class="dashboard-intent-tile__body">
+        <span class="dashboard-intent-tile__title">{{ title }}</span>
+        {% if meta %}<span class="dashboard-intent-tile__meta">{{ meta }}</span>{% endif %}
+    </span>
+    {{ lucide_icon('chevron-right', 'icon dashboard-intent-tile__chev') }}
+</a>
+{%- endmacro %}
+
 {% block title %}Dashboard - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
+            {{ lucide_icon('house', 'icon') }}
             Dashboard
         </h1>
     </div>
-    
-    <!-- Push-Benachrichtigungs-Banner -->
-    <div id="push-notification-banner" class="alert alert--info" style="display: none;">
-        <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
+
+    <div id="push-notification-banner" class="alert alert--info" style="display: none;" role="region" aria-label="Push-Benachrichtigungen">
+        {{ lucide_icon('bell', 'icon alert__icon') }}
         <div class="alert__content">
             <div class="alert__title">Verpasse keine Events mehr!</div>
             <div class="alert__message">
@@ -27,145 +37,108 @@
             </div>
         </div>
         <div class="alert__actions">
-            <button id="enable-push-banner-btn" class="btn btn--primary btn--sm">Jetzt aktivieren</button>
-            <button id="dismiss-push-banner-btn" class="btn btn--outline btn--sm">Später</button>
+            <button type="button" id="enable-push-banner-btn" class="btn btn--primary btn--sm">Jetzt aktivieren</button>
+            <button type="button" id="dismiss-push-banner-btn" class="btn btn--outline btn--sm">Später</button>
         </div>
     </div>
-    
+
     <div class="page-content">
-    
-        {% if next_event %}
-        {% set my_participation = next_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Nächstes Event
-                </h2>
-                <div class="card__actions">
-                    <form method="POST" action="{{ url_for('events.rsvp', event_id=next_event.id) }}" class="status-form">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <span class="chip-select-wrap">
-                            <select name="teilnahme" class="chip-select {% if my_participation %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
-                                <option value="" disabled {% if not my_participation %}selected{% endif %}>Zu-/Absagen</option>
-                                <option value="true" {% if my_participation and my_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                <option value="false" {% if my_participation and not my_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
-                            </select>
-                        </span>
-                    </form>
-                </div>
+
+        {% if retro_cleanup_progress.pending > 0 or rating_prompt_event %}
+        <section class="dashboard-intent" aria-labelledby="dashboard-todo-heading">
+            <h2 id="dashboard-todo-heading" class="dashboard-intent__heading">Zu erledigen</h2>
+            <div class="dashboard-intent__grid">
+                {% if retro_cleanup_progress.pending > 0 %}
+                {{ dashboard_intent_tile(
+                    url_for('events.cleanup'),
+                    'brush-cleaning',
+                    'Datenbereinigung',
+                    'Unvollständige Events: ' ~ retro_cleanup_progress.pending
+                ) }}
+                {% endif %}
+                {% if rating_prompt_event %}
+                {{ dashboard_intent_tile(
+                    url_for('events.detail', event_id=rating_prompt_event.id, tab='ratings'),
+                    'star',
+                    'Bewertung ausstehend',
+                    (rating_prompt_event.display_date ~ ((' · ' ~ rating_prompt_event.restaurant) if rating_prompt_event.restaurant else ''))
+                ) }}
+                {% endif %}
             </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Event:</span>
-                    <span class="info-row__value">{{ next_event.event_typ.value }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Datum:</span>
-                    <span class="info-row__value">{{ next_event.display_date }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Restaurant:</span>
-                    <span class="info-row__value">{{ next_event.restaurant or 'TBD' }}</span>
-                </div>
-                {% if next_event.place_maps_url %}
-                <div class="info-row">
-                    <span class="info-row__label">Location:</span>
-                    <span class="info-row__value">
-                        <a href="{{ next_event.place_maps_url }}" class="info-row__link" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
+        </section>
+        {% endif %}
+
+        <section class="dashboard-intent" aria-labelledby="dashboard-info-heading">
+            <h2 id="dashboard-info-heading" class="dashboard-intent__heading">Zur Info</h2>
+            <div class="dashboard-intent__stack">
+                {% if next_event %}
+                {{ dashboard_intent_tile(
+                    url_for('events.detail', event_id=next_event.id),
+                    'calendar',
+                    'Nächstes Event',
+                    next_event.event_typ.value ~ ' am ' ~ next_event.display_date
+                ) }}
+                {% else %}
+                <div class="dashboard-intent-tile dashboard-intent-tile--static" role="status">
+                    <span class="dashboard-intent-tile__icon" aria-hidden="true">{{ lucide_icon('calendar', 'icon') }}</span>
+                    <span class="dashboard-intent-tile__body">
+                        <span class="dashboard-intent-tile__title">Kein kommendes Event</span>
+                        <span class="dashboard-intent-tile__meta">Sobald ein Termin veröffentlicht ist, erscheint er hier.</span>
                     </span>
                 </div>
                 {% endif %}
-                {% if next_event.organisator %}
-                <div class="info-row">
-                    <span class="info-row__label">Organisator:</span>
-                    <span class="info-row__value">{{ next_event.organisator.display_name_with_spirit }}</span>
-                </div>
+
+                {% if latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen %}
+                {{ dashboard_intent_tile(
+                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro'),
+                    'banknote',
+                    'Dein letzter Anteil',
+                    latest_bill_event.display_date ~ ' · ' ~ latest_bill_participation.display_share
+                ) }}
                 {% endif %}
-                {% if next_event.notizen %}
-                <div class="info-row">
-                    <span class="info-row__label">Notizen:</span>
-                    <span class="info-row__value">{{ next_event.notizen }}</span>
-                </div>
-                {% endif %}
-            </div>
-            <div class="card__footer">
-                <a href="{{ url_for('events.detail', event_id=next_event.id) }}" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    Zum Event
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if false %}
-        {% endif %}
-        
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                        <path d="M4 22h16"/>
-                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                    </svg>
-                    GGL - Saison {{ ggl_stats.season }}
-                </h2>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Deine Punkte:</span>
-                    <span class="info-row__value">{{ ggl_stats.points or 0 }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Dein Rang:</span>
-                    <span class="info-row__value">{{ ggl_stats.rank or 'N/A' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Anzahl Events:</span>
-                    <span class="info-row__value">{{ ggl_stats.participation_count }}/{{ ggl_stats.total_events_in_season }}</span>
+
+                <div class="dashboard-intent__grid">
+                    {% set ggl_meta = ('Rang ' ~ (ggl_stats.rank or '—') ~ ((' / ' ~ ggl_stats.rank_total) if ggl_stats.rank and ggl_stats.rank_total > 0 else '') ~ ' · ' ~ (ggl_stats.points or 0) ~ ' Pkte · Teilnahme ' ~ ggl_stats.participation_count ~ '/' ~ ggl_stats.total_events_in_season) %}
+                    {{ dashboard_intent_tile(
+                        url_for('ggl.index', tab='tabelle', season=ggl_stats.season),
+                        'trophy',
+                        'GGL · Saison ' ~ ggl_stats.season,
+                        ggl_meta
+                    ) }}
+                    {% if merch_last_order and not merch_last_order.is_delivered %}
+                    {{ dashboard_intent_tile(
+                        url_for('member.merch_order_detail', order_id=merch_last_order.id),
+                        'shopping-bag',
+                        'Letzte Merch-Bestellung',
+                        merch_last_order.status_display
+                    ) }}
+                    {% endif %}
                 </div>
             </div>
-            <div class="card__footer">
-                <a href="{{ url_for('ggl.index', tab='tabelle', table_season=ggl_stats.season) }}" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="20" x2="18" y2="10"/>
-                        <line x1="12" y1="20" x2="12" y2="4"/>
-                        <line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    Tabelle anzeigen
-                </a>
+        </section>
+
+        <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
+            <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>
+            <div class="dashboard-intent__grid">
+                {{ dashboard_intent_tile(url_for('member.merch'), 'shopping-bag', 'Merch-Shop', 'Artikel bestellen & Bestellungen') }}
+                {{ dashboard_intent_tile(url_for('events.index', tab='stats'), 'chart-column', 'Statistiken', 'Monatsessen, Kennzahlen & Diagramme') }}
             </div>
-        </div>
+        </section>
+
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
-    // Prüfe Push-Subscription-Status
     try {
         const response = await fetch('/notifications/push/status');
         const data = await response.json();
-        
-        // Zeige Banner nur wenn:
-        // 1. User nicht subscribed ist
-        // 2. Banner nicht in den letzten 7 Tagen dismissed wurde
+
         if (!data.subscribed) {
             const dismissedAt = localStorage.getItem('push_banner_dismissed_at');
             const now = Date.now();
             const sevenDays = 7 * 24 * 60 * 60 * 1000;
-            
+
             if (!dismissedAt || (now - parseInt(dismissedAt)) > sevenDays) {
                 document.getElementById('push-notification-banner').style.display = 'flex';
             }
@@ -173,43 +146,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('Error checking push status:', error);
     }
-    
-    // "Jetzt aktivieren" Button
+
     const enableBtn = document.getElementById('enable-push-banner-btn');
     if (enableBtn) {
         enableBtn.addEventListener('click', async function() {
             enableBtn.disabled = true;
             enableBtn.textContent = 'Aktiviere...';
-            
+
             try {
-                // Prüfe ob Service Worker registriert ist
                 const registration = await navigator.serviceWorker.ready;
-                
-                // Hole VAPID Public Key
+
                 const vapidResponse = await fetch('/notifications/push/vapid-public-key');
                 const vapidData = await vapidResponse.json();
-                
+
                 if (!vapidData.publicKey) {
                     throw new Error('VAPID key nicht verfügbar');
                 }
-                
-                // Request notification permission
+
                 const permission = await Notification.requestPermission();
-                
+
                 if (permission !== 'granted') {
                     alert('Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen.');
                     enableBtn.disabled = false;
                     enableBtn.textContent = 'Jetzt aktivieren';
                     return;
                 }
-                
-                // Subscribe to push
+
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: urlBase64ToUint8Array(vapidData.publicKey)
                 });
-                
-                // Send subscription to server
+
                 const subscribeResponse = await fetch('/notifications/push/subscribe', {
                     method: 'POST',
                     headers: {
@@ -217,22 +184,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                     },
                     body: JSON.stringify(subscription.toJSON())
                 });
-                
+
                 if (subscribeResponse.ok) {
-                    // Banner ausblenden
                     document.getElementById('push-notification-banner').style.display = 'none';
-                    
-                    // Erfolgs-Meldung mit Toast (falls verfügbar)
+
                     if (typeof Toast !== 'undefined') {
                         Toast.success('Push-Benachrichtigungen aktiviert!', 'Du wirst ab jetzt über neue Events informiert.');
                     } else {
-                        // Fallback: Alert
                         alert('Push-Benachrichtigungen aktiviert! Du wirst ab jetzt über neue Events informiert.');
                     }
                 } else {
                     throw new Error('Subscription fehlgeschlagen');
                 }
-                
+
             } catch (error) {
                 console.error('Error enabling push:', error);
                 alert('Fehler beim Aktivieren der Push-Benachrichtigungen: ' + error.message);
@@ -241,20 +205,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
-    
-    // "Später" Button
+
     const dismissBtn = document.getElementById('dismiss-push-banner-btn');
     if (dismissBtn) {
         dismissBtn.addEventListener('click', function() {
-            // Speichere Zeitstempel
             localStorage.setItem('push_banner_dismissed_at', Date.now().toString());
-            
-            // Blende Banner aus
             document.getElementById('push-notification-banner').style.display = 'none';
         });
     }
-    
-    // Helper function
+
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)

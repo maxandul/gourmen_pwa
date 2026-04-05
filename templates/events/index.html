@@ -59,21 +59,6 @@
     {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'kommend') %}
     <div class="page-content">
 
-        {% if rating_prompt_event %}
-        <div class="alert alert--info" role="status">
-            {{ lucide_icon('star', 'icon alert__icon') }}
-            <div class="alert__content">
-                <div class="alert__title">Letztes Event bewerten</div>
-                <div class="alert__message">
-                    {{ rating_prompt_event.display_date }}{% if rating_prompt_event.restaurant %} · {{ rating_prompt_event.restaurant }}{% endif %}
-                </div>
-                <div class="alert__actions">
-                    <a href="{{ url_for('ratings.rate_event', event_id=rating_prompt_event.id) }}" class="btn btn--primary btn--sm">Jetzt bewerten</a>
-                    </div>
-            </div>
-        </div>
-        {% endif %}
-
         <div class="card card--filter tool-surface">
             <div class="card__body">
                 <details id="events-index-filter-disclosure" class="disclosure">

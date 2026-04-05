@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, time
-from typing import Optional
+from typing import List, Optional, Tuple
 from backend.models.event import Event
 from backend.models.participation import Participation
 from backend.models.rating import EventRating
@@ -7,9 +7,12 @@ from backend.models.member import Member
 
 
 class RetroCleanupService:
-    """Hilfsfunktionen für den Datenbereinigungs-Flow vergangener Events."""
+    """Datenbereinigung: kommende Events (Fenster heute … +30 Tage) nur Zu-/Absage;
+    vergangene Events (ab CUTOFF_DAYS nach Eventdatum) zusätzlich Bewertung.
+    Reihenfolge: jüngstes Datum zuerst (nächstes Event oben)."""
 
     CUTOFF_DAYS = 7
+    UPCOMING_WINDOW_DAYS = 30
 
     @classmethod
     def cutoff_date(cls) -> datetime:
@@ -20,20 +23,52 @@ class RetroCleanupService:
         member = Member.query.get(member_id)
         if not member or not member.beitritt:
             return None
-        # Event.datum ist DateTime; wir normalisieren das Beitrittsdatum auf 00:00 desselben Tages
         return datetime.combine(member.beitritt, time.min)
 
     @classmethod
-    def _eligible_events_query(cls, member_join_dt: Optional[datetime] = None):
+    def _upcoming_window_bounds(cls) -> Tuple[datetime, datetime]:
+        now = datetime.utcnow()
+        today = now.date()
+        start = datetime.combine(today, time.min)
+        end = datetime.combine(today + timedelta(days=cls.UPCOMING_WINDOW_DAYS), time.max)
+        return start, end
+
+    @classmethod
+    def _is_upcoming_scope(cls, event) -> bool:
+        start, end = cls._upcoming_window_bounds()
+        return start <= event.datum <= end
+
+    @classmethod
+    def _eligible_past_events_query(cls, member_join_dt: Optional[datetime] = None):
         cutoff = cls.cutoff_date()
         query = (
-            Event.query
-            .filter(Event.datum <= cutoff)
-            .filter(Event.published == True)  # noqa: E712
+            Event.query.filter(Event.datum <= cutoff).filter(Event.published == True)  # noqa: E712
         )
         if member_join_dt:
             query = query.filter(Event.datum >= member_join_dt)
-        return query.order_by(Event.datum.asc())
+        return query
+
+    @classmethod
+    def _upcoming_events_query(cls, member_join_dt: Optional[datetime] = None):
+        start, end = cls._upcoming_window_bounds()
+        query = (
+            Event.query.filter(Event.published == True)  # noqa: E712
+            .filter(Event.datum >= start)
+            .filter(Event.datum <= end)
+        )
+        if member_join_dt:
+            query = query.filter(Event.datum >= member_join_dt)
+        return query
+
+    @classmethod
+    def merged_candidate_events(cls, member_id: int) -> List[Event]:
+        join_dt = cls._member_join_date(member_id)
+        past = cls._eligible_past_events_query(join_dt).all()
+        upcoming = cls._upcoming_events_query(join_dt).all()
+        by_id = {e.id: e for e in past}
+        for e in upcoming:
+            by_id[e.id] = e
+        return sorted(by_id.values(), key=lambda e: e.datum, reverse=True)
 
     @staticmethod
     def _get_participation(event_id: int, member_id: int):
@@ -43,37 +78,29 @@ class RetroCleanupService:
     def _has_rating(event_id: int, member_id: int) -> bool:
         return EventRating.query.filter_by(event_id=event_id, participant_id=member_id).first() is not None
 
-    @staticmethod
-    def _is_completed(event, participation, has_rating: bool, member_id: int) -> bool:
-        """Erledigt wenn Zu-/Absage gesetzt und falls Rating erlaubt + Zusage (oder Org) auch bewertet."""
+    @classmethod
+    def _is_completed(cls, event, participation, has_rating: bool, member_id: int) -> bool:
+        if cls._is_upcoming_scope(event):
+            return participation is not None and participation.responded_at is not None
+
         if not participation or not participation.responded_at:
             return False
 
-        if not getattr(event, 'allow_ratings', True):
+        if not getattr(event, "allow_ratings", True):
             return True
 
-        # Organisator darf bewerten; Pflicht nur wenn zugesagt
         if participation.teilnahme:
             return has_rating
 
-        # Bei Absage ist nichts weiter nötig
         return True
 
-    @staticmethod
-    def _is_open(event, participation, has_rating: bool, member_id: int) -> bool:
-        """Offen wenn keine Antwort oder bei Zusage (oder Org) noch ohne Rating (falls erlaubt)."""
-        if participation is None or participation.responded_at is None:
-            return True
-
-        if getattr(event, 'allow_ratings', True) and participation.teilnahme and not has_rating:
-            return True
-
-        return False
+    @classmethod
+    def _is_open(cls, event, participation, has_rating: bool, member_id: int) -> bool:
+        return not cls._is_completed(event, participation, has_rating, member_id)
 
     @classmethod
     def get_progress(cls, member_id: int) -> dict:
-        join_dt = cls._member_join_date(member_id)
-        events = cls._eligible_events_query(join_dt).all()
+        events = cls.merged_candidate_events(member_id)
         total = len(events)
         completed = 0
 
@@ -86,16 +113,15 @@ class RetroCleanupService:
 
         pending = total - completed
         return {
-            'total': total,
-            'completed': completed,
-            'pending': pending
+            "total": total,
+            "completed": completed,
+            "pending": pending,
         }
 
     @classmethod
     def get_next_open_event(cls, member_id: int):
-        """Liefert das älteste offene Event plus Statusdaten."""
-        join_dt = cls._member_join_date(member_id)
-        events = cls._eligible_events_query(join_dt).all()
+        """Liefert das offene Event mit dem jüngsten Datum zuerst."""
+        events = cls.merged_candidate_events(member_id)
         progress = cls.get_progress(member_id)
 
         for event in events:
@@ -103,16 +129,24 @@ class RetroCleanupService:
             has_rating = cls._has_rating(event.id, member_id)
             if cls._is_open(event, participation, has_rating, member_id):
                 return {
-                    'event': event,
-                    'participation': participation,
-                    'has_rating': has_rating,
-                    'progress': progress
+                    "event": event,
+                    "participation": participation,
+                    "has_rating": has_rating,
+                    "progress": progress,
                 }
 
         return {
-            'event': None,
-            'participation': None,
-            'has_rating': False,
-            'progress': progress
+            "event": None,
+            "participation": None,
+            "has_rating": False,
+            "progress": progress,
         }
 
+    @classmethod
+    def allows_cleanup_rsvp(cls, event) -> bool:
+        """POST cleanup/rsvp: kommendes Fenster oder vergangenes Event in der Retro-Queue."""
+        if cls._is_upcoming_scope(event):
+            return True
+        if event.datum <= cls.cutoff_date():
+            return True
+        return False

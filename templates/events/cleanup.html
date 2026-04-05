@@ -15,11 +15,17 @@
         </h1>
     </div>
 
+    <p class="text-secondary events-cleanup-intro">
+        Es geht immer das <strong>jüngste offene</strong> Event zuerst: <strong>kommende</strong> Termine in den nächsten <strong>{{ cleanup_upcoming_days }} Tagen</strong> nur mit <strong>Zu- oder Absage</strong>;
+        <strong>vergangene</strong> Events (ab <strong>{{ cleanup_cutoff_days }} Tagen</strong> nach Eventdatum) zusätzlich mit <strong>Bewertung</strong>, falls vorgesehen.
+        Alternativ weiterhin Zu-/Absage in der <a href="{{ url_for('events.index', tab='kommend') }}">Event-Liste</a> oder im Event-Detail.
+    </p>
+
     <div class="page-content">
         {% if no_events %}
         <div class="card">
             <div class="card__body">
-                <p>Alle vergangenen Events bereinigt. Muchas gracias ♥️</p>
+                <p>Alles erledigt — keine offenen Einträge mehr in diesem Ablauf. Muchas gracias ♥️</p>
             </div>
         </div>
         {% else %}
