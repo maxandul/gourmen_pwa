@@ -91,8 +91,8 @@ Der frühere Begriff **„Member“** als Hauptnavigations-Bereich ist durch **�
 
 **Keine KPI-Karten-Hubs.** Stattdessen **Einstellungsliste (`settings-nav`)**:
 
-- **Für alle:** Sektionen z. B. Merch-Shop, später Dokumente — Icon, Titel, optional Kurzbeschreibung, Chevron.
-- **Nur Admins:** eigene Sektion oder klar abgegrenzte Zeilen (z. B. Mitglieder verwalten, Merch verwalten), damit **Rollen** auf einen Blick erkennbar sind — nicht dieselbe Liste ohne Trennung wie normale Member-Funktionen.
+- **Für alle:** **Eine** Zeile **Merch** (Shop und Bestellungen, ein Ziel-Link); später **Dokumente** / Ablage — wieder als eigene Zeile(n) unter derselben Sektion **Verein** (kein provisorischer **`docs.*`**-Eintrag in der Hauptnavigation; die bisherige Docs-Route bleibt im Backend bis zur Neugestaltung, erscheint aber nicht in Bottom-Nav/Sidebar).
+- **Nur Admins:** eigene Sektion **Verwaltung** mit klar abgegrenzten Zeilen: **Mitglieder** (`admin.members`), **Merch-Verwaltung** (`admin.merch`). **Keine** Navigationszeile zur Admin-Übersicht (`admin.index`); die Route darf für Deep-Links bestehen bleiben, ist aber kein IA-Einstieg.
 
 Legacy-Route `**admin.index`** kann vorerst bestehen bleiben; **Navigation** führt Admins primär über **Verein** in dieselben Verwaltungsflächen.
 
@@ -118,11 +118,9 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 
 - **Theme-Toggle:** bleibt **sichtbar in der oberen Leiste** (nicht nur im User-Menü).
 - **Kein Admin-Button** mehr in der User-Bar; Admin-Funktionen über **Verein** und **Kontextleisten** am Objekt.
-- **User-Menü** (ein Button, z. B. Avatar/Initialen/User-Icon): Links zu **persönlichen Daten**, **Sicherheit**, **Logout**. (Optional später: weitere kurze Einträge; Theme bleibt in der Leiste.)
-- **Hauptnavigation:** vierter Tab **„Verein“** — **Icon:** dasselbe **Lucide-Symbol wie für Generalversammlung** (`landmark` in der Event-Typ-Icon-Konvention), sofern nicht anders vom PO ersetzt; soll **Verein** statt „einzelnes Profil“ assoziieren.
+- **User-Menü:** ein Steuerlement (**Lucide `user`** auf dem Summary, **`aria-label`** z. B. „Konto und Einstellungen“) öffnet ein **Dropdown** (Komponente **`user-menu`**, §5.2). Einträge: **Profil**, **Sicherheit** (optional Badge **2FA aus** wie bei **`settings-nav`**), **App & Benachrichtigungen** (`member.technical`), Trennung, **Abmelden**. **Kein** Anzeigetext mit Spirit Animal / Rufname in der Top-Bar — vollständige Anzeige im **Profil**.
+- **Hauptnavigation:** vierter Tab **„Verein“** — **Icon:** dasselbe **Lucide-Symbol wie für Generalversammlung** (`landmark` in der Event-Typ-Icon-Konvention), sofern nicht anders vom PO ersetzt; soll **Verein** statt „einzelnes Profil“ assoziieren. **Desktop-Sidebar:** Label und Icon wie Bottom-Nav (**„Verein“**, `landmark`), nicht „Member“.
 - **Event löschen:** Aktion **nur für `is_admin()`** — **Button im Template nur rendern, wenn Admin**, nicht für Organisator ohne Admin-Rolle.
-
-**Hinweis:** Umsetzung (Partials `_user_bar`, `_sidebar`, `_bottom_nav`, Routen-Labels) erfolgt in einer späteren Redesign-Phase; bis dahin gilt diese Sektion als **Zielbild**.
 
 ---
 
@@ -165,13 +163,14 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 | Tool-Strip (Aktionen)   | **`.tool-strip__actions`** (Container in **`disclosure__content`**)                                                                                                                                                                                                                                            | Nur Buttons/Links/inline-Forms **ohne** Feld-Block darüber; gleiche Button-Abstände und Mobile-Stapel wie bei Formular-Aktionszeilen (**§5.2.3**)                                                                 |
 | Sekundärfläche          | **`.tool-surface`**                                                                                                                                                                                                                                                                                           | Auf **`card.card--filter`**; optional historisch auf **`context-actions.tool-surface`** (**§5.2.2**)                                                                                                                |
 | Settings-Navigation     | `.settings-nav`, `.settings-nav__section`, `.settings-nav__section-title`, `.settings-nav__list`, `.settings-nav__row`, `.settings-nav__icon`, `.settings-nav__meta`, `.settings-nav__label`, `.settings-nav__description`, `.settings-nav__badge`, `.settings-nav__badge--warning`, `.settings-nav__chevron` | **Verein-Hub** (alle + Admin-Zeilen); persönliche Einstiege nach Umsetzung **§4.5** über User-Menü                                                                                           |
+| User-Menü (Top-Bar)     | **`.user-menu`** (`<details>`), **`.user-menu__summary`** (mit **`btn` `btn--icon-only`**), **`.user-menu__panel`**, **`.user-menu__list`**, **`.user-menu__link`**, **`.user-menu__link--danger`**, **`.user-menu__sep`**, optional **`.user-menu__badge`** | **§4.5:** Konto-Einstiege und Logout; Trigger nur **Lucide `user`**, kein Name in der Leiste. **`components.css`** Abschnitt „USER MENU“. |
 | Leerzustand (Tab/Liste) | `.empty-state`, `.empty-state__icon`, `.empty-state__message`, optional `**.empty-state--filtered`**                                                                                                                                                                                                          | Wenn absichtlich **kein** Alert mit Aktionen gewünscht: ruhiger Hinweis in Tab-Inhalt (z. B. Events **Kommend** ohne Treffer). **Nicht** für Flash-kritische Meldungen — dafür `**.alert`**. |
 | BillBro-Phasenleiste     | **`.billbro-workflow-block`** (Rahmen), **`.billbro-workflow`**, **`.billbro-workflow__hint`** (`role="status"`), **`.billbro-workflow__step`**, **`__step--done`**, **`__step--current`**, **`.billbro-workflow__index`**                                                                                                                                                               | Event-Detail **BillBro**: Phasen **Schätzrunde → Rechnung → Gesamtbetrag → Abgeschlossen**; unter der Leiste **Kurztext** je **Organisator** vs. **Mitglied** und Phase (was tun / worauf warten). **`components.css`**. |
 | Bewertungsliste (Detail) | `.data-table` + **`.events-ratings-others-table`**, Spalten **`__col-member`** / **`__col-score`** / **`__col-highlight`**, Text **`__highlight-text`** / **`__dash`**, Zeile **`__row--current`** (eigene Bewertung); dazu **`.event-ratings-all`** / **`__heading`**, **`.event-ratings-toolbar`** (Aktionen Bearbeiten/Löschen oberhalb der Tabelle) | Tab **Bewertungen**: Abschnitt **Alle Bewertungen** volle Breite wie Events/GGL; **alle** Einträge in der Tabelle; Formular-Card **nur** bei Neuanlage/Bearbeiten (`#event-ratings-form`); nach gespeicherter Bewertung Toolbar **`#event-ratings-actions`**; Anker **`#event-ratings-all`** für Redirects nach Speichern/Abbrechen (**`ratings.*`** mit **`_anchor`**). |
 | Dashboard (Intent-Layout) | **`.dashboard-intent`**, **`.dashboard-intent__heading`**, **`.dashboard-intent__stack`**, **`.dashboard-intent__grid`**; **`.dashboard-intent-tile`** (+ **`__icon`**, **`__body`**, **`__title`**, **`__meta`**, **`__chev`**), Modifier **`dashboard-intent-tile--static`**. **Legacy / ungenutzt auf Dashboard:** **`.dashboard-next-event*`** (CSS vorhanden), **`a.card--dash-tile__hit`**, **`.card--dash-tile__actions`**, **`.card--dash-tile`**, **`.dashboard-card-link`**, **`.dashboard-hygiene-rows`**, **`.dashboard-row-link`**, **`dashboard-row-link--block-start`**. | Drei Sektionen **Zu erledigen** / **Zur Info** / **Erkunden**; knappe Kacheln. CSS: **`components.css`** „DASHBOARD“. |
 
 
-**CSS:** `static/css/v2/components.css` (Abschnitte „TOOL SURFACE“, „DISCLOSURE“, „CONTEXT ACTIONS“ [Legacy], „TOOL-STRIP“ / **`.tool-strip__actions`**, „SETTINGS NAV“, „EMPTY STATE“, „BILLBRO WORKFLOW“, „EVENT RATINGS“, „DASHBOARD“, Modifier **`billbro-guess-ranking-table`** / **`events-ratings-others-table`**).
+**CSS:** `static/css/v2/components.css` (Abschnitte „TOOL SURFACE“, „DISCLOSURE“, „CONTEXT ACTIONS“ [Legacy], „TOOL-STRIP“ / **`.tool-strip__actions`**, „SETTINGS NAV“, „USER MENU“, „EMPTY STATE“, „BILLBRO WORKFLOW“, „EVENT RATINGS“, „DASHBOARD“, Modifier **`billbro-guess-ranking-table`** / **`events-ratings-others-table`**).
 
 #### 5.2.1 HTML-Snippets (Referenz)
 
@@ -212,6 +211,30 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
     </ul>
   </section>
 </div>
+```
+
+**`user-menu`** — `<details>` in der User-Bar; Summary = **Lucide `user`**, Panel mit Links (siehe **§4.5**).
+
+```html
+<details class="user-menu">
+  <summary class="btn btn--icon-only user-menu__summary" aria-label="Konto und Einstellungen">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="…#user"></use></svg>
+  </summary>
+  <div class="user-menu__panel">
+    <ul class="user-menu__list" role="list">
+      <li><a href="{{ url_for('member.profile') }}" class="user-menu__link">Profil</a></li>
+      <li>
+        <a href="{{ url_for('member.security') }}" class="user-menu__link">
+          <span>Sicherheit</span>
+          <!-- optional: <span class="user-menu__badge">2FA aus</span> -->
+        </a>
+      </li>
+      <li><a href="{{ url_for('member.technical') }}" class="user-menu__link">App &amp; Benachrichtigungen</a></li>
+    </ul>
+    <div class="user-menu__sep" role="presentation"></div>
+    <a href="{{ url_for('auth.logout') }}" class="user-menu__link user-menu__link--danger">Abmelden</a>
+  </div>
+</details>
 ```
 
 `**empty-state**` — zentrierter Hinweis ohne Call-to-Action (Icon optional, Lucide-Sprite wie üblich).
@@ -606,6 +629,7 @@ Jede Zeile muss **ohne Chat-Kontext** verständlich sein (siehe Abschnitt 6.1). 
 | 2026-04-05 | 5     | **Dashboard Feinschliff:** **Datenbereinigung**-Kachel: Icon **`brush-cleaning`**, Untertitel **„Unvollständige Events: n“**. **Nächstes Event:** Intent-Kachel (**`calendar`**), **„[Typ] am [Datum]“**, **kein RSVP** auf dem Dashboard — Zu-/Absage weiter **Event-Detail** / **Events-Liste**, **nicht** über Datenbereinigung (Cleanup nur **vergangene** Events ab Stichtag, siehe **§6.3**). **BillBro** / **Merch** wie zuvor beschrieben. **Erkunden:** ohne GGL-Duplikat; **Statistiken** mit **`chart-column`**; **Events**-Kachel entfernt (**Bottom-Nav**). | Nutzerwunsch; IA-Klarheit Cleanup vs. kommende Events |
 | 2026-04-05 | 5     | **Erkunden:** **Events**-Kachel vom Dashboard entfernt — Einstieg **Events** über **Bottom-Nav**. | Nutzerwunsch; keine Doppelung zur Navigation |
 | 2026-04-05 | 5     | **Datenbereinigung (`retro_cleanup.py`):** **`UPCOMING_WINDOW_DAYS = 30`** — kommende Events im Fenster nur **RSVP**, **keine** Bewertung. **Vergangene** (wie bisher **`CUTOFF_DAYS = 7`**) inkl. Bewertung. **Reihenfolge:** **`datum` absteigend** (jüngstes zuerst). **`cleanup_rsvp`:** **`allows_cleanup_rsvp`** (Upcoming oder Retro). **`events/cleanup`:** **`can_rate`** nur außerhalb Upcoming; **`has_rating`** berücksichtigt. Template-Einleitung + **`cleanup_upcoming_days`**. | Nutzerwunsch; nächstes Event zuerst, Retro zeitversetzt |
+| 2026-04-05 | 6/IA  | **Verein-Hub (Feinplanung):** **Eine** Navigationszeile **Merch**; Admin-Sektion nur **Mitglieder** und **Merch-Verwaltung**, **ohne** Eintrag **Admin-Übersicht** (`admin.index`). **User-Bar:** kein Spirit/Rufname-Text; **User-Menü** mit Lucide **`user`**; Einträge Profil, Sicherheit, App & Benachrichtigungen, Abmelden. **Hauptnav:** **`docs.*`** nicht mehr für aktiven Tab „Verein“; künftige Dokumente unter Verein. **Sidebar:** Label **Verein** + Icon **`landmark`** wie Bottom-Nav. | PO-Bestätigung Option B; Prinzip 2, 4, 6 |
 
 
 ---
@@ -632,7 +656,7 @@ Einbindung in `base.html`: `{% include 'partials/_….html' %}`. **Keine** `{% b
 
 | Datei                  | Inhalt                                                                                                                                       |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_user_bar.html`       | Obere Leiste: Logo, Name, **Theme-Toggle**, **User-Menü** (Zielbild **§4.5**); Datenbereinigung nur Dashboard-Card, nicht in der Bar. Ggf. noch Legacy **Admin-Icon** |
+| `_user_bar.html`       | Obere Leiste: Logo, **Theme-Toggle**, **User-Menü** (**§4.5**, **`user-menu`**, Lucide **`user`**, kein Namenstext in der Bar); keine Admin-Schaltfläche. Datenbereinigung nur Dashboard-Card |
 | `_sidebar.html`        | Desktop-Sidebar (Hauptnavigation)                                                                                                            |
 | `_bottom_nav.html`     | Mobile Bottom-Navigation (4 Tabs)                                                                                                            |
 | `_flash_messages.html` | Flask Flash-Messages im `<main>`                                                                                                             |

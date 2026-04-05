@@ -4,9 +4,6 @@
             <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="Gourmen Logo" class="user-bar-logo" />
         </a>
         <div class="user-section">
-            <div class="user-info">
-                <span class="user-name">{{ current_user.display_name_with_spirit }}</span>
-            </div>
             <div class="user-actions">
                 {% if use_v2_design %}
                 <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
@@ -26,17 +23,34 @@
                     </svg>
                 </button>
                 {% endif %}
-                {% if current_user.is_admin() %}
-                    <a href="{{ url_for('admin.index') }}"
-                       id="admin-button"
-                       class="btn btn--icon-only"
-                       aria-label="Admin-Bereich">
+                {% if use_v2_design %}
+                <details class="user-menu">
+                    <summary class="btn btn--icon-only user-menu__summary" aria-label="Konto und Einstellungen">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                            <path d="M17.8 20.817l-2.172 1.138a.392.392 0 0 1-.568-.41l.413-2.411L13.567 17.3a.392.392 0 0 1 .228-.671l2.428-.035 1.086-2.193a.392.392 0 0 1 .702 0l1.086 2.193 2.428.035a.392.392 0 0 1 .228.67l-1.725 1.844.413 2.411a.392.392 0 0 1-.568.411L17.8 20.817z"/>
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#user"></use>
                         </svg>
-                    </a>
+                    </summary>
+                    <div class="user-menu__panel">
+                        <ul class="user-menu__list" role="list">
+                            <li>
+                                <a href="{{ url_for('member.profile') }}" class="user-menu__link">Profil</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('member.security') }}" class="user-menu__link">
+                                    <span class="user-menu__link-text">Sicherheit</span>
+                                    {% if not current_user.mfa or not current_user.mfa.is_totp_enabled %}
+                                    <span class="user-menu__badge">2FA aus</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('member.technical') }}" class="user-menu__link">App &amp; Benachrichtigungen</a>
+                            </li>
+                        </ul>
+                        <div class="user-menu__sep" role="presentation"></div>
+                        <a href="{{ url_for('auth.logout') }}" class="user-menu__link user-menu__link--danger">Abmelden</a>
+                    </div>
+                </details>
                 {% endif %}
             </div>
         </div>

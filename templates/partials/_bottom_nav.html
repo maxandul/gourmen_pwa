@@ -27,12 +27,11 @@
             </svg>
             <span class="nav-text">GGL</span>
         </a>
-        <a href="{{ url_for('member.index') }}" class="nav-item {% if request.endpoint and (request.endpoint.startswith('member.') or request.endpoint.startswith('account.') or request.endpoint.startswith('admin.') or request.endpoint.startswith('docs.')) %}active{% endif %}" aria-label="Member">
+        <a href="{{ url_for('member.index') }}" class="nav-item {% if request.endpoint and (request.endpoint.startswith('member.') or request.endpoint.startswith('account.') or request.endpoint.startswith('admin.')) %}active{% endif %}" aria-label="Verein">
             <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+                <use href="/static/icons/lucide-sprite.svg#landmark"></use>
             </svg>
-            <span class="nav-text">Member</span>
+            <span class="nav-text">Verein</span>
         </a>
     </nav>
     {% endif %}
