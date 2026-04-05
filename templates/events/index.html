@@ -322,97 +322,144 @@
                 {% endif %}
             </div>
             
-            <!-- Tab 4: Statistiken -->
+            <!-- Tab: Statistiken (Monatsessen, gefiltert) -->
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'stats' else '' }}"
                  role="tabpanel">
+                {% if monatsessen_stats %}
+                {% set ms = monatsessen_stats %}
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
-                            {{ lucide_icon('chart-column') }}
-                            Events
+                            {{ lucide_icon('clipboard-list') }}
+                            Summary
                         </h2>
                     </div>
                     <div class="card__body">
-                        {% if total_past_events is defined or avg_attendees is defined or user_participation_rate is defined or organized_by_you is defined %}
-                        <div class="metrics-spotlight" aria-label="Event-Kennzahlen">
-                            {% if total_past_events is defined or user_participation_rate is defined %}
+                        <div class="metrics-spotlight" aria-label="Kennzahlen Monatsessen">
+                            <p class="metrics-spotlight__context">
+                                {% if selected_year %}Jahr <strong>{{ selected_year }}</strong>{% else %}<strong>Alle Jahre</strong>{% endif %}
+                                ·
+                                {% if selected_organizer_label %}<strong>{{ selected_organizer_label }}</strong>{% else %}<strong>Alle Organisatoren</strong>{% endif %}
+                            </p>
                             <div class="metrics-spotlight__hero">
-                                {% if total_past_events is defined %}
                                 <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Vergangene Events</span>
-                                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ total_past_events }}</span>
+                                    <span class="metrics-spotlight__metric-label">Monatsessen</span>
+                                    <span class="metrics-spotlight__metric-value">{{ ms.count_past_monatsessen }}</span>
                                 </div>
-                                {% endif %}
-                                {% if user_participation_rate is defined %}
                                 <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Deine Teilnahmequote</span>
-                                    <span class="metrics-spotlight__metric-value">{{ "%.1f"|format(user_participation_rate) }}%</span>
+                                    <span class="metrics-spotlight__metric-label">Ø Teilnahmequote</span>
+                                    <span class="metrics-spotlight__metric-value">{{ ms.avg_ms_participation_pct }}%</span>
                                 </div>
-                                {% endif %}
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">Ø Kosten / Person</span>
+                                    <span class="metrics-spotlight__metric-value">{% if ms.avg_share_chf is not none %}{{ ms.avg_share_chf }} CHF{% else %}—{% endif %}</span>
+                                </div>
+                                <div class="metrics-spotlight__metric">
+                                    <span class="metrics-spotlight__metric-label">Ø Trinkgeld</span>
+                                    <span class="metrics-spotlight__metric-value">{% if ms.avg_tip_pct is not none %}{{ "%.1f"|format(ms.avg_tip_pct) }}%{% else %}—{% endif %}</span>
+                                </div>
                             </div>
-                            {% endif %}
-                            {% if avg_attendees is defined or organized_by_you is defined %}
-                            <div class="stat-tiles stat-tiles--metrics-follow">
-                                {% if avg_attendees is defined %}
-                                <div class="stat-tile">
-                                    <span class="stat-tile__label">⊘ Teilnehmerzahl</span>
-                                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.1f"|format(avg_attendees) }}</span>
-                                </div>
-                                {% endif %}
-                                {% if organized_by_you is defined %}
-                                <div class="stat-tile">
-                                    <span class="stat-tile__label">Von dir organisiert</span>
-                                    <span class="stat-tile__value stat-tile__value--muted">{{ organized_by_you }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
                         </div>
-                        {% else %}
-                        <p class="text-secondary">Keine Statistiken verfügbar.</p>
-                        {% endif %}
+
+                        <div class="metrics-insight-panel" aria-label="Auswertung">
+                            <div class="metrics-insight-panel__section">
+                                <h3 class="metrics-insight-panel__heading">Dein Überblick</h3>
+                                <p>Du hast an <strong>{{ ms.user_confirmed }}</strong> von <strong>{{ ms.user_eligible_count }}</strong> Monatsessen teilgenommen. Deine Teilnahmequote liegt bei <strong>{{ ms.user_participation_pct }}&nbsp;%</strong>.</p>
+                                <p>Du bist <strong>{{ ms.user_esstyp_allin }}</strong> mal all-in gegangen, hast <strong>{{ ms.user_esstyp_normal }}</strong> mal normal gegessen und warst <strong>{{ ms.user_esstyp_sparsam }}</strong> mal genügsam.</p>
+                                {% if ms.user_avg_pay_chf is not none %}
+                                <p>Im Durchschnitt hast du <strong>{{ ms.user_avg_pay_chf }}&nbsp;CHF</strong> pro Essen bezahlt.</p>
+                                {% else %}
+                                <p class="text-secondary">Für dich liegen in diesem Filter noch keine Anteilsbeträge vor.</p>
+                                {% endif %}
+                            </div>
+                            <div class="metrics-insight-panel__section">
+                                <h3 class="metrics-insight-panel__heading">Rekorde</h3>
+                                {% if ms.record_expensive %}
+                                <p>Am teuersten war mit einem durchschnittlichen Anteil von <strong>{{ "%.2f"|format(ms.record_expensive.avg_chf) }}&nbsp;CHF</strong> das Essen im Restaurant <strong>{{ ms.record_expensive.restaurant }}</strong> von <strong>{{ ms.record_expensive.organizer }}</strong>.</p>
+                                {% endif %}
+                                {% if ms.record_cheapest %}
+                                <p>Am günstigsten lag der durchschnittliche Anteil bei <strong>{{ "%.2f"|format(ms.record_cheapest.avg_chf) }}&nbsp;CHF</strong> im Restaurant <strong>{{ ms.record_cheapest.restaurant }}</strong> von <strong>{{ ms.record_cheapest.organizer }}</strong>.</p>
+                                {% endif %}
+                                {% if ms.record_max_tip %}
+                                <p>Das höchste Trinkgeld in absoluten Franken (<strong>{{ "%.2f"|format(ms.record_max_tip.chf) }}&nbsp;CHF</strong>) hatte das Restaurant <strong>{{ ms.record_max_tip.restaurant }}</strong>.</p>
+                                {% endif %}
+                                {% if not ms.record_expensive and not ms.record_cheapest and not ms.record_max_tip %}
+                                <p class="text-secondary">Noch keine Rekorde ableitbar (z.&nbsp;B. fehlende Anteile oder Trinkgelder).</p>
+                                {% endif %}
+                                {% if ms.top_kueche %}
+                                <p>Am häufigsten haben wir <strong>{{ ms.top_kueche }}</strong> gegessen.</p>
+                                {% else %}
+                                <p class="text-secondary">Keine Küchenangaben in diesem Filter.</p>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {% if total_billbro_events is defined and total_billbro_events > 0 %}
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
-                            {{ lucide_icon('wallet') }}
-                            Rechnungen
+                            {{ lucide_icon('users') }}
+                            Teilnahmequote je Mitglied
                         </h2>
                     </div>
                     <div class="card__body">
-                        <div class="metrics-spotlight" aria-label="BillBro-Kennzahlen">
-                            {% if avg_bill_amount is defined or avg_tip_percent is defined %}
-                            <div class="metrics-spotlight__hero">
-                                {% if avg_bill_amount is defined %}
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">⊘ Rechnungsbetrag</span>
-                                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ "%.2f"|format(avg_bill_amount) }} CHF</span>
-                                </div>
-                                {% endif %}
-                                {% if avg_tip_percent is defined %}
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">⊘ Trinkgeld (%)</span>
-                                    <span class="metrics-spotlight__metric-value">{{ "%.1f"|format(avg_tip_percent) }}%</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                            {% if avg_tip_amount is defined %}
-                            <div class="stat-tiles stat-tiles--metrics-follow">
-                                <div class="stat-tile">
-                                    <span class="stat-tile__label">⊘ Trinkgeld (CHF)</span>
-                                    <span class="stat-tile__value stat-tile__value--muted">{{ "%.2f"|format(avg_tip_amount) }} CHF</span>
+                        <div class="events-stats-chart">
+                            <div class="events-stats-chart__scroll">
+                                <div class="events-stats-chart__container">
+                                    <canvas id="events-stats-chart-members" width="400" height="240" aria-label="Teilnahmequoten je Mitglied" role="img"></canvas>
                                 </div>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            {{ lucide_icon('user-round-cog') }}
+                            Durchschnittliche Kosten je Organisator
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittelwert der durchschnittlichen Gäste-Anteile je organisiertem Monatsessen (nur Events mit erfassten Anteilen).</p>
+                        <div class="events-stats-chart">
+                            <div class="events-stats-chart__scroll">
+                                <div class="events-stats-chart__container">
+                                    <canvas id="events-stats-chart-organizers" width="400" height="200" aria-label="Durchschnittskosten je Organisator" role="img"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            {{ lucide_icon('chart-pie') }}
+                            Küchen
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <div class="events-stats-chart events-stats-chart--pie">
+                            <div class="events-stats-chart__pie-wrap">
+                                <canvas id="events-stats-chart-kitchens" width="320" height="280" aria-label="Verteilung Küchen" role="img"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.0.0" defer></script>
+                {% else %}
+                <div class="empty-state" role="status">
+                    <div class="empty-state__icon" aria-hidden="true">
+                        {{ lucide_icon('chart-column') }}
+                    </div>
+                    <p class="empty-state__message">Keine vergangenen Monatsessen für den gewählten Filter — hier erscheinen Kennzahlen, sobald Daten vorliegen.</p>
                 </div>
                 {% endif %}
-
             </div>
         </div>
     </div>

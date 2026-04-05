@@ -98,7 +98,7 @@
                 <div class="metrics-spotlight__hero" aria-label="Rang und Punkte für die gewählte Saison">
                   <div class="metrics-spotlight__metric">
                     <span class="metrics-spotlight__metric-label">Dein Rang</span>
-                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--accent">{{ perf.rank or '—' }}</span>
+                    <span class="metrics-spotlight__metric-value">{{ perf.rank or '—' }}</span>
                     {% if perf.rank and perf.rank_total > 0 %}
                     <span class="metrics-spotlight__metric-hint">von {{ perf.rank_total }}</span>
                     {% endif %}
@@ -166,26 +166,44 @@
           {% endif %}
         </div>
 
-        {# Phase 2: zweites Chart — kumulierte Summe der Beträge |Diff| je Event, alle Linien wie Rang-Chart (static/js/v2/ggl-season.js). #}
         <!-- Tab: Rennen -->
         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'rennen' else '' }}" role="tabpanel">
           {% if progression_data and progression_data.events|length > 0 %}
           <div class="card">
             <div class="card__header">
               <h2 class="card__title">
-                <svg class="icon" aria-hidden="true">
-                  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#activity"></use>
-                </svg>
-                Performance-Verlauf
+                {{ lucide_icon('trophy') }}
+                Ranking
               </h2>
             </div>
             <div class="card__body">
               <div class="ggl-chart">
                 <div class="ggl-chart__scroll">
                   <div class="ggl-chart__container">
-                    <canvas id="ggl-progression-chart" width="400" height="200" aria-label="Punkteverlauf Diagramm" role="img"></canvas>
+                    <canvas id="ggl-progression-chart" width="400" height="200" aria-label="Kumulierte Punkte — Verlauf über die Saison" role="img"></canvas>
                   </div>
                   <div id="ggl-chart-labels" class="ggl-chart__labels"></div>
+                </div>
+              </div>
+              <div class="ggl-chart__note">Mobile: Tippe auf eine Linie, um Tooltips zu togglen.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                {{ lucide_icon('target') }}
+                Differenz
+              </h2>
+            </div>
+            <div class="card__body">
+              <p class="ggl-chart__intro">Kumulative Summe der Schätzdifferenzen (Schätzung minus Rechnungsbetrag) je Event — negativ: unterschätzt, positiv: überschätzt.</p>
+              <div class="ggl-chart">
+                <div class="ggl-chart__scroll">
+                  <div class="ggl-chart__container">
+                    <canvas id="ggl-diff-chart" width="400" height="200" aria-label="Kumulative Schätzdifferenz in CHF — Verlauf über die Saison" role="img"></canvas>
+                  </div>
+                  <div id="ggl-diff-chart-labels" class="ggl-chart__labels"></div>
                 </div>
               </div>
               <div class="ggl-chart__note">Mobile: Tippe auf eine Linie, um Tooltips zu togglen.</div>
@@ -206,7 +224,7 @@
           </script>
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.1" defer></script>
+          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.2" defer></script>
           {% else %}
           <div class="alert alert--info" role="status">
             <svg class="alert__icon" aria-hidden="true">

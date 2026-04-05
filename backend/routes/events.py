@@ -16,6 +16,7 @@ from backend.services.places import PlacesService
 from backend.services.notifier import NotifierService
 from backend.services.push_notifications import PushNotificationService
 from backend.services.retro_cleanup import RetroCleanupService
+from backend.services.monatsessen_stats import get_monatsessen_statistics
 from backend.forms.rating import EventRatingForm
 
 bp = Blueprint('events', __name__)
@@ -287,114 +288,13 @@ def index():
         context['events'] = events
 
     elif tab == 'stats':
-        # Statistics data (gefiltert wie Archiv/Kommend)
-        past_query = Event.query.filter(
-            Event.published == True,
-            Event.datum < now,
+        monatsessen_stats = get_monatsessen_statistics(
+            now=now,
+            season_year=filter_year,
+            organizer_id=filter_organizer_id,
+            current_member_id=current_user.id,
         )
-        past_query = _apply_event_filters(past_query)
-        past_events = past_query.order_by(Event.datum.desc()).all() or []
-        # Beitrittsfilter für user-spezifische Kennzahlen
-        user_join_date = current_user.beitritt
-        eligible_past_events = [
-            e for e in past_events
-            if (not user_join_date or e.datum.date() >= user_join_date)
-        ]
-        
-        future_query = Event.query.filter(
-            Event.published == True,
-            Event.datum >= now,
-        )
-        future_query = _apply_event_filters(future_query)
-        future_events = future_query.order_by(Event.datum.asc()).all() or []
-        
-        # Calculate general stats
-        total_events = len(past_events) + len(future_events)
-        total_past_events = len(past_events)
-        total_future_events = len(future_events)
-        
-        # Event type distribution
-        event_types = {}
-        for event in past_events + future_events:
-            if hasattr(event.event_typ, 'value'):
-                event_type = event.event_typ.value
-            else:
-                event_type = str(event.event_typ)
-            event_types[event_type] = event_types.get(event_type, 0) + 1
-        
-        # Restaurant stats
-        restaurants = {}
-        for event in past_events:
-            if event.restaurant:
-                restaurants[event.restaurant] = restaurants.get(event.restaurant, 0) + 1
-        
-        # BillBro stats
-        billbro_events = [e for e in past_events if e.rechnungsbetrag_rappen]
-        total_billbro_events = len(billbro_events)
-        
-        avg_bill_amount = 0
-        avg_tip_amount = 0
-        avg_tip_percent = 0
-        if billbro_events:
-            total_bill_amount = sum(e.rechnungsbetrag_rappen for e in billbro_events)
-            total_tip_amount = sum(e.trinkgeld_rappen or 0 for e in billbro_events)
-            avg_bill_amount = total_bill_amount / len(billbro_events) / 100
-            avg_tip_amount = total_tip_amount / len(billbro_events) / 100
-            if total_bill_amount > 0:
-                avg_tip_percent = (total_tip_amount / total_bill_amount) * 100
-        
-        # Participation stats
-        total_participations = 0
-        confirmed_participations = 0
-        confirmed_participations_past = 0
-        for event in past_events + future_events:
-            participations = event.participations or []
-            total_participations += len(participations)
-            confirmed_count = len([p for p in participations if p.teilnahme])
-            confirmed_participations += confirmed_count
-            if event in past_events:
-                confirmed_participations_past += confirmed_count
-        
-        avg_participation_rate = 0
-        if total_participations > 0:
-            avg_participation_rate = (confirmed_participations / total_participations) * 100
-        
-        avg_attendees = 0
-        if total_past_events > 0:
-            avg_attendees = confirmed_participations_past / total_past_events
-        
-        # Organizer stats (current user)
-        organized_by_you = len([e for e in past_events if e.organisator_id == current_user.id])
-        
-        # User participation rate (past events)
-        user_confirmed_events = len([
-            e for e in eligible_past_events
-            if any((p.member_id == current_user.id and p.teilnahme) for p in (e.participations or []))
-        ])
-        user_participation_rate = 0
-        user_eligible_count = len(eligible_past_events)
-        if user_eligible_count > 0:
-            user_participation_rate = (user_confirmed_events / user_eligible_count) * 100
-        
-        context.update({
-            'past_events': past_events,
-            'future_events': future_events,
-            'total_events': total_events,
-            'total_past_events': total_past_events,
-            'total_future_events': total_future_events,
-            'event_types': event_types,
-            'restaurants': restaurants,
-            'total_billbro_events': total_billbro_events,
-            'avg_bill_amount': avg_bill_amount,
-            'avg_tip_amount': avg_tip_amount,
-            'avg_tip_percent': avg_tip_percent,
-            'total_participations': total_participations,
-            'confirmed_participations': confirmed_participations,
-            'avg_participation_rate': avg_participation_rate,
-            'avg_attendees': avg_attendees,
-            'organized_by_you': organized_by_you,
-            'user_participation_rate': user_participation_rate
-        })
+        context['monatsessen_stats'] = monatsessen_stats
     
     return render_template('events/index.html', **context)
 

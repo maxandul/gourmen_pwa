@@ -573,31 +573,17 @@
 }
 
 .metrics-spotlight__hero {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  padding: 0;
-  background: transparent;
-  border: none;
-  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
 }
 
 [data-theme="dark"] .metrics-spotlight__hero {
-  background: transparent;
-}
-
-.metrics-spotlight__hero > .metrics-spotlight__metric {
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 6.75rem;
-  padding: var(--space-3) var(--space-2);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  justify-content: center;
-}
-
-[data-theme="dark"] .metrics-spotlight__hero > .metrics-spotlight__metric {
   background: var(--chrome-inactive-pill-bg);
   border-color: var(--color-border-subtle);
 }

@@ -273,6 +273,7 @@ class GGLService:
             progression_data[member.id] = {
                 'member': member,
                 'cumulative_points': [],
+                'cumulative_signed_diff_rappen': [],
                 'ranks': []
             }
         
@@ -304,22 +305,51 @@ class GGLService:
             for member_id in member_ids:
                 if member_id in ranks:
                     # Member participated in this event
-                    current_points = next(p.points for p in valid_participations if p.member_id == member_id)
+                    participation = next(p for p in valid_participations if p.member_id == member_id)
+                    current_points = participation.points
                     previous_total = progression_data[member_id]['cumulative_points'][-1] if progression_data[member_id]['cumulative_points'] else 0
                     # Handle None values from previous events
                     if previous_total is None:
                         previous_total = 0
                     new_total = previous_total + current_points
+
+                    prev_diff = (
+                        progression_data[member_id]['cumulative_signed_diff_rappen'][-1]
+                        if progression_data[member_id]['cumulative_signed_diff_rappen']
+                        else 0
+                    )
+                    if prev_diff is None:
+                        prev_diff = 0
+                    if (
+                        event.rechnungsbetrag_rappen is not None
+                        and participation.guess_bill_amount_rappen is not None
+                    ):
+                        event_signed = (
+                            participation.guess_bill_amount_rappen
+                            - event.rechnungsbetrag_rappen
+                        )
+                    else:
+                        event_signed = 0
+                    new_diff = prev_diff + event_signed
                     
                     progression_data[member_id]['cumulative_points'].append(new_total)
+                    progression_data[member_id]['cumulative_signed_diff_rappen'].append(new_diff)
                     progression_data[member_id]['ranks'].append(ranks[member_id])
                 else:
                     # Member didn't participate in this event - keep previous total
                     previous_total = progression_data[member_id]['cumulative_points'][-1] if progression_data[member_id]['cumulative_points'] else 0
                     if previous_total is None:
                         previous_total = 0
+                    prev_diff = (
+                        progression_data[member_id]['cumulative_signed_diff_rappen'][-1]
+                        if progression_data[member_id]['cumulative_signed_diff_rappen']
+                        else 0
+                    )
+                    if prev_diff is None:
+                        prev_diff = 0
                     
                     progression_data[member_id]['cumulative_points'].append(previous_total)
+                    progression_data[member_id]['cumulative_signed_diff_rappen'].append(prev_diff)
                     progression_data[member_id]['ranks'].append(None)
         
         # Convert members to serializable format
@@ -341,6 +371,7 @@ class GGLService:
                     'spirit_animal': data['member'].spirit_animal
                 },
                 'cumulative_points': data['cumulative_points'],
+                'cumulative_signed_diff_rappen': data['cumulative_signed_diff_rappen'],
                 'ranks': data['ranks']
             }
         

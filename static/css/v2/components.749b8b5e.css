@@ -573,31 +573,17 @@
 }
 
 .metrics-spotlight__hero {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  padding: 0;
-  background: transparent;
-  border: none;
-  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
 }
 
 [data-theme="dark"] .metrics-spotlight__hero {
-  background: transparent;
-}
-
-.metrics-spotlight__hero > .metrics-spotlight__metric {
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 6.75rem;
-  padding: var(--space-3) var(--space-2);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  justify-content: center;
-}
-
-[data-theme="dark"] .metrics-spotlight__hero > .metrics-spotlight__metric {
   background: var(--chrome-inactive-pill-bg);
   border-color: var(--color-border-subtle);
 }
@@ -629,13 +615,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Nur noch außerhalb von __hero sinnvoll; im Hero deprecated (siehe REDESIGN.md §5.1). */
 .metrics-spotlight__metric-value--accent {
   color: var(--color-interactive-primary);
-}
-
-.metrics-spotlight__hero .metrics-spotlight__metric-value--accent {
-  color: var(--color-text-primary);
 }
 
 .metrics-spotlight__metric-hint {
@@ -852,42 +833,6 @@
   margin: 0 0 var(--space-3);
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
-}
-
-/* Events-Index Tab Statistiken (Monatsessen-Charts) */
-.events-stats-chart {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.events-stats-chart__hint {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-sm);
-}
-
-.events-stats-chart__scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.events-stats-chart__container {
-  position: relative;
-  min-width: 280px;
-  height: 240px;
-}
-
-.events-stats-chart--pie .events-stats-chart__pie-wrap {
-  position: relative;
-  max-width: 22rem;
-  margin: 0 auto;
-  height: 280px;
-}
-
-@media (max-width: 768px) {
-  .events-stats-chart__container {
-    min-width: 260px;
-  }
 }
 
 .ggl-chart {

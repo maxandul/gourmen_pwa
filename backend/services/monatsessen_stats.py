@@ -1,0 +1,289 @@
+"""Aggregierte Statistiken für vergangene Monatsessen (Events-Index Tab Statistiken)."""
+from __future__ import annotations
+
+from collections import Counter, defaultdict
+from datetime import datetime
+from statistics import mean
+from typing import Any
+
+from backend.models.event import Event, EventType
+from backend.models.member import Member
+from backend.models.participation import Participation, Esstyp
+
+
+def _member_eligible_for_event(member: Member, event: Event) -> bool:
+    if not member.is_active:
+        return False
+    if member.beitritt and event.datum.date() < member.beitritt:
+        return False
+    return True
+
+
+def _event_restaurant_label(event: Event) -> str:
+    return (event.restaurant or event.place_name or '').strip() or '—'
+
+
+def _organizer_spirit_rufname(member: Member | None) -> str:
+    if member is None:
+        return '—'
+    return member.display_spirit_rufname
+
+
+def get_monatsessen_statistics(
+    *,
+    now: datetime,
+    season_year: int | None,
+    organizer_id: int | None,
+    current_member_id: int,
+) -> dict[str, Any] | None:
+    """
+    Liefert Kontext für Tab Statistiken (nur Monatsessen, Filter Jahr/Organisator).
+    Rückgabe None, wenn keine vergangenen Monatsessen im Filter.
+    """
+    q = (
+        Event.query.filter(
+            Event.published.is_(True),
+            Event.event_typ == EventType.MONATSESSEN,
+            Event.datum < now,
+        )
+        .order_by(Event.datum.asc())
+    )
+    if season_year is not None:
+        q = q.filter(Event.season == season_year)
+    if organizer_id is not None:
+        q = q.filter(Event.organisator_id == organizer_id)
+
+    past_ms: list[Event] = q.all()
+    if not past_ms:
+        return None
+
+    event_ids = [e.id for e in past_ms]
+    parts: list[Participation] = (
+        Participation.query.filter(Participation.event_id.in_(event_ids)).all()
+    )
+    part_map: dict[tuple[int, int], Participation] = {
+        (p.event_id, p.member_id): p for p in parts
+    }
+
+    active_members: list[Member] = Member.query.filter_by(is_active=True).all()
+    member_by_id = {m.id: m for m in active_members}
+
+    # Ø Teilnahmequote je Monatsessen (Mittel der Event-Quoten)
+    event_participation_rates: list[float] = []
+    for ev in past_ms:
+        eligible = [m for m in active_members if _member_eligible_for_event(m, ev)]
+        if not eligible:
+            continue
+        confirmed = 0
+        for m in eligible:
+            p = part_map.get((ev.id, m.id))
+            if p and p.teilnahme:
+                confirmed += 1
+        event_participation_rates.append(100.0 * confirmed / len(eligible))
+    avg_ms_participation_pct = (
+        mean(event_participation_rates) if event_participation_rates else 0.0
+    )
+
+    # Ø Kosten pro Person (alle erfassten Anteile, teilnahme=True)
+    share_rappen_values = [
+        p.calculated_share_rappen
+        for p in parts
+        if p.teilnahme and p.calculated_share_rappen is not None
+    ]
+    avg_share_chf = (
+        mean(share_rappen_values) / 100.0 if share_rappen_values else None
+    )
+
+    # Ø Trinkgeld %
+    tip_pcts: list[float] = []
+    for ev in past_ms:
+        if (
+            ev.rechnungsbetrag_rappen
+            and ev.rechnungsbetrag_rappen > 0
+            and ev.trinkgeld_rappen is not None
+        ):
+            tip_pcts.append(100.0 * ev.trinkgeld_rappen / ev.rechnungsbetrag_rappen)
+    avg_tip_pct = mean(tip_pcts) if tip_pcts else None
+
+    current_member = member_by_id.get(current_member_id)
+    eligible_for_user = (
+        [e for e in past_ms if current_member and _member_eligible_for_event(current_member, e)]
+        if current_member
+        else []
+    )
+    user_confirmed = 0
+    for e in eligible_for_user:
+        p = part_map.get((e.id, current_member_id))
+        if p and p.teilnahme:
+            user_confirmed += 1
+    user_participation_pct = (
+        100.0 * user_confirmed / len(eligible_for_user) if eligible_for_user else 0.0
+    )
+
+    esstyp_counts = {Esstyp.ALLIN: 0, Esstyp.NORMAL: 0, Esstyp.SPARSAM: 0}
+    user_share_rappen: list[int] = []
+    for e in past_ms:
+        p = part_map.get((e.id, current_member_id))
+        if not p or not p.teilnahme:
+            continue
+        if p.esstyp is not None and p.esstyp in esstyp_counts:
+            esstyp_counts[p.esstyp] += 1
+        if p.calculated_share_rappen is not None:
+            user_share_rappen.append(p.calculated_share_rappen)
+    user_avg_pay_chf = (
+        mean(user_share_rappen) / 100.0 if user_share_rappen else None
+    )
+
+    kuechen = Counter()
+    for ev in past_ms:
+        k = (ev.kueche or '').strip()
+        if k:
+            kuechen[k] += 1
+    top_kueche = kuechen.most_common(1)[0][0] if kuechen else None
+
+    # Rekorde: Ø-Anteil pro Event
+    def _event_avg_share_rappen(ev: Event) -> float | None:
+        vals = [
+            p.calculated_share_rappen
+            for p in part_map.values()
+            if p.event_id == ev.id
+            and p.teilnahme
+            and p.calculated_share_rappen is not None
+        ]
+        if not vals:
+            return None
+        return float(mean(vals))
+
+    event_avgs: list[tuple[Event, float]] = []
+    for ev in past_ms:
+        a = _event_avg_share_rappen(ev)
+        if a is not None:
+            event_avgs.append((ev, a))
+
+    expensive = min(event_avgs, key=lambda t: -t[1]) if event_avgs else None
+    cheapest = min(event_avgs, key=lambda t: t[1]) if event_avgs else None
+
+    max_tip_event: Event | None = None
+    max_tip_rappen = 0
+    for ev in past_ms:
+        if ev.trinkgeld_rappen is None:
+            continue
+        if ev.trinkgeld_rappen > max_tip_rappen:
+            max_tip_rappen = ev.trinkgeld_rappen
+            max_tip_event = ev
+    if max_tip_rappen <= 0:
+        max_tip_event = None
+
+    # Charts: Teilnahmequote je Member
+    member_chart: list[dict[str, Any]] = []
+    for m in active_members:
+        el = [e for e in past_ms if _member_eligible_for_event(m, e)]
+        if not el:
+            continue
+        att = sum(
+            1
+            for e in el
+            if (part_map.get((e.id, m.id)) and part_map[(e.id, m.id)].teilnahme)
+        )
+        pct = 100.0 * att / len(el)
+        member_chart.append(
+            {
+                'id': m.id,
+                'label': m.display_name_with_spirit,
+                'rate': round(pct, 1),
+            }
+        )
+    member_chart.sort(key=lambda x: x['rate'], reverse=True)
+
+    # Ø Kosten je Organisator (Mittel der Event-Durchschnittsanteile)
+    org_avgs: dict[int, list[float]] = defaultdict(list)
+    for ev, avg_r in event_avgs:
+        org_avgs[ev.organisator_id].append(avg_r / 100.0)
+    organizer_chart: list[dict[str, Any]] = []
+    for oid, chfs in org_avgs.items():
+        om = member_by_id.get(oid)
+        organizer_chart.append(
+            {
+                'id': oid,
+                'label': om.display_name_with_spirit if om else f'#{oid}',
+                'avg_chf': round(mean(chfs), 2),
+            }
+        )
+    organizer_chart.sort(key=lambda x: x['avg_chf'], reverse=True)
+
+    # Küchen: Top 5 + Sonstige
+    pie_labels: list[str] = []
+    pie_values: list[int] = []
+    if kuechen:
+        most = kuechen.most_common()
+        top_n = 5
+        if len(most) <= top_n:
+            for name, cnt in most:
+                pie_labels.append(name)
+                pie_values.append(cnt)
+        else:
+            for name, cnt in most[:top_n]:
+                pie_labels.append(name)
+                pie_values.append(cnt)
+            rest = sum(c for _, c in most[top_n:])
+            if rest > 0:
+                pie_labels.append('Sonstige')
+                pie_values.append(rest)
+
+    charts_payload = {
+        'memberParticipation': {
+            'labels': [x['label'] for x in member_chart],
+            'values': [x['rate'] for x in member_chart],
+        },
+        'organizerCost': {
+            'labels': [x['label'] for x in organizer_chart],
+            'values': [x['avg_chf'] for x in organizer_chart],
+        },
+        'kitchens': {'labels': pie_labels, 'values': pie_values},
+    }
+
+    return {
+        'count_past_monatsessen': len(past_ms),
+        'avg_ms_participation_pct': int(round(avg_ms_participation_pct)),
+        'avg_share_chf': int(round(avg_share_chf)) if avg_share_chf is not None else None,
+        'avg_tip_pct': round(avg_tip_pct, 1) if avg_tip_pct is not None else None,
+        'user_confirmed': user_confirmed,
+        'user_eligible_count': len(eligible_for_user),
+        'user_participation_pct': int(round(user_participation_pct)),
+        'user_esstyp_allin': esstyp_counts[Esstyp.ALLIN],
+        'user_esstyp_normal': esstyp_counts[Esstyp.NORMAL],
+        'user_esstyp_sparsam': esstyp_counts[Esstyp.SPARSAM],
+        'user_avg_pay_chf': int(round(user_avg_pay_chf)) if user_avg_pay_chf is not None else None,
+        'top_kueche': top_kueche,
+        'record_expensive': (
+            {
+                'avg_chf': round(expensive[1] / 100.0, 2),
+                'restaurant': _event_restaurant_label(expensive[0]),
+                'organizer': _organizer_spirit_rufname(
+                    member_by_id.get(expensive[0].organisator_id)
+                ),
+            }
+            if expensive
+            else None
+        ),
+        'record_cheapest': (
+            {
+                'avg_chf': round(cheapest[1] / 100.0, 2),
+                'restaurant': _event_restaurant_label(cheapest[0]),
+                'organizer': _organizer_spirit_rufname(
+                    member_by_id.get(cheapest[0].organisator_id)
+                ),
+            }
+            if cheapest
+            else None
+        ),
+        'record_max_tip': (
+            {
+                'chf': round(max_tip_rappen / 100.0, 2),
+                'restaurant': _event_restaurant_label(max_tip_event),
+            }
+            if max_tip_event
+            else None
+        ),
+        'charts_json': charts_payload,
+    }
