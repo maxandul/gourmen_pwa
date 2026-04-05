@@ -9,6 +9,7 @@ from typing import Any
 from backend.models.event import Event, EventType
 from backend.models.member import Member
 from backend.models.participation import Participation, Esstyp
+from backend.models.rating import EventRating
 
 
 def _member_eligible_for_event(member: Member, event: Event) -> bool:
@@ -64,6 +65,26 @@ def get_monatsessen_statistics(
     part_map: dict[tuple[int, int], Participation] = {
         (p.event_id, p.member_id): p for p in parts
     }
+
+    ratings_rows: list[EventRating] = EventRating.query.filter(
+        EventRating.event_id.in_(event_ids)
+    ).all()
+    event_to_restaurant_label: dict[int, str] = {
+        ev.id: _event_restaurant_label(ev) for ev in past_ms
+    }
+    ratings_by_event: dict[int, list[float]] = defaultdict(list)
+    restaurant_rating_vals: dict[str, dict[str, list[float]]] = defaultdict(
+        lambda: {'food': [], 'drinks': [], 'service': [], 'overall': []}
+    )
+    for row in ratings_rows:
+        eid = row.event_id
+        ratings_by_event[eid].append(float(row.average_rating))
+        label = event_to_restaurant_label.get(eid, '—')
+        b = restaurant_rating_vals[label]
+        b['food'].append(float(row.food_rating))
+        b['drinks'].append(float(row.drinks_rating))
+        b['service'].append(float(row.service_rating))
+        b['overall'].append(float(row.average_rating))
 
     active_members: list[Member] = Member.query.filter_by(is_active=True).all()
     member_by_id = {m.id: m for m in active_members}
@@ -174,6 +195,27 @@ def get_monatsessen_statistics(
     if max_tip_rappen <= 0:
         max_tip_event = None
 
+    event_overall_avgs: list[tuple[Event, float]] = []
+    for ev in past_ms:
+        xs = ratings_by_event.get(ev.id)
+        if not xs:
+            continue
+        event_overall_avgs.append((ev, float(mean(xs))))
+
+    record_best_rated: dict[str, Any] | None = None
+    record_worst_rated: dict[str, Any] | None = None
+    if len(event_overall_avgs) >= 2:
+        best_ev, best_avg = max(event_overall_avgs, key=lambda t: t[1])
+        worst_ev, worst_avg = min(event_overall_avgs, key=lambda t: t[1])
+        record_best_rated = {
+            'restaurant': _event_restaurant_label(best_ev),
+            'overall_avg': round(best_avg, 1),
+        }
+        record_worst_rated = {
+            'restaurant': _event_restaurant_label(worst_ev),
+            'overall_avg': round(worst_avg, 1),
+        }
+
     # Charts: Teilnahmequote je Member
     member_chart: list[dict[str, Any]] = []
     for m in active_members:
@@ -211,6 +253,41 @@ def get_monatsessen_statistics(
         )
     organizer_chart.sort(key=lambda x: x['avg_chf'], reverse=True)
 
+    # Restaurant-Tabelle (alle mit mind. einer Bewertung; Sortierung/Top 10 im Client)
+    restaurant_ratings_rows: list[dict[str, Any]] = []
+    for label, b in restaurant_rating_vals.items():
+        if not b['overall']:
+            continue
+        restaurant_ratings_rows.append(
+            {
+                'restaurant': label,
+                'overall_avg': round(mean(b['overall']), 2),
+                'food_avg': round(mean(b['food']), 2),
+                'drinks_avg': round(mean(b['drinks']), 2),
+                'service_avg': round(mean(b['service']), 2),
+                'count': len(b['overall']),
+            }
+        )
+    restaurant_ratings_rows.sort(key=lambda x: (-x['overall_avg'], x['restaurant']))
+
+    # Ø Gesamtbewertung je Organisator (Mittel der Event-Durchschnitte, nur Events mit Ratings)
+    org_event_overall: dict[int, list[float]] = defaultdict(list)
+    for ev in past_ms:
+        xs = ratings_by_event.get(ev.id)
+        if not xs:
+            continue
+        org_event_overall[ev.organisator_id].append(float(mean(xs)))
+    organizer_rating_chart: list[dict[str, Any]] = []
+    for oid, ev_avgs in org_event_overall.items():
+        om = member_by_id.get(oid)
+        organizer_rating_chart.append(
+            {
+                'label': om.display_name_with_spirit if om else f'#{oid}',
+                'avg': round(mean(ev_avgs), 2),
+            }
+        )
+    organizer_rating_chart.sort(key=lambda x: -x['avg'])
+
     # Küchen: Top 5 + Sonstige
     pie_labels: list[str] = []
     pie_values: list[int] = []
@@ -239,6 +316,11 @@ def get_monatsessen_statistics(
             'labels': [x['label'] for x in organizer_chart],
             'values': [x['avg_chf'] for x in organizer_chart],
         },
+        'organizerRatings': {
+            'labels': [x['label'] for x in organizer_rating_chart],
+            'values': [x['avg'] for x in organizer_rating_chart],
+        },
+        'restaurantRatings': restaurant_ratings_rows,
         'kitchens': {'labels': pie_labels, 'values': pie_values},
     }
 
@@ -281,9 +363,16 @@ def get_monatsessen_statistics(
             {
                 'chf': round(max_tip_rappen / 100.0, 2),
                 'restaurant': _event_restaurant_label(max_tip_event),
+                'overall_avg': (
+                    round(mean(ratings_by_event[max_tip_event.id]), 1)
+                    if ratings_by_event.get(max_tip_event.id)
+                    else None
+                ),
             }
             if max_tip_event
             else None
         ),
+        'record_best_rated': record_best_rated,
+        'record_worst_rated': record_worst_rated,
         'charts_json': charts_payload,
     }

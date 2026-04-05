@@ -18,7 +18,9 @@ def rate_event(event_id):
 
     if not event.allow_ratings:
         flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
-        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='info'))
+        if next_url:
+            return redirect(next_url)
+        return redirect(url_for('events.detail', event_id=event_id, tab='info'))
     
     # Check if user participated in this event
     participation = Participation.query.filter_by(
@@ -28,7 +30,9 @@ def rate_event(event_id):
     
     if not ((participation and participation.teilnahme) or is_organizer):
         flash('Bewertungen sind nur für Teilnehmende oder Organisatoren möglich.', 'error')
-        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
+        if next_url:
+            return redirect(next_url)
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     # Check if user has already rated this event
     existing_rating = EventRating.query.filter_by(
@@ -37,8 +41,10 @@ def rate_event(event_id):
     ).first()
     
     if existing_rating:
-        flash('Sie haben dieses Event bereits bewertet.', 'info')
-        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
+        flash('Du hast dieses Event bereits bewertet.', 'info')
+        if next_url:
+            return redirect(next_url)
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     form = EventRatingForm()
     if form.validate_on_submit():
@@ -52,15 +58,19 @@ def rate_event(event_id):
         )
         db.session.add(rating)
         db.session.commit()
-        flash('Vielen Dank für Ihre Bewertung!', 'success')
-        return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
+        flash('Vielen Dank für deine Bewertung!', 'success')
+        if next_url:
+            return redirect(next_url)
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     # GET oder Validierungsfehler → zurück in den Ratings-Tab
     if form.errors:
         for field, errors in form.errors.items():
             for error in errors:
                 flash(error, 'error')
-    return redirect(next_url or url_for('events.detail', event_id=event_id, tab='ratings'))
+    if next_url:
+        return redirect(next_url)
+    return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-form'))
 
 @bp.route('/event/<int:event_id>/ratings')
 @login_required
@@ -80,8 +90,8 @@ def view_ratings(event_id):
     ).first()
     
     if not ((participation and participation.teilnahme) or is_organizer):
-        flash('Sie haben keine Berechtigung, die Bewertungen zu sehen.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        flash('Du hast keine Berechtigung, die Bewertungen zu sehen.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
 
@@ -130,7 +140,7 @@ def edit_rating(event_id):
     
     if not rating:
         flash('Keine Bewertung gefunden.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     form = EventRatingForm(obj=rating)
     if form.validate_on_submit():
@@ -141,15 +151,15 @@ def edit_rating(event_id):
         
         db.session.commit()
         
-        flash('Ihre Bewertung wurde aktualisiert.', 'success')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        flash('Deine Bewertung wurde aktualisiert.', 'success')
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     # GET oder Validierungsfehler → zurück in den Ratings-Tab mit Edit-Mode
     if form.errors:
         for field, errors in form.errors.items():
             for error in errors:
                 flash(error, 'error')
-    return redirect(url_for('events.detail', event_id=event_id, tab='ratings', edit_rating='1'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='ratings', edit_rating='1', _anchor='event-ratings-form'))
 
 @bp.route('/event/<int:event_id>/rating/delete', methods=['POST'])
 @login_required
@@ -167,10 +177,10 @@ def delete_rating(event_id):
     
     if not rating:
         flash('Keine Bewertung gefunden.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     db.session.delete(rating)
     db.session.commit()
     
-    flash('Ihre Bewertung wurde gelöscht.', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
+    flash('Deine Bewertung wurde gelöscht.', 'success')
+    return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-form'))

@@ -17,6 +17,11 @@
   -webkit-touch-callout: none;
 }
 
+/* Gewinnt gegen Komponenten mit eigenem display (z. B. .empty-state { flex }) */
+[hidden] {
+  display: none !important;
+}
+
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;

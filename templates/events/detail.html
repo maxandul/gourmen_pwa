@@ -796,18 +796,18 @@
                     </div>
 
                     {% if can_rate %}
-                        {% if user_rating %}
-                        <div class="card">
+                        {% set show_rating_form = (not user_rating) or rating_edit_mode %}
+                        {% set show_rating_actions = user_rating and (not rating_edit_mode) %}
+                        {% if show_rating_form %}
+                        <div class="card" id="event-ratings-form">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 2l2.09 6.26L20 9.27l-5 4.87L16.18 21 12 17.77 7.82 21 9 14.14l-5-4.87 5.91-.99L12 2z"></path>
-                                    </svg>
+                                    {{ lucide_icon('star') }}
                                     Deine Bewertung
                                 </h2>
                             </div>
                             <div class="card__body">
-                                {% if rating_edit_mode %}
+                                {% if user_rating and rating_edit_mode %}
                                 <form method="POST" action="{{ url_for('ratings.edit_rating', event_id=event.id) }}" class="form">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <div class="form-row">
@@ -841,74 +841,14 @@
                                         <textarea id="highlights_edit" name="highlights" class="form-field__textarea" rows="3" placeholder="Was war besonders gut?">{{ user_rating.highlights or '' }}</textarea>
                                     </div>
                                     <div class="form-actions">
-                                        <a class="btn btn--outline" href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}">Abbrechen</a>
+                                        <a class="btn btn--outline" href="{{ url_for('events.detail', event_id=event.id, tab='ratings', _anchor='event-ratings-all') }}">Abbrechen</a>
                                         <button type="submit" class="btn btn--primary">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                            </svg>
+                                            {{ lucide_icon('star') }}
                                             Änderungen speichern
                                         </button>
                                     </div>
                                 </form>
                                 {% else %}
-                                <div class="info-row">
-                                    <span class="info-row__label">Durchschnitt</span>
-                                    <span class="info-row__value">{{ user_rating.average_rating }}/5</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-row__label">Essen</span>
-                                    <span class="info-row__value">{{ user_rating.food_rating }}/5</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-row__label">Getränke</span>
-                                    <span class="info-row__value">{{ user_rating.drinks_rating }}/5</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-row__label">Service</span>
-                                    <span class="info-row__value">{{ user_rating.service_rating }}/5</span>
-                                </div>
-                                {% if user_rating.highlights %}
-                                <p class="text-secondary">{{ user_rating.highlights }}</p>
-                                {% endif %}
-                                {% endif %}
-                            </div>
-                            <div class="card__footer">
-                                {% if not rating_edit_mode %}
-                                <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                    Bewertung bearbeiten
-                                </a>
-                                {% endif %}
-                                <form method="POST" action="{{ url_for('ratings.delete_rating', event_id=event.id) }}" class="form form--inline">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn--danger" onclick="return confirm('Bewertung wirklich löschen?');">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3 6 5 6 21 6"/>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                                            <path d="M10 11v6"/>
-                                            <path d="M14 11v6"/>
-                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                                        </svg>
-                                        Löschen
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if not user_rating %}
-                        <div class="card">
-                            <div class="card__header">
-                                <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                    </svg>
-                                    Deine Bewertung
-                                </h2>
-                            </div>
-                            <div class="card__body">
                                 <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <div class="form-row">
@@ -943,12 +883,29 @@
                                     </div>
                                     <div class="form-actions">
                                         <button type="submit" class="btn btn--primary">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                            </svg>
+                                            {{ lucide_icon('star') }}
                                             Bewertung speichern
                                         </button>
                                     </div>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if show_rating_actions %}
+                        <div id="event-ratings-actions" class="tool-surface event-ratings-toolbar" role="region" aria-label="Aktionen zu deiner Bewertung">
+                            <p class="event-ratings-toolbar__hint">Du hast das Event bewertet.</p>
+                            <div class="event-ratings-toolbar__actions">
+                                <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1', _anchor='event-ratings-form') }}" class="btn btn--primary" aria-label="Bewertung bearbeiten">
+                                    {{ lucide_icon('square-pen') }}
+                                    Bearbeiten
+                                </a>
+                                <form method="POST" action="{{ url_for('ratings.delete_rating', event_id=event.id) }}" class="form form--inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn--danger" aria-label="Bewertung löschen" onclick="return confirm('Bewertung wirklich löschen?');">
+                                        {{ lucide_icon('trash-2') }}
+                                        Löschen
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -961,49 +918,47 @@
                     </div>
                     {% endif %}
 
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                {{ lucide_icon('users') }}
-                                Bewertungen der anderen Teilnehmer
-                            </h2>
+                    <section id="event-ratings-all" class="event-ratings-all" aria-labelledby="event-ratings-all-heading">
+                        <h2 class="event-ratings-all__heading" id="event-ratings-all-heading">
+                            {{ lucide_icon('users') }}
+                            Alle Bewertungen
+                        </h2>
+                        {% if event_ratings %}
+                        <div class="table-responsive data-table-wrap" role="region" aria-labelledby="event-ratings-all-heading">
+                            <table class="data-table events-ratings-others-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="events-ratings-others-table__col-member">Mitglied</th>
+                                        <th scope="col" class="events-ratings-others-table__col-score">Gesamt</th>
+                                        <th scope="col" class="events-ratings-others-table__col-score">Essen</th>
+                                        <th scope="col" class="events-ratings-others-table__col-score">Getränke</th>
+                                        <th scope="col" class="events-ratings-others-table__col-score">Service</th>
+                                        <th scope="col" class="events-ratings-others-table__col-highlight">Highlight</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rating in event_ratings %}
+                                    <tr class="{{ 'events-ratings-others-table__row--current' if rating.participant_id == current_user.id else '' }}">
+                                        <td class="events-ratings-others-table__col-member">
+                                            {{ rating.participant.display_spirit_rufname if rating.participant else 'Mitglied' }}{% if rating.participant_id == current_user.id %}<span class="text-secondary"> (du)</span>{% endif %}
+                                        </td>
+                                        <td class="events-ratings-others-table__col-score">{{ rating.average_rating }}/5</td>
+                                        <td class="events-ratings-others-table__col-score">{{ rating.food_rating }}/5</td>
+                                        <td class="events-ratings-others-table__col-score">{{ rating.drinks_rating }}/5</td>
+                                        <td class="events-ratings-others-table__col-score">{{ rating.service_rating }}/5</td>
+                                        <td class="events-ratings-others-table__col-highlight">{% if rating.highlights %}<span class="events-ratings-others-table__highlight-text">{{ rating.highlights }}</span>{% else %}<span class="events-ratings-others-table__dash">—</span>{% endif %}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="card__body">
-                            {% if other_ratings %}
-                            <div class="table-responsive data-table-wrap" role="region" aria-label="Einzelbewertungen anderer Teilnehmer">
-                                <table class="data-table events-ratings-others-table">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" class="events-ratings-others-table__col-member">Mitglied</th>
-                                            <th scope="col" class="events-ratings-others-table__col-score">Gesamt</th>
-                                            <th scope="col" class="events-ratings-others-table__col-score">Essen</th>
-                                            <th scope="col" class="events-ratings-others-table__col-score">Getränke</th>
-                                            <th scope="col" class="events-ratings-others-table__col-score">Service</th>
-                                            <th scope="col" class="events-ratings-others-table__col-highlight">Highlight</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for rating in other_ratings %}
-                                        <tr>
-                                            <td class="events-ratings-others-table__col-member">{{ rating.participant.display_spirit_rufname if rating.participant else 'Mitglied' }}</td>
-                                            <td class="events-ratings-others-table__col-score">{{ rating.average_rating }}/5</td>
-                                            <td class="events-ratings-others-table__col-score">{{ rating.food_rating }}/5</td>
-                                            <td class="events-ratings-others-table__col-score">{{ rating.drinks_rating }}/5</td>
-                                            <td class="events-ratings-others-table__col-score">{{ rating.service_rating }}/5</td>
-                                            <td class="events-ratings-others-table__col-highlight">{% if rating.highlights %}<span class="events-ratings-others-table__highlight-text">{{ rating.highlights }}</span>{% else %}<span class="events-ratings-others-table__dash">—</span>{% endif %}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <div class="empty-state" role="status">
-                                <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('users') }}</div>
-                                <p class="empty-state__message">Noch keine weiteren Bewertungen vorhanden.</p>
-                            </div>
-                            {% endif %}
+                        {% else %}
+                        <div class="empty-state" role="status">
+                            <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('users') }}</div>
+                            <p class="empty-state__message">Noch keine Bewertungen vorhanden.</p>
                         </div>
-                    </div>
+                        {% endif %}
+                    </section>
                 </div>
                 {% endif %}
             </div>

@@ -479,7 +479,6 @@ def detail(event_id):
     ratings = event.get_ratings()
     ratings_sorted = sorted(ratings, key=lambda r: r.created_at or datetime.min, reverse=True)
     user_rating = next((r for r in ratings_sorted if r.participant_id == current_user.id), None)
-    other_ratings = [r for r in ratings_sorted if r.participant_id != current_user.id]
     average_ratings = event.get_average_ratings()
     # Bewertungen nur wenn erlaubt und für bestätigte Teilnehmende oder den tatsächlichen Organisator
     can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
@@ -494,7 +493,7 @@ def detail(event_id):
                          form=billbro_form,
                          average_ratings=average_ratings,
                          user_rating=user_rating,
-                         other_ratings=other_ratings,
+                         event_ratings=ratings_sorted,
                          can_rate=can_rate,
                          rating_edit_mode=rating_edit_mode,
                          use_v2_design=True)

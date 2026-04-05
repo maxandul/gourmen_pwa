@@ -16,6 +16,10 @@
 {% endif %}
 {%- endmacro %}
 
+{% macro stats_star_rating(avg) -%}
+<span class="events-stats-inline-rating" aria-label="Durchschnittsbewertung {{ '%.1f'|format(avg) }} von 5">{{ lucide_icon('star', 'icon events-stats-inline-rating__icon') }} {{ '%.1f'|format(avg) }}/5</span>
+{%- endmacro %}
+
 {% block title %}Events - Gourmen{% endblock %}
 
 {% block content %}
@@ -372,25 +376,35 @@
                                 <p class="text-secondary">Für dich liegen in diesem Filter noch keine Anteilsbeträge vor.</p>
                                 {% endif %}
                             </div>
-                            <div class="metrics-insight-panel__section">
-                                <h3 class="metrics-insight-panel__heading">Rekorde</h3>
-                                {% if ms.record_expensive %}
-                                <p>Am teuersten war mit einem durchschnittlichen Anteil von <strong>{{ "%.2f"|format(ms.record_expensive.avg_chf) }}&nbsp;CHF</strong> das Essen im Restaurant <strong>{{ ms.record_expensive.restaurant }}</strong> von <strong>{{ ms.record_expensive.organizer }}</strong>.</p>
-                                {% endif %}
-                                {% if ms.record_cheapest %}
-                                <p>Am günstigsten lag der durchschnittliche Anteil bei <strong>{{ "%.2f"|format(ms.record_cheapest.avg_chf) }}&nbsp;CHF</strong> im Restaurant <strong>{{ ms.record_cheapest.restaurant }}</strong> von <strong>{{ ms.record_cheapest.organizer }}</strong>.</p>
-                                {% endif %}
-                                {% if ms.record_max_tip %}
-                                <p>Das höchste Trinkgeld in absoluten Franken (<strong>{{ "%.2f"|format(ms.record_max_tip.chf) }}&nbsp;CHF</strong>) hatte das Restaurant <strong>{{ ms.record_max_tip.restaurant }}</strong>.</p>
-                                {% endif %}
-                                {% if not ms.record_expensive and not ms.record_cheapest and not ms.record_max_tip %}
-                                <p class="text-secondary">Noch keine Rekorde ableitbar (z.&nbsp;B. fehlende Anteile oder Trinkgelder).</p>
-                                {% endif %}
-                                {% if ms.top_kueche %}
-                                <p>Am häufigsten haben wir <strong>{{ ms.top_kueche }}</strong> gegessen.</p>
-                                {% else %}
-                                <p class="text-secondary">Keine Küchenangaben in diesem Filter.</p>
-                                {% endif %}
+                            <div class="metrics-insight-panel__section metrics-insight-panel__section--top-flop">
+                                <details id="events-stats-top-flop-disclosure" class="disclosure disclosure--in-insight">
+                                    <summary class="disclosure__summary">
+                                        {{ lucide_icon('chevron-down') }}
+                                        Top &amp; Flop
+                                    </summary>
+                                    <div class="disclosure__content">
+                                        {% if ms.record_expensive %}
+                                        <p>Am teuersten war mit einem durchschnittlichen Anteil von <strong>{{ "%.2f"|format(ms.record_expensive.avg_chf) }}&nbsp;CHF</strong> das Essen im Restaurant <strong>{{ ms.record_expensive.restaurant }}</strong> von <strong>{{ ms.record_expensive.organizer }}</strong>.</p>
+                                        {% endif %}
+                                        {% if ms.record_cheapest %}
+                                        <p>Am günstigsten lag der durchschnittliche Anteil bei <strong>{{ "%.2f"|format(ms.record_cheapest.avg_chf) }}&nbsp;CHF</strong> im Restaurant <strong>{{ ms.record_cheapest.restaurant }}</strong> von <strong>{{ ms.record_cheapest.organizer }}</strong>.</p>
+                                        {% endif %}
+                                        {% if ms.record_max_tip %}
+                                        <p>Das höchste Trinkgeld erhielt das Restaurant <strong>{{ ms.record_max_tip.restaurant }}</strong>{% if ms.record_max_tip.overall_avg is not none %} ({{ stats_star_rating(ms.record_max_tip.overall_avg) }}){% endif %} mit <strong>{{ "%.2f"|format(ms.record_max_tip.chf) }}&nbsp;CHF</strong>.</p>
+                                        {% endif %}
+                                        {% if ms.record_best_rated and ms.record_worst_rated %}
+                                        <p>Das beste Restaurant war <strong>{{ ms.record_best_rated.restaurant }}</strong> ({{ stats_star_rating(ms.record_best_rated.overall_avg) }}), das schlechteste <strong>{{ ms.record_worst_rated.restaurant }}</strong> ({{ stats_star_rating(ms.record_worst_rated.overall_avg) }}).</p>
+                                        {% endif %}
+                                        {% if not ms.record_expensive and not ms.record_cheapest and not ms.record_max_tip and not (ms.record_best_rated and ms.record_worst_rated) %}
+                                        <p class="text-secondary">Hier ist noch nichts zu zeigen (z.&nbsp;B. fehlende Anteile, Trinkgelder oder Bewertungen).</p>
+                                        {% endif %}
+                                        {% if ms.top_kueche %}
+                                        <p>Am häufigsten haben wir <strong>{{ ms.top_kueche }}</strong> gegessen.</p>
+                                        {% else %}
+                                        <p class="text-secondary">Keine Küchenangaben in diesem Filter.</p>
+                                        {% endif %}
+                                    </div>
+                                </details>
                             </div>
                         </div>
                     </div>
@@ -400,7 +414,7 @@
                     <div class="card__header">
                         <h2 class="card__title">
                             {{ lucide_icon('users') }}
-                            Teilnahmequote je Mitglied
+                            Teilnahmequote
                         </h2>
                     </div>
                     <div class="card__body">
@@ -417,8 +431,8 @@
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
-                            {{ lucide_icon('user-round-cog') }}
-                            Durchschnittliche Kosten je Organisator
+                            {{ lucide_icon('banknote') }}
+                            Ø Kosten / Organisator
                         </h2>
                     </div>
                     <div class="card__body">
@@ -427,6 +441,65 @@
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
                                     <canvas id="events-stats-chart-organizers" width="400" height="200" aria-label="Durchschnittskosten je Organisator" role="img"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <section id="events-stats-restaurant-ratings-block" class="events-stats-restaurant-block" aria-labelledby="events-stats-restaurant-ratings-heading">
+                    <h2 class="events-stats-restaurant-block__heading" id="events-stats-restaurant-ratings-heading">
+                        {{ lucide_icon('star') }}
+                        Bewertungen
+                    </h2>
+                    <p class="text-secondary events-stats-chart__hint events-stats-restaurant-block__caption" id="events-stats-restaurant-ratings-caption" hidden>
+                        <span id="events-stats-restaurant-ratings-caption-text"></span>
+                    </p>
+                    <div id="events-stats-restaurant-ratings-empty" class="empty-state" role="status" hidden>
+                        <p class="empty-state__message">Keine Bewertungen im gewählten Filter.</p>
+                    </div>
+                    <div class="table-responsive data-table-wrap" id="events-stats-restaurant-ratings-wrap" role="region" aria-labelledby="events-stats-restaurant-ratings-heading" hidden>
+                        <table class="data-table events-stats-restaurant-ratings-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-name">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="restaurant" aria-label="Nach Restaurant sortieren">Restaurant</button>
+                                    </th>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-score">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="overall_avg" aria-label="Nach Gesamtbewertung sortieren">Gesamt</button>
+                                    </th>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-score">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="food_avg" aria-label="Nach Essen sortieren">Essen</button>
+                                    </th>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-score">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="drinks_avg" aria-label="Nach Getränken sortieren">Getränke</button>
+                                    </th>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-score">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="service_avg" aria-label="Nach Service sortieren">Service</button>
+                                    </th>
+                                    <th scope="col" class="events-stats-restaurant-ratings-table__col-count">
+                                        <button type="button" class="events-stats-sort-btn" data-sort-key="count" aria-label="Nach Anzahl Bewertungen sortieren">n</button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="events-stats-restaurant-ratings-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
+                            {{ lucide_icon('chart-column') }}
+                            Ø Gesamtbewertung
+                        </h2>
+                    </div>
+                    <div class="card__body">
+                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittel der durchschnittlichen Gesamtbewertungen je organisiertem Monatsessen (nur Events mit mindestens einer Bewertung).</p>
+                        <div class="events-stats-chart">
+                            <div class="events-stats-chart__scroll">
+                                <div class="events-stats-chart__container">
+                                    <canvas id="events-stats-chart-organizer-ratings" width="400" height="200" aria-label="Durchschnittliche Gesamtbewertung je Organisator" role="img"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -451,7 +524,7 @@
 
                 <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.0.0" defer></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.1" defer></script>
                 {% else %}
                 <div class="empty-state" role="status">
                     <div class="empty-state__icon" aria-hidden="true">
