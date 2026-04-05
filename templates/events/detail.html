@@ -1,71 +1,45 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
-{% block title %}{{ event.event_typ.value }} - {{ event.display_date }} - Gourmen{% endblock %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% macro event_type_icon(event_typ) -%}
+{% set v = event_typ.value %}
+{% if v == 'MONATSESSEN' %}{{ lucide_icon('utensils') }}
+{% elif v == 'GENERALVERSAMMLUNG' %}{{ lucide_icon('landmark') }}
+{% elif v == 'AUSFLUG' %}{{ lucide_icon('bus') }}
+{% else %}{{ lucide_icon('calendar') }}
+{% endif %}
+{%- endmacro %}
+
+{% block title %}{{ event.display_date }} - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('events.index') }}" class="breadcrumbs__link">Events</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Event-Details</span>
-        </div>
-    </nav>
-
     <div class="page-header">
-        <h1>
-            {% if event.event_typ.value == 'MONATSESSEN' %}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-                <path d="M7 2v20"/>
-                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/>
-                <path d="M21 15v7"/>
-            </svg>
-            {% elif event.event_typ.value == 'GENERALVERSAMMLUNG' %}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                <path d="M9 22v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
-                <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"/>
-            </svg>
-            {% elif event.event_typ.value == 'AUSFLUG' %}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/>
-                <path d="M14 2v6h6"/>
-                <path d="M10.5 7.5 13 10M8 17l6-6 2 2-6 6Z"/>
-            </svg>
-            {% else %}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            {% endif %}
-            {{ event.event_typ.value }} - {{ event.display_date }}
-        </h1>
+        <p class="page-back">
+            <a href="{{ url_for('events.index') }}">{{ lucide_icon('arrow-left') }}<span>Zurück zu Events</span></a>
+        </p>
+        <h1>{{ event_type_icon(event.event_typ) }}<span class="sr-only">{{ event.event_typ.value }}, </span>{{ event.display_date }}</h1>
     </div>
     
     <div class="page-content">
         {% if current_user.is_admin() or event.organisator_id == current_user.id %}
-        <div class="card card--filter tool-surface">
+        <div class="card card--filter tool-surface events-planning-strip">
             <div class="card__body">
-                <details class="disclosure">
+                <details id="event-detail-edit-disclosure" class="disclosure">
                     <summary class="disclosure__summary">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                        Planung (Organisator/Admin)
+                        {{ lucide_icon('chevron-down') }}
+                        Bearbeiten
                     </summary>
                     <div class="disclosure__content">
-                        <div class="tool-strip__actions" role="group" aria-label="Planung">
+                        <div class="tool-strip__actions" role="group" aria-label="Event bearbeiten">
                             <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn--primary">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                </svg>
+                                {{ lucide_icon('square-pen') }}
                                 Bearbeiten
                             </a>
                             {% if event.allow_ratings %}
@@ -74,14 +48,7 @@
                                   class="form form--inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--outline">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path d="M21 4H3"/>
-                                        <path d="M7 8h10"/>
-                                        <path d="M10 12h4"/>
-                                        <path d="M12 16v4"/>
-                                        <path d="M6 4l1 4"/>
-                                        <path d="M18 4l-1 4"/>
-                                    </svg>
+                                    {{ lucide_icon('ban') }}
                                     Bewertung verhindern
                                 </button>
                             </form>
@@ -91,10 +58,7 @@
                                   class="form form--inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path d="m9 11 3 3L22 4"/>
-                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                                    </svg>
+                                    {{ lucide_icon('circle-check') }}
                                     Bewertung zulassen
                                 </button>
                             </form>
@@ -106,13 +70,7 @@
                                   class="form form--inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--danger">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <polyline points="3 6 5 6 21 6"/>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                                        <path d="M10 11v6"/>
-                                        <path d="M14 11v6"/>
-                                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                                    </svg>
+                                    {{ lucide_icon('trash-2') }}
                                     Event löschen
                                 </button>
                             </form>
@@ -124,32 +82,20 @@
         </div>
         {% endif %}
         {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'info') %}
-        <div class="tabs" data-tabs>
+        <div class="tabs tabs--panel" aria-label="Event-Detail">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('events.detail', event_id=event.id, tab='info') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'info' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'info' else 'false' }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>
+                    {{ lucide_icon('file-text') }}
                     Infos
                 </a>
                 <a href="{{ url_for('events.detail', event_id=event.id, tab='billbro') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'billbro' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'billbro' else 'false' }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                        <line x1="8" y1="6" x2="16" y2="6"/>
-                        <line x1="8" y1="10" x2="16" y2="10"/>
-                        <line x1="8" y1="14" x2="16" y2="14"/>
-                        <line x1="8" y1="18" x2="16" y2="18"/>
-                    </svg>
+                    {{ lucide_icon('receipt') }}
                     BillBro
                 </a>
                 {% if event.allow_ratings %}
@@ -157,9 +103,7 @@
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'ratings' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'ratings' else 'false' }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
+                    {{ lucide_icon('star') }}
                     Bewertungen
                 </a>
                 {% endif %}
@@ -171,14 +115,8 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                    <line x1="16" y1="13" x2="8" y2="13"/>
-                                    <line x1="16" y1="17" x2="8" y2="17"/>
-                                    <polyline points="10 9 9 9 8 9"/>
-                                </svg>
-                                Event-Informationen
+                                {{ lucide_icon('clipboard-list') }}
+                                Event-Summary
                             </h2>
                             {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
                             {% if beitritt_ok %}
@@ -266,41 +204,38 @@
                         </div>
                     </div>
 
-                    {# Teilnahme-Card entfernt – RSVP via Dropdown im Event-Informationen-Header #}
+                    {# Teilnahme-Card entfernt – RSVP via Dropdown im Event-Summary-Header #}
 
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                </svg>
-                                Teilnehmer-Übersicht
-                            </h2>
-                        </div>
-                        <div class="card__body">
+                    <div class="table-responsive data-table-wrap" role="region" aria-label="Teilnehmer-Übersicht">
+                        <table class="data-table events-participants-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="events-participants-table__col-member">Mitglied</th>
+                                    <th scope="col" class="events-participants-table__col-status">Teilnahme</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             {% for member in all_members %}
                             {% if not member.beitritt or member.beitritt <= event.datum.date() %}
                                 {% set member_participation = participations|selectattr('member_id', 'equalto', member.id)|first %}
-                                <div class="info-row">
-                                    <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
-                                    <span class="info-row__value">
+                                <tr class="{% if member.id == current_user.id %}events-participants-table__row--current{% endif %}">
+                                    <td class="events-participants-table__col-member">{{ member.display_name_with_spirit }}</td>
+                                    <td class="events-participants-table__col-status">
                                         {% if member_participation %}
                                             {% if member_participation.teilnahme %}
-                                                <span class="participation-status participation-status--confirmed">Teilnehmer</span>
+                                                <span class="participation-status participation-status--confirmed">Zugesagt</span>
                                             {% else %}
-                                                <span class="participation-status participation-status--declined">Absage</span>
+                                                <span class="participation-status participation-status--declined">Abgesagt</span>
                                             {% endif %}
                                         {% else %}
                                             <span class="participation-status participation-status--pending">Keine Antwort</span>
                                         {% endif %}
-                                    </span>
-                                </div>
+                                    </td>
+                                </tr>
                             {% endif %}
                             {% endfor %}
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -311,7 +246,24 @@
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
                     {% set can_access_billbro = (participation and participation.teilnahme) or is_organizer %}
                     {% if can_access_billbro %}
-                    <!-- BillBro: Neue V2-Struktur -->
+                    {% if not event.billbro_closed %}
+                    {% set billbro_phase = 1 %}
+                    {% elif not has_bill %}
+                    {% set billbro_phase = 2 %}
+                    {% elif not has_final %}
+                    {% set billbro_phase = 3 %}
+                    {% else %}
+                    {% set billbro_phase = 4 %}
+                    {% endif %}
+                    <ol class="billbro-workflow" aria-label="BillBro-Ablauf">
+                        {% for label in ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
+                        {% set i = loop.index %}
+                        <li class="billbro-workflow__step{% if i < billbro_phase %} billbro-workflow__step--done{% elif i == billbro_phase %} billbro-workflow__step--current{% endif %}"{% if i == billbro_phase %} aria-current="step"{% endif %}>
+                            <span class="billbro-workflow__index">{{ i }}</span>
+                            <span>{{ label }}</span>
+                        </li>
+                        {% endfor %}
+                    </ol>
 
                     {# 1) Dein Anteil (nur nach finalem Gesamtbetrag) #}
                     {% if has_final %}
@@ -410,24 +362,33 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <use href="/static/icons/lucide-sprite.svg#medal"></use>
-                                </svg>
+                                {{ lucide_icon('medal') }}
                                 Schätzungsrangliste
                             </h2>
                         </div>
                         <div class="card__body">
-                            {% for p in ranked %}
-                            <div class="info-row">
-                                <span class="info-row__label">{{ loop.index }}. {{ p.member.display_name_with_spirit }}</span>
-                                <span class="info-row__value">
-                                    {{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }} CHF
-                                    {% if p.diff_amount_rappen is not none %}
-                                    <small class="ranking-diff">(Δ {{ "%.2f"|format(p.diff_amount_rappen/100) }} CHF)</small>
-                                    {% endif %}
-                                </span>
+                            <div class="table-responsive data-table-wrap" role="region" aria-label="Schätzungsrangliste">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Rang</th>
+                                            <th scope="col">Mitglied</th>
+                                            <th scope="col">Schätzung</th>
+                                            <th scope="col">Δ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for p in ranked %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ p.member.display_name_with_spirit }}</td>
+                                            <td>{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
+                                            <td>{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-                            {% endfor %}
                         </div>
                     </div>
                     {% endif %}
@@ -714,58 +675,9 @@
                     </div>
                     {% endif %}
 
-                    {% if has_final %}
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">Rechnungsübersicht</h2>
-                        </div>
-                        <div class="card__body">
-                            <div class="info-row">
-                                <span class="info-row__label">Gesamtbetrag</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.gesamtbetrag_rappen / 100) }} CHF</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Trinkgeld</span>
-                                <span class="info-row__value">
-                                    {{ "%.2f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / 100) }} CHF
-                                    <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small>
-                                </span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Anteil Sparsam</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Anteil Normal</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Anteil All-In</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
-                            </div>
-                        </div>
-                        {% if is_organizer %}
-                        <div class="card__footer" style="justify-content: flex-end;">
-                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form" style="margin:0;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn--outline" onclick="return confirm('Finalisierung aufheben? Anteile und Gesamtbetrag werden wieder bearbeitbar.')">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M10 2h4"/>
-                                        <path d="M12 2v20"/>
-                                        <path d="m18 8 4 4-4 4"/>
-                                        <path d="m6 16-4-4 4-4"/>
-                                    </svg>
-                                    Finalisierung aufheben
-                                </button>
-                            </form>
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-
                     {% if is_organizer and has_final %}
-                    <div class="page-actions page-actions--right" style="margin-top: var(--space-4);">
-                        <form method="POST" action="{{ url_for('billbro.reset_bill', event_id=event.id) }}" class="form" style="margin:0;">
+                    <div class="page-actions page-actions--right">
+                        <form method="POST" action="{{ url_for('billbro.reset_bill', event_id=event.id) }}" class="form form--inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn--danger" onclick="return confirm('BillBro neu starten? Alle Beträge werden zurückgesetzt.')">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -793,49 +705,52 @@
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'ratings' else '' }}" id="tab-ratings" role="tabpanel">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
-                    <div class="card" style="margin-bottom: var(--space-4);">
-                        <div class="card__body">
-                            {% for category, message in messages %}
-                                <div class="alert alert--{{ 'error' if category == 'error' else ('success' if category == 'success' else 'info') }}">
-                                    <div class="alert__content">
-                                        <div class="alert__message">{{ message }}</div>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                    {% for category, message in messages %}
+                    <div class="alert alert--{{ 'error' if category == 'error' else ('success' if category == 'success' else 'info') }}" role="status">
+                        {% if category == 'error' %}{{ lucide_icon('circle-alert', 'icon alert__icon') }}{% elif category == 'success' %}{{ lucide_icon('circle-check', 'icon alert__icon') }}{% else %}{{ lucide_icon('info', 'icon alert__icon') }}{% endif %}
+                        <div class="alert__content">
+                            <div class="alert__message">{{ message }}</div>
                         </div>
                     </div>
+                    {% endfor %}
                     {% endif %}
                     {% endwith %}
 
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
+                                {{ lucide_icon('star') }}
                                 Gesamtbewertung
                             </h2>
                         </div>
                         <div class="card__body">
                             {% if average_ratings.count > 0 %}
-                            <div class="info-row">
-                                <span class="info-row__label">Gesamt</span>
-                                <span class="info-row__value">{{ average_ratings.overall }}/5 ({{ average_ratings.count }})</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Essen</span>
-                                <span class="info-row__value">{{ average_ratings.food }}/5</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Getränke</span>
-                                <span class="info-row__value">{{ average_ratings.drinks }}/5</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Service</span>
-                                <span class="info-row__value">{{ average_ratings.service }}/5</span>
+                            <div class="metrics-spotlight">
+                                <p class="metrics-spotlight__context">{{ average_ratings.count }} Bewertung{% if average_ratings.count != 1 %}en{% endif %}</p>
+                                <div class="metrics-spotlight__hero" aria-label="Durchschnittswerte">
+                                    <div class="metrics-spotlight__metric">
+                                        <span class="metrics-spotlight__metric-label">Gesamt</span>
+                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.overall }}/5</span>
+                                    </div>
+                                    <div class="metrics-spotlight__metric">
+                                        <span class="metrics-spotlight__metric-label">Essen</span>
+                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.food }}/5</span>
+                                    </div>
+                                    <div class="metrics-spotlight__metric">
+                                        <span class="metrics-spotlight__metric-label">Getränke</span>
+                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.drinks }}/5</span>
+                                    </div>
+                                    <div class="metrics-spotlight__metric">
+                                        <span class="metrics-spotlight__metric-label">Service</span>
+                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.service }}/5</span>
+                                    </div>
+                                </div>
                             </div>
                             {% else %}
-                            <p>Für dieses Event liegen noch keine Bewertungen vor.</p>
+                            <div class="empty-state" role="status">
+                                <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('star') }}</div>
+                                <p class="empty-state__message">Für dieses Event liegen noch keine Bewertungen vor.</p>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -913,9 +828,7 @@
                                     <span class="info-row__value">{{ user_rating.service_rating }}/5</span>
                                 </div>
                                 {% if user_rating.highlights %}
-                                <p style="margin-top: var(--space-3); color: var(--color-text-secondary);">
-                                    {{ user_rating.highlights }}
-                                </p>
+                                <p class="text-secondary">{{ user_rating.highlights }}</p>
                                 {% endif %}
                                 {% endif %}
                             </div>
@@ -929,7 +842,7 @@
                                     Bewertung bearbeiten
                                 </a>
                                 {% endif %}
-                                <form method="POST" action="{{ url_for('ratings.delete_rating', event_id=event.id) }}" class="form" style="margin:0;">
+                                <form method="POST" action="{{ url_for('ratings.delete_rating', event_id=event.id) }}" class="form form--inline">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn--danger" onclick="return confirm('Bewertung wirklich löschen?');">
                                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1011,18 +924,14 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="20" x2="18" y2="10"/>
-                                    <line x1="12" y1="20" x2="12" y2="4"/>
-                                    <line x1="6" y1="20" x2="6" y2="14"/>
-                                </svg>
+                                {{ lucide_icon('chart-column') }}
                                 Bewertungen der anderen Teilnehmer
                             </h2>
                         </div>
                         <div class="card__body">
                             {% if other_ratings %}
                                 {% for rating in other_ratings %}
-                                <div class="rating-entry" style="margin-bottom: var(--space-4);">
+                                <div class="events-rating-others__entry">
                                     <div class="info-row">
                                     <span class="info-row__label">{{ rating.participant.display_name_with_spirit if rating.participant else 'Mitglied' }}</span>
                                     <span class="info-row__value">{{ rating.average_rating }}/5</span>
@@ -1040,14 +949,15 @@
                                         <span class="info-row__value">{{ rating.service_rating }}/5</span>
                                     </div>
                                     {% if rating.highlights %}
-                                    <p style="margin-top: var(--space-3); color: var(--color-text-secondary);">
-                                        {{ rating.highlights }}
-                                    </p>
+                                    <p class="text-secondary">{{ rating.highlights }}</p>
                                     {% endif %}
                                 </div>
                                 {% endfor %}
                             {% else %}
-                            <p>Noch keine weiteren Bewertungen vorhanden.</p>
+                            <div class="empty-state" role="status">
+                                <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('users') }}</div>
+                                <p class="empty-state__message">Noch keine weiteren Bewertungen vorhanden.</p>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -1058,34 +968,32 @@
 
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Tabs (JS-basiert)
-    const tabContainer = document.querySelector('[data-tabs]');
-    if (tabContainer) {
-        const tabs = Array.from(tabContainer.querySelectorAll('[data-tab-target]'));
-        const panels = Array.from(tabContainer.querySelectorAll('.tabs__panel'));
-
-        const activate = (targetId) => {
-            tabs.forEach((t) => {
-                const active = t.getAttribute('data-tab-target') === targetId;
-                t.classList.toggle('tabs__tab--active', active);
-                t.setAttribute('aria-selected', active ? 'true' : 'false');
-            });
-            panels.forEach((p) => {
-                const active = p.id === targetId;
-                p.classList.toggle('tabs__panel--active', active);
-            });
-        };
-
-        tabContainer.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-tab-target]');
-            if (!btn) return;
-            activate(btn.getAttribute('data-tab-target'));
-        });
+(function () {
+  function bindDisclosure(id, key, defaultOpen) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var stored = sessionStorage.getItem(key);
+    if (stored === '1') {
+      el.open = true;
+    } else if (stored === '0') {
+      el.open = false;
+    } else {
+      el.open = defaultOpen;
     }
+    el.addEventListener('toggle', function () {
+      try {
+        sessionStorage.setItem(key, el.open ? '1' : '0');
+      } catch (e) { /* private mode etc. */ }
+    });
+  }
+  bindDisclosure('event-detail-edit-disclosure', 'gourmen:eventDetailEditDisclosureOpen', false);
+})();
 
+document.addEventListener('DOMContentLoaded', function() {
     // Handle RSVP reminder button
     const rsvpReminderBtn = document.querySelector('.send-rsvp-reminder-btn');
     if (rsvpReminderBtn) {
