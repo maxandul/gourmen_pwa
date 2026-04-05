@@ -116,25 +116,28 @@
                         <div class="card__header">
                             <h2 class="card__title">
                                 {{ lucide_icon('clipboard-list') }}
-                                Event-Summary
+                                Summary
                             </h2>
-                            {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
-                            {% if beitritt_ok %}
-                            <div class="card__actions">
-                                <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <span class="chip-select-wrap">
-                                        <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
-                                            <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
-                                            <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                            <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
-                                        </select>
-                                    </span>
-                                </form>
-                            </div>
-                            {% endif %}
                         </div>
                         <div class="card__body">
+                            {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
+                            {% if beitritt_ok %}
+                            <div class="info-row">
+                                <span class="info-row__label">Deine Teilnahme:</span>
+                                <span class="info-row__value info-row__value--actions">
+                                    <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <span class="chip-select-wrap">
+                                            <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
+                                                <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
+                                                <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                                <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                            </select>
+                                        </span>
+                                    </form>
+                                </span>
+                            </div>
+                            {% endif %}
                             <div class="info-row">
                                 <span class="info-row__label">Organisator:</span>
                                 <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
@@ -204,7 +207,7 @@
                         </div>
                     </div>
 
-                    {# Teilnahme-Card entfernt – RSVP via Dropdown im Event-Summary-Header #}
+                    {# RSVP: erste Zeile „Deine Teilnahme“ in der Summary-Card #}
 
                     <div class="table-responsive data-table-wrap" role="region" aria-label="Teilnehmer-Übersicht">
                         <table class="data-table events-participants-table">
@@ -255,15 +258,52 @@
                     {% else %}
                     {% set billbro_phase = 4 %}
                     {% endif %}
-                    <ol class="billbro-workflow" aria-label="BillBro-Ablauf">
-                        {% for label in ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
-                        {% set i = loop.index %}
-                        <li class="billbro-workflow__step{% if i < billbro_phase %} billbro-workflow__step--done{% elif i == billbro_phase %} billbro-workflow__step--current{% endif %}"{% if i == billbro_phase %} aria-current="step"{% endif %}>
-                            <span class="billbro-workflow__index">{{ i }}</span>
-                            <span>{{ label }}</span>
-                        </li>
-                        {% endfor %}
-                    </ol>
+                    {% set billbro_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
+                    {% set billbro_pending_guesses = billbro_attending|selectattr('guess_bill_amount_rappen','equalto',none)|list %}
+                    <div class="billbro-workflow-block">
+                        <ol class="billbro-workflow" aria-label="BillBro-Ablauf">
+                            {% for label in ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
+                            {% set i = loop.index %}
+                            <li class="billbro-workflow__step{% if i < billbro_phase %} billbro-workflow__step--done{% elif i == billbro_phase %} billbro-workflow__step--current{% endif %}"{% if i == billbro_phase %} aria-current="step"{% endif %}>
+                                <span class="billbro-workflow__index">{{ i }}</span>
+                                <span>{{ label }}</span>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        <p class="billbro-workflow__hint" role="status">
+                            {% if is_organizer %}
+                                {% if billbro_phase == 1 %}
+                                    {% if billbro_attending|length == 0 %}
+                                        Aktuell hat niemand zugesagt.
+                                    {% elif billbro_pending_guesses|length > 0 %}
+                                        Es fehlen noch {{ billbro_pending_guesses|length }} Schätzung{% if billbro_pending_guesses|length != 1 %}en{% endif %}. Prüfe bei Bedarf die Anwesenheit unten und schließe die Schätzrunde, sobald alle geschätzt haben.
+                                    {% else %}
+                                        Alle Zugesagten haben geschätzt. Schliesse die Schätzrunde und trage anschliessend den Rechnungsbetrag ein.
+                                    {% endif %}
+                                {% elif billbro_phase == 2 %}
+                                    Trage den Rechnungsbetrag ein. Danach legst du den Gesamtbetrag inklusive Trinkgeld fest.
+                                {% elif billbro_phase == 3 %}
+                                    Bestätige den vorgeschlagenen Gesamtbetrag oder passe ihn an. Erst danach werden die Anteile berechnet.
+                                {% else %}
+                                    BillBro ist abgeschlossen. Die Übersichten findest du unten; du kannst bei Bedarf die Finalisierung aufheben oder den Ablauf neu starten.
+                                {% endif %}
+                            {% else %}
+                                {% if billbro_phase == 1 %}
+                                    {% if participation and participation.has_guess %}
+                                        Du hast geschätzt. Als Nächstes schliesst der Organisator die Schätzrunde und erfasst die Rechnung.
+                                    {% else %}
+                                        Gib unten deine Schätzung und deinen Ess-Typ ab.
+                                    {% endif %}
+                                {% elif billbro_phase == 2 %}
+                                    Du wartest, bis der Organisator den Rechnungsbetrag einträgt. Danach siehst du die Rangliste.
+                                {% elif billbro_phase == 3 %}
+                                    Du wartest, bis der Organisator den finalen Gesamtbetrag festlegt. Danach erscheint dein Anteil.
+                                {% else %}
+                                    BillBro ist durch. Unten findest du deinen Anteil und die gemeinsame Rechnungsübersicht.
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                    </div>
 
                     {# 1) Dein Anteil (nur nach finalem Gesamtbetrag) #}
                     {% if has_final %}
@@ -359,7 +399,7 @@
                             | rejectattr('guess_bill_amount_rappen', 'equalto', none)
                             | list %}
                     {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
-                    <div class="card">
+                    <div class="card" id="billbro-guess-ranking">
                         <div class="card__header">
                             <h2 class="card__title">
                                 {{ lucide_icon('medal') }}
@@ -368,22 +408,22 @@
                         </div>
                         <div class="card__body">
                             <div class="table-responsive data-table-wrap" role="region" aria-label="Schätzungsrangliste">
-                                <table class="data-table">
+                                <table class="data-table billbro-guess-ranking-table">
                                     <thead>
                                         <tr>
-                                            <th scope="col">Rang</th>
-                                            <th scope="col">Mitglied</th>
-                                            <th scope="col">Schätzung</th>
-                                            <th scope="col">Δ</th>
+                                            <th scope="col" class="billbro-guess-ranking-table__col-rank">Rang</th>
+                                            <th scope="col" class="billbro-guess-ranking-table__col-name">Mitglied</th>
+                                            <th scope="col" class="billbro-guess-ranking-table__col-num">Schätzung</th>
+                                            <th scope="col" class="billbro-guess-ranking-table__col-num">Δ</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                     {% for p in ranked %}
-                                        <tr>
-                                            <td>{{ loop.index }}</td>
-                                            <td>{{ p.member.display_name_with_spirit }}</td>
-                                            <td>{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
-                                            <td>{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>
+                                        <tr class="{% if p.member_id == current_user.id %}billbro-guess-ranking-table__row--current{% endif %} {% if loop.index == 1 %}billbro-guess-ranking-table__row--rank-1{% elif loop.index == 2 %}billbro-guess-ranking-table__row--rank-2{% elif loop.index == 3 %}billbro-guess-ranking-table__row--rank-3{% endif %}">
+                                            <td class="billbro-guess-ranking-table__col-rank">{{ loop.index }}</td>
+                                            <td class="billbro-guess-ranking-table__col-name">{{ p.member.display_name_with_spirit }}</td>
+                                            <td class="billbro-guess-ranking-table__col-num">{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
+                                            <td class="billbro-guess-ranking-table__col-num">{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>
                                         </tr>
                                     {% endfor %}
                                     </tbody>
@@ -395,7 +435,7 @@
 
                     <!-- 3) Deine Schätzung / Neue Schätzung als eigenständige Cards -->
                     {% if participation.has_guess %}
-                    <div class="card">
+                    <div class="card" id="billbro-my-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -432,7 +472,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="card">
+                    <div class="card" id="billbro-new-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -490,7 +530,7 @@
 
                     {% if is_organizer %}
                     <!-- Organizer: Anwesenheit & Schätzungen -->
-                    <div class="card">
+                    <div class="card" id="billbro-attendance">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -583,7 +623,7 @@
                     <!-- Rechnung & Berechnung als eigenständige Cards -->
 
                     {% if is_organizer and event.billbro_closed and not has_final %}
-                    <div class="card">
+                    <div class="card" id="billbro-enter-bill">
                         <div class="card__header">
                             <h2 class="card__title">Rechnungsbetrag eingeben</h2>
                         </div>
@@ -719,15 +759,15 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                {{ lucide_icon('star') }}
+                                {{ lucide_icon('clipboard-list') }}
                                 Gesamtbewertung
                             </h2>
                         </div>
                         <div class="card__body">
                             {% if average_ratings.count > 0 %}
                             <div class="metrics-spotlight">
-                                <p class="metrics-spotlight__context">{{ average_ratings.count }} Bewertung{% if average_ratings.count != 1 %}en{% endif %}</p>
-                                <div class="metrics-spotlight__hero" aria-label="Durchschnittswerte">
+                                <p class="metrics-spotlight__context">{{ average_ratings.count }} Bewertung{% if average_ratings.count != 1 %}en{% endif %} · Durchschnitt</p>
+                                <div class="metrics-spotlight__hero" aria-label="Durchschnittswerte aller Bewertungen">
                                     <div class="metrics-spotlight__metric">
                                         <span class="metrics-spotlight__metric-label">Gesamt</span>
                                         <span class="metrics-spotlight__metric-value">{{ average_ratings.overall }}/5</span>
@@ -924,35 +964,38 @@
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                {{ lucide_icon('chart-column') }}
+                                {{ lucide_icon('users') }}
                                 Bewertungen der anderen Teilnehmer
                             </h2>
                         </div>
                         <div class="card__body">
                             {% if other_ratings %}
-                                {% for rating in other_ratings %}
-                                <div class="events-rating-others__entry">
-                                    <div class="info-row">
-                                    <span class="info-row__label">{{ rating.participant.display_name_with_spirit if rating.participant else 'Mitglied' }}</span>
-                                    <span class="info-row__value">{{ rating.average_rating }}/5</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span class="info-row__label">Essen</span>
-                                        <span class="info-row__value">{{ rating.food_rating }}/5</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span class="info-row__label">Getränke</span>
-                                        <span class="info-row__value">{{ rating.drinks_rating }}/5</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span class="info-row__label">Service</span>
-                                        <span class="info-row__value">{{ rating.service_rating }}/5</span>
-                                    </div>
-                                    {% if rating.highlights %}
-                                    <p class="text-secondary">{{ rating.highlights }}</p>
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
+                            <div class="table-responsive data-table-wrap" role="region" aria-label="Einzelbewertungen anderer Teilnehmer">
+                                <table class="data-table events-ratings-others-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="events-ratings-others-table__col-member">Mitglied</th>
+                                            <th scope="col" class="events-ratings-others-table__col-score">Gesamt</th>
+                                            <th scope="col" class="events-ratings-others-table__col-score">Essen</th>
+                                            <th scope="col" class="events-ratings-others-table__col-score">Getränke</th>
+                                            <th scope="col" class="events-ratings-others-table__col-score">Service</th>
+                                            <th scope="col" class="events-ratings-others-table__col-highlight">Highlight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rating in other_ratings %}
+                                        <tr>
+                                            <td class="events-ratings-others-table__col-member">{{ rating.participant.display_spirit_rufname if rating.participant else 'Mitglied' }}</td>
+                                            <td class="events-ratings-others-table__col-score">{{ rating.average_rating }}/5</td>
+                                            <td class="events-ratings-others-table__col-score">{{ rating.food_rating }}/5</td>
+                                            <td class="events-ratings-others-table__col-score">{{ rating.drinks_rating }}/5</td>
+                                            <td class="events-ratings-others-table__col-score">{{ rating.service_rating }}/5</td>
+                                            <td class="events-ratings-others-table__col-highlight">{% if rating.highlights %}<span class="events-ratings-others-table__highlight-text">{{ rating.highlights }}</span>{% else %}<span class="events-ratings-others-table__dash">—</span>{% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                             {% else %}
                             <div class="empty-state" role="status">
                                 <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('users') }}</div>
@@ -1056,14 +1099,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Scroll to anchor targets for BillBro (smooth)
+    // Scroll to anchor nach Redirect (BillBro); doppelter Frame: Layout nach Tab-Panel
     const hash = window.location.hash ? window.location.hash.substring(1) : null;
     if (hash) {
-        const target = document.getElementById(hash);
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        const scrollToHash = () => {
+            const target = document.getElementById(hash);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+        scrollToHash();
+        requestAnimationFrame(() => requestAnimationFrame(scrollToHash));
     }
+
+    {% if tab_param == 'billbro' %}
+    (function billbroBackgroundSync() {
+        const syncUrl = {{ url_for('events.billbro_sync', event_id=event.id)|tojson }};
+        const INTERVAL_MS = 12000;
+        let lastSig = null;
+        async function pull() {
+            if (document.visibilityState !== 'visible') return;
+            try {
+                const r = await fetch(syncUrl, { credentials: 'same-origin', cache: 'no-store' });
+                if (!r.ok) return;
+                const data = await r.json();
+                const sig = JSON.stringify(data);
+                if (lastSig !== null && sig !== lastSig) {
+                    window.location.reload();
+                    return;
+                }
+                lastSig = sig;
+            } catch (e) { /* offline / Flugmodus */ }
+        }
+        pull();
+        setInterval(pull, INTERVAL_MS);
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') pull();
+        });
+    })();
+    {% endif %}
 });
 </script>
 {% endblock %}

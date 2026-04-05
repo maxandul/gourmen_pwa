@@ -187,7 +187,7 @@ def compute(event_id):
         })
     
     flash('Schätzung gespeichert', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-my-guess'))
 
 # Ergebnisse-Seite entfernt; Rangliste wird direkt in BillBro angezeigt
 
@@ -421,7 +421,7 @@ def undo_final(event_id):
     )
 
     flash('Finalisierung aufgehoben. Gesamtbetrag und Anteile können neu gesetzt werden.', 'info')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-tip-suggestion'))
 
 @bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])
 @login_required
@@ -503,7 +503,7 @@ def reset_bill(event_id):
     )
 
     flash('BillBro zurückgesetzt. Bitte Rechnungsbetrag erneut eingeben.', 'info')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
 
 @bp.route('/<int:event_id>/share_whatsapp')
 @login_required
@@ -618,7 +618,7 @@ def update_guess(event_id):
     db.session.commit()
     
     flash('Schätzung zurückgesetzt - neue Schätzung möglich', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-new-guess'))
 
 @bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST'])
 @login_required
@@ -767,7 +767,7 @@ def mark_absent(event_id, member_id):
     )
     
     flash(f'{participation.member.display_name} als nicht anwesend markiert', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
 
 @bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST'])
 @login_required
@@ -812,7 +812,7 @@ def mark_present(event_id, member_id):
     )
     
     flash(f'{participation.member.display_name} wieder angemeldet', 'success')
-    return redirect(url_for('billbro.index', event_id=event_id)) 
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
 
 @bp.route('/<int:event_id>/toggle_status', methods=['POST'])
 @login_required
@@ -845,5 +845,6 @@ def toggle_billbro_status(event_id):
             'new_status': 'closed' if event.billbro_closed else 'open'
         }
     )
-    
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    billbro_anchor = 'billbro-enter-bill' if event.billbro_closed else 'billbro-attendance'
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor=billbro_anchor))

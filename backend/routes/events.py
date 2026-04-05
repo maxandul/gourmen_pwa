@@ -499,6 +499,42 @@ def detail(event_id):
                          rating_edit_mode=rating_edit_mode,
                          use_v2_design=True)
 
+
+@bp.route('/<int:event_id>/billbro-sync', methods=['GET'])
+@login_required
+def billbro_sync(event_id):
+    """Kompakter BillBro-Zustand für Polling im Event-Detail (Tab BillBro)."""
+    event = Event.query.get_or_404(event_id)
+    participation = Participation.query.filter_by(
+        member_id=current_user.id,
+        event_id=event_id,
+    ).first()
+    is_organizer = event.organisator_id == current_user.id
+    can_access = (participation and participation.teilnahme) or is_organizer
+    if not can_access:
+        return jsonify({'error': 'forbidden'}), 403
+
+    attending = sum(1 for p in event.participations if p.teilnahme)
+    guesses = sum(
+        1
+        for p in event.participations
+        if p.teilnahme and p.guess_bill_amount_rappen is not None
+    )
+    resp = jsonify(
+        billbro_closed=event.billbro_closed,
+        rechnungsbetrag_rappen=event.rechnungsbetrag_rappen,
+        gesamtbetrag_rappen=event.gesamtbetrag_rappen,
+        trinkgeld_rappen=event.trinkgeld_rappen,
+        attending=attending,
+        guesses=guesses,
+        betrag_sparsam_rappen=event.betrag_sparsam_rappen,
+        betrag_normal_rappen=event.betrag_normal_rappen,
+        betrag_allin_rappen=event.betrag_allin_rappen,
+    )
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
+
+
 @bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(event_id):
