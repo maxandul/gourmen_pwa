@@ -54,7 +54,7 @@
                     url_for('events.cleanup'),
                     'brush-cleaning',
                     'Datenbereinigung',
-                    'Unvollständige Events: ' ~ retro_cleanup_progress.pending
+                    ('1 fehlende Angabe' if retro_cleanup_progress.pending == 1 else (retro_cleanup_progress.pending ~ ' fehlende Angaben'))
                 ) }}
                 {% endif %}
                 {% if rating_prompt_event %}
@@ -99,7 +99,7 @@
                 {% endif %}
 
                 <div class="dashboard-intent__grid">
-                    {% set ggl_meta = ('Rang ' ~ (ggl_stats.rank or '—') ~ ((' / ' ~ ggl_stats.rank_total) if ggl_stats.rank and ggl_stats.rank_total > 0 else '') ~ ' · ' ~ (ggl_stats.points or 0) ~ ' Pkte · Teilnahme ' ~ ggl_stats.participation_count ~ '/' ~ ggl_stats.total_events_in_season) %}
+                    {% set ggl_meta = ('Rang ' ~ (ggl_stats.rank or '—') ~ ((' / ' ~ ggl_stats.rank_total) if ggl_stats.rank and ggl_stats.rank_total > 0 else '') ~ ' · ' ~ (ggl_stats.points or 0) ~ ' Pkte') %}
                     {{ dashboard_intent_tile(
                         url_for('ggl.index', tab='tabelle', season=ggl_stats.season),
                         'trophy',
@@ -121,8 +121,8 @@
         <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
             <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>
             <div class="dashboard-intent__grid">
-                {{ dashboard_intent_tile(url_for('member.merch'), 'shopping-bag', 'Merch-Shop', 'Artikel bestellen & Bestellungen') }}
-                {{ dashboard_intent_tile(url_for('events.index', tab='stats'), 'chart-column', 'Statistiken', 'Monatsessen, Kennzahlen & Diagramme') }}
+                {{ dashboard_intent_tile(url_for('member.merch'), 'shopping-bag', 'Merch-Shop', 'Shop und Bestellungen') }}
+                {{ dashboard_intent_tile(url_for('events.index', tab='stats'), 'chart-column', 'Statistiken', 'KPIs und Charts') }}
             </div>
         </section>
 
