@@ -13,14 +13,14 @@
 <div class="container">
     <div class="page-header">
         <p class="page-back">
-            <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Bestellung</span></a>
+            <a href="{{ url_for('member.merch', tab='orders', order_id=order.id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch</span></a>
         </p>
         <h1>
             {{ lucide_icon('pencil') }}
-            Bestellung bearbeiten (#{{ order.order_number }})
+            Bestellung bearbeiten ({{ order.created_at.strftime('%d.%m.%Y') }})
         </h1>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--outline">
+            <a href="{{ url_for('member.merch', tab='orders', order_id=order.id) }}" class="btn btn--outline">
                 {{ lucide_icon('x') }}
                 Abbrechen
             </a>
@@ -179,9 +179,9 @@
                         <p>Derzeit sind keine Merch-Artikel verfügbar.</p>
                     </div>
                     <div class="card__footer">
-                        <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--outline">
+                        <a href="{{ url_for('member.merch', tab='orders', order_id=order.id) }}" class="btn btn--outline">
                             {{ lucide_icon('chevron-left') }}
-                            Zurück zur Bestellung
+                            Zurück zum Merch
                         </a>
                     </div>
                 </div>

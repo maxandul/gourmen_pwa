@@ -13,7 +13,7 @@
 <div class="container">
     <div class="page-header">
         <p class="page-back">
-            <a href="{{ url_for('member.merch') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Shop</span></a>
+            <a href="{{ url_for('member.merch') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch</span></a>
         </p>
         <h1>
             {{ lucide_icon('package') }}
@@ -96,7 +96,7 @@
                     
                 </div>
                 <div class="card__footer">
-                    <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
+                    <a href="{{ url_for('member.merch', tab='orders', order_id=order.id) }}" class="btn btn--primary">
                         {{ lucide_icon('info') }}
                         Details anzeigen
                     </a>

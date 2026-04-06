@@ -401,12 +401,11 @@ def merch_orders():
 @bp.route('/merch/order/<int:order_id>')
 @login_required
 def merch_order_detail(order_id):
-    """Order detail page"""
+    """Bestellungen werden im Merch-Bereich (Tab «Meine Bestellungen») angezeigt — Deep-Link-Weiterleitung."""
     from backend.models.merch_order import MerchOrder
-    
+
     order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
-    
-    return render_template('member/merch/order_detail.html', order=order, use_v2_design=True)
+    return redirect(url_for('member.merch', tab='orders', order_id=order.id))
 
 @bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -423,7 +422,7 @@ def merch_order_edit(order_id):
     # Check if order can be edited
     if order.status != OrderStatus.BESTELLT:
         flash('Diese Bestellung kann nicht mehr bearbeitet werden.', 'error')
-        return redirect(url_for('member.merch_order_detail', order_id=order_id))
+        return redirect(url_for('member.merch', tab='orders', order_id=order_id))
     
     if request.method == 'POST':
         try:
@@ -480,7 +479,7 @@ def merch_order_edit(order_id):
             
             db.session.commit()
             flash('Bestellung erfolgreich aktualisiert!', 'success')
-            return redirect(url_for('member.merch_order_detail', order_id=order.id))
+            return redirect(url_for('member.merch', tab='orders', order_id=order.id))
             
         except Exception as e:
             db.session.rollback()

@@ -107,8 +107,8 @@
                 ) }}
                 {% if merch_last_order and not merch_last_order.is_delivered %}
                 {{ dashboard_intent_tile(
-                    url_for('member.merch_order_detail', order_id=merch_last_order.id),
-                    'shopping-bag',
+                    url_for('member.merch', tab='orders', order_id=merch_last_order.id),
+                    'shirt',
                     'Letzte Merch-Bestellung',
                     merch_last_order.status_display
                 ) }}
@@ -119,7 +119,7 @@
         <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
             <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>
             <div class="dashboard-intent__grid">
-                {{ dashboard_intent_tile(url_for('member.merch'), 'shopping-bag', 'Merch-Shop', 'Shop und Bestellungen') }}
+                {{ dashboard_intent_tile(url_for('member.merch'), 'shirt', 'Merch', 'Shop und Bestellungen') }}
                 {{ dashboard_intent_tile(url_for('events.index', tab='stats'), 'chart-column', 'Statistiken', 'KPIs und Charts') }}
             </div>
         </section>

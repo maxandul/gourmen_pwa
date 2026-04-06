@@ -8,7 +8,7 @@
 {%- endmacro %}
 {% set _sprite = url_for('static', filename='icons/lucide-sprite.7e463391.svg') %}
 
-{% block title %}Merch-Shop - Gourmen{% endblock %}
+{% block title %}Merch - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -17,8 +17,8 @@
             <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
         </p>
         <h1>
-            {{ lucide_icon('shopping-cart') }}
-            Merch-Shop
+            {{ lucide_icon('shirt') }}
+            Merch
         </h1>
     </div>
     
@@ -194,7 +194,7 @@
                             <details class="disclosure">
                                 <summary class="disclosure__summary">
                                     {{ lucide_icon('chevron-down') }}
-                                    Bestellung wählen
+                                    Bestellung vom:
                                     {% if selected_order %}
                                     <span class="chip chip--info">{{ selected_order.created_at.strftime('%d.%m.%Y') }}</span>
                                     {% endif %}
