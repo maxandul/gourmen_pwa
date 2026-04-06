@@ -4,7 +4,6 @@ from backend.models.event import Event
 from backend.models.participation import Participation
 from backend.models.merch_order import MerchOrder, OrderStatus
 from backend.services.ggl_rules import GGLService
-from backend.services.rating_prompt import get_rating_prompt_event_for_member
 from backend.services.retro_cleanup import RetroCleanupService
 from datetime import datetime, timedelta
 
@@ -64,7 +63,7 @@ def index():
             event_id=latest_bill_event.id
         ).first()
 
-    rating_prompt_event = get_rating_prompt_event_for_member(current_user)
+    rsvp_prompt_event = RetroCleanupService.get_upcoming_rsvp_prompt_event(current_user.id)
 
     merch_orders = (
         MerchOrder.query.filter_by(member_id=current_user.id)
@@ -83,10 +82,9 @@ def index():
         current_season=current_season,
         latest_bill_event=latest_bill_event,
         latest_bill_participation=latest_bill_participation,
-        rating_prompt_event=rating_prompt_event,
+        rsvp_prompt_event=rsvp_prompt_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
-        cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
         use_v2_design=True,
     )
 

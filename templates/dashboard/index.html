@@ -45,7 +45,7 @@
 
     <div class="page-content">
 
-        {% if retro_cleanup_progress.pending > 0 or rating_prompt_event %}
+        {% if retro_cleanup_progress.pending > 0 or rsvp_prompt_event %}
         <section class="dashboard-intent" aria-labelledby="dashboard-todo-heading">
             <h2 id="dashboard-todo-heading" class="dashboard-intent__heading">Zu erledigen</h2>
             <div class="dashboard-intent__grid">
@@ -53,16 +53,16 @@
                 {{ dashboard_intent_tile(
                     url_for('events.cleanup'),
                     'brush-cleaning',
-                    'Datenbereinigung',
+                    'Bereinigung',
                     ('1 fehlende Angabe' if retro_cleanup_progress.pending == 1 else (retro_cleanup_progress.pending ~ ' fehlende Angaben'))
                 ) }}
                 {% endif %}
-                {% if rating_prompt_event %}
+                {% if rsvp_prompt_event %}
                 {{ dashboard_intent_tile(
-                    url_for('events.detail', event_id=rating_prompt_event.id, tab='ratings'),
-                    'star',
-                    'Bewertung ausstehend',
-                    (rating_prompt_event.display_date ~ ((' · ' ~ rating_prompt_event.restaurant) if rating_prompt_event.restaurant else ''))
+                    url_for('events.detail', event_id=rsvp_prompt_event.id),
+                    'calendar',
+                    'Zu-/Absage',
+                    (rsvp_prompt_event.event_typ.value ~ ' am ' ~ rsvp_prompt_event.display_date)
                 ) }}
                 {% endif %}
             </div>

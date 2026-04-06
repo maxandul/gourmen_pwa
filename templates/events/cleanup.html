@@ -39,12 +39,46 @@
 
     <div class="page-content">
         {% if no_events %}
+        {% if cleanup_rsvp_undo_available|default(false) %}
+        <form method="POST" action="{{ url_for('events.cleanup_undo_rsvp') }}" class="cleanup-undo-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn--outline">{{ lucide_icon('undo-2') }} Letzte Zu-/Absage rückgängig</button>
+        </form>
+        {% endif %}
         <div class="card">
             <div class="card__body">
                 <p>Alles erledigt — keine offenen Einträge mehr in diesem Ablauf. Muchas gracias ♥️</p>
             </div>
         </div>
         {% else %}
+        {% set _idx = cleanup_idx + 1 %}
+        {% set _total = cleanup_open_count %}
+        <nav class="cleanup-step-nav" aria-label="Einträge der Bereinigung">
+            <p class="cleanup-step-nav__counter">{{ _idx }} von {{ _total }}</p>
+            <div class="cleanup-step-nav__actions">
+                {% if cleanup_idx > 0 %}
+                <a class="btn btn--outline btn--sm" href="{{ url_for('events.cleanup', i=cleanup_idx - 1) }}">Zurück</a>
+                {% else %}
+                <button type="button" class="btn btn--outline btn--sm" disabled>Zurück</button>
+                {% endif %}
+                {% if cleanup_idx + 1 < cleanup_open_count %}
+                <a class="btn btn--outline btn--sm" href="{{ url_for('events.cleanup', i=cleanup_idx + 1) }}">Weiter</a>
+                {% else %}
+                <button type="button" class="btn btn--outline btn--sm" disabled>Weiter</button>
+                {% endif %}
+            </div>
+        </nav>
+        {% if not participation or not participation.responded_at %}
+        <p class="events-cleanup-hint">Gib an, ob du am Event dabei warst:</p>
+        {% else %}
+        <p class="events-cleanup-hint">Du bist beim Event dabei gewesen. Gib eine Bewertung ab oder ändere deinen Teilnahmestatus:</p>
+        {% endif %}
+        {% if cleanup_rsvp_undo_available|default(false) %}
+        <form method="POST" action="{{ url_for('events.cleanup_undo_rsvp') }}" class="cleanup-undo-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn--outline btn--sm">{{ lucide_icon('undo-2') }} Letzte Zu-/Absage rückgängig</button>
+        </form>
+        {% endif %}
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
@@ -118,7 +152,7 @@
             <div class="card__body">
                 <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="next" value="{{ url_for('events.cleanup', focus='next') }}">
+                    <input type="hidden" name="next" value="{{ url_for('events.cleanup') }}">
                     <div class="form-row">
                         <div class="form-field">
                             <label class="form-field__label" for="food_rating_cleanup">Essen</label>

@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import DateField, SelectField, StringField, SubmitField, IntegerField
@@ -20,6 +20,17 @@ from backend.services.monatsessen_stats import get_monatsessen_statistics
 from backend.forms.rating import EventRatingForm
 
 bp = Blueprint('events', __name__)
+
+CLEANUP_RSVP_UNDO_SESSION_KEY = 'cleanup_rsvp_undo'
+
+
+def _cleanup_rsvp_undo_available() -> bool:
+    payload = session.get(CLEANUP_RSVP_UNDO_SESSION_KEY)
+    return bool(
+        payload
+        and payload.get('member_id') == current_user.id
+    )
+
 
 # Push Notification API Routes
 @bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET'])
@@ -327,27 +338,33 @@ def archive():
 @bp.route('/cleanup')
 @login_required
 def cleanup():
-    """Nachpflege: kommende Events (30-Tage-Fenster) Zu-/Absage; vergangene inkl. Bewertung — jüngstes zuerst."""
-    data = RetroCleanupService.get_next_open_event(current_user.id)
-    event = data.get('event')
-    participation = data.get('participation')
-    has_rating = data.get('has_rating')
-    progress = data.get('progress') or {'total': 0, 'completed': 0, 'pending': 0}
+    """Nur vergangene Events: fehlende Zu-/Absage und/oder Bewertung; Reihenfolge jüngstes zuerst; Navigation per ?i=."""
+    progress = RetroCleanupService.get_progress(current_user.id)
+    open_events = RetroCleanupService.list_open_cleanup_events(current_user.id)
     focus = request.args.get('focus')
 
-    if not event:
+    if not open_events:
         return render_template(
             'events/cleanup.html',
             no_events=True,
             progress=progress,
-            cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
-            cleanup_upcoming_days=RetroCleanupService.UPCOMING_WINDOW_DAYS,
+            cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available(),
             use_v2_design=True
         )
 
+    raw_i = request.args.get('i', default=0, type=int)
+    if raw_i is None:
+        raw_i = 0
+    idx = max(0, min(raw_i, len(open_events) - 1))
+    event = open_events[idx]
+    participation = Participation.query.filter_by(
+        member_id=current_user.id,
+        event_id=event.id,
+    ).first()
+    has_rating = RetroCleanupService._has_rating(event.id, current_user.id)
+
     can_rate = (
-        not RetroCleanupService._is_upcoming_scope(event)
-        and event.allow_ratings
+        event.allow_ratings
         and ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
         and not has_rating
     )
@@ -362,10 +379,50 @@ def cleanup():
         form=rating_form,
         progress=progress,
         focus=focus,
-        cleanup_cutoff_days=RetroCleanupService.CUTOFF_DAYS,
-        cleanup_upcoming_days=RetroCleanupService.UPCOMING_WINDOW_DAYS,
+        cleanup_idx=idx,
+        cleanup_open_count=len(open_events),
+        cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available(),
         use_v2_design=True
     )
+
+
+@bp.route('/cleanup/undo-rsvp', methods=['POST'])
+@login_required
+def cleanup_undo_rsvp():
+    """Stellt die Teilnahme-Zeile vor der letzten Zu-/Absage in der Bereinigung wieder her."""
+    payload = session.pop(CLEANUP_RSVP_UNDO_SESSION_KEY, None)
+    if not payload or payload.get('member_id') != current_user.id:
+        flash('Nichts zum Rückgängigmachen.', 'info')
+        return redirect(url_for('events.cleanup'))
+
+    event_id = payload['event_id']
+    prev = payload['prev']
+    participation = Participation.query.filter_by(
+        member_id=current_user.id,
+        event_id=event_id,
+    ).first()
+
+    if not prev['had_row']:
+        if participation:
+            db.session.delete(participation)
+        db.session.commit()
+    else:
+        if not participation:
+            flash('Eintrag nicht gefunden — Rückgängig nicht möglich.', 'error')
+            return redirect(url_for('events.cleanup'))
+        participation.teilnahme = prev['teilnahme']
+        if prev.get('responded_at'):
+            participation.responded_at = datetime.fromisoformat(prev['responded_at'])
+        else:
+            participation.responded_at = None
+        db.session.commit()
+
+    flash('Die letzte Zu-/Absage wurde rückgängig gemacht.', 'success')
+    open_events = RetroCleanupService.list_open_cleanup_events(current_user.id)
+    ids = [e.id for e in open_events]
+    i = ids.index(event_id) if event_id in ids else 0
+    return redirect(url_for('events.cleanup', i=i))
+
 
 @bp.route('/<int:event_id>/cleanup/rsvp', methods=['POST'])
 @login_required
@@ -387,6 +444,15 @@ def cleanup_rsvp(event_id):
         event_id=event_id
     ).first()
 
+    if participation:
+        prev = {
+            'had_row': True,
+            'teilnahme': participation.teilnahme,
+            'responded_at': participation.responded_at.isoformat() if participation.responded_at else None,
+        }
+    else:
+        prev = {'had_row': False}
+
     if not participation:
         participation = Participation(
             member_id=current_user.id,
@@ -400,13 +466,16 @@ def cleanup_rsvp(event_id):
 
     db.session.commit()
 
+    session[CLEANUP_RSVP_UNDO_SESSION_KEY] = {
+        'member_id': current_user.id,
+        'event_id': event_id,
+        'prev': prev,
+    }
+    session.modified = True
+
     focus = (
         'rating'
-        if (
-            status == 'yes'
-            and not RetroCleanupService._is_upcoming_scope(event)
-            and event.allow_ratings
-        )
+        if (status == 'yes' and event.allow_ratings)
         else None
     )
     return redirect(url_for('events.cleanup', focus=focus))

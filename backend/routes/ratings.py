@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_required, current_user
 from backend.extensions import db
 from backend.models.event import Event
 from backend.models.rating import EventRating
 from backend.models.participation import Participation
 from backend.forms.rating import EventRatingForm
+from backend.routes.events import CLEANUP_RSVP_UNDO_SESSION_KEY
 
 bp = Blueprint('ratings', __name__)
 
@@ -58,6 +59,10 @@ def rate_event(event_id):
         )
         db.session.add(rating)
         db.session.commit()
+        undo = session.get(CLEANUP_RSVP_UNDO_SESSION_KEY)
+        if undo and undo.get('event_id') == event_id:
+            session.pop(CLEANUP_RSVP_UNDO_SESSION_KEY, None)
+            session.modified = True
         flash('Vielen Dank für deine Bewertung!', 'success')
         if next_url:
             return redirect(next_url)
