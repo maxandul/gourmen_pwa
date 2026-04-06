@@ -88,8 +88,7 @@ def index():
         audit_events_count=audit_events_count,
         active_articles_count=active_articles_count,
         pending_orders_count=pending_orders_count,
-        total_revenue_chf=total_revenue_chf,
-        use_v2_design=True
+        total_revenue_chf=total_revenue_chf
     )
 
 class MemberForm(FlaskForm):
@@ -506,7 +505,7 @@ def create_event():
         flash('Event erfolgreich erstellt! Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
-    return render_template('admin/create_event.html', form=form, use_v2_design=True) 
+    return render_template('admin/create_event.html', form=form) 
 
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required

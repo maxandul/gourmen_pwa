@@ -85,7 +85,6 @@ def index():
         rsvp_prompt_event=rsvp_prompt_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
-        use_v2_design=True,
     )
 
  

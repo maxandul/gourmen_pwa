@@ -77,16 +77,14 @@ def index():
         progression_data=progression_data,
         table_selected_season=table_selected_season,
         race_selected_season=race_selected_season,
-        active_tab=tab,
-        use_v2_design=True
+        active_tab=tab
     )
 
 @bp.route('/season/<int:season_year>')
 @login_required
 def season(season_year):
-    """Redirect legacy season view to new index tabs."""
+    """Redirect legacy season view to new index tabs (canonical query: season=)."""
     tab = request.args.get('tab', 'tabelle')
-    if tab == 'rennen':
-        return redirect(url_for('ggl.index', tab='rennen', race_season=season_year))
-    # default to tabelle
-    return redirect(url_for('ggl.index', tab='tabelle', table_season=season_year))
+    if tab not in ('performance', 'tabelle', 'rennen'):
+        tab = 'tabelle'
+    return redirect(url_for('ggl.index', tab=tab, season=season_year))

@@ -53,7 +53,6 @@
     
     <!-- JavaScript wird über app.js geladen -->
     
-    {% if use_v2_design %}
     <!-- V2 Design System JavaScript -->
     <script src="{{ url_for('static', filename='js/v2/theme.js') }}?v=2.0.1"></script>
     <script src="{{ url_for('static', filename='js/v2/theme-toggle.js') }}?v=2.0.1" defer></script>
@@ -63,7 +62,6 @@
     <script src="{{ url_for('static', filename='js/v2/search.js') }}?v=2.0.1" defer></script>
     <script src="{{ url_for('static', filename='js/v2/focus-trap.js') }}?v=2.0.1" defer></script>
     <script src="{{ url_for('static', filename='js/v2/tabs.js') }}?v=2.0.1" defer></script>
-    {% endif %}
     
     {% block scripts %}{% endblock %}
 </body>

@@ -1,12 +1,3 @@
-    <!-- CSS -->
-    {% if use_v2_design %}
-        <!-- Design System V2 -->
-        <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.174ac4d9.css') }}">
-    {% else %}
-        <!-- Legacy V1 CSS -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    {% endif %}
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- CSS — V2 Bundle (REDESIGN §16.1) -->
+    <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.174ac4d9.css') }}">

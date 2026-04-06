@@ -68,7 +68,6 @@ def landing():
             table_total=table_total,
             table_page=table_page,
             table_total_pages=table_total_pages,
-            use_v2_design=True,
         )
     except Exception:
         # Fallback if database is not ready
@@ -82,7 +81,6 @@ def landing():
             table_total=0,
             table_page=1,
             table_total_pages=1,
-            use_v2_design=True,
         )
 
 @bp.route('/health')

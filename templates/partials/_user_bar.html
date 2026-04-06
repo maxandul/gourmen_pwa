@@ -5,7 +5,6 @@
         </a>
         <div class="user-section">
             <div class="user-actions">
-                {% if use_v2_design %}
                 <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
                     <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <circle cx="12" cy="12" r="5"/>
@@ -22,8 +21,6 @@
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
                 </button>
-                {% endif %}
-                {% if use_v2_design %}
                 <details class="user-menu">
                     <summary class="btn btn--icon-only user-menu__summary" aria-label="Konto und Einstellungen">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -51,7 +48,6 @@
                         <a href="{{ url_for('auth.logout') }}" class="user-menu__link user-menu__link--danger">Abmelden</a>
                     </div>
                 </details>
-                {% endif %}
             </div>
         </div>
     </div>

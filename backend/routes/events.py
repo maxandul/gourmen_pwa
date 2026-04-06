@@ -193,7 +193,6 @@ def index():
 
     context = {
         'active_tab': tab,
-        'use_v2_design': True,
     }
 
     # Globale Filter (Jahr / Organisator) — alle Tabs, URL-Parameter identisch wie bisher
@@ -298,7 +297,7 @@ def year_planning():
     current_year = datetime.utcnow().year
     form.year.data = current_year + 1  # Default to next year
     
-    return render_template('events/year_planning.html', form=form, use_v2_design=True)
+    return render_template('events/year_planning.html', form=form)
 
 @bp.route('/year-planning', methods=['POST'])
 @login_required
@@ -327,7 +326,7 @@ def create_year_planning():
         
         return redirect(url_for('events.index'))
     
-    return render_template('events/year_planning.html', form=form, use_v2_design=True)
+    return render_template('events/year_planning.html', form=form)
 
 @bp.route('/archive')
 @login_required
@@ -348,8 +347,7 @@ def cleanup():
             'events/cleanup.html',
             no_events=True,
             progress=progress,
-            cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available(),
-            use_v2_design=True
+            cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available()
         )
 
     raw_i = request.args.get('i', default=0, type=int)
@@ -381,8 +379,7 @@ def cleanup():
         focus=focus,
         cleanup_idx=idx,
         cleanup_open_count=len(open_events),
-        cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available(),
-        use_v2_design=True
+        cleanup_rsvp_undo_available=_cleanup_rsvp_undo_available()
     )
 
 
@@ -555,8 +552,7 @@ def detail(event_id):
                          user_rating=user_rating,
                          event_ratings=ratings_sorted,
                          can_rate=can_rate,
-                         rating_edit_mode=rating_edit_mode,
-                         use_v2_design=True)
+                         rating_edit_mode=rating_edit_mode)
 
 
 @bp.route('/<int:event_id>/billbro-sync', methods=['GET'])
@@ -722,9 +718,9 @@ def edit(event_id):
             db.session.rollback()
             current_app.logger.error(f'Error updating event {event_id}: {str(e)}')
             flash(f'Fehler beim Speichern des Events: {str(e)}', 'error')
-            return render_template('events/edit.html', form=form, event=event, use_v2_design=True)
+            return render_template('events/edit.html', form=form, event=event)
     
-    return render_template('events/edit.html', form=form, event=event, use_v2_design=True)
+    return render_template('events/edit.html', form=form, event=event)
 
 @bp.route('/<int:event_id>/delete', methods=['POST'])
 @login_required

@@ -243,20 +243,19 @@ def profile():
                          sensitive_form=sensitive_form,
                          sensitive_data=sensitive_data_decrypted,
                          active_tab=active_tab,
-                         has_step_up=SecurityService.check_step_up_access(),
-                         use_v2_design=True)
+                         has_step_up=SecurityService.check_step_up_access())
 
 @bp.route('/security')
 @login_required
 def security():
     """Security settings page"""
-    return render_template('member/security.html', use_v2_design=True)
+    return render_template('member/security.html')
 
 @bp.route('/technical')
 @login_required
 def technical():
     """Technical settings page"""
-    return render_template('member/technical.html', use_v2_design=True)
+    return render_template('member/technical.html')
 
 @bp.route('/merch')
 @login_required
@@ -290,8 +289,7 @@ def merch():
         articles=articles,
         orders=user_orders,
         selected_order=selected_order,
-        selected_order_id=selected_order_id,
-        use_v2_design=True
+        selected_order_id=selected_order_id
     )
 
 @bp.route('/merch/order', methods=['GET', 'POST'])
@@ -386,7 +384,7 @@ def merch_order():
         # Get unique colors for this article
         article.available_colors = list(set([variant.color for variant in article.variants]))
     
-    return render_template('member/merch/order.html', articles=articles, use_v2_design=True)
+    return render_template('member/merch/order.html', articles=articles)
 
 @bp.route('/merch/orders')
 @login_required
@@ -396,7 +394,7 @@ def merch_orders():
     
     orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
     
-    return render_template('member/merch/orders.html', orders=orders, use_v2_design=True)
+    return render_template('member/merch/orders.html', orders=orders)
 
 @bp.route('/merch/order/<int:order_id>')
 @login_required
@@ -507,7 +505,7 @@ def merch_order_edit(order_id):
         # Pre-fill existing data if available (now as a list)
         article.existing_items = existing_items.get(article.id, [])
     
-    return render_template('member/merch/order_edit.html', articles=articles, order=order, use_v2_design=True)
+    return render_template('member/merch/order_edit.html', articles=articles, order=order)
 
 # Import here to avoid circular imports
 from datetime import datetime

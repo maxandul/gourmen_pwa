@@ -1402,7 +1402,6 @@ def index():
     # Common data for all tabs
     context = {
         'active_tab': tab,
-        'use_v2_design': True
     }
     
     # Tab-specific data (only load what's needed)
