@@ -110,7 +110,7 @@ def get_landing_restaurant_table(
         rows_full.append(
             {
                 'restaurant': label,
-                'overall_avg': round(mean(ovs), 2),
+                'overall_avg': round(mean(ovs), 1),
                 'homepage': _homepage_for_restaurant_label(past_ms, label),
             }
         )

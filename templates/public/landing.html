@@ -17,7 +17,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.c74f12f5.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.ed174ebd.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -33,7 +33,7 @@
         <div class="landing-hero__text">
             <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
             <h1 id="landing-hero-heading">Gourmen</h1>
-            <p class="lead landing-lead-quote">&lt;Meh isch meh&gt;</p>
+            <p class="lead landing-lead-quote">«Meh isch meh!»</p>
             <div class="landing-actions">
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">{{ lucide_icon('id-card', 'icon') }} Zum Memberbereich</a>
@@ -47,24 +47,33 @@
         </div>
     </section>
 
-    <section class="landing-stat-strip" aria-labelledby="landing-stats-heading">
-        <h2 id="landing-stats-heading" class="sr-only">Verein in Zahlen</h2>
-        <div class="stat-tiles">
-            <div class="stat-tile">
-                <span class="stat-tile__label">Mitglieder</span>
-                <span class="stat-tile__value">{{ member_count }}</span>
-            </div>
-            <div class="stat-tile">
-                <span class="stat-tile__label">Restaurant-Count</span>
-                <span class="stat-tile__value">{{ restaurant_count }}</span>
-            </div>
-            <div class="stat-tile">
-                <span class="stat-tile__label">letztes Restaurant</span>
-                <span class="stat-tile__value stat-tile__value--muted landing-stat-tile__value--text">{{ last_restaurant or '—' }}</span>
-            </div>
-            <div class="stat-tile">
-                <span class="stat-tile__label">nächstes Essen</span>
-                <span class="stat-tile__value">{{ next_essen_date or '—' }}</span>
+    <section class="landing-kpi-card card" aria-labelledby="landing-kpi-heading">
+        <div class="card__header">
+            <h2 class="card__title" id="landing-kpi-heading">
+                {{ lucide_icon('clipboard-list') }}
+                Summary
+            </h2>
+        </div>
+        <div class="card__body">
+            <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
+                <div class="metrics-spotlight__hero">
+                    <div class="metrics-spotlight__metric">
+                        <span class="metrics-spotlight__metric-label">Mitglieder</span>
+                        <span class="metrics-spotlight__metric-value">{{ member_count }}</span>
+                    </div>
+                    <div class="metrics-spotlight__metric">
+                        <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
+                        <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
+                    </div>
+                    <div class="metrics-spotlight__metric">
+                        <span class="metrics-spotlight__metric-label">letztes Restaurant</span>
+                        <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">{{ last_restaurant or '—' }}</span>
+                    </div>
+                    <div class="metrics-spotlight__metric">
+                        <span class="metrics-spotlight__metric-label">nächstes Essen</span>
+                        <span class="metrics-spotlight__metric-value">{{ next_essen_date or '—' }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -92,7 +101,7 @@
                     {% for row in table_rows %}
                     <tr>
                         <td>{{ row.restaurant }}</td>
-                        <td>{{ '%.2f'|format(row.overall_avg)|replace('.', ',') }}</td>
+                        <td>{{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}/5</td>
                         <td>
                             {% if row.homepage %}
                             <a href="{{ row.homepage }}" class="landing-restaurants-table__home-link" target="_blank" rel="noopener noreferrer" aria-label="Webseite von {{ row.restaurant }} (öffnet in neuem Tab)">
