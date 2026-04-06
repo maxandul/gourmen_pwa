@@ -16,7 +16,7 @@
 {% endif %}
 {%- endmacro %}
 
-{% block title %}Datenbereinigung{% endblock %}
+{% block title %}Bereinigung{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -24,13 +24,17 @@
         <p class="page-back">
             <a href="{{ url_for('dashboard.index') }}">{{ lucide_icon('arrow-left') }}<span>Zurück zum Dashboard</span></a>
         </p>
-        <h1>{{ lucide_icon('brush-cleaning') }} Datenbereinigung ({{ progress.completed }}/{{ progress.total }})</h1>
+        <h1>{{ lucide_icon('brush-cleaning') }} Bereinigung</h1>
     </div>
 
     <p class="text-secondary events-cleanup-intro">
-        Es geht immer das <strong>jüngste offene</strong> Event zuerst: <strong>kommende</strong> Termine in den nächsten <strong>{{ cleanup_upcoming_days }} Tagen</strong> nur mit <strong>Zu- oder Absage</strong>;
-        <strong>vergangene</strong> Events (ab <strong>{{ cleanup_cutoff_days }} Tagen</strong> nach Eventdatum) zusätzlich mit <strong>Bewertung</strong>, falls vorgesehen.
-        Alternativ weiterhin Zu-/Absage in der <a href="{{ url_for('events.index', tab='kommend') }}">Event-Liste</a> oder im Event-Detail.
+        {% if progress.pending == 0 %}
+            Du hast keine fehlenden Angaben mehr.
+        {% elif progress.pending == 1 %}
+            Du hast 1 fehlende Angabe.
+        {% else %}
+            Du hast {{ progress.pending }} fehlende Angaben.
+        {% endif %}
     </p>
 
     <div class="page-content">
