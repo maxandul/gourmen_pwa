@@ -1,28 +1,22 @@
 ﻿{% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Jahresplanung - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('events.index') }}" class="breadcrumbs__link">Events</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Jahresplanung</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('events.index') }}">{{ lucide_icon('arrow-left') }}<span>Zurück zu Events</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
+            {{ lucide_icon('calendar') }}
             Jahresplanung erstellen
         </h1>
     </div>
@@ -31,28 +25,25 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 20h9"/>
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                    </svg>
+                    {{ lucide_icon('pencil') }}
                     Automatische Event-Erstellung
                 </h2>
             </div>
             <div class="card__body">
                 <p>Das System erstellt automatisch:</p>
-                <ul style="margin: var(--space-4) 0; padding-left: var(--space-5); color: var(--color-text-secondary);">
-                    <li style="margin-bottom: var(--space-2);">
-                        <strong>12 Monatsessen</strong> - jeden 2. Freitag im Monat
+                <ul class="events-year-planning-list">
+                    <li>
+                        <strong>12 Monatsessen</strong> — jeden 2. Freitag im Monat
                     </li>
-                    <li style="margin-bottom: var(--space-2);">
+                    <li>
                         <strong>Organisatoren</strong> werden automatisch rotierend zugewiesen
                     </li>
-                    <li style="margin-bottom: var(--space-2);">
+                    <li>
                         <strong>Details</strong> können später von den Organisatoren ergänzt werden
                     </li>
                 </ul>
                 
-                <form method="POST" class="form" style="max-width: 400px; margin-top: var(--space-6);">
+                <form method="POST" class="form max-400 mt-6">
                     {{ form.hidden_tag() }}
                     
                     <div class="form-field">
@@ -61,7 +52,7 @@
                         {% if form.year.errors %}
                         <span class="form-field__error">{{ form.year.errors[0] }}</span>
                         {% endif %}
-                        <small style="display: block; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--color-text-secondary);">Normalerweise wird die Jahresplanung Ende des Vorjahres für das kommende Jahr erstellt.</small>
+                        <small class="form-field__help">Normalerweise wird die Jahresplanung Ende des Vorjahres für das kommende Jahr erstellt.</small>
                     </div>
                     
                     <div class="form-actions">

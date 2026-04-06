@@ -57,7 +57,7 @@ Bei **wesentlichen** UX-Fragen: dem User **Optionen** nennen, **Empfehlung** geb
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **CSS**             | Custom **BEM** + **Tokens**; keine Tailwind-/DaisyUI-Migration im aktuellen Redesign.                                                                                                                                                                                                                   |
 | **Card**            | Card für **Objekte / zusammenhängende Blöcke**; **nicht** für jede Infoart. KPI-Listen: eigene Muster (**stat-tile**, **compact-list** — in Phase 1 ff. definieren und hier dokumentieren).                                                                                                             |
-| **Breadcrumbs**     | Kein Fokus auf klassische Breadcrumbs auf Mobile; Orientierung über **Nav + Titel**. Optional Desktop oder **„Zurück zu Events“** statt Kette.                                                                                                                                                          |
+| **Breadcrumbs**     | Kein Fokus auf klassische Breadcrumbs auf Mobile; Orientierung über **Nav + Titel**. **Bei jeder Migration einer Unterseite:** keine **`<nav class="breadcrumbs">`**, Kette ersetzen durch **einen** **`.page-back`**-Link (Lucide **`chevron-left`**) zum **sinnvollen Elternziel** — wie **`templates/events/detail.html`**. Mehrstufige Pfadwege nicht als Breadcrumb nachbauen; **§7** und **§8.3.2**. |
 | **Tabs**            | Tabs für **getrennte Ansichten innerhalb eines Bereichs** (Events, GGL, Event-Detail). Sparsam halten; langfristig **clientseitiges Umschalten** wo sinnvoll (ohne volle Seitenlast), mit URL-Fallback.                                                                                                 |
 | **Hauptnavigation** | **Bottom-Nav** (4) + **Sidebar** ab 1024px. Vierter Bereich: **„Verein“** (siehe **§4.5**); **kein** separater Admin-Tab und **kein** Admin-Icon in der User-Bar. Skalierung neuer Bereiche: **„Mehr“** / Drawer o. ä.                                                                                  |
 | **User-Bar**        | **Theme-Toggle** bleibt in der **oberen Leiste** (schneller Zugriff). **User-Menü** (Button): persönliche Daten, Sicherheit, **Logout** — Details **§4.5**.                                                                                                                                             |
@@ -153,6 +153,27 @@ Drei-Punkte-Menü nur als **spätere** Ergänzung bei Platzengpass, nicht Standa
 **HTML-Referenz:** bestehende Templates + `static/css/v2/components.css`.
 
 **Standard-Geltung (Tabs, Tabellenkopf, Filter-/Tool-Leisten):** Die beschriebenen Styles für **`.tabs--panel`**, **`thead`** bei **`.data-table`** / **`.table`**, **`tool-surface`**, **Tool-Strip** (**§5.2.2–5.2.3**) und zugehörige Tokens gelten **für das gesamte Projekt**, sobald ein Template dieselben Klassen verwendet — sie sind **nicht** auf den Events-Index beschränkt. **`static/css/v2/components.css`** ist die **einzige** normative CSS-Quelle dafür; der Events-Index (und weitere migrierte Seiten) sind **Referenz-Implementierungen**, keine Sonderlocke.
+
+#### 5.1.1 Buttons (Migration)
+
+- **Nur** die **`components.css`**-Button-Klassen: **`.btn`** plus Modifikatoren (**`.btn--primary`**, **`.btn--outline`**, **`.btn--danger`**, **`.btn--success`**, **`.btn--ghost`**, **`.btn--icon-only`** … — siehe **`components.css`** und bestehende V2-Templates.
+- **Semantik:** Primäraktion = **Primary**; sekundär = **Outline**; zerstörerisch = **Danger**; Erfolg bestätigen = oft **Success** (wo im Projekt schon verwendet).
+- **Keine** freien Button-Styles (Inline-`style`, eigene Klassen) ohne User-OK und Registry-Update.
+
+#### 5.1.2 Flash-Meldungen vs. Inline-**`alert`**
+
+Zwei getrennte Muster — beide sind **V2**, aber **unterschiedliches Markup**:
+
+| | **Flash** | **Inline-Alert** |
+| --- | --- | --- |
+| **Zweck** | Kurzlebige Meldungen nach **Redirect** (Session), **global** über **`_flash_messages.html`** im `<main>` | **Seiteninhalt**: Hinweise, Banner, Zustände **ohne** Session-Flash |
+| **Template** | **`templates/partials/_flash_messages.html`** | **`div.alert.alert--…`** mit **`alert__icon`**, **`alert__content`**, **`alert__title`**, **`alert__message`**, optional **`alert__actions`** |
+| **CSS** | **`static/css/v2/layout.css`** (`.flash-messages`, `.flash-message`, `.flash-message-*` / `.flash-success` …) | **`static/css/v2/components.css`** (`.alert`, `.alert--info` …) |
+| **Wann** | Nur über **`flash()`** vom Backend — Agent ändert am Partial typischerweise **einmal zentral** (Phase **7f** oder eigener Task) | Inhaltliche Hinweise in migrierten Seiten: **hier** das **`.alert`**-Muster nutzen |
+
+**Abgrenzung zu `empty-state`:** Absichtlich ruhige „keine Daten“-Situation → **`empty-state`** (**§5.2**). **Nicht** Flash/Alert dafür missbrauchen.
+
+**Hinweis:** Flash und Alert sind optisch ähnlich (Farben über Tokens), aber **noch nicht** zu einem einzigen HTML-Muster zusammengeführt — bei globalem Flash-Redesign **§16.2** um konkrete Zeile ergänzen oder Entscheidungslog.
 
 ### 5.2 Neu — im Redesign einführen
 
@@ -447,6 +468,9 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 ## 7. Checkliste pro Seiten-Migration
 
 - Konventionen aus diesem Dokument  
+- **Navigation:** Keine **Breadcrumb-Kette** (`breadcrumbs` / `breadcrumbs__*`). Stattdessen **`.page-back`** mit einem Link-Text wie **„Zurück zu …“** (Ziel = logische Parent-Route, nicht die vollständige Hierarchie). Referenz: **`templates/events/detail.html`**, **`static/css/v2/base.css`** (`.page-back`).  
+- **Buttons:** Nur **`.btn`** + Modifikatoren aus **`components.css`** (**§5.1.1**); keine Ad-hoc-Button-Styles.  
+- **Hinweise im Layout:** Session-**Flash** = Partial **`_flash_messages`** (**§5.1.2**); **Inline-Hinweise** auf der Seite = **`.alert`** mit Unterelementen, nicht Flash simulieren.  
 - Keine hardcodierten Farben/Abstände  
 - Mobile + Desktop geprüft  
 - Touch-Ziele ausreichend  
@@ -470,10 +494,10 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 | **4a–c** | Event-Detail (Info, BillBro, Bewertungen)                                                                                                    |
 | **5**    | Dashboard — siehe **§8.1** (Bewertungs-Thema + `cleanup.html`)                                                                               |
 | **6**    | Verein-Hub + Shell-IA (**`settings-nav`**, User-Menü, Navigation) — **erledigt** (2026-04-05); **`admin.index`** Legacy-KPI-Seite exempt, siehe **§8.2** |
-| **7**    | Rest-Templates, Cleanup, Performance — verbindlich mit **§16** (Backlog + Ende-Kriterium)                                                    |
+| **7**    | Rest-Templates, Cleanup, Performance — **Pakete §8.3**; Ende-Kriterium **§16**                                                               |
 
 
-Detail-Schritte werden während der Phasen hier nachgetragen.
+Detail-Schritte: **§8.3** (Phase 7), sonst nachgetragen.
 
 ### 8.1 Phase 5 (Dashboard) — §8.1 Klärung (2026-04-05)
 
@@ -499,7 +523,43 @@ Weitere Dashboard-Migration (KPI-Muster, Lucide-Konsolidierung, …) bleibt **Ph
 
 **`templates/admin/index.html` — bewusst nicht auf `settings-nav` umgebaut:** Die Seite bleibt ein **Legacy-KPI-Hub** (`hub-card`) für direkte Aufrufe von **`admin.index`** (Lesezeichen, alte Links). Die **Hauptnavigation** führt Admins primär über **Verein** (**§4.2**). Status in **§13:** **`done`** mit Begründung im **Entscheidungslog §12** („Exempt“).
 
-**Phase 7** ist der nächste Schwerpunkt (**§10**).
+**Phase 7** ist der nächste Schwerpunkt (**§10**); konkrete Arbeitspakete **§8.3**.
+
+### 8.3 Phase 7 — Pakete (für Agenten ohne Chat-Kontext)
+
+**Zweck:** Phase 7 ist zu groß für „alles auf einmal“. Jeder Agent bearbeitet **genau ein Paket** pro Session (oder bis Commit), dokumentiert den Abschluss in **§8.3.1** und im **Tracker §10**, dann erst nächstes Paket.
+
+**Vor jeder Änderung:** `.cursor/rules/redesign.mdc`, **§7** (Migrations-Checkliste), **§5** (Komponenten-Katalog). **Branch:** `redesign`. **Nach `components.css`:** `python scripts/fingerprint_assets.py`.
+
+**Reihenfolge:** Pakete **7a → 7f** (7b/7c/7d/7e sind untereinander parallelisierbar, sobald **7a** begonnen wurde; **7f** immer **zuletzt** — siehe Spalte „Blockiert bis“).
+
+#### 8.3.1 Paket-Status (pflegen)
+
+| Paket | Inhalt (Templates) | Status   | Hinweis |
+| ----- | -------------------- | -------- | ------- |
+| **7a** | `templates/events/cleanup.html`, `edit.html`, `year_planning.html` | erledigt | Lucide-Sprite, **`.page-back`**, `#rating-card`-Scroll-Margin in **`components.css`** (2026-04-06) |
+| **7b** | `templates/member/profile.html`, `security.html`, `technical.html`, `member/merch/index.html`, `order.html`, `orders.html`, `order_detail.html`, `order_edit.html` | offen | Formulare + Listen an **§5**; User-Menü-Einstiege §4.5 |
+| **7c** | `templates/admin/members.html`, `create_member.html`, `edit_member_enhanced.html`, `member_sensitive.html`, `member_security_overview.html`, `reset_member_2fa.html`, `reset_member_password.html`, `temp_password.html`, `create_event.html`, `admin/merch/index.html`, `article_form.html`, `article_detail.html`, `admin/merch/order_detail.html` | offen | **`admin/index.html`** bleibt exempt (**§8.2**, **§12**) — nicht migrieren |
+| **7d** | `templates/errors/403.html`, `errors/404.html`, `errors/500.html`, `public/landing.html`, `offline.html` | offen | Kurzseiten; Tonalität ruhig; PWA **`offline.html`** |
+| **7e** | `templates/auth/*.html` (alle 11: Login, Passwort, 2FA, Step-Up, Backup-Codes, …) | offen | Nach **7d** sinnvoll (öffentliche/Auth-Flows); **C-001** blockiert bis Lucide überall (§16.2) |
+| **7f** | Abschluss: **`templates/base.html`** (§13), **`templates/dashboard/index.html`** auf **done** nach PO; **§16** P0/P1; Performance-Sanity; Registry-Totcode; ggf. **§14** | offen | **C-002** (V1 entfernen), **C-003**, **C-004** siehe §16.2 |
+
+**Statuswerte:** nur `offen` | `erledigt` (pro Paket). Bei `erledigt`: **§7** für alle Dateien des Pakets erfüllt, Commit auf `redesign`, **§8.3.1** und ggf. **§13**-Einträge (siehe unten) aktualisieren.
+
+#### 8.3.2 Pro Paket — immer gleiches Vorgehen
+
+1. **Paket in §8.3.1** als „offen“ bestätigen (nicht an einem fertigen Paket weiterarbeiten).
+2. **Templates** der Paketliste durchgehen: **V2**-Layout (`page-header`, `page-content`, Tokens, Registry-Klassen), **Lucide** (`url_for` Sprite wie Events/GGL), keine **Font-Awesome**-Neueinführung (Altbestand: §16.2 **C-001**). **Breadcrumb-Navs entfernen** → **`.page-back`** (§3 Breadcrumbs, **§7**).
+3. **Formulare:** `.form`, `.form-field`, `.form-actions`; **Tabellen:** `data-table` / `table-responsive` wie in **§5.1**.
+4. **Test:** Desktop + schmales Fenster; kritische Flows des Pakets (z. B. ein Login bei **7e**).
+5. **Doku:** Tracker **§10** (Session-Notiz **§11** bei Abbruch); **Entscheidungslog §12** nur bei Abweichung vom Katalog oder PO-Entscheidung.
+6. **Paket:** Status **erledigt** in **§8.3.1**; nächster Agent nimmt das nächste `offen`-Paket in Reihenfolge **7a→…→7f** (oder nach Absprache ein parallelisierbares Paket aus der Tabelle).
+
+#### 8.3.3 §13 nachziehen
+
+Solange **7f** nicht erledigt ist, bleibt die Zeile **„übrige `templates/`**“ in **§13** auf **pending**. Optional: **pro abgeschlossenem Paket** eine **Session-Notiz §11** oder eine kurze Zeile unter der §13-Tabelle („Paket 7b erledigt: …“), wenn **§13** noch keine Einzelzeilen pro Datei hat — Mindeststandard: **§8.3.1** muss stimmen.
+
+**Ende Phase 7:** **§8.3.1** alle Pakete **erledigt**; **§16.1** erfüllt; **§10** Phase 7 „erledigt“.
 
 ---
 
@@ -533,12 +593,14 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 | 4 Event-Detail     | erledigt | **`detail.html`:** **`tabs--panel`**, Tab Infos **Summary** + RSVP-Zeile **Deine Teilnahme**; Leiste **Bearbeiten** + **`sessionStorage`**; **`data-table`** (Teilnehmer, **`billbro-guess-ranking-table`**); BillBro **Hinweistext** unter Phasenleiste, **Anker** + Redirects, **`billbro-sync`**-Polling; Tab Bewertungen: Hero **`metrics-spotlight`**, **`events-ratings-others-table`** — Details **§11**. |
 | 5 Dashboard        | weitgehend erledigt | Intent-Layout (**Zu erledigen** / **Zur Info** / **Erkunden**), **`dashboard_intent_tile`**, Merch-Kachel-Logik, **`rank_total`** in **`dashboard.py`**; visuelle PO-Freigabe optional (**§13** ggf. **`done`**). |
 | 6                  | erledigt | Verein-Hub, Shell-Navigation, User-Menü — **§8.2**; **`admin.index`** Legacy exempt (**§12**). |
-| 7                  | offen    | Sub-Seiten, **`events/cleanup.html`** vollständig V2, Konsistenz — **§16** Backlog. |
+| 7                  | offen    | Arbeitspakete **§8.3** (Status **§8.3.1**); Abschluss **§16** + **§8.3.3** §13. |
 
 
 ### NAECHSTER SCHRITT
 
-**Nächster Agent (Reihenfolge):** (1) **§10** dieses Dokuments (Tracker + diesen Abschnitt). (2) **§8.2** (Phase-6-Stand, falls Verein/Shell). (3) **§16** / **§16.2** (Backlog). (4) **`templates/events/cleanup.html`** als erster großer Phase-7-Block: Lucide-Sprite (`url_for` wie andere V2-Templates), weniger Inline-Styles, **`components.css`**. (5) Weitere **Phase-7**-Templates laut **§13** und Masterplan.
+**Nächster Agent (Reihenfolge):** (1) **§8.3** — aktuelles **Phase-7-Paket** (Status **§8.3.1**) und dort genannte Templates. (2) **§10** Tracker + dieser Abschnitt. (3) **§16** / **§16.2** bei Backlog/Blockern. (4) Umsetzung **nur** für das gewählte Paket; **§7** Checkliste.
+
+**Nächster Phase-7-Block:** Paket **7b** (Member-Unterseiten), siehe **§8.3.1**.
 
 **Optional:** **`templates/dashboard/index.html`** in **§13** auf **`done`** setzen, wenn der PO das Intent-Dashboard visuell freigibt.
 
@@ -548,6 +610,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 ## 11. Letzte Session-Notiz
 
+- **2026-04-06:** **Phase 7 Paket 7a erledigt:** **`templates/events/cleanup.html`** (Lucide, **`.page-back`** → Dashboard, **`#rating-card`** Scroll-Margin in **`components.css`**), **`events/year_planning.html`** (Breadcrumbs entfernt, **`.page-back`** → Events, Lucide, **`events-year-planning-list`** / **`max-400`**), **`events/edit.html`** (Breadcrumbs → **„Zurück zum Event“**, Lucide für Kopfzeilen). Fingerprint **`python scripts/fingerprint_assets.py`**. **Nächster Schritt:** Paket **7b** (**§8.3.1**).
 - **2026-04-05 (Phase-6-Abschluss):** **Phase 6 erledigt** — Details **§8.2**, Tracker **§10**, Exempt **`admin/index`** **§12**. Dashboard-Untertitel angepasst (**`dashboard/index.html`**: Datenbereinigung „fehlende Angabe(n)“, GGL ohne Teilnahme-Zähler im Meta, Erkunden Merch/Statistiken). **Nächster Schritt:** **Phase 7**, start **`events/cleanup.html`** (**§10 NAECHSTER SCHRITT**).
 - **2026-04-05:** **Verein-Hub** **`templates/member/index.html`:** **`settings-nav`** (§4.2), Backend **`member.index`** vereinfacht — siehe **§12** letzte Zeile und **§10 NAECHSTER SCHRITT**.
 - **2026-04-05 (Handoff für nächsten Agenten):** **Dashboard** fertig umgesetzt: Intent-Sektionen, **`dashboard_intent_tile`**, Cleanup-Kachel **`brush-cleaning`** / Untertitel **fehlende Angabe(n)** (siehe **§6.3**), **Nächstes Event** ohne RSVP (Detail/Liste), **Dein letzter Anteil**, Merch ohne Nr. und ausgeblendet bei **Geliefert**, **Erkunden** nur Shop + Statistiken. **`dashboard.py`:** **`ggl_stats.rank_total`**. **Datenbereinigung:** **`retro_cleanup.py`** — Fenster **heute … +30 Tage** (nur RSVP), Retro-Past **CUTOFF_DAYS 7** (+ Bewertung), Reihenfolge **`datum` absteigend**; **`events.cleanup`** / **`cleanup_rsvp`** / **`can_rate`** / **`cleanup_upcoming_days`**; **`.events-cleanup-intro`**. **Doku:** **§4.1**, **§5.2**, **§6.3**, **§12**. **Assets:** nach CSS-Änderung immer **`python scripts/fingerprint_assets.py`**. Nächster Schritt: **§10 NAECHSTER SCHRITT**.
