@@ -51,8 +51,8 @@
                 {{ dashboard_intent_tile(
                     url_for('events.detail', event_id=today_billbro_event.id, tab='billbro'),
                     'receipt',
-                    'Zu BillBro',
-                    (today_billbro_event.event_typ.value ~ ' · heute')
+                    'BillBro',
+                    'Heutiges Event'
                 ) }}
                 {% endif %}
                 {% if retro_cleanup_progress.pending > 0 %}

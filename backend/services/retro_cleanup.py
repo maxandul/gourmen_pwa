@@ -85,8 +85,8 @@ class RetroCleanupService:
 
     @classmethod
     def get_today_billbro_prompt_event(cls, member_id: int) -> Optional[Event]:
-        """Heutiges veröffentlichtes Event (UTC-Kalendertag): BillBro-Link sinnvoll für Organisator
-        oder Teilnehmer mit Zusage. Reihenfolge: frühestes ``datum`` zuerst."""
+        """Heutiges veröffentlichtes Event (UTC-Kalendertag): BillBro-Link für Organisator oder
+        Zusage, nur solange ``billbro_closed`` falsch ist. Reihenfolge: frühestes ``datum`` zuerst."""
         join_dt = cls._member_join_date(member_id)
         today_utc = datetime.utcnow().date()
         day_start = datetime.combine(today_utc, time.min)
@@ -94,6 +94,7 @@ class RetroCleanupService:
 
         q = (
             Event.query.filter(Event.published == True)  # noqa: E712
+            .filter(Event.billbro_closed == False)  # noqa: E712
             .filter(Event.datum >= day_start)
             .filter(Event.datum < day_end)
         )
