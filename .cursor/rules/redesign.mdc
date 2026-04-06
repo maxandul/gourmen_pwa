@@ -9,7 +9,7 @@ alwaysApply: false
 
 # Gourmen Redesign — Agent-Regeln
 
-Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen). Layout + Head: **`templates/partials/`** (Shell + `_head_*`, Übersicht `REDESIGN.md` §13.2).
+Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder inhaltlichen Änderung relevante Abschnitte lesen). Layout + Head: **`templates/partials/`** (Shell + `_head_*`, Übersicht `REDESIGN.md` §13.2). **Abschlusspaket Phase 7 (7f):** verbindliche Checkliste **`REDESIGN.md` §8.3.4** plus **`§16`** (Ende-Kriterium + Backlog).
 
 **Technik:** Nur **Custom CSS (BEM + Design Tokens)** wie in `REDESIGN.md` Abschnitt 1 festgelegt — **kein** Tailwind o. ä. ohne ausdrücklichen User-Auftrag und Entscheidungslog.
 
