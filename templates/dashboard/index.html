@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% macro lucide_icon(symbol_id, icon_class='icon') -%}
 <svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
   <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
@@ -43,10 +43,18 @@
 
     <div class="page-content">
 
-        {% if retro_cleanup_progress.pending > 0 or rsvp_prompt_event %}
+        {% if today_billbro_event or retro_cleanup_progress.pending > 0 or rsvp_prompt_event %}
         <section class="dashboard-intent" aria-labelledby="dashboard-todo-heading">
             <h2 id="dashboard-todo-heading" class="dashboard-intent__heading">Zu erledigen</h2>
             <div class="dashboard-intent__grid">
+                {% if today_billbro_event %}
+                {{ dashboard_intent_tile(
+                    url_for('events.detail', event_id=today_billbro_event.id, tab='billbro'),
+                    'receipt',
+                    'Zu BillBro',
+                    (today_billbro_event.event_typ.value ~ ' · heute')
+                ) }}
+                {% endif %}
                 {% if retro_cleanup_progress.pending > 0 %}
                 {{ dashboard_intent_tile(
                     url_for('events.cleanup'),
