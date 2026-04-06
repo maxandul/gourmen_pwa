@@ -1,60 +1,84 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
+
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.e05a0f11.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.73c79b3f.css') }}">
 {% endblock %}
 
-{% block title %}Gourmen - Willkommen{% endblock %}
+{% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
+
+{% block og_title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
+{% block og_description %}Gemeinsame Restaurantbesuche, Guessing League und Vereinsleben. Infos für Interessierte; die App ist für Mitglieder.{% endblock %}
+{% block twitter_title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
+{% block twitter_description %}Gemeinsame Restaurantbesuche, Guessing League und Vereinsleben. Infos für Interessierte; die App ist für Mitglieder.{% endblock %}
 
 {% block content %}
 <div class="container landing">
-    <section class="landing-hero card">
+    <div class="alert alert--info landing-public-note" role="status">
+        {{ lucide_icon('info', 'icon alert__icon') }}
+        <div class="alert__content">
+            <div class="alert__title">Öffentliche Infoseite</div>
+            <div class="alert__message">
+                Hier erfährst du, was Gourmen ist. Terminplanung, Anmeldungen und Mitgliederverwaltung laufen in der <strong>Web-App</strong> — Zugang nach Einladung bzw. für Vereinsmitglieder.
+            </div>
+        </div>
+    </div>
+
+    <section class="landing-hero card" aria-labelledby="landing-hero-heading">
         <div class="landing-hero__text">
-            <p class="eyebrow">Seit 2021 · Zürich</p>
-            <h1>Gourmen</h1>
-            <p class="lead">Mehr ist mehr: <br> Kulinarik & Freundschaft</p>
+            <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
+            <h1 id="landing-hero-heading">Gourmen</h1>
+            <p class="lead">Gemeinsame Restaurantbesuche, Guessing League und Vereinsleben — <strong>mehr ist mehr</strong>: Kulinarik, Austausch und Freundschaft.</p>
             <div class="landing-actions">
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">Zum Dashboard</a>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">{{ lucide_icon('layout-dashboard', 'icon') }} Zum Dashboard</a>
                 {% else %}
-                <a href="{{ url_for('auth.login') }}" class="btn btn--primary">Anmelden</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn--primary">{{ lucide_icon('log-in', 'icon') }} Anmelden</a>
                 {% endif %}
             </div>
         </div>
         <div class="landing-hero__visual">
-            <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="Gourmen Logo" class="landing-logo" />
+            <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
         </div>
     </section>
 
-    <section class="landing-stats card">
-        <div class="stat">
-            <div class="stat-value">{{ member_count }}</div>
-            <div class="stat-label">Mitglieder</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">{{ days_since_foundation }}</div>
-            <div class="stat-label">Tage „nur mehr ist mehr“</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">{{ restaurant_count }}</div>
-            <div class="stat-label">besuchte Restaurants</div>
+    <section class="landing-stat-strip" aria-labelledby="landing-stats-heading">
+        <h2 id="landing-stats-heading" class="sr-only">Verein in Zahlen</h2>
+        <div class="stat-tiles">
+            <div class="stat-tile">
+                <span class="stat-tile__label">Mitglieder</span>
+                <span class="stat-tile__value">{{ member_count }}</span>
+            </div>
+            <div class="stat-tile">
+                <span class="stat-tile__label">Tage „nur mehr ist mehr“</span>
+                <span class="stat-tile__value">{{ days_since_foundation }}</span>
+            </div>
+            <div class="stat-tile">
+                <span class="stat-tile__label">besuchte Restaurants</span>
+                <span class="stat-tile__value">{{ restaurant_count }}</span>
+            </div>
         </div>
     </section>
 
     {% if latest_event %}
-    <section class="landing-event">
+    <section class="landing-event" aria-labelledby="landing-next-heading">
+        <h2 id="landing-next-heading" class="landing-section-title">
+            {{ lucide_icon('calendar') }}
+            Ein Blick auf den nächsten Termin
+        </h2>
         <div class="card">
             <div class="card__header">
-                <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
+                <h3 class="card__title">
+                    {{ lucide_icon('calendar-days') }}
                     Nächstes Event
-                </h2>
+                </h3>
             </div>
             <div class="card__body">
                 <div class="info-row">
@@ -76,29 +100,26 @@
                 </div>
                 {% endif %}
                 {% if latest_event.notizen %}
-                <p style="margin-top: var(--space-4); color: var(--color-text-secondary);">
-                    {{ latest_event.notizen[:220] }}{% if latest_event.notizen|length > 220 %}...{% endif %}
+                <p class="landing-event-teaser">
+                    {{ latest_event.notizen[:220] }}{% if latest_event.notizen|length > 220 %}…{% endif %}
                 </p>
                 {% endif %}
+                <p class="landing-event-teaser">
+                    Details und Zu-/Absagen sind in der App für Mitglieder sichtbar.
+                </p>
             </div>
         </div>
     </section>
     {% endif %}
 
     <footer class="landing-footer">
+        <p class="landing-footer__label">Kontakt &amp; Social</p>
         <div class="socials">
-            <a href="https://instagram.com/gourmen_zh" target="_blank" rel="noopener" class="social-link" aria-label="Instagram">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                </svg>
+            <a href="https://instagram.com/gourmen_zh" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Gourmen auf Instagram">
+                {{ lucide_icon('instagram') }}
             </a>
-            <a href="mailto:fohvollenmaenllichen@gmail.com" class="social-link" aria-label="E-Mail">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                </svg>
+            <a href="mailto:fohvollenmaenllichen@gmail.com" class="social-link" aria-label="E-Mail an Gourmen">
+                {{ lucide_icon('mail') }}
             </a>
         </div>
     </footer>

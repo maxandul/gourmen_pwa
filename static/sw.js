@@ -3,7 +3,7 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.0.0';
+const VERSION = '3.0.1';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
@@ -12,8 +12,8 @@ const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/static/manifest.json',
-    '/static/css/main-v2.61b2daf1.css',
-    '/static/css/public.47da10af.css',
+    '/static/css/main-v2.174ac4d9.css',
+    '/static/css/public.73c79b3f.css',
     '/static/favicon.6d319de4.ico',
     '/static/favicon.0c03bb1d.svg',
     '/static/img/pwa/icon-16.498c3d3b.png',
@@ -28,7 +28,7 @@ const STATIC_ASSETS = [
     '/static/img/pwa/apple-touch-icon-180.8b095258.png',
     '/static/img/pwa/badge-72.d5fcf4dc.png',
     '/static/img/pwa/badge-96.054a5b81.png',
-    '/static/offline.90b7cb7b.html'
+    '/static/offline.92e4e62c.html'
 ];
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
@@ -321,7 +321,7 @@ async function networkFirst(request, cacheName) {
         
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.90b7cb7b.html');
+        const offlineResponse = await caches.match('/static/offline.92e4e62c.html');
         if (offlineResponse) {
             return offlineResponse;
         }

@@ -1,68 +1,68 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - Gourmen</title>
+    <title>Offline – Gourmen</title>
     <script>
-        (function() {
+        (function () {
             const saved = localStorage.getItem('theme');
             const theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
-    <link rel="stylesheet" href="/static/css/main-v2.css">
+    <link rel="stylesheet" href="/static/css/main-v2.174ac4d9.css">
     <link rel="icon" href="/static/favicon.ico">
     <link rel="apple-touch-icon" href="/static/img/pwa/apple-touch-icon.png">
     <meta name="theme-color" content="#1b232e">
 </head>
-<body>
-    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--space-5); background: var(--color-bg-base);">
-        <div class="card" style="max-width: 520px; width: 100%; text-align: center;">
+<body class="offline-shell">
+    <div class="offline-shell__inner">
+        <div class="card">
             <div class="card__header">
-                <h1 class="card__title" style="justify-content: center; gap: var(--space-2);">
+                <h1 class="card__title">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M2 12h4l3 8 4-16 3 8h6"/>
+                        <use href="/static/icons/lucide-sprite.7e463391.svg#wifi-off"></use>
                     </svg>
                     Offline
                 </h1>
             </div>
             <div class="card__body">
-                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-4);">
-                    Keine Internetverbindung. Bereits geladene Inhalte können ggf. noch angezeigt werden.
+                <p class="offline-shell__lead">
+                    Keine Internetverbindung. Bereits geladene Inhalte können in der App noch angezeigt werden.
                 </p>
 
                 <div class="card-section card-section--subtle">
                     <div class="card-section__header">
-                        <h3 class="card-section__title">Verfügbar offline</h3>
+                        <h2 class="card-section__title">Meist noch verfügbar</h2>
                     </div>
                     <div class="card-section__body">
-                        <ul style="margin: 0; padding-left: var(--space-4); color: var(--color-text-secondary);">
-                            <li>Bereits gecachte Seiten</li>
-                            <li>App-Navigation (falls im Cache)</li>
-                            <li>Lokale Einstellungen</li>
+                        <ul class="offline-shell__list">
+                            <li>Zuletzt gecachte Seiten</li>
+                            <li>Navigation (wenn im Cache)</li>
+                            <li>Theme und lokale Einstellungen</li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="card-section card-section--subtle" style="margin-top: var(--space-4);">
+                <div class="card-section card-section--subtle offline-shell__section-gap">
                     <div class="card-section__header">
-                        <h3 class="card-section__title">Status</h3>
+                        <h2 class="card-section__title">Status</h2>
                     </div>
-                    <div class="card-section__body" style="display:flex; flex-direction:column; gap: var(--space-2);">
+                    <div class="card-section__body offline-shell__status-body">
                         <div class="info-row">
                             <span class="info-row__label">Verbindung</span>
                             <span class="info-row__value" id="connection-status">Offline</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-row__label">Letzte Synchronisation</span>
-                            <span class="info-row__value" id="last-sync">Unbekannt</span>
+                            <span class="info-row__label">Zuletzt</span>
+                            <span class="info-row__value" id="last-sync">—</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card__footer" style="justify-content: center; flex-wrap: wrap;">
-                <button class="btn btn--primary" type="button" onclick="window.location.reload()">Seite neu laden</button>
+            <div class="card__footer">
+                <button class="btn btn--primary" type="button" onclick="window.location.reload()">Erneut laden</button>
                 <a class="btn btn--outline" href="/">Startseite</a>
             </div>
         </div>
@@ -72,10 +72,11 @@
         function updateConnectionStatus() {
             const statusElement = document.getElementById('connection-status');
             const lastSyncElement = document.getElementById('last-sync');
+            if (!statusElement || !lastSyncElement) return;
             if (navigator.onLine) {
                 statusElement.textContent = 'Online';
-                lastSyncElement.textContent = new Date().toLocaleString('de-DE');
-                setTimeout(() => window.location.href = '/', 2000);
+                lastSyncElement.textContent = new Date().toLocaleString('de-CH');
+                setTimeout(function () { window.location.href = '/'; }, 1500);
             } else {
                 statusElement.textContent = 'Offline';
             }
@@ -87,6 +88,3 @@
     </script>
 </body>
 </html>
-
-
-
