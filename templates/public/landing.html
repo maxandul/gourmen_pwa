@@ -17,7 +17,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.ed174ebd.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.cdee3a33.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -47,32 +47,25 @@
         </div>
     </section>
 
-    <section class="landing-kpi-card card" aria-labelledby="landing-kpi-heading">
-        <div class="card__header">
-            <h2 class="card__title" id="landing-kpi-heading">
-                {{ lucide_icon('clipboard-list') }}
-                Summary
-            </h2>
-        </div>
-        <div class="card__body">
-            <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
-                <div class="metrics-spotlight__hero">
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">Mitglieder</span>
-                        <span class="metrics-spotlight__metric-value">{{ member_count }}</span>
-                    </div>
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
-                        <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
-                    </div>
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">letztes Restaurant</span>
-                        <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">{{ last_restaurant or '—' }}</span>
-                    </div>
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">nächstes Essen</span>
-                        <span class="metrics-spotlight__metric-value">{{ next_essen_date or '—' }}</span>
-                    </div>
+    <section class="landing-stat-strip" aria-labelledby="landing-stats-heading">
+        <h2 id="landing-stats-heading" class="sr-only">Kennzahlen</h2>
+        <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
+            <div class="metrics-spotlight__hero">
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Mitglieder</span>
+                    <span class="metrics-spotlight__metric-value">{{ member_count }}</span>
+                </div>
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
+                    <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
+                </div>
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">letztes Restaurant</span>
+                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">{{ last_restaurant or '—' }}</span>
+                </div>
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">nächstes Essen</span>
+                    <span class="metrics-spotlight__metric-value">{{ next_essen_date or '—' }}</span>
                 </div>
             </div>
         </div>
@@ -93,7 +86,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Restaurant</th>
-                        <th scope="col">Bewertung</th>
+                        <th scope="col">Gourmen Rating</th>
                         <th scope="col">Homepage</th>
                     </tr>
                 </thead>
