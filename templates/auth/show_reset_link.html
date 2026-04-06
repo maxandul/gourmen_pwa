@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
+{% set use_v2_design = True %}
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
+
+{% block title %}Passwort zurücksetzen - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
   <div class="page-header">
     <h1>
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M12 2v4"/>
-        <path d="M12 18v4"/>
-        <path d="M4.93 4.93 7.76 7.76"/>
-        <path d="M16.24 16.24l2.83 2.83"/>
-        <path d="M2 12h4"/>
-        <path d="M18 12h4"/>
-      </svg>
+      {{ lucide_icon('key-round') }}
       Passwort zurücksetzen
     </h1>
   </div>
@@ -19,7 +16,7 @@
   <div class="page-content">
     <div class="card">
       <div class="card__header">
-        <h2 class="card__title">Reset-Link</h2>
+        <h2 class="card__title">{{ lucide_icon('link') }} Reset-Link</h2>
       </div>
       <div class="card__body">
         <p>Du kannst den Link kopieren oder direkt öffnen.</p>
@@ -28,9 +25,9 @@
           <input id="resetLinkInput" class="form-field__input" type="text" readonly value="{{ reset_url }}" />
         </div>
       </div>
-      <div class="card__footer" style="display:flex; gap: var(--space-3); flex-wrap: wrap;">
-        <button id="copyResetLinkBtn" class="btn btn--primary" type="button">Link kopieren</button>
-        <a href="{{ reset_url }}" class="btn btn--outline">Jetzt öffnen</a>
+      <div class="card__footer card__footer--wrap">
+        <button id="copyResetLinkBtn" class="btn btn--primary" type="button">{{ lucide_icon('copy') }} Link kopieren</button>
+        <a href="{{ reset_url }}" class="btn btn--outline">{{ lucide_icon('external-link') }} Jetzt öffnen</a>
       </div>
     </div>
   </div>
@@ -50,4 +47,3 @@ document.getElementById('copyResetLinkBtn')?.addEventListener('click', async () 
 });
 </script>
 {% endblock %}
-

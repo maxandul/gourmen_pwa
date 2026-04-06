@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
 
 {% block title %}Sicherheitsprüfung - Gourmen{% endblock %}
 
@@ -6,30 +8,24 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M12 1v4"/>
-                <rect x="4" y="5" width="16" height="14" rx="2"/>
-                <path d="M4 9h16"/>
-            </svg>
+            {{ lucide_icon('smartphone') }}
             Sicherheitsprüfung
         </h1>
     </div>
-    
+
     <div class="page-content">
         <div class="card">
             <div class="card__header">
-                <h2 class="card__title">Sicherheitsprüfung</h2>
+                <h2 class="card__title">{{ lucide_icon('lock') }} Sicherheitsprüfung</h2>
             </div>
             <div class="card__body">
                 <p>Für den Zugriff auf sensible Daten ist eine erneute Authentifizierung erforderlich.</p>
-                
+
                 <form method="POST" class="form">
                     {{ form.hidden_tag() }}
-                    <!-- Always include next parameter, even if empty -->
                     <input type="hidden" name="next" value="{{ next or '' }}">
-                    <!-- Fallback: Also use next_url -->
                     <input type="hidden" name="next_url" value="{{ next or request.args.get('next', '') }}">
-                    
+
                     <div class="form-field">
                         {{ form.password.label(class="form-field__label") }}
                         {{ form.password(class="form-field__input", autocomplete="current-password") }}
@@ -41,7 +37,7 @@
                             </span>
                         {% endif %}
                     </div>
-                    
+
                     <div class="form-actions">
                         {{ form.submit(class="btn btn--primary") }}
                         <a href="{{ url_for('dashboard.index') }}" class="btn btn--outline">Abbrechen</a>
