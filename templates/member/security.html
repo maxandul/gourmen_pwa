@@ -1,40 +1,32 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Sicherheit - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Sicherheit</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            Sicherheit & 2FA
+            {{ lucide_icon('shield') }}
+            Sicherheit &amp; 2FA
         </h1>
     </div>
-    
+
     <div class="page-content">
         <!-- 2FA Status Card -->
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
+                    {{ lucide_icon('shield') }}
                     Zwei-Faktor-Authentifizierung
                 </h2>
             </div>
@@ -48,16 +40,6 @@
                     <span class="info-row__label">Aktiviert am</span>
                     <span class="info-row__value">{{ current_user.mfa.created_at.strftime('%d.%m.%Y %H:%M') if current_user.mfa.created_at else 'Unbekannt' }}</span>
                 </div>
-            </div>
-            <div class="card__footer">
-                <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn--danger">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                    2FA deaktivieren
-                </a>
-            </div>
                 {% else %}
                 <div class="info-row">
                     <span class="info-row__label">Status</span>
@@ -67,27 +49,28 @@
                     <span class="info-row__label">Sicherheit</span>
                     <span class="info-row__value">Niedrig</span>
                 </div>
+                {% endif %}
             </div>
             <div class="card__footer">
+                {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
+                <a href="{{ url_for('auth.disable_2fa') }}" class="btn btn--danger">
+                    {{ lucide_icon('x') }}
+                    2FA deaktivieren
+                </a>
+                {% else %}
                 <a href="{{ url_for('auth.enroll_2fa') }}" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 0 10 0v4"/>
-                    </svg>
+                    {{ lucide_icon('shield') }}
                     2FA aktivieren
                 </a>
-            </div>
                 {% endif %}
+            </div>
         </div>
-        
+
         <!-- Passwort Card -->
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    </svg>
+                    {{ lucide_icon('key-round') }}
                     Passwort
                 </h2>
             </div>
@@ -115,24 +98,18 @@
             </div>
             <div class="card__footer">
                 <a href="{{ url_for('auth.change_password') }}" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    </svg>
+                    {{ lucide_icon('key-round') }}
                     Passwort ändern
                 </a>
             </div>
         </div>
-        
+
         <!-- Backup Codes Card -->
         {% if current_user.mfa and current_user.mfa.is_totp_enabled %}
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
+                    {{ lucide_icon('shield') }}
                     Backup-Codes
                 </h2>
             </div>
@@ -154,24 +131,18 @@
             </div>
             <div class="card__footer">
                 <a href="{{ url_for('auth.backup_codes') }}" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    </svg>
+                    {{ lucide_icon('key-round') }}
                     Backup-Codes anzeigen
                 </a>
             </div>
         </div>
         {% endif %}
-        
+
         <!-- Sicherheitshinweise Card -->
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <path d="M12 9v4M12 17h.01"/>
-                    </svg>
+                    {{ lucide_icon('triangle-alert') }}
                     Sicherheitshinweise
                 </h2>
             </div>
@@ -188,4 +159,3 @@
     </div>
 </div>
 {% endblock %}
-

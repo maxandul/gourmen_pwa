@@ -546,7 +546,7 @@ Weitere Dashboard-Migration (KPI-Muster, Lucide-Konsolidierung, …) bleibt **Ph
 | Paket | Inhalt (Templates) | Status   | Hinweis |
 | ----- | -------------------- | -------- | ------- |
 | **7a** | `templates/events/cleanup.html`, `edit.html`, `year_planning.html` | erledigt | Lucide, **`.page-back`**, **`cleanup.html`** Copy **§6.3**; **`#rating-card`** in **`components.css`** (2026-04-06) |
-| **7b** | `templates/member/profile.html`, `security.html`, `technical.html`, `member/merch/index.html`, `order.html`, `orders.html`, `order_detail.html`, `order_edit.html` | offen | Formulare + Listen an **§5**; User-Menü-Einstiege §4.5 |
+| **7b** | `templates/member/profile.html`, `security.html`, `technical.html`, `member/merch/index.html`, `order.html`, `orders.html`, `order_detail.html`, `order_edit.html` | erledigt | **`.page-back`** (Eltern: **Verein**-Hub bzw. Merch-Shop), **Lucide**-Makro + Sprite **`7e463391`**; **`tabs tabs--panel`** (Profil, Merch-Index, Bestelldetail); **`security.html`:** HTML-Struktur 2FA-Karte korrigiert; **`technical.html`:** Skript nach **`{% block scripts %}`**; Stand 2026-04-06 |
 | **7c** | `templates/admin/members.html`, `create_member.html`, `edit_member_enhanced.html`, `member_sensitive.html`, `member_security_overview.html`, `reset_member_2fa.html`, `reset_member_password.html`, `temp_password.html`, `create_event.html`, `admin/merch/index.html`, `article_form.html`, `article_detail.html`, `admin/merch/order_detail.html` | offen | **`admin/index.html`** bleibt exempt (**§8.2**, **§12**) — nicht migrieren |
 | **7d** | `templates/errors/403.html`, `errors/404.html`, `errors/500.html`, `public/landing.html`, `offline.html` | offen | Kurzseiten; Tonalität ruhig; PWA **`offline.html`** |
 | **7e** | `templates/auth/*.html` (alle 11: Login, Passwort, 2FA, Step-Up, Backup-Codes, …) | offen | Nach **7d** sinnvoll (öffentliche/Auth-Flows); **C-001** blockiert bis Lucide überall (§16.2) |
@@ -608,7 +608,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 **Nächster Agent (Reihenfolge):** (1) **§8.3** — aktuelles **Phase-7-Paket** (Status **§8.3.1**) und dort genannte Templates. (2) **§10** Tracker + dieser Abschnitt. (3) **§16** / **§16.2** bei Backlog/Blockern. (4) Umsetzung **nur** für das gewählte Paket; **§7** Checkliste.
 
-**Nächster Phase-7-Block:** Paket **7b** (Member-Unterseiten), siehe **§8.3.1**.
+**Nächster Phase-7-Block:** Paket **7c** (Admin-Templates), siehe **§8.3.1**.
 
 **Optional:** **`templates/dashboard/index.html`** in **§13** auf **`done`** setzen, wenn der PO das Intent-Dashboard visuell freigibt.
 
@@ -618,6 +618,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 ## 11. Letzte Session-Notiz
 
+- **2026-04-06 (Paket 7b):** Member-Unterseiten + Merch: **`profile`**, **`security`**, **`technical`**, **`member/merch/*`** — Breadcrumbs → **`.page-back`**, Lucide wie Events/GGL, Profil/Merch-Tabs **`tabs--panel`**; **`order_detail`:** **`use_v2_design`**, gleiche Muster. **`order.html`:** Legacy-Formular/Inline-JS unverändert (nur Kopf + **`card__subtitle`**-Fix). **Nächster Schritt:** **§8.3.1 Paket 7c**.
 - **2026-04-06:** **Dashboard & Bereinigung** — IA: Kacheln **Bereinigung** + **Zu-/Absage**; **`RetroCleanupService`** nur vergangene Events in der Bereinigung; Navigation **`?i=`**, Hinweistexte, **Undo** (`cleanup_rsvp_undo`, `POST /events/cleanup/undo-rsvp`), Ratings löschen Undo bei Speichern. **`REDESIGN.md`:** **§4.1**, **§5.1**, **§6.3** (Handoff), **§8.1**, **§8.2**, **§12**; **`redesign.mdc`** Registry. **`rating_prompt`** nicht mehr für Dashboard.
 - **2026-04-06 (Handoff):** **Paket 7a erledigt** — **`events/cleanup.html`** / **`edit.html`** / **`year_planning.html`** (Lucide, **`.page-back`**, **`#rating-card`** + **`components.css`**). **`cleanup`:** Titel **„Bereinigung“**, **`.events-cleanup-intro`** aus **`progress.pending`** (**§6.3**). **Dashboard:** **Zur Info** nur noch **`dashboard-intent__grid`** (einheitlich mit **Zu erledigen** / **Erkunden**). **Doku aktualisiert:** §5.2, §6.3, §8.3.1, §12, §13-Hinweis, **`.cursor/rules/redesign.mdc`**. **Nächster Agent:** Paket **7b** (**§8.3.1**).
 - **2026-04-05 (Phase-6-Abschluss):** **Phase 6 erledigt** — Details **§8.2**, Tracker **§10**, Exempt **`admin/index`** **§12**. Dashboard-Untertitel angepasst (**`dashboard/index.html`**: Datenbereinigung „fehlende Angabe(n)“, GGL ohne Teilnahme-Zähler im Meta, Erkunden Merch/Statistiken). **Nächster Schritt:** **Phase 7**, start **`events/cleanup.html`** (**§10 NAECHSTER SCHRITT**).

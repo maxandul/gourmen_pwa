@@ -1,21 +1,27 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Meine Bestellungen - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.merch') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Shop</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m3 5 2 14h14l2-14H3Z"/>
-                <path d="M16 11a4 4 0 0 1-8 0"/>
-            </svg>
+            {{ lucide_icon('package') }}
             Meine Bestellungen
         </h1>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">Zurück zum Shop</a>
-            <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">Neue Bestellung</a>
+            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">{{ lucide_icon('shopping-cart') }} Zum Shop</a>
+            <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">{{ lucide_icon('plus') }} Neue Bestellung</a>
         </div>
     </div>
     
@@ -63,7 +69,6 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Bestellpositionen -->
                     <div class="order-items">
                         <h4>Bestellte Artikel:</h4>
                         {% for item in order.order_items %}
@@ -92,11 +97,7 @@
                 </div>
                 <div class="card__footer">
                     <a href="{{ url_for('member.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                        </svg>
+                        {{ lucide_icon('info') }}
                         Details anzeigen
                     </a>
                 </div>
@@ -112,14 +113,7 @@
                 </div>
                 <div class="card__footer">
                     <a href="{{ url_for('member.merch_order') }}" class="btn btn--primary">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                            <path d="M4 22h16"/>
-                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                        </svg>
+                        {{ lucide_icon('shopping-bag') }}
                         Erste Bestellung aufgeben
                     </a>
                 </div>
@@ -128,4 +122,3 @@
     </div>
 </div>
 {% endblock %}
-

@@ -1,68 +1,57 @@
 {% extends "base.html" %}
+{% set use_v2_design = True %}
+
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
 
 {% block title %}Bestelldetails - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('member.merch') }}" class="breadcrumbs__link">Merch</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Bestellung</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.merch') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Shop</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
+            {{ lucide_icon('info') }}
             Bestellung #{{ order.order_number }}
         </h1>
         <div class="page-actions">
             {% if order.status.value == 'BESTELLT' %}
-            <a href="{{ url_for('member.merch_order_edit', order_id=order.id) }}" class="btn btn--primary">Bearbeiten</a>
+            <a href="{{ url_for('member.merch_order_edit', order_id=order.id) }}" class="btn btn--primary">{{ lucide_icon('pencil') }} Bearbeiten</a>
             {% endif %}
         </div>
     </div>
     
     {% set tab_param = request.args.get('tab', 'overview') %}
     <div class="page-content">
-        <div class="tabs">
+        <div class="tabs tabs--panel">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('member.merch_order_detail', order_id=order.id, tab='overview') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'overview' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'overview' else 'false' }}">
+                    {{ lucide_icon('layout-list') }}
                     Übersicht
                 </a>
                 <a href="{{ url_for('member.merch_order_detail', order_id=order.id, tab='items') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'items' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'items' else 'false' }}">
+                    {{ lucide_icon('package') }}
                     Artikel
                 </a>
             </nav>
 
             <div class="tabs__content">
                 <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'overview' else '' }}" role="tabpanel">
-                    <!-- Status-Informationen -->
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                                    <path d="M12 9v4M12 17h.01"/>
-                                </svg>
+                                {{ lucide_icon('triangle-alert') }}
                                 Statusinformationen
                             </h2>
                         </div>
@@ -77,14 +66,10 @@
                         </div>
                     </div>
 
-                    <!-- Zusammenfassung -->
                     <div class="card">
                         <div class="card__header">
                             <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 3v18"/>
-                                    <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
-                                </svg>
+                                {{ lucide_icon('banknote') }}
                                 Zusammenfassung
                             </h2>
                         </div>
@@ -153,4 +138,3 @@
     </div>
 </div>
 {% endblock %}
-

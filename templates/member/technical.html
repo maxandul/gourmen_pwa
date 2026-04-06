@@ -1,27 +1,22 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}App-Einstellungen - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Technische Einstellungen</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.325 4.317a4.13 4.13 0 0 1 3.35 0l.45.2a4.13 4.13 0 0 0 3.893-.376l.05-.034a4.13 4.13 0 0 1 5.734 1.2 4.13 4.13 0 0 1-1.2 5.734l-.05.034a4.13 4.13 0 0 0-1.743 3.682l.033.5a4.13 4.13 0 0 1-3.993 4.367 4.13 4.13 0 0 1-1.741-.367l-.45-.2a4.13 4.13 0 0 0-3.35 0l-.45.2a4.13 4.13 0 0 1-3.893-.376l-.05-.034a4.13 4.13 0 0 0-5.734 1.2 4.13 4.13 0 0 0 1.2 5.734l.05.034a4.13 4.13 0 0 1 1.743 3.682l-.033.5"/>
-                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-            </svg>
+            {{ lucide_icon('settings') }}
             App-Einstellungen
         </h1>
     </div>
@@ -31,11 +26,8 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M10.325 4.317a4.13 4.13 0 0 1 3.35 0l.45.2a4.13 4.13 0 0 0 3.893-.376l.05-.034a4.13 4.13 0 0 1 5.734 1.2 4.13 4.13 0 0 1-1.2 5.734l-.05.034a4.13 4.13 0 0 0-1.743 3.682l.033.5a4.13 4.13 0 0 1-3.993 4.367 4.13 4.13 0 0 1-1.741-.367l-.45-.2a4.13 4.13 0 0 0-3.35 0l-.45.2a4.13 4.13 0 0 1-3.893-.376l-.05-.034a4.13 4.13 0 0 0-5.734 1.2 4.13 4.13 0 0 0 1.2 5.734l.05.034a4.13 4.13 0 0 1 1.743 3.682l-.033.5"/>
-                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                    </svg>
-                    Service Worker & App-Status
+                    {{ lucide_icon('settings') }}
+                    Service Worker &amp; App-Status
                 </h2>
             </div>
             <div class="card__body">
@@ -65,19 +57,12 @@
                 </div>
             </div>
             <div class="card__footer">
-                <button id="sw-diagnose-btn" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
+                <button type="button" id="sw-diagnose-btn" class="btn btn--primary">
+                    {{ lucide_icon('info') }}
                     Diagnose anzeigen
                 </button>
-                <button id="sw-cleanup-btn" class="btn btn--outline">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m3 5 2 14h14l2-14H3Z"/>
-                        <path d="M16 11a4 4 0 0 1-8 0"/>
-                    </svg>
+                <button type="button" id="sw-cleanup-btn" class="btn btn--outline">
+                    {{ lucide_icon('trash-2') }}
                     App zurücksetzen
                 </button>
             </div>
@@ -92,10 +77,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
+                    {{ lucide_icon('bell') }}
                     Push-Benachrichtigungen
                 </h2>
             </div>
@@ -144,31 +126,26 @@
                 </div>
             </div>
             <div class="card__footer">
-                <button id="enable-push-btn" class="btn btn--primary" hidden>
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
+                <button type="button" id="enable-push-btn" class="btn btn--primary" hidden>
+                    {{ lucide_icon('bell') }}
                     Benachrichtigungen aktivieren
                 </button>
-                <button id="sw-test-btn" class="btn btn--outline">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <path d="M9 9l12-2"/>
-                        <path d="M5 6v12"/>
-                        <path d="M3 6h4"/>
-                        <path d="M3 18h4"/>
-                    </svg>
+                <button type="button" id="sw-test-btn" class="btn btn--outline">
+                    {{ lucide_icon('radio') }}
                     Test-Push senden
                 </button>
             </div>
         </div>
-        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('⚙️ App-Einstellungen initialisiert');
     
-    // Warte auf PWA Initialisierung
     const waitForPWA = setInterval(() => {
         if (window.gourmenPWA) {
             clearInterval(waitForPWA);
@@ -179,37 +156,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializePage() {
         console.log('✅ PWA geladen');
         
-        // Service Worker Info wird automatisch von pwa.js befüllt:
-        // - app-version
-        // - sw-registration-status  
-        // - sw-scope
-        // - push-status
-        // (siehe pwa.js → setupServiceWorkerInfoCard() → updateServiceWorkerInfo())
-        
-        // Event Listeners werden von pwa.js gesetzt:
-        // - sw-diagnose-btn → performServiceWorkerDiagnosis()
-        // - sw-test-btn → testPushNotification()
-        // - sw-cleanup-btn → cleanupServiceWorker()
-        // - enable-push-btn → wird von app.js gesetzt
-        
-        // Initiale Status-Updates
         updatePWAStatus();
         updatePushStatus();
         updateCacheStatus();
         
-        // Auto-Update alle 5 Sekunden
         setInterval(() => {
             updatePWAStatus();
             updatePushStatus();
             updateCacheStatus();
         }, 5000);
         
-        // Online/Offline Events
         window.addEventListener('online', updatePWAStatus);
         window.addEventListener('offline', updatePWAStatus);
     }
     
-    // PWA-Status aktualisieren
     function updatePWAStatus() {
         const installedSpan = document.getElementById('pwa-installed');
         if (installedSpan) {
@@ -226,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Push-Status aktualisieren
     async function updatePushStatus() {
         const notificationSpan = document.getElementById('notification-status');
         const permissionSpan = document.getElementById('permission-status');
@@ -253,18 +212,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Prüfe Subscription-Status auf dem Server
         try {
             const response = await fetch('/notifications/push/status');
             const data = await response.json();
             
             if (data.subscribed) {
-                // User hat Push aktiviert
                 if (enabledMessage) enabledMessage.hidden = false;
                 if (disabledMessage) disabledMessage.hidden = true;
                 if (enableBtn) enableBtn.hidden = true;
             } else {
-                // User hat Push NICHT aktiviert
                 if (enabledMessage) enabledMessage.hidden = true;
                 if (disabledMessage) disabledMessage.hidden = false;
                 if (enableBtn) enableBtn.hidden = false;
@@ -274,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Cache-Status prüfen
     async function updateCacheStatus() {
         const cacheSpan = document.getElementById('cache-status');
         if (!cacheSpan) return;
@@ -291,4 +246,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-

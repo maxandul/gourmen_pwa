@@ -1,21 +1,26 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Merch bestellen - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.merch') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Shop</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
+            {{ lucide_icon('shopping-cart') }}
             Merch bestellen
         </h1>
         <div class="page-actions">
-            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">Zurück zum Shop</a>
+            <a href="{{ url_for('member.merch') }}" class="btn btn--outline">{{ lucide_icon('shopping-bag') }} Zum Shop</a>
         </div>
     </div>
     
@@ -28,7 +33,7 @@
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">{{ article.name }}</h2>
-                        <p class="card-subtitle">{{ article.description }}</p>
+                        <p class="card__subtitle">{{ article.description }}</p>
                     </div>
                     <div class="card__body">
                         <!-- Container für mehrere Varianten-Zeilen -->
@@ -109,10 +114,7 @@
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 3v18"/>
-                                <path d="M17 8H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
-                            </svg>
+                            {{ lucide_icon('banknote') }}
                             Bestellzusammenfassung
                         </h2>
                     </div>

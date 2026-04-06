@@ -1,58 +1,42 @@
 ﻿{% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Profil - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('member.index') }}" class="breadcrumbs__link">Member</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Profil</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <circle cx="12" cy="8" r="3"/>
-                <path d="M6.168 18.849A4 4 0 0 1 10 16h4a4 4 0 0 1 3.834 2.855"/>
-            </svg>
+            {{ lucide_icon('user') }}
             Mein Profil
         </h1>
     </div>
     
     <div class="page-content">
         {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'profile') %}
-        <!-- Tabs Navigation -->
-        <div class="tabs">
+        <div class="tabs tabs--panel">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('member.profile', tab='profile') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'profile' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'profile' else 'false' }}">
+                    {{ lucide_icon('user') }}
                     Profildaten
                 </a>
                 <a href="{{ url_for('member.profile', tab='sensitive') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'sensitive' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'sensitive' else 'false' }}">
-                    {% if has_step_up %}
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 0 10 0v4"/>
-                    </svg>
-                    {% else %}
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                    {% endif %}
+                    {{ lucide_icon('lock') }}
                     Sensible Daten
                 </a>
             </nav>
@@ -69,10 +53,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="12" cy="7" r="4"/>
-                                    </svg>
+                                    {{ lucide_icon('users') }}
                                     Persönliche Daten
                                 </h2>
                             </div>
@@ -153,10 +134,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                        <circle cx="12" cy="10" r="3"/>
-                                    </svg>
+                                    {{ lucide_icon('map-pin') }}
                                     Adresse
                                 </h2>
                             </div>
@@ -203,9 +181,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                    </svg>
+                                    {{ lucide_icon('ruler') }}
                                     Körperliche Daten
                                 </h2>
                             </div>
@@ -242,9 +218,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>
-                                    </svg>
+                                    {{ lucide_icon('shirt') }}
                                     Kleidergrößen
                                 </h2>
                             </div>
@@ -281,9 +255,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                    </svg>
+                                    {{ lucide_icon('sparkles') }}
                                     Präferenzen
                                 </h2>
                             </div>
@@ -320,11 +292,7 @@
                     
                     <!-- Security Info Banner -->
                     <div class="alert alert--info">
-                        <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                        </svg>
+                        {{ lucide_icon('info', 'alert__icon') }}
                         <div class="alert__content">
                             <div class="alert__title">Hinweis</div>
                             <div class="alert__message">
@@ -341,10 +309,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                                    </svg>
+                                    {{ lucide_icon('book-open') }}
                                     Reisepass
                                 </h2>
                             </div>
@@ -381,11 +346,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="6" width="20" height="12" rx="2"/>
-                                        <circle cx="8" cy="12" r="2"/>
-                                        <path d="M14 10h4M14 14h4"/>
-                                    </svg>
+                                    {{ lucide_icon('id-card') }}
                                     Personalausweis
                                 </h2>
                             </div>
@@ -422,13 +383,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                        <polyline points="14 2 14 8 20 8"/>
-                                        <line x1="16" y1="13" x2="8" y2="13"/>
-                                        <line x1="16" y1="17" x2="8" y2="17"/>
-                                        <polyline points="10 9 9 9 8 9"/>
-                                    </svg>
+                                    {{ lucide_icon('file-text') }}
                                     Zusätzliche Informationen
                                 </h2>
                             </div>
