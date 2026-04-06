@@ -1,27 +1,22 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Bestelldetails - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Verwaltung</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.merch', tab='orders') }}" class="breadcrumbs__link">Merch</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Bestelldetail</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('admin.merch', tab='orders') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Merch-Verwaltung</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+            {{ lucide_icon('search') }}
             Bestellung #{{ order.order_number }}
         </h1>
     </div>
@@ -32,7 +27,7 @@
             <div class="card__body">
                 <details class="disclosure">
                     <summary class="disclosure__summary">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#sliders"></use></svg>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#sliders"></use></svg>
                         Status verwalten
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -53,7 +48,7 @@
                                 <div class="form-field">
                                     <label class="form-field__label">&nbsp;</label>
                                     <button type="submit" class="btn btn--primary">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#check"></use></svg>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#check"></use></svg>
                                         Status aktualisieren
                                     </button>
                                 </div>
@@ -68,7 +63,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#clipboard-list"></use></svg>
                     Bestellübersicht
                 </h2>
                 <div class="card__actions">
@@ -133,7 +128,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#package"></use></svg>
                     Bestellte Artikel
                 </h2>
             </div>
@@ -187,7 +182,7 @@
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#note"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#note"></use></svg>
                     Notizen
                 </h2>
             </div>

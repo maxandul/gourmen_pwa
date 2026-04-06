@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Sensible Daten - {{ member.display_name_with_spirit }} - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('admin.members') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Mitgliederliste</span></a>
+        </p>
         <h1>
-            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#lock"></use></svg>
+            {{ lucide_icon('lock') }}
             Sensible Daten · {{ member.display_name_with_spirit }}
         </h1>
-        <div class="page-actions">
-            <a href="{{ url_for('admin.members') }}" class="btn btn--outline">
-                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#arrow-left"></use></svg>
-                Zurück zur Mitgliederliste
-            </a>
-        </div>
     </div>
     
     <div class="page-content">

@@ -1,28 +1,27 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Mitglieder-Verwaltung - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Mitglieder</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Verein</span></a>
+        </p>
         <h1>
-            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#users"></use></svg>
+            {{ lucide_icon('users') }}
             Mitglieder-Verwaltung
         </h1>
         <div class="page-actions">
             <a href="{{ url_for('admin.create_member') }}" class="btn btn--primary">
-                <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user-plus"></use></svg>
+                {{ lucide_icon('user-plus') }}
                 Neues Mitglied
             </a>
         </div>
@@ -123,15 +122,15 @@
                 
                 <div class="card__footer card__footer--wrap">
                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline">
-                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#edit-3"></use></svg>
+                        {{ lucide_icon('pencil') }}
                         Bearbeiten
                     </a>
                     <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn--outline">
-                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#lock"></use></svg>
+                        {{ lucide_icon('lock') }}
                         Sensible Daten
                     </a>
                     <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn--outline">
-                        <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#shield"></use></svg>
+                        {{ lucide_icon('shield') }}
                         Sicherheit
                     </a>
                 </div>

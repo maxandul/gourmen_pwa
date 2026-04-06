@@ -1,44 +1,31 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}{{ article.name }} - Details - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.merch') }}" class="breadcrumbs__link">Merch</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.merch', tab='articles') }}" class="breadcrumbs__link">Artikel</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Artikel-Details</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('admin.merch', tab='articles') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Merch-Verwaltung</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M21 16V8a2 2 0 0 0-1.106-1.789l-7-3.5a2 2 0 0 0-1.788 0l-7 3.5A2 2 0 0 0 3 8v8a2 2 0 0 0 1.106 1.789l7 3.5a2 2 0 0 0 1.788 0l7-3.5A2 2 0 0 0 21 16Z"/>
-            </svg>
+            {{ lucide_icon('package') }}
             {{ article.name }}
         </h1>
         <div class="page-actions">
             <a href="{{ url_for('admin.edit_merch_article', article_id=article.id) }}" class="btn btn--primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M12 20h9"/>
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-                </svg>
+                {{ lucide_icon('pencil') }}
                 Artikel bearbeiten
             </a>
             <a href="{{ url_for('admin.create_merch_variant', article_id=article.id) }}" class="btn btn--primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M12 5v14"/>
-                    <path d="M5 12h14"/>
-                </svg>
+                {{ lucide_icon('plus') }}
                 Neue Variante
             </a>
         </div>
@@ -103,10 +90,7 @@
                 <h2 class="card__title">Varianten ({{ variants|length }})</h2>
                 <div class="card__actions">
                     <a href="{{ url_for('admin.create_merch_variant', article_id=article.id) }}" class="btn btn--primary btn--sm">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M12 5v14"/>
-                            <path d="M5 12h14"/>
-                        </svg>
+                        {{ lucide_icon('plus') }}
                         Neue Variante
                     </a>
                 </div>
@@ -145,10 +129,7 @@
                                     <td>{{ variant.created_at.strftime('%d.%m.%Y') }}</td>
                                     <td>
                                         <a href="{{ url_for('admin.edit_merch_variant', variant_id=variant.id) }}" class="btn btn--outline btn--sm">
-                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                                <path d="M12 20h9"/>
-                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-                                            </svg>
+                                            {{ lucide_icon('pencil') }}
                                             Bearbeiten
                                         </a>
                                     </td>

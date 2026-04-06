@@ -1,25 +1,22 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }} - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.merch') }}" class="breadcrumbs__link">Merch</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">{{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }}</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('admin.merch', tab='articles') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Merch-Verwaltung</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M21 16V8a2 2 0 0 0-1.106-1.789l-7-3.5a2 2 0 0 0-1.788 0l-7 3.5A2 2 0 0 0 3 8v8a2 2 0 0 0 1.106 1.789l7 3.5a2 2 0 0 0 1.788 0l7-3.5A2 2 0 0 0 21 16Z"/>
-            </svg>
+            {{ lucide_icon('package') }}
             {{ 'Artikel bearbeiten' if article else 'Neuer Artikel' }}
         </h1>
     </div>

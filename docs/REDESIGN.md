@@ -500,8 +500,9 @@ Nachfolgende Agents haben **keinen** Zugriff auf frühere Chats. Alles Verbindli
 | **4a–c** | Event-Detail (Info, BillBro, Bewertungen)                                                                                                    |
 | **5**    | Dashboard — siehe **§8.1** (Bewertungs-Thema + `cleanup.html`)                                                                               |
 | **6**    | Verein-Hub + Shell-IA (**`settings-nav`**, User-Menü, Navigation) — **erledigt** (2026-04-05); **`admin.index`** Legacy-KPI-Seite exempt, siehe **§8.2** |
-| **7**    | Rest-Templates, Cleanup, Performance — **Pakete §8.3**; Ende-Kriterium **§16**                                                               |
+| **7**    | Rest-Templates, Cleanup, Performance — **unterteilt in Pakete 7a–7f** (**§8.3.1**); Ende-Kriterium **§16**                                  |
 
+**Phase-7-Pakete (Kurzüberblick):** **7a** Events-Unterseiten (`cleanup`, `edit`, `year_planning`) · **7b** Member-Unterseiten inkl. Merch · **7c** Admin (Mitglieder, Events anlegen, Merch-Backoffice) — **`admin/index.html`** exempt · **7d** Fehler-/Landing/Offline · **7e** Auth-Templates · **7f** Abschluss (Base/Dashboard/§16, Registry). Reihenfolge und Status: **§8.3.1**.
 
 Detail-Schritte: **§8.3** (Phase 7), sonst nachgetragen.
 
@@ -547,7 +548,7 @@ Weitere Dashboard-Migration (KPI-Muster, Lucide-Konsolidierung, …) bleibt **Ph
 | ----- | -------------------- | -------- | ------- |
 | **7a** | `templates/events/cleanup.html`, `edit.html`, `year_planning.html` | erledigt | Lucide, **`.page-back`**, **`cleanup.html`** Copy **§6.3**; **`#rating-card`** in **`components.css`** (2026-04-06) |
 | **7b** | `templates/member/profile.html`, `security.html`, `technical.html`, `member/merch/index.html`, `order.html`, `orders.html`, `order_edit.html` | erledigt | **`.page-back`** (Profil/Sicherheit/Einstellungen → **Dashboard**; Merch-Kopf → **Verein**); **`member.merch_order_detail`:** Redirect auf **Merch** `tab=orders` (kein separates **`order_detail`**-Template mehr). **Lucide** u. a. **`shirt`** für Merch; Stand 2026-04-06 |
-| **7c** | `templates/admin/members.html`, `create_member.html`, `edit_member_enhanced.html`, `member_sensitive.html`, `member_security_overview.html`, `reset_member_2fa.html`, `reset_member_password.html`, `temp_password.html`, `create_event.html`, `admin/merch/index.html`, `article_form.html`, `article_detail.html`, `admin/merch/order_detail.html` | offen | **`admin/index.html`** bleibt exempt (**§8.2**, **§12**) — nicht migrieren |
+| **7c** | `templates/admin/members.html`, `create_member.html`, `edit_member_enhanced.html`, `member_sensitive.html`, `member_security_overview.html`, `reset_member_2fa.html`, `reset_member_password.html`, `temp_password.html`, `create_event.html`, `admin/merch/index.html`, `article_form.html`, `article_detail.html`, `admin/merch/order_detail.html` | erledigt | **2026-04-06:** Breadcrumbs → **`.page-back`** (Elternziel: **Verein** / **Mitgliederliste** / **Merch** / **Events** je Seite); Lucide **`url_for`**-Sprite; **`temp_password.html`** auf **Card**/**`.form-actions`**/**`.alert`** umgestellt. **`admin/index.html`** exempt — nicht migrieren |
 | **7d** | `templates/errors/403.html`, `errors/404.html`, `errors/500.html`, `public/landing.html`, `offline.html` | offen | Kurzseiten; Tonalität ruhig; PWA **`offline.html`** |
 | **7e** | `templates/auth/*.html` (alle 11: Login, Passwort, 2FA, Step-Up, Backup-Codes, …) | offen | Nach **7d** sinnvoll (öffentliche/Auth-Flows); **C-001** blockiert bis Lucide überall (§16.2) |
 | **7f** | Abschluss: **`templates/base.html`** (§13), **`templates/dashboard/index.html`** auf **done** nach PO; **§16** P0/P1; Performance-Sanity; Registry-Totcode; ggf. **§14** | offen | **C-002** (V1 entfernen), **C-003**, **C-004** siehe §16.2 |
@@ -608,7 +609,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 **Nächster Agent (Reihenfolge):** (1) **§8.3** — aktuelles **Phase-7-Paket** (Status **§8.3.1**) und dort genannte Templates. (2) **§10** Tracker + dieser Abschnitt. (3) **§16** / **§16.2** bei Backlog/Blockern. (4) Umsetzung **nur** für das gewählte Paket; **§7** Checkliste.
 
-**Nächster Phase-7-Block:** Paket **7c** (Admin-Templates), siehe **§8.3.1**.
+**Nächster Phase-7-Block:** Paket **7d** (Fehlerseiten, Landing, Offline), siehe **§8.3.1**.
 
 **Optional:** **`templates/dashboard/index.html`** in **§13** auf **`done`** setzen, wenn der PO das Intent-Dashboard visuell freigibt.
 
@@ -618,6 +619,7 @@ flask --app "backend.app:create_app('development')" run --debug --port 5000
 
 ## 11. Letzte Session-Notiz
 
+- **2026-04-06 (Paket 7c):** Admin-Templates (**`admin/*.html`**, **`admin/merch/*`**) — **`.page-back`** statt Breadcrumbs; Lucide-Sprite per **`url_for`**; **`temp_password.html`** auf V2-**`card`**/**`.form-actions`**; Doku: **§8** Phasen-Tabelle, **§13** Hinweis, **`.cursor/rules/redesign.mdc`**, Plan **`gourmen_ux_redesign_44d3a3ca`**. **Nächster Schritt:** **§8.3.1 Paket 7d**.
 - **2026-04-06 (Paket 7b):** Member-Unterseiten + Merch: **`profile`**, **`security`**, **`technical`**, **`member/merch/*`** — Breadcrumbs → **`.page-back`**, Lucide wie Events/GGL, Profil/Merch-Tabs **`tabs--panel`**. **`order.html`:** Legacy-Formular/Inline-JS unverändert (nur Kopf + **`card__subtitle`**-Fix). **Nacharbeit 2026-04-06:** Technik-**`h1`** nur «Einstellungen»; Zurück Profil/Sicherheit/Einstellungen → **Dashboard**; Merch **`h1`**/Verein-Kachel/Dashboard-Erkunden: **`shirt`**, Titel «Merch»; Bestellungen nur noch im Merch-Tab; **`order_detail.html`** entfernt, Route leitet auf **`member.merch?tab=orders&order_id=`** um. **Nächster Schritt:** **§8.3.1 Paket 7c**.
 - **2026-04-06:** **Dashboard & Bereinigung** — IA: Kacheln **Bereinigung** + **Zu-/Absage**; **`RetroCleanupService`** nur vergangene Events in der Bereinigung; Navigation **`?i=`**, Hinweistexte, **Undo** (`cleanup_rsvp_undo`, `POST /events/cleanup/undo-rsvp`), Ratings löschen Undo bei Speichern. **`REDESIGN.md`:** **§4.1**, **§5.1**, **§6.3** (Handoff), **§8.1**, **§8.2**, **§12**; **`redesign.mdc`** Registry. **`rating_prompt`** nicht mehr für Dashboard.
 - **2026-04-06 (Handoff):** **Paket 7a erledigt** — **`events/cleanup.html`** / **`edit.html`** / **`year_planning.html`** (Lucide, **`.page-back`**, **`#rating-card`** + **`components.css`**). **`cleanup`:** Titel **„Bereinigung“**, **`.events-cleanup-intro`** aus **`progress.pending`** (**§6.3**). **Dashboard:** **Zur Info** nur noch **`dashboard-intent__grid`** (einheitlich mit **Zu erledigen** / **Erkunden**). **Doku aktualisiert:** §5.2, §6.3, §8.3.1, §12, §13-Hinweis, **`.cursor/rules/redesign.mdc`**. **Nächster Agent:** Paket **7b** (**§8.3.1**).
@@ -786,7 +788,9 @@ Einbindung in `base.html`: `{% include 'partials/_….html' %}`. **Keine** `{% b
 | übrige `templates/`**            | 7     | pending |
 
 
-**Phase 5:** Dashboard-Intent + Bereinigungs-/RSVP-Logik **umgesetzt** (**§6.3**, Stand 2026-04-06); **`templates/dashboard/index.html`** in **§13** Status **pending** bis PO-Freigabe oder explizit **`done`**. Layout: **`dashboard-intent__grid`** für alle Sektionen. **`events/cleanup.html`:** **Phase 7** erledigt (**§8.3.1**); fachliche Details **§6.3** / Entscheidungslog **§12** (2026-04-06).
+Unter **„übrige `templates/`**“ fallen die noch offenen Seiten aus **§8.3.1** (**7c–7e**); gesamter Abschluss inkl. **`base.html`** / Dashboard-**`done`** nach PO in **7f**.
+
+**Phase 5:** Dashboard-Intent + Bereinigungs-/RSVP-Logik **umgesetzt** (**§6.3**, Stand 2026-04-06); **`templates/dashboard/index.html`** in **§13** Status **pending** bis PO-Freigabe oder explizit **`done`**. Layout: **`dashboard-intent__grid`** für alle Sektionen. **`events/cleanup.html`:** **Paket 7a** erledigt (**§8.3.1**); fachliche Details **§6.3** / Entscheidungslog **§12** (2026-04-06).
 
 **Phase 6:** **`templates/member/index.html`** = **`done`** (**`settings-nav`**). **`templates/admin/index.html`** = **`done`** als **Exempt**: KPI-**`hub-card`** bleibt für **`admin.index`**-Deep-Link; kein **`settings-nav`**-Umbau nötig (**§8.2**, **§12**).
 

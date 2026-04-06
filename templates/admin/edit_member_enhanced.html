@@ -1,27 +1,22 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Mitglied bearbeiten - Admin{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.members') }}" class="breadcrumbs__link">Mitglieder</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Mitglied bearbeiten</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('admin.members') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Mitgliederliste</span></a>
+        </p>
         <h1>
-            <svg class="icon" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#user"></use></svg>
+            {{ lucide_icon('user') }}
             Mitglied bearbeiten · {{ member.display_name_with_spirit }}
         </h1>
     </div>

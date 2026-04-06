@@ -1,25 +1,22 @@
 {% extends "base.html" %}
 {% set use_v2_design = True %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% block title %}Merch-Verwaltung - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <div class="breadcrumbs__item">
-            <a href="{{ url_for('admin.index') }}" class="breadcrumbs__link">Admin</a>
-            <span class="breadcrumbs__separator">/</span>
-        </div>
-        <div class="breadcrumbs__item">
-            <span class="breadcrumbs__current">Merch</span>
-        </div>
-    </nav>
-
     <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Verein</span></a>
+        </p>
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
-            </svg>
+            {{ lucide_icon('shopping-bag') }}
             Merch-Verwaltung
         </h1>
     </div>
@@ -31,14 +28,14 @@
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'orders' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if active_tab == 'orders' else 'false' }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#clipboard-list"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#clipboard-list"></use></svg>
                     Bestellungen
                 </a>
                 <a href="{{ url_for('admin.merch', tab='articles') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'articles' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if active_tab == 'articles' else 'false' }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#tag"></use></svg>
                     Artikel
                 </a>
             </nav>
@@ -108,7 +105,7 @@
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn--primary btn--sm">
-                                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+                                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#search"></use></svg>
                                                 Filtern
                                             </button>
                         <a class="btn btn--outline btn--sm" href="{{ url_for('admin.merch', tab='orders') }}">Zurücksetzen</a>
@@ -166,7 +163,7 @@
                             </div>
                             <div class="card__footer">
                                 <a href="{{ url_for('admin.merch_order_detail', order_id=order.id) }}" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#search"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#search"></use></svg>
                                     Details anzeigen
                                 </a>
                             </div>
@@ -190,7 +187,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#package"></use></svg>
                                     Zusammenfassung
                                 </h2>
                                 <div class="card__actions">
@@ -219,7 +216,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#tag"></use></svg>
                                     {{ article_data.article.name }}
                                 </h2>
                                 <div class="card__actions">
@@ -258,7 +255,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#package"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#package"></use></svg>
                                     Ausstehende Bestellungen
                                 </h2>
                                 <div class="card__actions">
@@ -291,7 +288,7 @@
                         <div class="card">
                             <div class="card__header">
                                 <h2 class="card__title">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#tag"></use></svg>
                                     {{ article_data.article.name }}
                                 </h2>
                                 <div class="card__actions">
@@ -324,7 +321,7 @@
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'articles' else '' }}" role="tabpanel">
                     <div class="page-actions">
                         <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#plus"></use></svg>
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#plus"></use></svg>
                             Neuer Artikel
                         </a>
                     </div>
@@ -335,7 +332,7 @@
                             <div class="card__header">
                                 <div class="card__title-group">
                                     <h2 class="card__title">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#tag"></use></svg>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#tag"></use></svg>
                                         {{ article.name }}
                                     </h2>
                                     <p class="card__subtitle">{{ article.description or 'Keine Beschreibung' }}</p>
@@ -398,7 +395,7 @@
                             </div>
                             <div class="card__footer">
                                 <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="/static/icons/lucide-sprite.svg#plus"></use></svg>
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#plus"></use></svg>
                                     Neuen Artikel erstellen
                                 </a>
                             </div>

@@ -15,7 +15,7 @@ Vollständige Details, Snippets und Tracker: **`docs/REDESIGN.md`** (vor jeder i
 
 ## Pre-Flight (Pflicht)
 
-1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, **§4** (IA, ggf. **§4.5** Zielbild Verein/User-Bar), bei Filter/Planung/Leisten **§5.2.3**, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog. **Phase 7 oder Aufräumen:** immer **§16** (Ende-Kriterium + Cleanup-Backlog) lesen und bei erkannten Altlasten Backlog pflegen.
+1. **`docs/REDESIGN.md`** lesen: Grundsatzentscheidungen, **§4** (IA, ggf. **§4.5** Zielbild Verein/User-Bar), bei Filter/Planung/Leisten **§5.2.3**, Fortschritts-Tracker, **NAECHSTER SCHRITT**, ggf. Session-Notiz und Entscheidungslog. **Phase 7** ist in **Pakete 7a–7f** zerlegt (**§8.3** / Status **§8.3.1**) — nur **ein Paket** pro Session bearbeiten, bis **§8.3.1** „erledigt“ sagt. **Phase 7 oder Aufräumen:** immer **§16** (Ende-Kriterium + Cleanup-Backlog) lesen und bei erkannten Altlasten Backlog pflegen.
 2. **`git branch`**: Du musst auf Branch **`redesign`** sein. Sonst: `git checkout redesign`.
 3. **`git status`**: Uncommittete Änderungen mit User klären (committen oder verwerfen), bevor du weiter machst.
 4. Nur die **nächste dokumentierte Aufgabe** bearbeiten — nicht den Umfang eigenmächtig ausweiten.
