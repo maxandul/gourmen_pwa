@@ -6,6 +6,8 @@ from datetime import datetime
 from statistics import mean
 from typing import Any
 
+from sqlalchemy import and_, or_
+
 from backend.models.event import Event, EventType
 from backend.models.member import Member
 from backend.models.participation import Participation, Esstyp
@@ -22,6 +24,104 @@ def _member_eligible_for_event(member: Member, event: Event) -> bool:
 
 def _event_restaurant_label(event: Event) -> str:
     return (event.restaurant or event.place_name or '').strip() or '—'
+
+
+def _homepage_for_restaurant_label(past_ms: list[Event], label: str) -> str | None:
+    """Neuestes Event mit gleichem Restaurant-Label: Website bevorzugt `place_website`, sonst `website`."""
+    matching = [e for e in past_ms if _event_restaurant_label(e) == label]
+    matching.sort(key=lambda e: e.datum, reverse=True)
+    for e in matching:
+        u = (e.place_website or e.website or '').strip()
+        if u:
+            return u
+    return None
+
+
+def get_landing_extras(now: datetime) -> dict[str, Any]:
+    """Letztes besuchtes Restaurant (Monatsessen) und Datum des nächsten Monatsessens für die Landingpage."""
+    last_ev = (
+        Event.query.filter(
+            Event.published.is_(True),
+            Event.event_typ == EventType.MONATSESSEN,
+            Event.datum < now,
+            or_(
+                and_(Event.restaurant.isnot(None), Event.restaurant != ''),
+                and_(Event.place_name.isnot(None), Event.place_name != ''),
+            ),
+        )
+        .order_by(Event.datum.desc())
+        .first()
+    )
+    last_restaurant = _event_restaurant_label(last_ev) if last_ev else None
+
+    next_ms = (
+        Event.query.filter(
+            Event.published.is_(True),
+            Event.event_typ == EventType.MONATSESSEN,
+            Event.datum >= now,
+        )
+        .order_by(Event.datum.asc())
+        .first()
+    )
+    return {
+        'last_restaurant': last_restaurant,
+        'next_essen_date': next_ms.display_date if next_ms else None,
+    }
+
+
+def get_landing_restaurant_table(
+    now: datetime,
+    page: int = 1,
+    per_page: int = 10,
+) -> tuple[list[dict[str, Any]], int, int]:
+    """
+    Öffentliche Landing: Monatsessen-Restaurants mit mindestens einer Bewertung,
+    sortiert nach Ø Gesamtbewertung absteigend. Paginierung ab 1.
+    """
+    past_ms: list[Event] = (
+        Event.query.filter(
+            Event.published.is_(True),
+            Event.event_typ == EventType.MONATSESSEN,
+            Event.datum < now,
+        )
+        .order_by(Event.datum.asc())
+        .all()
+    )
+    if not past_ms:
+        return [], 0, 1, 1
+
+    event_ids = [e.id for e in past_ms]
+    ratings_rows: list[EventRating] = EventRating.query.filter(
+        EventRating.event_id.in_(event_ids)
+    ).all()
+    event_to_restaurant_label: dict[int, str] = {
+        ev.id: _event_restaurant_label(ev) for ev in past_ms
+    }
+    restaurant_rating_vals: dict[str, list[float]] = defaultdict(list)
+    for row in ratings_rows:
+        eid = row.event_id
+        label = event_to_restaurant_label.get(eid, '—')
+        restaurant_rating_vals[label].append(float(row.average_rating))
+
+    rows_full: list[dict[str, Any]] = []
+    for label, ovs in restaurant_rating_vals.items():
+        if not ovs:
+            continue
+        rows_full.append(
+            {
+                'restaurant': label,
+                'overall_avg': round(mean(ovs), 2),
+                'homepage': _homepage_for_restaurant_label(past_ms, label),
+            }
+        )
+    rows_full.sort(key=lambda x: (-x['overall_avg'], x['restaurant']))
+
+    total = len(rows_full)
+    total_pages = max(1, (total + per_page - 1) // per_page) if total > 0 else 1
+    page = max(1, min(page, total_pages))
+    start = (page - 1) * per_page
+    page_rows = rows_full[start : start + per_page]
+    return page_rows, total, total_pages, page
 
 
 def _organizer_spirit_rufname(member: Member | None) -> str:

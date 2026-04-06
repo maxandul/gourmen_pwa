@@ -7,9 +7,17 @@
 </svg>
 {%- endmacro %}
 
+{% macro landing_page_url(page_num) -%}
+{%- if request.args.get('show') == '1' -%}
+{{ url_for('public.landing', show='1', page=page_num) }}
+{%- else -%}
+{{ url_for('public.landing', page=page_num) }}
+{%- endif -%}
+{%- endmacro %}
+
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.73c79b3f.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.c74f12f5.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -21,24 +29,14 @@
 
 {% block content %}
 <div class="container landing">
-    <div class="alert alert--info landing-public-note" role="status">
-        {{ lucide_icon('info', 'icon alert__icon') }}
-        <div class="alert__content">
-            <div class="alert__title">Öffentliche Infoseite</div>
-            <div class="alert__message">
-                Hier erfährst du, was Gourmen ist. Terminplanung, Anmeldungen und Mitgliederverwaltung laufen in der <strong>Web-App</strong> — Zugang nach Einladung bzw. für Vereinsmitglieder.
-            </div>
-        </div>
-    </div>
-
     <section class="landing-hero card" aria-labelledby="landing-hero-heading">
         <div class="landing-hero__text">
             <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
             <h1 id="landing-hero-heading">Gourmen</h1>
-            <p class="lead">Gemeinsame Restaurantbesuche, Guessing League und Vereinsleben — <strong>mehr ist mehr</strong>: Kulinarik, Austausch und Freundschaft.</p>
+            <p class="lead landing-lead-quote">«Meh isch meh»</p>
             <div class="landing-actions">
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">{{ lucide_icon('layout-dashboard', 'icon') }} Zum Dashboard</a>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">{{ lucide_icon('id-card', 'icon') }} Zum Memberbereich</a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn--primary">{{ lucide_icon('log-in', 'icon') }} Anmelden</a>
                 {% endif %}
@@ -57,60 +55,72 @@
                 <span class="stat-tile__value">{{ member_count }}</span>
             </div>
             <div class="stat-tile">
-                <span class="stat-tile__label">Tage „nur mehr ist mehr“</span>
-                <span class="stat-tile__value">{{ days_since_foundation }}</span>
+                <span class="stat-tile__label">Restaurant-Count</span>
+                <span class="stat-tile__value">{{ restaurant_count }}</span>
             </div>
             <div class="stat-tile">
-                <span class="stat-tile__label">besuchte Restaurants</span>
-                <span class="stat-tile__value">{{ restaurant_count }}</span>
+                <span class="stat-tile__label">letztes Restaurant</span>
+                <span class="stat-tile__value stat-tile__value--muted landing-stat-tile__value--text">{{ last_restaurant or '—' }}</span>
+            </div>
+            <div class="stat-tile">
+                <span class="stat-tile__label">nächstes Essen</span>
+                <span class="stat-tile__value">{{ next_essen_date or '—' }}</span>
             </div>
         </div>
     </section>
 
-    {% if latest_event %}
-    <section class="landing-event" aria-labelledby="landing-next-heading">
-        <h2 id="landing-next-heading" class="landing-section-title">
-            {{ lucide_icon('calendar') }}
-            Ein Blick auf den nächsten Termin
+    <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
+        <h2 id="landing-restaurants-heading" class="landing-section-title">
+            {{ lucide_icon('star') }}
+            Restaurant-Bewertungen
         </h2>
-        <div class="card">
-            <div class="card__header">
-                <h3 class="card__title">
-                    {{ lucide_icon('calendar-days') }}
-                    Nächstes Event
-                </h3>
-            </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Typ</span>
-                    <span class="info-row__value">{{ latest_event.event_typ.value }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Datum</span>
-                    <span class="info-row__value">{{ latest_event.display_date }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Restaurant</span>
-                    <span class="info-row__value">{{ latest_event.restaurant or 'TBD' }}</span>
-                </div>
-                {% if latest_event.kueche %}
-                <div class="info-row">
-                    <span class="info-row__label">Küche</span>
-                    <span class="info-row__value">{{ latest_event.kueche }}</span>
-                </div>
-                {% endif %}
-                {% if latest_event.notizen %}
-                <p class="landing-event-teaser">
-                    {{ latest_event.notizen[:220] }}{% if latest_event.notizen|length > 220 %}…{% endif %}
-                </p>
-                {% endif %}
-                <p class="landing-event-teaser">
-                    Details und Zu-/Absagen sind in der App für Mitglieder sichtbar.
-                </p>
-            </div>
+        {% if table_total == 0 %}
+        <div class="empty-state" role="status">
+            <p class="empty-state__message">Noch keine ausgewerteten Bewertungen für Monatsessen.</p>
         </div>
+        {% else %}
+        <div class="table-responsive data-table-wrap" role="region" aria-labelledby="landing-restaurants-heading">
+            <table class="data-table landing-restaurants-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Restaurant</th>
+                        <th scope="col">Bewertung</th>
+                        <th scope="col">Homepage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table_rows %}
+                    <tr>
+                        <td>{{ row.restaurant }}</td>
+                        <td>{{ '%.2f'|format(row.overall_avg)|replace('.', ',') }}</td>
+                        <td>
+                            {% if row.homepage %}
+                            <a href="{{ row.homepage }}" class="landing-restaurants-table__home-link" target="_blank" rel="noopener noreferrer" aria-label="Webseite von {{ row.restaurant }} (öffnet in neuem Tab)">
+                                {{ lucide_icon('external-link', 'icon') }}
+                                <span>Webseite</span>
+                            </a>
+                            {% else %}
+                            <span class="text-secondary">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if table_total_pages > 1 %}
+        <nav class="landing-pagination" aria-label="Seiten der Restaurant-Tabelle">
+            {% if table_page > 1 %}
+            <a href="{{ landing_page_url(table_page - 1) }}" class="btn btn--outline btn--sm">Zurück</a>
+            {% endif %}
+            <span class="landing-pagination__status">Seite {{ table_page }} von {{ table_total_pages }}</span>
+            {% if table_page < table_total_pages %}
+            <a href="{{ landing_page_url(table_page + 1) }}" class="btn btn--outline btn--sm">Weiter</a>
+            {% endif %}
+        </nav>
+        {% endif %}
+        {% endif %}
     </section>
-    {% endif %}
 
     <footer class="landing-footer">
         <p class="landing-footer__label">Kontakt &amp; Social</p>

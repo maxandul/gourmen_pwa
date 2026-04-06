@@ -3,7 +3,13 @@ from flask_login import current_user
 from backend.extensions import db
 from backend.models.event import Event
 from backend.models.member import Member
-from datetime import datetime, date
+from datetime import datetime
+from sqlalchemy import func
+
+from backend.services.monatsessen_stats import (
+    get_landing_extras,
+    get_landing_restaurant_table,
+)
 
 bp = Blueprint('public', __name__)
 
@@ -15,25 +21,33 @@ def landing():
     
     if current_user.is_authenticated and not show_landing:
         return redirect(url_for('dashboard.index'))
-    
+
     try:
-        # Get next upcoming published event
-        latest_event = Event.query.filter_by(published=True).filter(
-            Event.datum >= datetime.utcnow()
-        ).order_by(Event.datum.asc()).first()
+        page_raw = request.args.get('page', '1')
+        try:
+            page = int(page_raw)
+        except (TypeError, ValueError):
+            page = 1
+        if page < 1:
+            page = 1
+
+        now = datetime.utcnow()
+        landing_extra = get_landing_extras(now)
+        table_rows, table_total, table_total_pages, table_page = get_landing_restaurant_table(
+            now, page=page, per_page=10
+        )
 
         # Public stats
         member_count = Member.query.filter_by(is_active=True).count()
         
         # Count unique restaurants from both 'restaurant' and 'place_name' fields
-        from sqlalchemy import func, case
         restaurant_names = (
             db.session.query(
                 func.coalesce(Event.place_name, Event.restaurant).label('name')
             )
             .filter(
                 Event.published == True,
-                Event.datum < datetime.utcnow(),
+                Event.datum < now,
                 db.or_(
                     db.and_(Event.restaurant.isnot(None), Event.restaurant != ''),
                     db.and_(Event.place_name.isnot(None), Event.place_name != '')
@@ -43,25 +57,31 @@ def landing():
             .all()
         )
         restaurant_count = len(restaurant_names)
-        
-        days_since_foundation = (datetime.utcnow().date() - date(2021, 11, 21)).days
 
         return render_template(
             'public/landing.html',
-            latest_event=latest_event,
             member_count=member_count,
             restaurant_count=restaurant_count,
-            days_since_foundation=days_since_foundation,
+            last_restaurant=landing_extra['last_restaurant'],
+            next_essen_date=landing_extra['next_essen_date'],
+            table_rows=table_rows,
+            table_total=table_total,
+            table_page=table_page,
+            table_total_pages=table_total_pages,
             use_v2_design=True,
         )
-    except Exception as e:
+    except Exception:
         # Fallback if database is not ready
         return render_template(
             'public/landing.html',
-            latest_event=None,
             member_count=0,
             restaurant_count=0,
-            days_since_foundation=(datetime.utcnow().date() - date(2021, 11, 21)).days,
+            last_restaurant=None,
+            next_essen_date=None,
+            table_rows=[],
+            table_total=0,
+            table_page=1,
+            table_total_pages=1,
             use_v2_design=True,
         )
 
