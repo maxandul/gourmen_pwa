@@ -149,7 +149,7 @@ def compute(event_id):
     ).filter(Participation.member_id != current_user.id).first()
     
     if existing_guess:
-        return jsonify({'error': 'Dieser Betrag wurde bereits geschätzt'}), 400
+        return jsonify({'error': 'Diese Schätzung wurde bereits abgegeben. Wähle einen anderen Betrag.'}), 400
     
     # Validate esstyp selection
     if not form.esstyp.data or form.esstyp.data == '':
@@ -651,6 +651,15 @@ def record_guess(event_id, member_id):
     guess_rappen = MoneyService.to_rappen(guess_amount)
     if guess_rappen is None:
         flash('Ungültiger Betrag', 'error')
+        return redirect(url_for('billbro.calculator', event_id=event_id))
+
+    # Check for duplicate guesses (same event, different member)
+    existing_guess = Participation.query.filter_by(
+        event_id=event_id,
+        guess_bill_amount_rappen=guess_rappen
+    ).filter(Participation.member_id != member_id).first()
+    if existing_guess:
+        flash('Diese Schätzung wurde bereits abgegeben. Wähle einen anderen Betrag.', 'error')
         return redirect(url_for('billbro.calculator', event_id=event_id))
     
     # Update participation
