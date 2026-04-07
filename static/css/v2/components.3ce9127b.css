@@ -3635,7 +3635,7 @@ a.card-link:active {
 
 .dashboard-info-tile__line--subtle {
   font-size: var(--text-sm);
-  font-weight: var(--font-normal);
+  font-weight: var(--font-medium);
   color: var(--color-text-secondary);
 }
 

@@ -16,6 +16,24 @@
 </a>
 {%- endmacro %}
 
+{% macro dashboard_info_tile(label, line1, line2=None, href=None) -%}
+{% if href %}
+<a class="dashboard-info-tile" href="{{ href }}">
+{% else %}
+<div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+{% endif %}
+    <span class="dashboard-info-tile__label">{{ label }}</span>
+    <span class="dashboard-info-tile__value">
+        <span class="dashboard-info-tile__line">{{ line1 }}</span>
+        {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+    </span>
+{% if href %}
+</a>
+{% else %}
+</div>
+{% endif %}
+{%- endmacro %}
+
 {% block title %}Dashboard - Gourmen{% endblock %}
 
 {% block content %}
@@ -77,56 +95,67 @@
 
         <section class="dashboard-intent" aria-labelledby="dashboard-info-heading">
             <h2 id="dashboard-info-heading" class="dashboard-intent__heading">Zur Info</h2>
-            <div class="dashboard-intent__grid">
-                {% if next_event %}
-                {{ dashboard_intent_tile(
-                    url_for('events.detail', event_id=next_event.id),
-                    'calendar',
+            <div class="dashboard-info-grid">
+                {% set next_event_restaurant = (next_event.restaurant if next_event and next_event.restaurant else (next_event.place_name if next_event and next_event.place_name else 'TBD')) %}
+                {{ dashboard_info_tile(
                     'Nächstes Event',
-                    next_event.event_typ.value ~ ' am ' ~ next_event.display_date
+                    next_event_restaurant if next_event else 'TBD',
+                    next_event.display_date if next_event else 'TBD',
+                    url_for('events.detail', event_id=next_event.id) if next_event else None
                 ) }}
-                {% else %}
-                <div class="dashboard-intent-tile dashboard-intent-tile--static" role="status">
-                    <span class="dashboard-intent-tile__icon" aria-hidden="true">{{ lucide_icon('calendar', 'icon') }}</span>
-                    <span class="dashboard-intent-tile__body">
-                        <span class="dashboard-intent-tile__title">Kein kommendes Event</span>
-                        <span class="dashboard-intent-tile__meta">Sobald ein Termin veröffentlicht ist, erscheint er hier.</span>
-                    </span>
-                </div>
-                {% endif %}
 
-                {% if latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen %}
-                {{ dashboard_intent_tile(
-                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro'),
-                    'banknote',
-                    'Dein letzter Anteil',
-                    latest_bill_event.display_date ~ ' · ' ~ latest_bill_participation.display_share
+                {{ dashboard_info_tile(
+                    'Letzter Anteil',
+                    latest_bill_participation.display_share if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'CHF TBD',
+                    latest_bill_event.display_date if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'TBD',
+                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None
                 ) }}
-                {% endif %}
 
-                {% set ggl_meta = ('Rang ' ~ (ggl_stats.rank or '—') ~ ((' / ' ~ ggl_stats.rank_total) if ggl_stats.rank and ggl_stats.rank_total > 0 else '') ~ ' · ' ~ (ggl_stats.points or 0) ~ ' Pkte') %}
-                {{ dashboard_intent_tile(
-                    url_for('ggl.index', tab='tabelle', season=ggl_stats.season),
-                    'trophy',
-                    'GGL · Saison ' ~ ggl_stats.season,
-                    ggl_meta
+                {% set ggl_rank_value = ('Rang ' ~ ggl_stats.rank) if ggl_stats.rank else 'Rang TBD' %}
+                {{ dashboard_info_tile(
+                    'GGL Rang',
+                    ggl_rank_value,
+                    None,
+                    url_for('ggl.index', tab='tabelle', season=ggl_stats.season)
                 ) }}
-                {% if merch_last_order and not merch_last_order.is_delivered %}
-                {{ dashboard_intent_tile(
-                    url_for('member.merch', tab='orders', order_id=merch_last_order.id),
-                    'shirt',
-                    'Letzte Merch-Bestellung',
-                    merch_last_order.status_display
+
+                {% set merch_status_value = ('Status: ' ~ merch_last_order.status_display) if merch_last_order else 'Status: TBD' %}
+                {{ dashboard_info_tile(
+                    'Bestellung',
+                    merch_status_value,
+                    None,
+                    url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch')
                 ) }}
-                {% endif %}
             </div>
         </section>
 
         <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
             <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>
-            <div class="dashboard-intent__grid">
-                {{ dashboard_intent_tile(url_for('member.merch'), 'shirt', 'Merch', 'Shop und Bestellungen') }}
-                {{ dashboard_intent_tile(url_for('events.index', tab='stats'), 'chart-column', 'Statistiken', 'KPIs und Charts') }}
+            <div class="settings-nav dashboard-explore-nav">
+                <section class="settings-nav__section" aria-labelledby="dashboard-explore-list">
+                    <ul id="dashboard-explore-list" class="settings-nav__list" role="list">
+                        <li>
+                            <a href="{{ url_for('member.merch') }}" class="settings-nav__row">
+                                <span class="settings-nav__icon" aria-hidden="true">{{ lucide_icon('shirt', 'icon') }}</span>
+                                <span class="settings-nav__meta">
+                                    <span class="settings-nav__label">Merch</span>
+                                    <span class="settings-nav__description">Shop und Bestellungen</span>
+                                </span>
+                                {{ lucide_icon('chevron-right', 'icon settings-nav__chevron') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('events.index', tab='stats') }}" class="settings-nav__row">
+                                <span class="settings-nav__icon" aria-hidden="true">{{ lucide_icon('chart-column', 'icon') }}</span>
+                                <span class="settings-nav__meta">
+                                    <span class="settings-nav__label">Statistiken</span>
+                                    <span class="settings-nav__description">KPIs und Charts</span>
+                                </span>
+                                {{ lucide_icon('chevron-right', 'icon settings-nav__chevron') }}
+                            </a>
+                        </li>
+                    </ul>
+                </section>
             </div>
         </section>
 

@@ -34,17 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Chart.register(ChartDataLabels);
 
-  function formatSignedChfFromRappen(rappen) {
-    const sign = rappen < 0 ? '−' : '+';
-    const body = (Math.abs(rappen) / 100).toFixed(2);
-    return `${sign}${body} CHF`;
+  function formatChfFromRappen(rappen) {
+    return `${(Math.abs(rappen) / 100).toFixed(2)} CHF`;
   }
 
   /**
    * @param {object} opts
    * @param {string} opts.canvasId
    * @param {string} opts.labelsContainerId
-   * @param {'cumulative_points'|'cumulative_signed_diff_rappen'} opts.seriesKey
+   * @param {'cumulative_points'|'cumulative_abs_diff_rappen'} opts.seriesKey
    * @param {string} opts.yAxisTitle
    * @param {'points'|'chf'} opts.unit
    */
@@ -164,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (idx > 0 && raw && raw[idx - 1] != null && raw[idx] != null) {
                   eventRappen = raw[idx] - raw[idx - 1];
                 }
-                return `${fullLabel} - Summe: ${formatSignedChfFromRappen(cumulativeRappen)} (Δ ${formatSignedChfFromRappen(eventRappen)})`;
+                return `${fullLabel} - Summe: ${formatChfFromRappen(cumulativeRappen)} (Δ ${formatChfFromRappen(eventRappen)})`;
               },
             },
           },
@@ -249,8 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initProgressionChart({
     canvasId: 'ggl-diff-chart',
     labelsContainerId: 'ggl-diff-chart-labels',
-    seriesKey: 'cumulative_signed_diff_rappen',
-    yAxisTitle: 'Kumulative Differenz (CHF)',
+    seriesKey: 'cumulative_abs_diff_rappen',
+    yAxisTitle: 'Kumulative absolute Differenz (CHF)',
     unit: 'chf',
   });
 });

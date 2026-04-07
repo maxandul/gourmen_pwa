@@ -105,18 +105,21 @@ class GGLService:
                 if participation.diff_amount_rappen is not None:
                     member_diffs[participation.member_id].append(participation.diff_amount_rappen)
         
-        # Calculate season statistics
+        # Alle aktiven Spieler aufführen (auch ohne Teilnahme = 0 Punkte / 0 Events)
+        active_members = Member.query.filter_by(is_active=True).all()
         season_stats = []
-        for member_id, points_list in member_points.items():
+        for member in active_members:
+            member_id = member.id
+            points_list = member_points.get(member_id, [])
             total_points = sum(points_list)
-            participation_count = member_participation_count[member_id]
+            participation_count = member_participation_count.get(member_id, 0)
             avg_points = total_points / participation_count if participation_count > 0 else 0
-            
+
             # Calculate average difference
             diffs_list = member_diffs.get(member_id, [])
             total_diff = sum(diffs_list)
             avg_diff_rappen = total_diff / len(diffs_list) if len(diffs_list) > 0 else 0
-            
+
             season_stats.append({
                 'member_id': member_id,
                 'total_points': total_points,
@@ -129,9 +132,17 @@ class GGLService:
         # Sort by total points (descending), then by average points (descending)
         season_stats.sort(key=lambda x: (x['total_points'], x['avg_points']), reverse=True)
         
-        # Add ranking position
+        # Tie-aware Ranking: gleiche (Punkte, ØPkt) => gleicher Rang
+        current_rank = 1
+        prev_key = None
         for i, stats in enumerate(season_stats):
-            stats['rank'] = i + 1
+            key = (stats['total_points'], stats['avg_points'])
+            if prev_key is None:
+                current_rank = 1
+            elif key != prev_key:
+                current_rank = i + 1
+            stats['rank'] = current_rank
+            prev_key = key
         
         return season_stats
 
@@ -174,7 +185,20 @@ class GGLService:
         ).all()
         
         if not participations:
-            return None
+            total_events_in_season = Event.query.filter(
+                Event.season == season_year,
+                Event.published == True
+            ).count()
+            return {
+                'member_id': member_id,
+                'season': season_year,
+                'total_points': 0,
+                'participation_count': 0,
+                'avg_points': 0,
+                'avg_diff_rappen': 0,
+                'events_ranked': 0,
+                'total_events_in_season': total_events_in_season
+            }
         
         # Calculate statistics
         total_points = sum(p.points for p in participations if p.points is not None)
@@ -274,6 +298,7 @@ class GGLService:
                 'member': member,
                 'cumulative_points': [],
                 'cumulative_signed_diff_rappen': [],
+                'cumulative_abs_diff_rappen': [],
                 'ranks': []
             }
         
@@ -331,9 +356,18 @@ class GGLService:
                     else:
                         event_signed = 0
                     new_diff = prev_diff + event_signed
+                    prev_abs_diff = (
+                        progression_data[member_id]['cumulative_abs_diff_rappen'][-1]
+                        if progression_data[member_id]['cumulative_abs_diff_rappen']
+                        else 0
+                    )
+                    if prev_abs_diff is None:
+                        prev_abs_diff = 0
+                    new_abs_diff = prev_abs_diff + abs(event_signed)
                     
                     progression_data[member_id]['cumulative_points'].append(new_total)
                     progression_data[member_id]['cumulative_signed_diff_rappen'].append(new_diff)
+                    progression_data[member_id]['cumulative_abs_diff_rappen'].append(new_abs_diff)
                     progression_data[member_id]['ranks'].append(ranks[member_id])
                 else:
                     # Member didn't participate in this event - keep previous total
@@ -347,9 +381,17 @@ class GGLService:
                     )
                     if prev_diff is None:
                         prev_diff = 0
+                    prev_abs_diff = (
+                        progression_data[member_id]['cumulative_abs_diff_rappen'][-1]
+                        if progression_data[member_id]['cumulative_abs_diff_rappen']
+                        else 0
+                    )
+                    if prev_abs_diff is None:
+                        prev_abs_diff = 0
                     
                     progression_data[member_id]['cumulative_points'].append(previous_total)
                     progression_data[member_id]['cumulative_signed_diff_rappen'].append(prev_diff)
+                    progression_data[member_id]['cumulative_abs_diff_rappen'].append(prev_abs_diff)
                     progression_data[member_id]['ranks'].append(None)
         
         # Convert members to serializable format
@@ -372,6 +414,7 @@ class GGLService:
                 },
                 'cumulative_points': data['cumulative_points'],
                 'cumulative_signed_diff_rappen': data['cumulative_signed_diff_rappen'],
+                'cumulative_abs_diff_rappen': data['cumulative_abs_diff_rappen'],
                 'ranks': data['ranks']
             }
         
@@ -735,6 +778,8 @@ class GGLService:
         # — Abschnitt Teilnahme —
         guessed_event_ids = {p.event_id for p in participations}
         now = datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        member_id = member_stats.get('member_id') if isinstance(member_stats, dict) else None
         # Nur bereits stattgefundene Events (wie in der laufenden Saison erwartet), nicht alle erfassten Termine.
         pub_events = (
             Event.query.filter(
@@ -748,7 +793,34 @@ class GGLService:
         occurred_ids = {e.id for e in pub_events}
         y_possible = len(pub_events)
         x_guess = len(guessed_event_ids & occurred_ids)
-        remaining = sum(1 for e in pub_events if e.id not in guessed_event_ids)
+
+        # "Aufholjagd"-Events: angesetzte (publizierte) Events von heute bis Saisonende,
+        # exklusive bereits explizit abgemeldeter Teilnahmen (teilnahme=False).
+        upcoming_events = (
+            Event.query.filter(
+                Event.season == season_year,
+                Event.published == True,  # noqa: E712
+                Event.datum >= today_start,
+            )
+            .order_by(Event.datum)
+            .all()
+        )
+        remaining = 0
+        if upcoming_events and member_id is not None:
+            upcoming_ids = [e.id for e in upcoming_events]
+            parts = Participation.query.filter(
+                Participation.member_id == member_id,
+                Participation.event_id.in_(upcoming_ids),
+            ).all()
+            parts_by_event_id = {p.event_id: p for p in parts}
+            remaining = sum(
+                1
+                for e in upcoming_events
+                if not (
+                    parts_by_event_id.get(e.id) is not None
+                    and parts_by_event_id[e.id].teilnahme is False
+                )
+            )
 
         if y_possible > 0:
             teil_items: list[Markup] = [
@@ -758,19 +830,18 @@ class GGLService:
                 + v(y_possible)
                 + Markup(' Events dieser Saison mitgeschätzt.')
             ]
-            if 0 < remaining < 4:
-                if remaining == 1:
-                    teil_items.append(
-                        Markup('Dir bleibt noch ')
-                        + v(1)
-                        + Markup(' Event für deine Aufholjagd — dranbleiben!')
-                    )
-                else:
-                    teil_items.append(
-                        Markup('Dir bleiben noch ')
-                        + v(remaining)
-                        + Markup(' Events für deine Aufholjagd — dranbleiben!')
-                    )
+            if remaining == 1:
+                teil_items.append(
+                    Markup('Dir bleibt noch ')
+                    + v(1)
+                    + Markup(' Event für deine Aufholjagd — dranbleiben!')
+                )
+            else:
+                teil_items.append(
+                    Markup('Dir bleiben noch ')
+                    + v(remaining)
+                    + Markup(' Events für deine Aufholjagd — dranbleiben!')
+                )
             paragraphs.append(
                 GGLService._insight_section('Teilnahme an Events', teil_items)
             )

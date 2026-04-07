@@ -64,10 +64,12 @@ def landing():
             restaurant_count=restaurant_count,
             last_restaurant=landing_extra['last_restaurant'],
             next_essen_date=landing_extra['next_essen_date'],
+            next_essen_restaurant=landing_extra.get('next_essen_restaurant'),
             table_rows=table_rows,
             table_total=table_total,
             table_page=table_page,
             table_total_pages=table_total_pages,
+            table_query='',
         )
     except Exception:
         # Fallback if database is not ready
@@ -77,10 +79,12 @@ def landing():
             restaurant_count=0,
             last_restaurant=None,
             next_essen_date=None,
+            next_essen_restaurant=None,
             table_rows=[],
             table_total=0,
             table_page=1,
             table_total_pages=1,
+            table_query='',
         )
 
 @bp.route('/health')

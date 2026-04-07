@@ -492,14 +492,17 @@
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
-                            {{ lucide_icon('chart-pie') }}
+                            {{ lucide_icon('chart-column') }}
                             Küchen
                         </h2>
                     </div>
                     <div class="card__body">
-                        <div class="events-stats-chart events-stats-chart--pie">
-                            <div class="events-stats-chart__pie-wrap">
-                                <canvas id="events-stats-chart-kitchens" width="320" height="280" aria-label="Verteilung Küchen" role="img"></canvas>
+                        <p class="text-secondary events-stats-chart__hint">Absolute Anzahl Monatsessen pro Küche (alle Küchen im gewählten Filter).</p>
+                        <div class="events-stats-chart">
+                            <div class="events-stats-chart__scroll">
+                                <div class="events-stats-chart__container">
+                                    <canvas id="events-stats-chart-kitchens" width="400" height="220" aria-label="Küchen als absolute Anzahl" role="img"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -507,7 +510,7 @@
 
                 <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.1" defer></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.2" defer></script>
                 {% else %}
                 <div class="empty-state" role="status">
                     <div class="empty-state__icon" aria-hidden="true">

@@ -606,12 +606,13 @@ PowerShell, Projektroot:
 
 ```powershell
 cd c:\gourmen_pwa
-flask --app "backend.app:create_app('development')" run --debug --port 5000
+venv\Scripts\python.exe -m flask --app "backend.app:create_app('development')" run --debug --port 5000
 ```
 
 - Desktop: `http://localhost:5000`  
 - Handy (gleiches WLAN): `http://<LAN-IP-des-PC>:5000`  
 - DB: `.env` / `DATABASE_URL`; für reines Layout reicht oft SQLite-Fallback.
+- **Wichtig (Windows):** `start.py` nutzt Gunicorn und scheitert lokal auf Windows mit `ModuleNotFoundError: fcntl`. Für lokale Agent-Arbeit deshalb immer den obigen `python -m flask`-Befehl verwenden.
 - **Rate limiting:** In **Development** und **Testing** ist **`RATELIMIT_ENABLED = False`**; der **Flask-Limiter** wird in **`init_extensions`** mit **`enabled=False`** gebaut (**`backend/config.py`**, **`backend/extensions.py`**), damit lokales Arbeiten ohne häufige **429**-Antworten zuverlässig bleibt.
 
 ---

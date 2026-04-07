@@ -6,16 +6,16 @@
 {%- endmacro %}
 
 {% macro landing_page_url(page_num) -%}
+{%- set params = {'page': page_num} -%}
 {%- if request.args.get('show') == '1' -%}
-{{ url_for('public.landing', show='1', page=page_num) }}
-{%- else -%}
-{{ url_for('public.landing', page=page_num) }}
+{%- set _ = params.update({'show': '1'}) -%}
 {%- endif -%}
+{{ url_for('public.landing', **params) }}
 {%- endmacro %}
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.cdee3a33.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.98b93f0f.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="landing-hero__visual">
-            <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
+            <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
         </div>
     </section>
 
@@ -57,13 +57,23 @@
                     <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
                     <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
                 </div>
-                <div class="metrics-spotlight__metric">
-                    <span class="metrics-spotlight__metric-label">letztes Restaurant</span>
-                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">{{ last_restaurant or '—' }}</span>
-                </div>
-                <div class="metrics-spotlight__metric">
+                <div class="metrics-spotlight__metric metrics-spotlight__metric--next-essen">
                     <span class="metrics-spotlight__metric-label">nächstes Essen</span>
-                    <span class="metrics-spotlight__metric-value">{{ next_essen_date or '—' }}</span>
+                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">
+                        {% if next_essen_date and next_essen_restaurant %}
+                        <span class="landing-next-essen__date">{{ next_essen_date }}</span>
+                        <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
+                        <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
+                        {% elif next_essen_date %}
+                        <span class="landing-next-essen__date">{{ next_essen_date }}</span>
+                        <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
+                        <span class="landing-next-essen__restaurant">TBD</span>
+                        {% elif next_essen_restaurant %}
+                        <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
+                        {% else %}
+                        TBD
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>
@@ -72,8 +82,19 @@
     <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
         <h2 id="landing-restaurants-heading" class="landing-section-title">
             {{ lucide_icon('star') }}
-            Restaurant-Bewertungen
+            Gourmen-Hitlist
         </h2>
+        <div class="landing-hitlist-block">
+            <form class="landing-hitlist-filter" role="search" aria-label="Restaurant, Küche oder Adresse in der Gourmen-Hitlist suchen">
+                {% if request.args.get('show') == '1' %}
+                <input type="hidden" name="show" value="1">
+                {% endif %}
+                <p class="landing-hitlist-filter__hint">Suche nach Restaurants, Küchen oder Adressen:</p>
+                <div class="landing-hitlist-filter__field">
+                    <label class="sr-only" for="hitlist-search">Restaurant suchen</label>
+                    <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query }}" placeholder="Suche..." autocomplete="off">
+                </div>
+            </form>
         {% if table_total == 0 %}
         <div class="empty-state" role="status">
             <p class="empty-state__message">Noch keine ausgewerteten Bewertungen für Monatsessen.</p>
@@ -90,7 +111,7 @@
                 </thead>
                 <tbody>
                     {% for row in table_rows %}
-                    <tr>
+                    <tr data-search="{{ (row.restaurant ~ ' ' ~ (row.kueche or '') ~ ' ' ~ (row.adresse or ''))|lower }}">
                         <td>{{ row.restaurant }}</td>
                         <td>{{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}/5</td>
                         <td>
@@ -108,6 +129,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="empty-state landing-hitlist-empty" role="status" hidden>
+            <p class="empty-state__message">Keine Treffer in dieser Seite der Gourmen-Hitlist.</p>
+        </div>
         {% if table_total_pages > 1 %}
         <nav class="landing-pagination" aria-label="Seiten der Restaurant-Tabelle">
             {% if table_page > 1 %}
@@ -120,6 +144,7 @@
         </nav>
         {% endif %}
         {% endif %}
+        </div>
     </section>
 
     <footer class="landing-footer">
@@ -134,4 +159,37 @@
         </div>
     </footer>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(() => {
+  const form = document.querySelector('.landing-hitlist-filter');
+  const input = document.getElementById('hitlist-search');
+  const rows = Array.from(document.querySelectorAll('.landing-restaurants-table tbody tr[data-search]'));
+  const empty = document.querySelector('.landing-hitlist-empty');
+  const pagination = document.querySelector('.landing-pagination');
+  if (!form || !input || rows.length === 0) return;
+
+  const applyFilter = () => {
+    const q = input.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      const haystack = row.getAttribute('data-search') || '';
+      const isVisible = q === '' || haystack.includes(q);
+      row.hidden = !isVisible;
+      if (isVisible) visibleCount += 1;
+    });
+
+    if (empty) empty.hidden = visibleCount > 0 || q === '';
+    if (pagination) pagination.hidden = q !== '';
+  };
+
+  form.addEventListener('submit', (event) => event.preventDefault());
+  input.addEventListener('input', applyFilter);
+  applyFilter();
+})();
+</script>
 {% endblock %}

@@ -13,6 +13,11 @@ from backend.models.member import Member
 from backend.models.participation import Participation, Esstyp
 from backend.models.rating import EventRating
 
+_SHORT_MONTHS_DE = (
+    'Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez',
+)
+
 
 def _member_eligible_for_event(member: Member, event: Event) -> bool:
     if not member.is_active:
@@ -35,6 +40,18 @@ def _homepage_for_restaurant_label(past_ms: list[Event], label: str) -> str | No
         if u:
             return u
     return None
+
+
+def _meta_for_restaurant_label(past_ms: list[Event], label: str) -> tuple[str | None, str | None]:
+    """Nimmt das neueste Event je Restaurant-Label und liefert Küche + Adresse für Suche/Anzeige."""
+    matching = [e for e in past_ms if _event_restaurant_label(e) == label]
+    matching.sort(key=lambda e: e.datum, reverse=True)
+    if not matching:
+        return None, None
+    ev = matching[0]
+    cuisine = (ev.kueche or '').strip() or None
+    address = (ev.place_address or '').strip() or None
+    return cuisine, address
 
 
 def get_landing_extras(now: datetime) -> dict[str, Any]:
@@ -63,9 +80,18 @@ def get_landing_extras(now: datetime) -> dict[str, Any]:
         .order_by(Event.datum.asc())
         .first()
     )
+    next_essen_date = None
+    next_essen_restaurant = None
+    if next_ms:
+        month_idx = max(1, min(12, next_ms.datum.month)) - 1
+        month_short = _SHORT_MONTHS_DE[month_idx]
+        next_essen_date = f"{next_ms.datum.day:02d}. {month_short} {next_ms.datum.year % 100:02d}"
+        next_essen_restaurant = (next_ms.restaurant or next_ms.place_name or '').strip() or 'TBD'
+
     return {
         'last_restaurant': last_restaurant,
-        'next_essen_date': next_ms.display_date if next_ms else None,
+        'next_essen_date': next_essen_date,
+        'next_essen_restaurant': next_essen_restaurant,
     }
 
 
@@ -107,11 +133,14 @@ def get_landing_restaurant_table(
     for label, ovs in restaurant_rating_vals.items():
         if not ovs:
             continue
+        cuisine, address = _meta_for_restaurant_label(past_ms, label)
         rows_full.append(
             {
                 'restaurant': label,
                 'overall_avg': round(mean(ovs), 1),
                 'homepage': _homepage_for_restaurant_label(past_ms, label),
+                'kueche': cuisine,
+                'adresse': address,
             }
         )
     rows_full.sort(key=lambda x: (-x['overall_avg'], x['restaurant']))
@@ -388,24 +417,13 @@ def get_monatsessen_statistics(
         )
     organizer_rating_chart.sort(key=lambda x: -x['avg'])
 
-    # Küchen: Top 5 + Sonstige
-    pie_labels: list[str] = []
-    pie_values: list[int] = []
+    # Küchen: alle Küchen als absolute Häufigkeit (keine Top-N-Kürzung)
+    kitchen_labels: list[str] = []
+    kitchen_values: list[int] = []
     if kuechen:
-        most = kuechen.most_common()
-        top_n = 5
-        if len(most) <= top_n:
-            for name, cnt in most:
-                pie_labels.append(name)
-                pie_values.append(cnt)
-        else:
-            for name, cnt in most[:top_n]:
-                pie_labels.append(name)
-                pie_values.append(cnt)
-            rest = sum(c for _, c in most[top_n:])
-            if rest > 0:
-                pie_labels.append('Sonstige')
-                pie_values.append(rest)
+        for name, cnt in kuechen.most_common():
+            kitchen_labels.append(name)
+            kitchen_values.append(cnt)
 
     charts_payload = {
         'memberParticipation': {
@@ -421,7 +439,7 @@ def get_monatsessen_statistics(
             'values': [x['avg'] for x in organizer_rating_chart],
         },
         'restaurantRatings': restaurant_ratings_rows,
-        'kitchens': {'labels': pie_labels, 'values': pie_values},
+        'kitchens': {'labels': kitchen_labels, 'values': kitchen_values},
     }
 
     return {

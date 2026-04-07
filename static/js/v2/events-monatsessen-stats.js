@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
             callbacks: {
               label(ctx) {
                 const v = ctx.parsed.x;
-                return xTitle.includes('%') ? `${v} %` : `${v} CHF`;
+                if (xTitle.includes('%')) return `${v} %`;
+                if (xTitle.includes('CHF')) return `${v} CHF`;
+                return `${v}`;
               },
             },
           },
@@ -198,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const k = payload.kitchens;
   if (k && k.labels && k.values && k.labels.length) {
-    pieChart('events-stats-chart-kitchens', k.labels, k.values);
+    barChart('events-stats-chart-kitchens', k.labels, k.values, 'Anzahl Monatsessen');
   }
 
   /* —— Restaurant-Tabelle (sortierbar, Top 10) —— */
