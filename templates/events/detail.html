@@ -166,7 +166,9 @@
                         </div>
                     </div>
 
-                    <div class="card mt-4">
+                    {% set has_event_details = event.place_maps_url or event.kueche or event.place_types or event.website or event.place_website or event.notizen %}
+                    {% if has_event_details %}
+                    <div class="card mt-6">
                         <div class="card__header">
                             <h2 class="card__title">
                                 {{ lucide_icon('clipboard-list') }}
@@ -174,7 +176,6 @@
                             </h2>
                         </div>
                         <div class="card__body">
-                            {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
                             {% if event.place_maps_url %}
                             <div class="info-row">
                                 <span class="info-row__label">Adresse:</span>
@@ -218,13 +219,13 @@
                                 <span class="info-row__value">{{ event.notizen }}</span>
                             </div>
                             {% endif %}
-                            {% endif %}
                         </div>
                     </div>
+                    {% endif %}
 
                     {# RSVP: erste Zeile „Deine Teilnahme“ in der Summary-Card #}
 
-                    <div class="table-responsive data-table-wrap" role="region" aria-label="Teilnehmer-Übersicht">
+                    <div class="table-responsive data-table-wrap {{ 'mt-6' if not has_event_details else '' }}" role="region" aria-label="Teilnehmer-Übersicht">
                         <table class="data-table events-participants-table">
                             <thead>
                                 <tr>
@@ -281,7 +282,9 @@
                             {% set i = loop.index %}
                             <li class="billbro-workflow__step{% if i < billbro_phase %} billbro-workflow__step--done{% elif i == billbro_phase %} billbro-workflow__step--current{% endif %}"{% if i == billbro_phase %} aria-current="step"{% endif %}>
                                 <span class="billbro-workflow__index">{{ i }}</span>
+                                {% if i == billbro_phase %}
                                 <span>{{ label }}</span>
+                                {% endif %}
                             </li>
                             {% endfor %}
                         </ol>
@@ -320,41 +323,37 @@
                         </p>
                     </div>
 
-                    {# 1) Dein Anteil (nur nach finalem Gesamtbetrag) #}
+                    {% set share_label = '—' %}
+                    {% if has_final and participation and participation.esstyp %}
+                        {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
+                            {% set share_label = "%.2f"|format(event.betrag_sparsam_rappen / 100) ~ ' CHF' %}
+                        {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
+                            {% set share_label = "%.2f"|format(event.betrag_normal_rappen / 100) ~ ' CHF' %}
+                        {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
+                            {% set share_label = "%.2f"|format(event.betrag_allin_rappen / 100) ~ ' CHF' %}
+                        {% endif %}
+                    {% endif %}
+                    {% set esstyp_label = participation.esstyp.value if participation and participation.esstyp else '—' %}
+
                     {% if has_final %}
-                    <div class="card" id="billbro-share">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <path d="M12 2v20" />
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 1 1 0 7H6" />
-                                </svg>
-                                Dein Anteil
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            {% if participation and participation.esstyp %}
-                            <div class="info-row">
-                                <span class="info-row__label">Dein Anteil</span>
-                                <span class="info-row__value">
-                                    {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
-                                        {{ "%.2f"|format(event.betrag_sparsam_rappen / 100) }} CHF (Sparsam)
-                                    {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
-                                        {{ "%.2f"|format(event.betrag_normal_rappen / 100) }} CHF (Normal)
-                                    {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
-                                        {{ "%.2f"|format(event.betrag_allin_rappen / 100) }} CHF (All-In)
-                                    {% else %}
-                                        Noch nicht berechnet
-                                    {% endif %}
-                                </span>
+                    <div class="metrics-spotlight" aria-label="Deine BillBro-Übersicht">
+                        <p class="metrics-spotlight__context">Deine Werte</p>
+                        <div class="metrics-spotlight__hero">
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Dein Anteil</span>
+                                <span class="metrics-spotlight__metric-value">{{ share_label }}</span>
                             </div>
-                            {% else %}
-                            <p class="text-muted">Bitte wähle deinen Ess-Typ.</p>
-                            {% endif %}
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Dein Esstyp</span>
+                                <span class="metrics-spotlight__metric-value">{{ esstyp_label }}</span>
+                            </div>
                         </div>
                     </div>
+                    {% endif %}
 
-                    <div class="card">
+                    {# 1) Rechnungsübersicht (nur nach finalem Gesamtbetrag) #}
+                    {% if has_final %}
+                    <div class="card mt-6">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -405,7 +404,6 @@
                         </div>
                         {% endif %}
                     </div>
-                    {% endif %}
 
                     {# 2) Schätzungsrangliste (sobald Rechnungsbetrag gesetzt) #}
                     {% if has_bill %}
@@ -414,43 +412,40 @@
                             | rejectattr('guess_bill_amount_rappen', 'equalto', none)
                             | list %}
                     {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
-                    <div class="card" id="billbro-guess-ranking">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                {{ lucide_icon('medal') }}
-                                Schätzungsrangliste
-                            </h2>
+                    <section id="billbro-guess-ranking" class="event-ratings-all" aria-labelledby="billbro-guess-ranking-heading">
+                        <h2 class="event-ratings-all__heading" id="billbro-guess-ranking-heading">
+                            {{ lucide_icon('medal') }}
+                            Schätzungsrangliste
+                        </h2>
+                        <div class="table-responsive data-table-wrap" role="region" aria-labelledby="billbro-guess-ranking-heading">
+                            <table class="data-table billbro-guess-ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="billbro-guess-ranking-table__col-rank">Rang</th>
+                                        <th scope="col" class="billbro-guess-ranking-table__col-name">Mitglied</th>
+                                        <th scope="col" class="billbro-guess-ranking-table__col-num">Schätzung</th>
+                                        <th scope="col" class="billbro-guess-ranking-table__col-num">Δ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for p in ranked %}
+                                    <tr class="{% if p.member_id == current_user.id %}billbro-guess-ranking-table__row--current{% endif %} {% if loop.index == 1 %}billbro-guess-ranking-table__row--rank-1{% elif loop.index == 2 %}billbro-guess-ranking-table__row--rank-2{% elif loop.index == 3 %}billbro-guess-ranking-table__row--rank-3{% endif %}">
+                                        <td class="billbro-guess-ranking-table__col-rank">{{ loop.index }}</td>
+                                        <td class="billbro-guess-ranking-table__col-name">{{ p.member.display_name_with_spirit }}</td>
+                                        <td class="billbro-guess-ranking-table__col-num">{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
+                                        <td class="billbro-guess-ranking-table__col-num">{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="card__body">
-                            <div class="table-responsive data-table-wrap" role="region" aria-label="Schätzungsrangliste">
-                                <table class="data-table billbro-guess-ranking-table">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" class="billbro-guess-ranking-table__col-rank">Rang</th>
-                                            <th scope="col" class="billbro-guess-ranking-table__col-name">Mitglied</th>
-                                            <th scope="col" class="billbro-guess-ranking-table__col-num">Schätzung</th>
-                                            <th scope="col" class="billbro-guess-ranking-table__col-num">Δ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for p in ranked %}
-                                        <tr class="{% if p.member_id == current_user.id %}billbro-guess-ranking-table__row--current{% endif %} {% if loop.index == 1 %}billbro-guess-ranking-table__row--rank-1{% elif loop.index == 2 %}billbro-guess-ranking-table__row--rank-2{% elif loop.index == 3 %}billbro-guess-ranking-table__row--rank-3{% endif %}">
-                                            <td class="billbro-guess-ranking-table__col-rank">{{ loop.index }}</td>
-                                            <td class="billbro-guess-ranking-table__col-name">{{ p.member.display_name_with_spirit }}</td>
-                                            <td class="billbro-guess-ranking-table__col-num">{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
-                                            <td class="billbro-guess-ranking-table__col-num">{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    </section>
+                    {% endif %}
                     {% endif %}
 
                     <!-- 3) Deine Schätzung / Neue Schätzung als eigenständige Cards -->
                     {% if participation.has_guess %}
-                    <div class="card" id="billbro-my-guess">
+                    <div class="card{% if not has_final %} mt-6{% endif %}" id="billbro-my-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -487,7 +482,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="card" id="billbro-new-guess">
+                    <div class="card{% if not has_final %} mt-6{% endif %}" id="billbro-new-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -771,44 +766,34 @@
                     {% endif %}
                     {% endwith %}
 
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                {{ lucide_icon('clipboard-list') }}
-                                Gesamtbewertung
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            {% if average_ratings.count > 0 %}
-                            <div class="metrics-spotlight">
-                                <p class="metrics-spotlight__context">{{ average_ratings.count }} Bewertung{% if average_ratings.count != 1 %}en{% endif %} · Durchschnitt</p>
-                                <div class="metrics-spotlight__hero" aria-label="Durchschnittswerte aller Bewertungen">
-                                    <div class="metrics-spotlight__metric">
-                                        <span class="metrics-spotlight__metric-label">Gesamt</span>
-                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.overall }}/5</span>
-                                    </div>
-                                    <div class="metrics-spotlight__metric">
-                                        <span class="metrics-spotlight__metric-label">Essen</span>
-                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.food }}/5</span>
-                                    </div>
-                                    <div class="metrics-spotlight__metric">
-                                        <span class="metrics-spotlight__metric-label">Getränke</span>
-                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.drinks }}/5</span>
-                                    </div>
-                                    <div class="metrics-spotlight__metric">
-                                        <span class="metrics-spotlight__metric-label">Service</span>
-                                        <span class="metrics-spotlight__metric-value">{{ average_ratings.service }}/5</span>
-                                    </div>
-                                </div>
+                    {% if average_ratings.count > 0 %}
+                    <div class="metrics-spotlight">
+                        <p class="metrics-spotlight__context">{{ average_ratings.count }} Bewertung{% if average_ratings.count != 1 %}en{% endif %} · Durchschnitt</p>
+                        <div class="metrics-spotlight__hero" aria-label="Durchschnittswerte aller Bewertungen">
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Gesamt</span>
+                                <span class="metrics-spotlight__metric-value">{{ average_ratings.overall }}</span>
                             </div>
-                            {% else %}
-                            <div class="empty-state" role="status">
-                                <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('star') }}</div>
-                                <p class="empty-state__message">Für dieses Event liegen noch keine Bewertungen vor.</p>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Essen</span>
+                                <span class="metrics-spotlight__metric-value">{{ average_ratings.food }}</span>
                             </div>
-                            {% endif %}
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Getränke</span>
+                                <span class="metrics-spotlight__metric-value">{{ average_ratings.drinks }}</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Service</span>
+                                <span class="metrics-spotlight__metric-value">{{ average_ratings.service }}</span>
+                            </div>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="empty-state" role="status">
+                        <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('star') }}</div>
+                        <p class="empty-state__message">Für dieses Event liegen noch keine Bewertungen vor.</p>
+                    </div>
+                    {% endif %}
 
                     {% if can_rate %}
                         {% set show_rating_form = (not user_rating) or rating_edit_mode %}
@@ -909,7 +894,7 @@
                         {% endif %}
                         {% if show_rating_actions %}
                         <div id="event-ratings-actions" class="tool-surface event-ratings-toolbar" role="region" aria-label="Aktionen zu deiner Bewertung">
-                            <p class="event-ratings-toolbar__hint">Du hast das Event bewertet.</p>
+                            <p class="event-ratings-toolbar__hint">Du hast das Event bewertet. Deine Bewertung:</p>
                             <div class="event-ratings-toolbar__actions">
                                 <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1', _anchor='event-ratings-form') }}" class="btn btn--primary" aria-label="Bewertung bearbeiten">
                                     {{ lucide_icon('square-pen') }}
