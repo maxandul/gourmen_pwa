@@ -3537,11 +3537,22 @@ a.card-link:active {
   color: inherit;
   transition: box-shadow var(--transition-fast), background var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
 .dashboard-intent-tile:hover {
   background: var(--color-surface-hover);
   box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.dashboard-intent-tile:hover .dashboard-intent-tile__chev,
+.dashboard-intent-tile:focus-visible .dashboard-intent-tile__chev {
+  transform: translateX(2px);
+  color: var(--color-interactive-primary);
+}
+
+.dashboard-intent-tile:active {
   text-decoration: none;
 }
 
@@ -3607,6 +3618,7 @@ a.card-link:active {
   width: 1.25rem;
   height: 1.25rem;
   color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
 .dashboard-info-tile {
@@ -3623,15 +3635,19 @@ a.card-link:active {
   transition: box-shadow var(--transition-fast), background var(--transition-fast);
   align-items: center;
   text-align: center;
+  cursor: pointer;
 }
 
 .dashboard-info-tile:hover {
+  background: var(--color-surface-hover);
   box-shadow: var(--shadow-md);
+  text-decoration: none;
 }
 
 .dashboard-info-tile:focus-visible {
   outline: 2px solid var(--color-interactive-primary);
   outline-offset: 2px;
+  text-decoration: none;
 }
 
 .dashboard-info-tile--static {
