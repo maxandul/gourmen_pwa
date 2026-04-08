@@ -267,8 +267,21 @@
       details.open = false;
     });
   }
+  function collapseDisclosureOnFilterReset(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var resetLink = details.querySelector('.form-actions a.btn');
+    if (!resetLink) return;
+    resetLink.addEventListener('click', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
   bindDisclosure('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen', false);
   collapseDisclosureOnFilterSubmit('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen');
+  collapseDisclosureOnFilterReset('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen');
 })();
 </script>
 {% endblock %}
