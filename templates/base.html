@@ -11,9 +11,28 @@
     <!-- Open Graph / Facebook / WhatsApp — Blöcke müssen im Layout (extends) überschreibbar bleiben -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:title" content="{% block og_title %}Gourmen - Seit 2021{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Gourmen-Verein Webapp - Verwaltung, Events und GGL{% endblock %}">
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-image-1200x630.ae23d0bd.png', _external=True) }}">
+    {% set _endpoint = request.endpoint or '' %}
+    {% set _default_pageheader = 'Goumen Webapp' %}
+    {% if _endpoint == 'dashboard.index' %}
+      {% set _default_pageheader = 'Dashboard' %}
+    {% elif _endpoint.startswith('events.') %}
+      {% set _default_pageheader = 'Events' %}
+    {% elif _endpoint.startswith('ggl.') %}
+      {% set _default_pageheader = 'GGL' %}
+    {% elif _endpoint.startswith('member.') %}
+      {% set _default_pageheader = 'Verein' %}
+    {% elif _endpoint.startswith('auth.') %}
+      {% set _default_pageheader = 'Anmelden' %}
+    {% elif _endpoint.startswith('ratings.') %}
+      {% set _default_pageheader = 'Bewertungen' %}
+    {% elif _endpoint.startswith('billbro.') %}
+      {% set _default_pageheader = 'BillBro' %}
+    {% elif _endpoint.startswith('admin.') %}
+      {% set _default_pageheader = 'Admin' %}
+    {% endif %}
+    <meta property="og:title" content="{% block og_title %}Goumen Webapp{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ _default_pageheader }}{% endblock %}">
+    <meta property="og:image" content="{{ url_for('static', filename='brand/logo-master-round.svg', _external=True) }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Gourmen">
@@ -22,9 +41,9 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ request.url }}">
-    <meta name="twitter:title" content="{% block twitter_title %}Gourmen - Seit 2021{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}Gourmen-Verein Webapp - Verwaltung, Events und GGL{% endblock %}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image-1200x630.ae23d0bd.png', _external=True) }}">
+    <meta name="twitter:title" content="{% block twitter_title %}Goumen Webapp{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ _default_pageheader }}{% endblock %}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='brand/logo-master-round.svg', _external=True) }}">
 
     {% include 'partials/_head_manifest_icons.html' %}
     {% include 'partials/_head_stylesheets.html' %}
