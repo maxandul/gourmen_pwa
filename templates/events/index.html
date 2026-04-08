@@ -28,31 +28,6 @@
             Events
         </h1>
     </div>
-    
-    {% if current_user.is_admin() %}
-    <div class="card card--filter tool-surface events-planning-strip">
-        <div class="card__body">
-            <details id="events-planning-disclosure" class="disclosure">
-                <summary class="disclosure__summary">
-                    {{ lucide_icon('chevron-down') }}
-                    Events erfassen
-                </summary>
-                <div class="disclosure__content">
-                    <nav class="tool-strip__actions" aria-label="Planung und Administration">
-                        <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary">
-                            {{ lucide_icon('square-plus') }}
-                            Einzelnes Event
-                        </a>
-                        <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary">
-                            {{ lucide_icon('calendar-plus') }}
-                            Jahresplanung erstellen
-                        </a>
-                    </nav>
-                </div>
-            </details>
-        </div>
-    </div>
-    {% endif %}
 
     {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'kommend') %}
     <div class="page-content">
@@ -62,7 +37,11 @@
                 <details id="events-index-filter-disclosure" class="disclosure">
                     <summary class="disclosure__summary">
                         {{ lucide_icon('chevron-down') }}
+                        {% if current_user.is_admin() %}
+                        Filter &amp; Erfassen
+                        {% else %}
                         Filter
+                        {% endif %}
                         {% if selected_year or selected_organizer_id %}
                             {% if selected_year %}
                             <span class="chip chip--info">{{ selected_year }}</span>
@@ -111,11 +90,26 @@
                                 <a class="btn btn--outline" href="{{ events_filter_reset_url }}">Zurücksetzen</a>
                             </div>
                         </form>
+                        {% if current_user.is_admin() %}
+                        <div class="events-index-capture" role="region" aria-labelledby="events-index-capture-heading">
+                            <p class="section-subtitle" id="events-index-capture-heading">Events erfassen</p>
+                            <nav class="tool-strip__actions" aria-label="Planung und Administration">
+                                <a href="{{ url_for('admin.create_event') }}" class="btn btn--primary events-index-capture__action">
+                                    {{ lucide_icon('square-plus') }}
+                                    Einzelnes Event
+                                </a>
+                                <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary events-index-capture__action">
+                                    {{ lucide_icon('calendar-plus') }}
+                                    Jahresplanung
+                                </a>
+                            </nav>
+                        </div>
+                        {% endif %}
                     </div>
                 </details>
             </div>
         </div>
-        
+
         <div class="tabs tabs--panel" aria-label="Events-Ansichten">
         <nav class="tabs__nav" role="tablist">
             <a href="{{ events_tab_urls.kommend }}"
@@ -565,10 +559,22 @@
       details.open = false;
     });
   }
+  function collapseDisclosureOnCaptureNavigate(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    details.querySelectorAll('.events-index-capture__action').forEach(function (a) {
+      a.addEventListener('click', function () {
+        try {
+          sessionStorage.setItem(storageKey, '0');
+        } catch (e) { /* private mode */ }
+        details.open = false;
+      });
+    });
+  }
   bindDisclosure('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen', false);
-  bindDisclosure('events-planning-disclosure', 'gourmen:eventsIndexPlanningDisclosureOpen', false);
   collapseDisclosureOnFilterSubmit('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen');
   collapseDisclosureOnFilterReset('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen');
+  collapseDisclosureOnCaptureNavigate('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen');
 
   var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
   if (!eventsTabsContainer) return;

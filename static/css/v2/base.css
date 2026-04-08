@@ -238,13 +238,7 @@ li {
    ============================================ */
 
 .page-header {
-  margin-bottom: var(--space-8);
-}
-
-/* Engerer Abstand, wenn direkt eine Kontextleiste folgt (REDESIGN: context-actions / Planungs-Card) */
-.page-header:has(+ .context-actions),
-.page-header:has(+ .events-planning-strip) {
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--layout-page-header-after-gap);
 }
 
 .page-header h1 {
@@ -274,6 +268,32 @@ li {
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+/* Volle Breite: ein Button links, einer rechts (z. B. Event Vorher/Weiter) */
+.page-actions.page-actions--inline {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+}
+
+.page-actions.page-actions--inline .btn {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* Nur „Weiter“: rechts bündig */
+.page-actions.page-actions--inline:has(.event-detail-nav__next:only-child) {
+  justify-content: flex-end;
+}
+
+/* Event-Detail: Vorher/Weiter direkt unter dem Page-Header (nicht im Header) */
+nav.event-detail-nav.page-actions {
+  margin-top: 0;
+  margin-bottom: var(--layout-page-header-after-gap);
 }
 
 /* Extra Abstand, wenn Actions direkt in Tabs-Panels sitzen */
@@ -402,6 +422,11 @@ li {
   
   .page-actions .btn {
     width: 100%;
+  }
+
+  /* Event-Navigation: bleibt eine Zeile (überschreibt Spalte oben) */
+  .page-actions.page-actions--inline {
+    flex-direction: row;
   }
 
   /* Icon-only Actions: bleiben kompakt auch auf Mobile */

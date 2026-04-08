@@ -540,6 +540,30 @@ def detail(event_id):
     # Bewertungen nur wenn erlaubt und für bestätigte Teilnehmende oder den tatsächlichen Organisator
     can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
     rating_edit_mode = request.args.get('edit_rating') == '1' if (user_rating and can_rate) else False
+
+    # Navigation: vorheriges/nächstes Event (stabile Sortierung: datum, id)
+    prev_event = (
+        Event.query.filter(
+            Event.published == True,
+            db.or_(
+                Event.datum < event.datum,
+                db.and_(Event.datum == event.datum, Event.id < event.id),
+            ),
+        )
+        .order_by(Event.datum.desc(), Event.id.desc())
+        .first()
+    )
+    next_event = (
+        Event.query.filter(
+            Event.published == True,
+            db.or_(
+                Event.datum > event.datum,
+                db.and_(Event.datum == event.datum, Event.id > event.id),
+            ),
+        )
+        .order_by(Event.datum.asc(), Event.id.asc())
+        .first()
+    )
     
     return render_template('events/detail.html', 
                          event=event, 
@@ -552,7 +576,9 @@ def detail(event_id):
                          user_rating=user_rating,
                          event_ratings=ratings_sorted,
                          can_rate=can_rate,
-                         rating_edit_mode=rating_edit_mode)
+                         rating_edit_mode=rating_edit_mode,
+                         prev_event=prev_event,
+                         next_event=next_event)
 
 
 @bp.route('/<int:event_id>/billbro-sync', methods=['GET'])

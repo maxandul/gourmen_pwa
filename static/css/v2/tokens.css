@@ -92,6 +92,9 @@
   --space-10: 4rem;     /* 64px */
   --space-12: 6rem;     /* 96px */
 
+  /* Abstand Page-Header → Nav, Filter-Leisten, erster Content-Block */
+  --layout-page-header-after-gap: var(--space-4);
+
   /* ============================================
      TYPOGRAPHY SCALE (1.25 ratio)
      ============================================ */

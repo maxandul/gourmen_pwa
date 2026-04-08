@@ -17,6 +17,7 @@
 {% block title %}{{ event.display_date }} - Gourmen{% endblock %}
 
 {% block content %}
+{% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'info') %}
 <div class="container">
     <div class="page-header">
         <p class="page-back">
@@ -24,7 +25,24 @@
         </p>
         <h1>{{ event_type_icon(event.event_typ) }}<span class="sr-only">{{ event.event_typ.value }}, </span>{{ event.display_date }}</h1>
     </div>
-    
+
+    {% if prev_event or next_event %}
+    <nav class="event-detail-nav page-actions page-actions--inline" aria-label="Event wechseln">
+        {% if prev_event %}
+        <a href="{{ url_for('events.detail', event_id=prev_event.id, tab=tab_param) }}" class="btn btn--outline btn--sm event-detail-nav__prev" aria-label="Vorheriges Event">
+            {{ lucide_icon('chevron-left') }}
+            Vorher
+        </a>
+        {% endif %}
+        {% if next_event %}
+        <a href="{{ url_for('events.detail', event_id=next_event.id, tab=tab_param) }}" class="btn btn--outline btn--sm event-detail-nav__next" aria-label="Nächstes Event">
+            Weiter
+            {{ lucide_icon('chevron-right') }}
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
     <div class="page-content">
         {% if current_user.is_admin() or event.organisator_id == current_user.id %}
         <div class="card card--filter tool-surface events-planning-strip">
@@ -79,7 +97,6 @@
             </div>
         </div>
         {% endif %}
-        {% set tab_param = active_tab if active_tab is defined else request.args.get('tab', 'info') %}
         <div class="tabs tabs--panel" aria-label="Event-Detail">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('events.detail', event_id=event.id, tab='info') }}"

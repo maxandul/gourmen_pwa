@@ -170,11 +170,15 @@ def get_monatsessen_statistics(
     Liefert Kontext für Tab Statistiken (nur Monatsessen, Filter Jahr/Organisator).
     Rückgabe None, wenn keine vergangenen Monatsessen im Filter.
     """
+    # Nur wirklich vergangene Events berücksichtigen:
+    # Alles ab heutigem Kalendertag (inkl. heute) gilt als kommend und bleibt draußen.
+    today_start = datetime.combine(now.date(), datetime.min.time())
+
     q = (
         Event.query.filter(
             Event.published.is_(True),
             Event.event_typ == EventType.MONATSESSEN,
-            Event.datum < now,
+            Event.datum < today_start,
         )
         .order_by(Event.datum.asc())
     )
