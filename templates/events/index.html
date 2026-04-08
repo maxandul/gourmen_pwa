@@ -406,7 +406,7 @@
                         </h2>
                     </div>
                     <div class="card__body">
-                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittelwert der durchschnittlichen Gäste-Anteile je organisiertem Monatsessen (nur Events mit erfassten Anteilen).</p>
+                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittelwert der durchschnittlichen Anteile je organisiertem Monatsessen.</p>
                         <div class="events-stats-chart">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
@@ -465,7 +465,7 @@
                         </h2>
                     </div>
                     <div class="card__body">
-                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittel der durchschnittlichen Gesamtbewertungen je organisiertem Monatsessen (nur Events mit mindestens einer Bewertung).</p>
+                        <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittel der durchschnittlichen Gesamtbewertungen je organisiertem Monatsessen.</p>
                         <div class="events-stats-chart">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
@@ -484,7 +484,7 @@
                         </h2>
                     </div>
                     <div class="card__body">
-                        <p class="text-secondary events-stats-chart__hint">Absolute Anzahl Monatsessen pro Küche (alle Küchen im gewählten Filter).</p>
+                        <p class="text-secondary events-stats-chart__hint">Absolute Anzahl Monatsessen pro Küche.</p>
                         <div class="events-stats-chart">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
@@ -497,7 +497,7 @@
 
                 <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.2" defer></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.3" defer></script>
                 {% else %}
                 <div class="empty-state" role="status">
                     <div class="empty-state__icon" aria-hidden="true">

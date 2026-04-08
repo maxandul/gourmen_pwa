@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         caption.hidden = false;
         const n = rr.length;
         if (n <= TOP_RESTAURANTS) {
-          captionText.innerHTML = `Es werden <strong>alle ${n}</strong> Restaurants mit Bewertungen angezeigt (Sortierung änderbar).`;
+          captionText.innerHTML = `Es werden <strong>alle ${n}</strong> Restaurants mit Bewertungen angezeigt.`;
         } else {
           captionText.innerHTML = `Es werden die <strong>ersten ${TOP_RESTAURANTS}</strong> von <strong>${n}</strong> Restaurants angezeigt (nach gewählter Sortierung).`;
         }

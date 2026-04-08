@@ -19,17 +19,24 @@
 {% macro dashboard_info_tile(label, line1, line2=None, href=None) -%}
 {% if href %}
 <a class="dashboard-info-tile" href="{{ href }}">
-{% else %}
-<div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-{% endif %}
-    <span class="dashboard-info-tile__label">{{ label }}</span>
-    <span class="dashboard-info-tile__value">
-        <span class="dashboard-info-tile__line">{{ line1 }}</span>
-        {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+    <span class="dashboard-info-tile__content">
+        <span class="dashboard-info-tile__label">{{ label }}</span>
+        <span class="dashboard-info-tile__value">
+            <span class="dashboard-info-tile__line">{{ line1 }}</span>
+            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+        </span>
     </span>
-{% if href %}
+    {{ lucide_icon('chevron-right', 'icon dashboard-info-tile__chev') }}
 </a>
 {% else %}
+<div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+    <span class="dashboard-info-tile__content">
+        <span class="dashboard-info-tile__label">{{ label }}</span>
+        <span class="dashboard-info-tile__value">
+            <span class="dashboard-info-tile__line">{{ line1 }}</span>
+            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+        </span>
+    </span>
 </div>
 {% endif %}
 {%- endmacro %}

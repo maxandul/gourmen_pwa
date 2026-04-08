@@ -13,7 +13,10 @@
         <p class="page-back">
             <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Verein</span></a>
         </p>
-        <h1>Mitglieder</h1>
+        <h1>
+            {{ lucide_icon('id-card') }}
+            Mitglieder
+        </h1>
         <div class="page-actions">
             <a href="{{ url_for('admin.create_member') }}" class="btn btn--primary">
                 {{ lucide_icon('user-plus') }}

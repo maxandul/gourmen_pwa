@@ -16,8 +16,8 @@
 
     <div class="page-content">
         <div class="settings-nav">
-            <section class="settings-nav__section" aria-labelledby="verein-hub-verein">
-                <h2 id="verein-hub-verein" class="settings-nav__section-title">Verein</h2>
+            <section class="settings-nav__section" aria-labelledby="verein-hub-member">
+                <h2 id="verein-hub-member" class="settings-nav__section-title">Member</h2>
                 <ul class="settings-nav__list" role="list">
                     <li>
                         <a href="{{ url_for('member.merch') }}" class="settings-nav__row">
@@ -35,18 +35,31 @@
                             </svg>
                         </a>
                     </li>
+                    <li>
+                        <div class="settings-nav__row settings-nav__row--soon" aria-disabled="true">
+                            <span class="settings-nav__icon" aria-hidden="true">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <use href="{{ _sprite }}#file"></use>
+                                </svg>
+                            </span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">Docs</span>
+                                <span class="settings-nav__description">Coming soon</span>
+                            </span>
+                        </div>
+                    </li>
                 </ul>
             </section>
 
             {% if current_user.is_admin() %}
-            <section class="settings-nav__section" aria-labelledby="verein-hub-verwaltung">
-                <h2 id="verein-hub-verwaltung" class="settings-nav__section-title">Verwaltung</h2>
+            <section class="settings-nav__section" aria-labelledby="verein-hub-admin">
+                <h2 id="verein-hub-admin" class="settings-nav__section-title">Admin</h2>
                 <ul class="settings-nav__list" role="list">
                     <li>
                         <a href="{{ url_for('admin.members') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <use href="{{ _sprite }}#users-round"></use>
+                                    <use href="{{ _sprite }}#id-card"></use>
                                 </svg>
                             </span>
                             <span class="settings-nav__meta">
@@ -62,7 +75,7 @@
                         <a href="{{ url_for('admin.merch') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <use href="{{ _sprite }}#shopping-cart"></use>
+                                    <use href="{{ _sprite }}#warehouse"></use>
                                 </svg>
                             </span>
                             <span class="settings-nav__meta">
@@ -73,6 +86,32 @@
                                 <use href="{{ _sprite }}#chevron-right"></use>
                             </svg>
                         </a>
+                    </li>
+                    <li>
+                        <div class="settings-nav__row settings-nav__row--soon" aria-disabled="true">
+                            <span class="settings-nav__icon" aria-hidden="true">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <use href="{{ _sprite }}#calculator"></use>
+                                </svg>
+                            </span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">Buchhaltung</span>
+                                <span class="settings-nav__description">Coming soon</span>
+                            </span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="settings-nav__row settings-nav__row--soon" aria-disabled="true">
+                            <span class="settings-nav__icon" aria-hidden="true">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <use href="{{ _sprite }}#scroll-text"></use>
+                                </svg>
+                            </span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">GV-Protokoll</span>
+                                <span class="settings-nav__description">Coming soon</span>
+                            </span>
+                        </div>
                     </li>
                 </ul>
             </section>
