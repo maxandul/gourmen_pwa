@@ -553,6 +553,55 @@
   bindDisclosure('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen', false);
   bindDisclosure('events-planning-disclosure', 'gourmen:eventsIndexPlanningDisclosureOpen', false);
   collapseDisclosureOnFilterSubmit('events-index-filter-disclosure', 'gourmen:eventsIndexFilterDisclosureOpen');
+
+  var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
+  if (!eventsTabsContainer) return;
+
+  async function replaceActivePanelFromUrl(url) {
+    var activePanel = eventsTabsContainer.querySelector('.tabs__panel--active');
+    if (!activePanel) return;
+
+    var response = await fetch(url, {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'fetch' },
+      credentials: 'same-origin'
+    });
+    if (!response.ok) {
+      window.location.href = url;
+      return;
+    }
+
+    var html = await response.text();
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var nextActivePanel = doc.querySelector('.tabs[aria-label="Events-Ansichten"] .tabs__panel--active');
+    if (!nextActivePanel) {
+      window.location.href = url;
+      return;
+    }
+
+    activePanel.innerHTML = nextActivePanel.innerHTML;
+    window.history.replaceState({}, '', url);
+  }
+
+  eventsTabsContainer.addEventListener('click', function (event) {
+    var link = event.target.closest('.tabs__panel--active .page-actions a[href]');
+    if (!link) return;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    replaceActivePanelFromUrl(link.href).catch(function () {
+      window.location.href = link.href;
+    });
+  });
 })();
 </script>
 {% endblock %}

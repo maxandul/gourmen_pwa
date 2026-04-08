@@ -107,7 +107,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Restaurant</th>
-                        <th scope="col">Gourmen Rating</th>
+                        <th scope="col">Gourmen-Rating (x/5)</th>
                         <th scope="col">Homepage</th>
                     </tr>
                 </thead>
@@ -115,7 +115,16 @@
                     {% for row in table_rows %}
                     <tr data-search="{{ (row.restaurant ~ ' ' ~ (row.kueche or '') ~ ' ' ~ (row.adresse or ''))|lower }}">
                         <td>{{ row.restaurant }}</td>
-                        <td>{{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}/5</td>
+                        {% set rating_value = row.overall_avg|float %}
+                        {% if rating_value < 1 %}{% set rating_value = 1 %}{% endif %}
+                        {% if rating_value > 5 %}{% set rating_value = 5 %}{% endif %}
+                        {% set rating_hue = ((rating_value - 1) / 4 * 120) %}
+                        <td>
+                            <span class="chip rating-chip--dynamic" style="--rating-hue: {{ '%.2f'|format(rating_hue) }};">
+                                {{ lucide_icon('star') }}
+                                {{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}/5
+                            </span>
+                        </td>
                         <td>
                             {% if row.homepage %}
                             <a href="{{ row.homepage }}" class="landing-restaurants-table__home-link" target="_blank" rel="noopener noreferrer" aria-label="Webseite von {{ row.restaurant }} (öffnet in neuem Tab)">
