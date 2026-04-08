@@ -107,7 +107,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Restaurant</th>
-                        <th scope="col">Gourmen-Rating (x/5)</th>
+                        <th scope="col">Gourmen-Rating (★/5)</th>
                         <th scope="col">Homepage</th>
                     </tr>
                 </thead>
@@ -122,7 +122,7 @@
                         <td>
                             <span class="chip rating-chip--dynamic" style="--rating-hue: {{ '%.2f'|format(rating_hue) }};">
                                 {{ lucide_icon('star') }}
-                                {{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}/5
+                                {{ '%.1f'|format(row.overall_avg)|replace('.', ',') }}
                             </span>
                         </td>
                         <td>
