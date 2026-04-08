@@ -31,6 +31,7 @@
                     Profildaten
                 </a>
                 <a href="{{ url_for('member.profile', tab='sensitive') }}"
+                   data-force-navigation="true"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'sensitive' else '' }}"
                    role="tab"
                    aria-selected="{{ 'true' if tab_param == 'sensitive' else 'false' }}">
@@ -288,14 +289,12 @@
                      role="tabpanel">
                     {% if sensitive_form %}
                     
-                    <!-- Security Info Banner -->
-                    <div class="alert alert--info">
-                        {{ lucide_icon('info', 'alert__icon') }}
-                        <div class="alert__content">
-                            <div class="alert__title">Hinweis</div>
-                            <div class="alert__message">
-                                Diese Informationen werden verschlüsselt gespeichert.
-                            </div>
+                    <div class="card card--filter tool-surface">
+                        <div class="card__body">
+                            <p class="page-info">
+                                {{ lucide_icon('shield-check') }}
+                                Diese Informationen werden verschluesselt gespeichert.
+                            </p>
                         </div>
                     </div>
                     

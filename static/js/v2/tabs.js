@@ -73,6 +73,12 @@
             return;
           }
 
+          // Einzelne Tabs brauchen bewusst einen Full-Page-Navigate
+          // (z. B. Re-Auth/Server-Checks vor Tab-Inhalt).
+          if (tab.dataset.forceNavigation === 'true') {
+            return;
+          }
+
           const targetUrl = new URL(tab.href, window.location.href);
           const currentUrl = new URL(window.location.href);
 
