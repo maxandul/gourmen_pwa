@@ -8,32 +8,13 @@
 
     {% include 'partials/_head_pwa_meta.html' %}
 
-    <!-- Open Graph / Facebook / WhatsApp — Blöcke müssen im Layout (extends) überschreibbar bleiben -->
+    <!-- Open Graph / Facebook / WhatsApp: global einheitlich wie Landingpage -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
-    {% set _endpoint = request.endpoint or '' %}
-    {% set _default_pageheader = 'Goumen Webapp' %}
-    {% if _endpoint == 'dashboard.index' %}
-      {% set _default_pageheader = 'Dashboard' %}
-    {% elif _endpoint.startswith('events.') %}
-      {% set _default_pageheader = 'Events' %}
-    {% elif _endpoint.startswith('ggl.') %}
-      {% set _default_pageheader = 'GGL' %}
-    {% elif _endpoint.startswith('member.') %}
-      {% set _default_pageheader = 'Verein' %}
-    {% elif _endpoint.startswith('auth.') %}
-      {% set _default_pageheader = 'Anmelden' %}
-    {% elif _endpoint.startswith('ratings.') %}
-      {% set _default_pageheader = 'Bewertungen' %}
-    {% elif _endpoint.startswith('billbro.') %}
-      {% set _default_pageheader = 'BillBro' %}
-    {% elif _endpoint.startswith('admin.') %}
-      {% set _default_pageheader = 'Admin' %}
-    {% endif %}
-    <meta property="og:title" content="{% block og_title %}Goumen Webapp{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}{{ _default_pageheader }}{% endblock %}">
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True) }}?v=20260408">
-    <meta property="og:image:secure_url" content="{{ url_for('static', filename='img/og-round-share.png', _external=True) }}?v=20260408">
+    <meta property="og:url" content="{{ url_for('public.landing', _external=True, _scheme='https') }}">
+    <meta property="og:title" content="Gourmen">
+    <meta property="og:description" content="Kulinarischer Verein Zürich">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=20260408">
+    <meta property="og:image:secure_url" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=20260408">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -42,10 +23,10 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="{{ request.url }}">
-    <meta name="twitter:title" content="{% block twitter_title %}Goumen Webapp{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}{{ _default_pageheader }}{% endblock %}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True) }}?v=20260408">
+    <meta name="twitter:url" content="{{ url_for('public.landing', _external=True, _scheme='https') }}">
+    <meta name="twitter:title" content="Gourmen">
+    <meta name="twitter:description" content="Kulinarischer Verein Zürich">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=20260408">
 
     {% include 'partials/_head_manifest_icons.html' %}
     {% include 'partials/_head_stylesheets.html' %}
