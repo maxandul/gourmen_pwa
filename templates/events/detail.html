@@ -259,7 +259,7 @@
                 </div>
 
                 <!-- Tab: BillBro -->
-                        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'billbro' else '' }}" id="tab-billbro" role="tabpanel">
+                        <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'billbro' else '' }}" id="tab-billbro" role="tabpanel" data-billbro-active="{{ '1' if tab_param == 'billbro' else '0' }}" data-billbro-sync-url="{{ url_for('events.billbro_sync', event_id=event.id) }}">
                     {% set is_organizer = event.organisator_id == current_user.id %}
                     {% set has_bill = event.rechnungsbetrag_rappen is not none %}
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
@@ -445,7 +445,7 @@
 
                     <!-- 3) Deine Schätzung / Neue Schätzung als eigenständige Cards -->
                     {% if participation.has_guess %}
-                    <div class="card{% if not has_final %} mt-6{% endif %}" id="billbro-my-guess">
+                    <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-my-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -482,7 +482,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="card{% if not has_final %} mt-6{% endif %}" id="billbro-new-guess">
+                    <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-new-guess">
                         <div class="card__header">
                             <h2 class="card__title">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -494,7 +494,7 @@
                                     <path d="M22 8h-4" />
                                     <path d="M20 2v4" />
                                 </svg>
-                                Neue Schätzung abgeben
+                                Schätzung abgeben
                             </h2>
                         </div>
                         <div class="card__body">
@@ -540,22 +540,19 @@
 
                     {% if is_organizer %}
                     <!-- Organizer: Anwesenheit & Schätzungen -->
-                    <div class="card" id="billbro-attendance">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                </svg>
-                                Anwesenheits-Check
-                            </h2>
-                        </div>
-                        <div class="card__body">
-                            <p class="text-muted">Bestätige, wer wirklich anwesend ist, bevor du die Rechnung eingibst.</p>
-                            <div class="card-section card-section--subtle">
-                                <div class="card-section__body">
+                    <section id="billbro-attendance" class="event-ratings-all mt-6" aria-labelledby="billbro-attendance-heading">
+                        <h2 class="event-ratings-all__heading" id="billbro-attendance-heading">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Anwesenheits-Check
+                        </h2>
+                        <p class="text-muted">Bestätige, wer wirklich anwesend ist, bevor du die Rechnung eingibst.</p>
+                        <div class="card-section card-section--subtle">
+                            <div class="card-section__body">
                                     {# Zusagen zuerst #}
                                     {% for member in all_members %}
                                     {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
@@ -596,12 +593,11 @@
                                     </div>
                                     {% endif %}
                                     {% endfor %}
-                                </div>
                             </div>
                         </div>
                         {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
                         {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
-                        <div class="card__footer">
+                        <div class="tool-strip__actions" role="group" aria-label="Aktionen Anwesenheits-Check">
                             {% if event.billbro_closed %}
                             <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -627,7 +623,7 @@
                             </form>
                             {% endif %}
                         </div>
-                    </div>
+                    </section>
                     {% endif %}
 
                     <!-- Rechnung & Berechnung als eigenständige Cards -->
@@ -799,7 +795,7 @@
                         {% set show_rating_form = (not user_rating) or rating_edit_mode %}
                         {% set show_rating_actions = user_rating and (not rating_edit_mode) %}
                         {% if show_rating_form %}
-                        <div class="card" id="event-ratings-form">
+                        <div class="card mt-6" id="event-ratings-form">
                             <div class="card__header">
                                 <h2 class="card__title">
                                     {{ lucide_icon('star') }}
@@ -893,7 +889,7 @@
                         </div>
                         {% endif %}
                         {% if show_rating_actions %}
-                        <div id="event-ratings-actions" class="tool-surface event-ratings-toolbar" role="region" aria-label="Aktionen zu deiner Bewertung">
+                        <div id="event-ratings-actions" class="tool-surface event-ratings-toolbar mt-6" role="region" aria-label="Aktionen zu deiner Bewertung">
                             <p class="event-ratings-toolbar__hint">Du hast das Event bewertet. Deine Bewertung:</p>
                             <div class="event-ratings-toolbar__actions">
                                 <a href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1', _anchor='event-ratings-form') }}" class="btn btn--primary" aria-label="Bewertung bearbeiten">
@@ -1067,9 +1063,11 @@ document.addEventListener('DOMContentLoaded', function() {
         requestAnimationFrame(() => requestAnimationFrame(scrollToHash));
     }
 
-    {% if tab_param == 'billbro' %}
     (function billbroBackgroundSync() {
-        const syncUrl = {{ url_for('events.billbro_sync', event_id=event.id)|tojson }};
+        const billbroPanel = document.getElementById('tab-billbro');
+        if (!billbroPanel || billbroPanel.dataset.billbroActive !== '1') return;
+        const syncUrl = billbroPanel.dataset.billbroSyncUrl;
+        if (!syncUrl) return;
         const INTERVAL_MS = 12000;
         let lastSig = null;
         async function pull() {
@@ -1092,7 +1090,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (document.visibilityState === 'visible') pull();
         });
     })();
-    {% endif %}
 });
 </script>
 {% endblock %}
