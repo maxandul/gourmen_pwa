@@ -119,6 +119,7 @@
         <div class="tabs tabs--panel" aria-label="Events-Ansichten">
         <nav class="tabs__nav" role="tablist">
             <a href="{{ events_tab_urls.kommend }}"
+               data-force-navigation="true"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'kommend' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'kommend' else 'false' }}">
@@ -126,6 +127,7 @@
                 Kommend
             </a>
             <a href="{{ events_tab_urls.archiv }}"
+               data-force-navigation="true"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'archiv' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'archiv' else 'false' }}">
@@ -133,6 +135,7 @@
                 Archiv
             </a>
             <a href="{{ events_tab_urls.stats }}"
+               data-force-navigation="true"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'stats' else '' }}"
                role="tab"
                aria-selected="{{ 'true' if tab_param == 'stats' else 'false' }}">
@@ -570,6 +573,42 @@
   var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
   if (!eventsTabsContainer) return;
 
+  async function loadTabsFromUrl(url, pushHistory) {
+    var response = await fetch(url, {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'fetch' },
+      credentials: 'same-origin'
+    });
+    if (!response.ok) {
+      window.location.href = url;
+      return;
+    }
+
+    var html = await response.text();
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var nextTabs = doc.querySelector('.tabs[aria-label="Events-Ansichten"]');
+    if (!nextTabs) {
+      window.location.href = url;
+      return;
+    }
+
+    var nextNav = nextTabs.querySelector('.tabs__nav');
+    var nextContent = nextTabs.querySelector('.tabs__content');
+    var currentNav = eventsTabsContainer.querySelector('.tabs__nav');
+    var currentContent = eventsTabsContainer.querySelector('.tabs__content');
+    if (!nextNav || !nextContent || !currentNav || !currentContent) {
+      window.location.href = url;
+      return;
+    }
+
+    currentNav.innerHTML = nextNav.innerHTML;
+    currentContent.innerHTML = nextContent.innerHTML;
+
+    if (pushHistory) {
+      window.history.pushState({}, '', url);
+    }
+  }
+
   async function replaceActivePanelFromUrl(url) {
     var activePanel = eventsTabsContainer.querySelector('.tabs__panel--active');
     if (!activePanel) return;
@@ -597,6 +636,25 @@
   }
 
   eventsTabsContainer.addEventListener('click', function (event) {
+    var tabLink = event.target.closest('.tabs__nav .tabs__tab[href]');
+    if (tabLink) {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      event.preventDefault();
+      loadTabsFromUrl(tabLink.href, true).catch(function () {
+        window.location.href = tabLink.href;
+      });
+      return;
+    }
+
     var link = event.target.closest('.tabs__panel--active .page-actions a[href]');
     if (!link) return;
     if (
@@ -613,6 +671,12 @@
     event.preventDefault();
     replaceActivePanelFromUrl(link.href).catch(function () {
       window.location.href = link.href;
+    });
+  });
+
+  window.addEventListener('popstate', function () {
+    loadTabsFromUrl(window.location.href, false).catch(function () {
+      window.location.reload();
     });
   });
 })();

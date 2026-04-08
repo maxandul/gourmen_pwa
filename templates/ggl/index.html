@@ -57,6 +57,7 @@
     <div class="tabs tabs--panel" aria-label="Guessing League — Ansichten">
       <nav class="tabs__nav" role="tablist">
         <a href="{{ url_for('ggl.index', tab='performance', season=selected_season) }}"
+           data-force-navigation="true"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'performance' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'performance' else 'false' }}">
@@ -64,6 +65,7 @@
           Deine Performance
         </a>
         <a href="{{ url_for('ggl.index', tab='tabelle', season=selected_season) }}"
+           data-force-navigation="true"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'tabelle' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'tabelle' else 'false' }}">
@@ -71,6 +73,7 @@
           Tabelle
         </a>
         <a href="{{ url_for('ggl.index', tab='rennen', season=selected_season) }}"
+           data-force-navigation="true"
            class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'rennen' else '' }}"
            role="tab"
            aria-selected="{{ 'true' if tab_param == 'rennen' else 'false' }}">
@@ -282,6 +285,71 @@
   bindDisclosure('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen', false);
   collapseDisclosureOnFilterSubmit('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen');
   collapseDisclosureOnFilterReset('ggl-filter-disclosure', 'gourmen:gglFilterDisclosureOpen');
+
+  var gglTabsContainer = document.querySelector('.tabs[aria-label="Guessing League — Ansichten"]');
+  if (!gglTabsContainer) return;
+
+  async function loadTabsFromUrl(url, pushHistory) {
+    var response = await fetch(url, {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'fetch' },
+      credentials: 'same-origin'
+    });
+    if (!response.ok) {
+      window.location.href = url;
+      return;
+    }
+
+    var html = await response.text();
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var nextTabs = doc.querySelector('.tabs[aria-label="Guessing League — Ansichten"]');
+    if (!nextTabs) {
+      window.location.href = url;
+      return;
+    }
+
+    var nextNav = nextTabs.querySelector('.tabs__nav');
+    var nextContent = nextTabs.querySelector('.tabs__content');
+    var currentNav = gglTabsContainer.querySelector('.tabs__nav');
+    var currentContent = gglTabsContainer.querySelector('.tabs__content');
+    if (!nextNav || !nextContent || !currentNav || !currentContent) {
+      window.location.href = url;
+      return;
+    }
+
+    currentNav.innerHTML = nextNav.innerHTML;
+    currentContent.innerHTML = nextContent.innerHTML;
+
+    if (pushHistory) {
+      window.history.pushState({}, '', url);
+    }
+  }
+
+  gglTabsContainer.addEventListener('click', function (event) {
+    var tabLink = event.target.closest('.tabs__nav .tabs__tab[href]');
+    if (!tabLink) return;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    loadTabsFromUrl(tabLink.href, true).catch(function () {
+      window.location.href = tabLink.href;
+    });
+  });
+
+  window.addEventListener('popstate', function () {
+    loadTabsFromUrl(window.location.href, false).catch(function () {
+      window.location.reload();
+    });
+  });
 })();
 </script>
 {% endblock %}

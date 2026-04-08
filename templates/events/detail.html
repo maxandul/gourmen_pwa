@@ -110,23 +110,18 @@
             <div class="tabs__content">
                 <!-- Tab: Infos -->
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'info' else '' }}" id="tab-info" role="tabpanel">
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">
-                                {{ lucide_icon('clipboard-list') }}
-                                Summary
-                            </h2>
-                        </div>
-                        <div class="card__body">
+                    <div class="dashboard-intent" aria-label="Event-Kerninfos">
+                        <h2 class="dashboard-intent__heading">Uebersicht</h2>
+                        <div class="dashboard-info-grid">
                             {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
                             {% if beitritt_ok %}
-                            <div class="info-row">
-                                <span class="info-row__label">Deine Teilnahme:</span>
-                                <span class="info-row__value info-row__value--actions">
+                            <div class="dashboard-info-tile">
+                                <span class="dashboard-info-tile__label">Teilnahme</span>
+                                <span class="dashboard-info-tile__value">
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <span class="chip-select-wrap">
-                                            <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()">
+                                            <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer dieses Event">
                                                 <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
                                                 <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
                                                 <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
@@ -135,23 +130,51 @@
                                     </form>
                                 </span>
                             </div>
+                            {% else %}
+                            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                                <span class="dashboard-info-tile__label">Teilnahme</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Nicht verfuegbar</span>
+                                </span>
+                            </div>
                             {% endif %}
-                            <div class="info-row">
-                                <span class="info-row__label">Organisator:</span>
-                                <span class="info-row__value">{{ event.organisator.display_name_with_spirit }}</span>
+
+                            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                                <span class="dashboard-info-tile__label">Restaurant</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line">
+                                        {% if event.restaurant %}{{ event.restaurant }}{% elif event.place_name %}{{ event.place_name }}{% else %}TBD{% endif %}
+                                    </span>
+                                </span>
                             </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Teilnehmer:</span>
-                                <span class="info-row__value">{{ event.get_participation_count() }} von {{ event.get_total_members_count() }} Mitgliedern</span>
+
+                            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                                <span class="dashboard-info-tile__label">Organisator</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line">{{ event.organisator.display_name_with_spirit }}</span>
+                                </span>
                             </div>
-                            
+
+                            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                                <span class="dashboard-info-tile__label">Preislevel</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line">
+                                        {% if event.place_price_level %}{{ '€' * event.place_price_level }}{% else %}TBD{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                {{ lucide_icon('clipboard-list') }}
+                                Details
+                            </h2>
+                        </div>
+                        <div class="card__body">
                             {% if event.restaurant or event.kueche or event.website or event.notizen or event.place_address %}
-                            {% if event.restaurant %}
-                            <div class="info-row">
-                                <span class="info-row__label">Restaurant:</span>
-                                <span class="info-row__value">{{ event.restaurant }}</span>
-                            </div>
-                            {% endif %}
                             {% if event.place_maps_url %}
                             <div class="info-row">
                                 <span class="info-row__label">Adresse:</span>
@@ -172,12 +195,6 @@
                                     {% set cuisine_types = event.place_types|map('cuisine_type_mapper')|list %}
                                     {{ cuisine_types|join(', ') if cuisine_types else 'Restaurant' }}
                                 </span>
-                            </div>
-                            {% endif %}
-                            {% if event.place_price_level %}
-                            <div class="info-row">
-                                <span class="info-row__label">Preislevel:</span>
-                                <span class="info-row__value">{{ '€' * event.place_price_level }}</span>
                             </div>
                             {% endif %}
                             {% if event.website %}
