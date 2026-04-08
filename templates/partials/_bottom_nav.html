@@ -2,8 +2,7 @@
     <nav class="bottom-nav">
         <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}nav-item--active{% endif %}" aria-label="Dashboard">
             <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
+                <use href="/static/icons/lucide-sprite.svg#layout-dashboard"></use>
             </svg>
             <span class="nav-text">Dashboard</span>
         </a>
