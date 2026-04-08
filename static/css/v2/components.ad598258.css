@@ -3274,7 +3274,7 @@ a.card-link:active {
 .sidebar__item:hover,
 .sidebar__item:focus,
 .sidebar__item:active {
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 /* Desktop: Sidebar anzeigen */

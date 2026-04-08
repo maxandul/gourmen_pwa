@@ -49,15 +49,15 @@
   min-height: 44px;
   width: 44px;
   height: 44px;
-  background: #1b232e;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(27, 35, 46, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .logo-link:hover {
-  background: #243241;
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(27, 35, 46, 1);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 .user-bar-logo {
@@ -85,8 +85,9 @@
 
 /* Light Mode - Anpassungen für Buttons und Text */
 [data-theme="light"] .logo-link {
-  background: #1b232e;
+  background: rgba(27, 35, 46, 1);
   border-color: var(--color-border-default);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 [data-theme="light"] .logo-link:hover {
@@ -140,12 +141,12 @@
 .nav-item:hover {
   color: var(--color-interactive-primary);
   background: var(--color-surface-overlay);
-  transform: translateY(-2px);
 }
 
-.nav-item.active {
+.nav-item--active {
   color: var(--color-interactive-primary);
   font-weight: var(--font-semibold);
+  background: var(--color-surface-overlay);
 }
 
 .nav-icon {
@@ -164,11 +165,11 @@
 .bottom-nav .nav-item:hover,
 .bottom-nav .nav-item:focus,
 .bottom-nav .nav-item:active {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 .bottom-nav .nav-item * {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 /* ============================================

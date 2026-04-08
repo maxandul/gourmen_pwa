@@ -1,34 +1,42 @@
-    {% if current_user.is_authenticated %}
+    {% set show_user_bar = current_user.is_authenticated or request.endpoint == 'public.landing' %}
+    {% if show_user_bar %}
     <div class="user-bar">
         <a href="{{ url_for('public.landing', show='1') }}" class="logo-link">
             <img src="{{ url_for('static', filename='img/pwa/icon-512.png') }}" alt="Gourmen Logo" class="user-bar-logo" />
         </a>
         <div class="user-section">
             <div class="user-actions">
-                <button id="theme-toggle" class="btn" aria-label="Theme wechseln">
-                    <svg class="icon icon--theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1" x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1" y1="12" x2="3" y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </svg>
-                    <svg class="icon icon--theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
+                <button id="theme-toggle" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Zu Dark Mode wechseln">
+                    <span class="theme-switch__track" aria-hidden="true">
+                        <svg class="icon theme-switch__icon theme-switch__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="icon theme-switch__icon theme-switch__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <span class="theme-switch__thumb"></span>
+                    </span>
                 </button>
                 <details class="user-menu">
-                    <summary class="btn btn--icon-only user-menu__summary" aria-label="Konto und Einstellungen">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#user"></use>
-                        </svg>
+                    <summary class="user-menu__summary" aria-label="Konto und Einstellungen">
+                        <span class="user-menu__avatar">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#user"></use>
+                            </svg>
+                        </span>
+                        <span class="user-menu__chevron" aria-hidden="true">▾</span>
                     </summary>
                     <div class="user-menu__panel">
                         <ul class="user-menu__list" role="list">
+                            {% if current_user.is_authenticated %}
                             <li>
                                 <a href="{{ url_for('member.profile') }}" class="user-menu__link">Profil</a>
                             </li>
@@ -43,9 +51,16 @@
                             <li>
                                 <a href="{{ url_for('member.technical') }}" class="user-menu__link">App &amp; Benachrichtigungen</a>
                             </li>
+                            {% else %}
+                            <li>
+                                <a href="{{ url_for('auth.login') }}" class="user-menu__link">Anmelden</a>
+                            </li>
+                            {% endif %}
                         </ul>
+                        {% if current_user.is_authenticated %}
                         <div class="user-menu__sep" role="presentation"></div>
                         <a href="{{ url_for('auth.logout') }}" class="user-menu__link user-menu__link--danger">Abmelden</a>
+                        {% endif %}
                     </div>
                 </details>
             </div>

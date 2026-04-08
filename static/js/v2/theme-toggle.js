@@ -54,6 +54,8 @@ class ThemeToggle {
     const manager = themeManager || window.themeManager;
     const currentTheme = manager.getCurrentTheme();
     const isDark = currentTheme === 'dark';
+    this.button.setAttribute('aria-checked', isDark ? 'true' : 'false');
+    this.button.setAttribute('data-theme-state', isDark ? 'dark' : 'light');
     
     // Update icons - use block instead of inline for absolute positioning
     if (this.iconLight) {

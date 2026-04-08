@@ -15,7 +15,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.98b93f0f.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.341261ca.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -84,7 +84,7 @@
             {{ lucide_icon('star') }}
             Gourmen-Hitlist
         </h2>
-        <div class="landing-hitlist-block">
+        <div class="landing-hitlist-toolbar">
             <form class="landing-hitlist-filter" role="search" aria-label="Restaurant, Küche oder Adresse in der Gourmen-Hitlist suchen">
                 {% if request.args.get('show') == '1' %}
                 <input type="hidden" name="show" value="1">
@@ -95,6 +95,8 @@
                     <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query }}" placeholder="Suche..." autocomplete="off">
                 </div>
             </form>
+        </div>
+        <div class="landing-hitlist-block">
         {% if table_total == 0 %}
         <div class="empty-state" role="status">
             <p class="empty-state__message">Noch keine ausgewerteten Bewertungen für Monatsessen.</p>
