@@ -314,41 +314,33 @@
                  role="tabpanel">
                 {% if monatsessen_stats %}
                 {% set ms = monatsessen_stats %}
-                <div class="card">
-                    <div class="card__header">
-                        <h2 class="card__title">
-                            {{ lucide_icon('clipboard-list') }}
-                            Summary
-                        </h2>
-                    </div>
-                    <div class="card__body">
-                        <div class="metrics-spotlight" aria-label="Kennzahlen Monatsessen">
-                            <p class="metrics-spotlight__context">
-                                {% if selected_year %}Jahr <strong>{{ selected_year }}</strong>{% else %}<strong>Alle Jahre</strong>{% endif %}
-                                ·
-                                {% if selected_organizer_label %}<strong>{{ selected_organizer_label }}</strong>{% else %}<strong>Alle Organisatoren</strong>{% endif %}
-                            </p>
-                            <div class="metrics-spotlight__hero">
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Monatsessen</span>
-                                    <span class="metrics-spotlight__metric-value">{{ ms.count_past_monatsessen }}</span>
-                                </div>
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Ø Teilnahmequote</span>
-                                    <span class="metrics-spotlight__metric-value">{{ ms.avg_ms_participation_pct }}%</span>
-                                </div>
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Ø Kosten / Person</span>
-                                    <span class="metrics-spotlight__metric-value">{% if ms.avg_share_chf is not none %}{{ ms.avg_share_chf }} CHF{% else %}—{% endif %}</span>
-                                </div>
-                                <div class="metrics-spotlight__metric">
-                                    <span class="metrics-spotlight__metric-label">Ø Trinkgeld</span>
-                                    <span class="metrics-spotlight__metric-value">{% if ms.avg_tip_pct is not none %}{{ "%.1f"|format(ms.avg_tip_pct) }}%{% else %}—{% endif %}</span>
-                                </div>
-                            </div>
+                <div class="metrics-spotlight" aria-label="Kennzahlen Monatsessen">
+                    <p class="metrics-spotlight__context">
+                        {% if selected_year %}Jahr <strong>{{ selected_year }}</strong>{% else %}<strong>Alle Jahre</strong>{% endif %}
+                        ·
+                        {% if selected_organizer_label %}<strong>{{ selected_organizer_label }}</strong>{% else %}<strong>Alle Organisatoren</strong>{% endif %}
+                    </p>
+                    <div class="metrics-spotlight__hero">
+                        <div class="metrics-spotlight__metric">
+                            <span class="metrics-spotlight__metric-label">Monatsessen</span>
+                            <span class="metrics-spotlight__metric-value">{{ ms.count_past_monatsessen }}</span>
                         </div>
+                        <div class="metrics-spotlight__metric">
+                            <span class="metrics-spotlight__metric-label">Ø Teilnahmequote</span>
+                            <span class="metrics-spotlight__metric-value">{{ ms.avg_ms_participation_pct }}%</span>
+                        </div>
+                        <div class="metrics-spotlight__metric">
+                            <span class="metrics-spotlight__metric-label">Ø Kosten / Person</span>
+                            <span class="metrics-spotlight__metric-value">{% if ms.avg_share_chf is not none %}{{ ms.avg_share_chf }} CHF{% else %}—{% endif %}</span>
+                        </div>
+                        <div class="metrics-spotlight__metric">
+                            <span class="metrics-spotlight__metric-label">Ø Trinkgeld</span>
+                            <span class="metrics-spotlight__metric-value">{% if ms.avg_tip_pct is not none %}{{ "%.1f"|format(ms.avg_tip_pct) }}%{% else %}—{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="metrics-insight-panel" aria-label="Auswertung">
+                <div class="metrics-insight-panel events-stats-summary-insights" aria-label="Auswertung">
                             <div class="metrics-insight-panel__section">
                                 <h3 class="metrics-insight-panel__heading">Dein Überblick</h3>
                                 <p>Du hast an <strong>{{ ms.user_confirmed }}</strong> von <strong>{{ ms.user_eligible_count }}</strong> Monatsessen teilgenommen. Deine Teilnahmequote liegt bei <strong>{{ ms.user_participation_pct }}&nbsp;%</strong>.</p>
@@ -389,8 +381,6 @@
                                     </div>
                                 </details>
                             </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="card">

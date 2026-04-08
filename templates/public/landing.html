@@ -169,10 +169,18 @@
 (() => {
   const form = document.querySelector('.landing-hitlist-filter');
   const input = document.getElementById('hitlist-search');
-  const rows = Array.from(document.querySelectorAll('.landing-restaurants-table tbody tr[data-search]'));
-  const empty = document.querySelector('.landing-hitlist-empty');
-  const pagination = document.querySelector('.landing-pagination');
-  if (!form || !input || rows.length === 0) return;
+  const block = document.querySelector('.landing-hitlist-block');
+  if (!form || !input || !block) return;
+
+  let rows = [];
+  let empty = null;
+  let pagination = null;
+
+  const refreshRefs = () => {
+    rows = Array.from(document.querySelectorAll('.landing-restaurants-table tbody tr[data-search]'));
+    empty = document.querySelector('.landing-hitlist-empty');
+    pagination = document.querySelector('.landing-pagination');
+  };
 
   const applyFilter = () => {
     const q = input.value.trim().toLowerCase();
@@ -189,8 +197,51 @@
     if (pagination) pagination.hidden = q !== '';
   };
 
+  const keepScrollPosition = async (updater) => {
+    const beforeTop = block.getBoundingClientRect().top;
+    await updater();
+    const afterTop = block.getBoundingClientRect().top;
+    window.scrollBy(0, afterTop - beforeTop);
+  };
+
+  const loadTablePage = async (url) => {
+    try {
+      const response = await fetch(url, {
+        headers: { 'X-Requested-With': 'fetch' },
+        credentials: 'same-origin',
+      });
+      if (!response.ok) {
+        window.location.href = url;
+        return;
+      }
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const nextBlock = doc.querySelector('.landing-hitlist-block');
+      if (!nextBlock) {
+        window.location.href = url;
+        return;
+      }
+      await keepScrollPosition(async () => {
+        block.innerHTML = nextBlock.innerHTML;
+        refreshRefs();
+        applyFilter();
+      });
+      window.history.replaceState({}, '', url);
+    } catch (error) {
+      window.location.href = url;
+    }
+  };
+
   form.addEventListener('submit', (event) => event.preventDefault());
   input.addEventListener('input', applyFilter);
+  block.addEventListener('click', (event) => {
+    const link = event.target.closest('.landing-pagination a[href]');
+    if (!link) return;
+    event.preventDefault();
+    loadTablePage(link.href);
+  });
+
+  refreshRefs();
   applyFilter();
 })();
 </script>

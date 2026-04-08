@@ -42,9 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
    * @param {object} opts
    * @param {string} opts.canvasId
    * @param {string} opts.labelsContainerId
-   * @param {'cumulative_points'|'cumulative_abs_diff_rappen'} opts.seriesKey
+   * @param {'cumulative_points'|'avg_abs_diff_rappen'} opts.seriesKey
    * @param {string} opts.yAxisTitle
    * @param {'points'|'chf'} opts.unit
+   * @param {'asc'|'desc'} [opts.rankOrder='desc']
    */
   function initProgressionChart(opts) {
     const chartCanvas = document.getElementById(opts.canvasId);
@@ -61,7 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const member = memberData.member;
       const isCurrentUser = Number(memberId) === Number(currentUserId);
       const color = colorByMemberId.get(memberId) || memberColors[0];
-      const rawSeries = memberData[opts.seriesKey];
+      const rawSeries = (() => {
+        if (opts.seriesKey === 'avg_abs_diff_rappen') {
+          const cumulativeAbs = memberData.cumulative_abs_diff_rappen || [];
+          const ranks = memberData.ranks || [];
+          let participationCount = 0;
+          return cumulativeAbs.map((value, idx) => {
+            if (ranks[idx] !== null && ranks[idx] !== undefined) participationCount += 1;
+            if (!participationCount) return null;
+            return Math.round(value / participationCount);
+          });
+        }
+        return memberData[opts.seriesKey];
+      })();
       if (!rawSeries || !rawSeries.length) return;
 
       const chartValues =
@@ -140,7 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
             titleFont: { size: 14, weight: 'bold' },
             bodyFont: { size: 13 },
             padding: 12,
-            itemSort: (a, b) => b.parsed.y - a.parsed.y,
+            itemSort: (a, b) =>
+              opts.rankOrder === 'asc'
+                ? a.parsed.y - b.parsed.y
+                : b.parsed.y - a.parsed.y,
             callbacks: {
               title: (ctx) => `Event: ${ctx[0].label}`,
               label: (ctx) => {
@@ -155,14 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
                   return `${fullLabel} - Punkte: ${cumulative} (+${eventPoints})`;
                 }
-                const cumulativeChf = ctx.parsed.y;
-                const raw = ctx.dataset._rawRappenSeries;
-                const cumulativeRappen = raw ? raw[idx] : Math.round(cumulativeChf * 100);
-                let eventRappen = cumulativeRappen;
-                if (idx > 0 && raw && raw[idx - 1] != null && raw[idx] != null) {
-                  eventRappen = raw[idx] - raw[idx - 1];
-                }
-                return `${fullLabel} - Summe: ${formatChfFromRappen(cumulativeRappen)} (Δ ${formatChfFromRappen(eventRappen)})`;
+                const currentRappen = Math.round((ctx.parsed.y || 0) * 100);
+                return `${fullLabel} - ØDiff: ${formatChfFromRappen(currentRappen)}`;
               },
             },
           },
@@ -193,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     });
 
-    createChartLabels(labelsContainer, datasets);
+    createChartLabels(labelsContainer, datasets, opts.rankOrder || 'desc');
 
     setTimeout(() => {
       const scrollContainer = chartCanvas.closest('.ggl-chart__scroll');
@@ -208,12 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 60);
   }
 
-  function createChartLabels(labelsContainer, ds) {
+  function createChartLabels(labelsContainer, ds, rankOrder) {
     labelsContainer.innerHTML = '';
     const sorted = ds.slice().sort((a, b) => {
       const aLast = a.data[a.data.length - 1] || 0;
       const bLast = b.data[b.data.length - 1] || 0;
-      return bLast - aLast;
+      return rankOrder === 'asc' ? aLast - bLast : bLast - aLast;
     });
     sorted.forEach((dataset, idx) => {
       const item = document.createElement('div');
@@ -242,13 +252,15 @@ document.addEventListener('DOMContentLoaded', () => {
     seriesKey: 'cumulative_points',
     yAxisTitle: 'Kumulative Punkte',
     unit: 'points',
+    rankOrder: 'desc',
   });
 
   initProgressionChart({
     canvasId: 'ggl-diff-chart',
     labelsContainerId: 'ggl-diff-chart-labels',
-    seriesKey: 'cumulative_abs_diff_rappen',
-    yAxisTitle: 'Kumulative absolute Differenz (CHF)',
+    seriesKey: 'avg_abs_diff_rappen',
+    yAxisTitle: 'Ø absolute Differenz (CHF)',
     unit: 'chf',
+    rankOrder: 'asc',
   });
 });

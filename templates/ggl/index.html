@@ -82,43 +82,33 @@
       <div class="tabs__content">
         <!-- Tab: Performance (tab=performance; tab=aktuell → Redirect) -->
         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'performance' else '' }}" role="tabpanel">
-          <div class="card">
-            <div class="card__header">
-              <h2 class="card__title">
-                {{ lucide_icon('clipboard-list') }}
-                Summary
-              </h2>
-            </div>
-            <div class="card__body">
-              {% if current_stats %}
-              <div class="metrics-spotlight">
-                <p class="metrics-spotlight__context">Saison <strong>{{ selected_season }}</strong></p>
-                <div class="metrics-spotlight__hero" aria-label="Rang und Punkte für die gewählte Saison">
-                  <div class="metrics-spotlight__metric">
-                    <span class="metrics-spotlight__metric-label">Dein Rang</span>
-                    <span class="metrics-spotlight__metric-value">{{ perf.rank or '—' }}</span>
-                    {% if perf.rank and perf.rank_total > 0 %}
-                    <span class="metrics-spotlight__metric-hint">von {{ perf.rank_total }}</span>
-                    {% endif %}
-                  </div>
-                  <div class="metrics-spotlight__metric">
-                    <span class="metrics-spotlight__metric-label">Punkte</span>
-                    <span class="metrics-spotlight__metric-value">{{ current_stats.total_points or 0 }}</span>
-                  </div>
-                </div>
-                {% if perf.insight_paragraphs %}
-                <div class="metrics-insight-panel" aria-label="Einordnung in Abschnitten">
-                  {% for paragraph in perf.insight_paragraphs %}
-                  {{ paragraph|safe }}
-                  {% endfor %}
-                </div>
+          {% if current_stats %}
+          <div class="metrics-spotlight">
+            <p class="metrics-spotlight__context">Saison <strong>{{ selected_season }}</strong></p>
+            <div class="metrics-spotlight__hero" aria-label="Rang und Punkte für die gewählte Saison">
+              <div class="metrics-spotlight__metric">
+                <span class="metrics-spotlight__metric-label">Dein Rang</span>
+                <span class="metrics-spotlight__metric-value">{{ perf.rank or '—' }}</span>
+                {% if perf.rank and perf.rank_total > 0 %}
+                <span class="metrics-spotlight__metric-hint">von {{ perf.rank_total }}</span>
                 {% endif %}
               </div>
-              {% else %}
-              <p class="text-secondary">Du hast in der ausgewählten Saison noch an keinem Event mit BillBro teilgenommen.</p>
-              {% endif %}
+              <div class="metrics-spotlight__metric">
+                <span class="metrics-spotlight__metric-label">Punkte</span>
+                <span class="metrics-spotlight__metric-value">{{ current_stats.total_points or 0 }}</span>
+              </div>
             </div>
+            {% if perf.insight_paragraphs %}
+            <div class="metrics-insight-panel" aria-label="Einordnung in Abschnitten">
+              {% for paragraph in perf.insight_paragraphs %}
+              {{ paragraph|safe }}
+              {% endfor %}
+            </div>
+            {% endif %}
           </div>
+          {% else %}
+          <p class="text-secondary">Du hast in der ausgewählten Saison noch an keinem Event mit BillBro teilgenommen.</p>
+          {% endif %}
         </div>
 
         <!-- Tab: Tabelle -->
@@ -175,6 +165,7 @@
               </h2>
             </div>
             <div class="card__body">
+              <p class="ggl-chart__intro">Kumulierte Punkte je Event.</p>
               <div class="ggl-chart">
                 <div class="ggl-chart__scroll">
                   <div class="ggl-chart__container">
@@ -195,11 +186,11 @@
               </h2>
             </div>
             <div class="card__body">
-              <p class="ggl-chart__intro">Kumulative absolute Schätzdifferenz je Event (|Schätzung minus Rechnungsbetrag|); Unter- und Überschätzung werden nicht gegeneinander aufgerechnet.</p>
+              <p class="ggl-chart__intro">Entwicklung der durchschnittlichen Schätz-Differenz.</p>
               <div class="ggl-chart">
                 <div class="ggl-chart__scroll">
                   <div class="ggl-chart__container">
-                    <canvas id="ggl-diff-chart" width="400" height="200" aria-label="Kumulative Schätzdifferenz in CHF — Verlauf über die Saison" role="img"></canvas>
+                    <canvas id="ggl-diff-chart" width="400" height="200" aria-label="Durchschnittliche absolute Schätzdifferenz in CHF — Verlauf über die Saison" role="img"></canvas>
                   </div>
                   <div id="ggl-diff-chart-labels" class="ggl-chart__labels"></div>
                 </div>

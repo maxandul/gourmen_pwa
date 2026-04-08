@@ -466,22 +466,22 @@ class GGLService:
 
     @staticmethod
     def _insight_section(title: str, items: list[Markup]) -> Markup:
-        """Überschrift + Aufzählung für das Performance-Insight-Panel (HTML, sicher escaped Titel)."""
+        """Überschrift + Fliesstext-Zeilen für das Performance-Insight-Panel."""
         if not items:
             return Markup('')
         out = (
             Markup('<section class="metrics-insight-panel__section">')
             + Markup('<h3 class="metrics-insight-panel__heading">')
             + escape(title)
-            + Markup('</h3><ul class="metrics-insight-panel__list">')
+            + Markup('</h3>')
         )
         for it in items:
             out += (
-                Markup('<li class="metrics-insight-panel__item">')
+                Markup('<p class="metrics-insight-panel__item">')
                 + it
-                + Markup('</li>')
+                + Markup('</p>')
             )
-        out += Markup('</ul></section>')
+        out += Markup('</section>')
         return out
 
     @staticmethod
@@ -580,6 +580,8 @@ class GGLService:
             'show_gap_above': False,
             'gap_above_points': None,
             'above_label': None,
+            'show_equal_above': False,
+            'equal_above_label': None,
             'show_gap_leader': False,
             'gap_leader_points': None,
             'leader_peer_labels': [],
@@ -615,6 +617,9 @@ class GGLService:
                 ctx['show_gap_above'] = True
                 ctx['gap_above_points'] = gap_a
                 ctx['above_label'] = _label(above_row['member_id'])
+            elif gap_a == 0:
+                ctx['show_equal_above'] = True
+                ctx['equal_above_label'] = _label(above_row['member_id'])
             if max_points is not None and user_points < max_points and user_idx != 1:
                 ctx['show_gap_leader'] = True
                 ctx['gap_leader_points'] = max_points - user_points
@@ -669,6 +674,12 @@ class GGLService:
 
         # — Abstände —
         bits: list[Markup] = []
+        if ctx.get('show_equal_above') and ctx.get('equal_above_label'):
+            bits.append(
+                Markup('Du bist gleichauf mit ')
+                + v(ctx['equal_above_label'])
+                + Markup('.')
+            )
         if ctx.get('show_gap_above') and ctx.get('above_label') and ctx.get('gap_above_points'):
             bits.append(
                 GGLService._insight_abstand_line(
@@ -737,11 +748,11 @@ class GGLService:
 
             if rb is not None and rb <= 3:
                 if rb == 1:
-                    best_tail = 'Damit hast du die beste Schätzung — Nice!'
+                    best_tail = 'Damit hast du bisher die beste Schätzung — Nice!'
                 elif rb == 2:
-                    best_tail = 'Damit hast du die zweitbeste Schätzung — Nice!'
+                    best_tail = 'Damit hast du bisher die zweitbeste Schätzung — Nice!'
                 else:
-                    best_tail = 'Damit hast du die drittbeste Schätzung — Nice!'
+                    best_tail = 'Damit hast du bisher die drittbeste Schätzung — Nice!'
             elif rb is not None and n_all:
                 best_tail = f'Rang {rb} von {n_all}.'
             else:
@@ -749,11 +760,11 @@ class GGLService:
 
             if rw is not None and rw <= 3:
                 if rw == 1:
-                    worst_tail = 'Das ist die schlechteste Schätzung — Buuh!'
+                    worst_tail = 'Das ist bisher die schlechteste Schätzung — Buuh!'
                 elif rw == 2:
-                    worst_tail = 'Das ist die zweitschlechteste Schätzung — Buuh!'
+                    worst_tail = 'Das ist bisher die zweitschlechteste Schätzung — Buuh!'
                 else:
-                    worst_tail = 'Das ist die drittschlechteste Schätzung — Buuh!'
+                    worst_tail = 'Das ist bisher die drittschlechteste Schätzung — Buuh!'
             elif rw is not None and n_all:
                 worst_tail = (
                     f'Rang {rw} von {n_all} vom schlechtesten her '
@@ -834,13 +845,13 @@ class GGLService:
                 teil_items.append(
                     Markup('Dir bleibt noch ')
                     + v(1)
-                    + Markup(' Event für deine Aufholjagd — dranbleiben!')
+                    + Markup(' Event für deine Aufholjagd.')
                 )
             else:
                 teil_items.append(
                     Markup('Dir bleiben noch ')
                     + v(remaining)
-                    + Markup(' Events für deine Aufholjagd — dranbleiben!')
+                    + Markup(' Events für deine Aufholjagd.')
                 )
             paragraphs.append(
                 GGLService._insight_section('Teilnahme an Events', teil_items)
