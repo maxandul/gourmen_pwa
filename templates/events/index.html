@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <div class="tabs tabs--panel" aria-label="Events-Ansichten">
+        <div class="tabs tabs--panel" id="gourmen-tabs" aria-label="Events-Ansichten">
         <nav class="tabs__nav" role="tablist">
             <a href="{{ events_tab_urls.kommend }}"
                data-force-navigation="true"
@@ -278,7 +278,7 @@
                 {% if events.pages > 1 %}
                 <div class="page-actions page-actions--centered mt-6">
                     {% if events.has_prev %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, **events_filter_args) }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline">
                         {{ lucide_icon('chevron-left') }}
                         Vorherige
                     </a>
@@ -289,7 +289,7 @@
                     </span>
                     
                     {% if events.has_next %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, **events_filter_args) }}" class="btn btn--outline">
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline">
                         Nächste
                         {{ lucide_icon('chevron-right') }}
                     </a>
@@ -579,42 +579,6 @@
   var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
   if (!eventsTabsContainer) return;
 
-  async function loadTabsFromUrl(url, pushHistory) {
-    var response = await fetch(url, {
-      method: 'GET',
-      headers: { 'X-Requested-With': 'fetch' },
-      credentials: 'same-origin'
-    });
-    if (!response.ok) {
-      window.location.href = url;
-      return;
-    }
-
-    var html = await response.text();
-    var doc = new DOMParser().parseFromString(html, 'text/html');
-    var nextTabs = doc.querySelector('.tabs[aria-label="Events-Ansichten"]');
-    if (!nextTabs) {
-      window.location.href = url;
-      return;
-    }
-
-    var nextNav = nextTabs.querySelector('.tabs__nav');
-    var nextContent = nextTabs.querySelector('.tabs__content');
-    var currentNav = eventsTabsContainer.querySelector('.tabs__nav');
-    var currentContent = eventsTabsContainer.querySelector('.tabs__content');
-    if (!nextNav || !nextContent || !currentNav || !currentContent) {
-      window.location.href = url;
-      return;
-    }
-
-    currentNav.innerHTML = nextNav.innerHTML;
-    currentContent.innerHTML = nextContent.innerHTML;
-
-    if (pushHistory) {
-      window.history.pushState({}, '', url);
-    }
-  }
-
   async function replaceActivePanelFromUrl(url) {
     var activePanel = eventsTabsContainer.querySelector('.tabs__panel--active');
     if (!activePanel) return;
@@ -644,20 +608,7 @@
   eventsTabsContainer.addEventListener('click', function (event) {
     var tabLink = event.target.closest('.tabs__nav .tabs__tab[href]');
     if (tabLink) {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return;
-      }
-      event.preventDefault();
-      loadTabsFromUrl(tabLink.href, true).catch(function () {
-        window.location.href = tabLink.href;
-      });
+      /* Tab-Links: volle Navigation — fetch+innerHTML führt Scripts im Tab-Inhalt nicht aus (Charts). */
       return;
     }
 
@@ -677,12 +628,6 @@
     event.preventDefault();
     replaceActivePanelFromUrl(link.href).catch(function () {
       window.location.href = link.href;
-    });
-  });
-
-  window.addEventListener('popstate', function () {
-    loadTabsFromUrl(window.location.href, false).catch(function () {
-      window.location.reload();
     });
   });
 })();

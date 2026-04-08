@@ -234,11 +234,17 @@ def index():
             'events_filters_active': events_filters_active,
             'selected_organizer_label': selected_organizer_label,
             'events_tab_urls': {
-                'kommend': url_for('events.index', tab='kommend', **events_filter_args),
-                'archiv': url_for('events.index', tab='archiv', **events_filter_args),
-                'stats': url_for('events.index', tab='stats', **events_filter_args),
+                'kommend': url_for(
+                    'events.index', tab='kommend', **events_filter_args, _anchor='gourmen-tabs'
+                ),
+                'archiv': url_for(
+                    'events.index', tab='archiv', **events_filter_args, _anchor='gourmen-tabs'
+                ),
+                'stats': url_for(
+                    'events.index', tab='stats', **events_filter_args, _anchor='gourmen-tabs'
+                ),
             },
-            'events_filter_reset_url': url_for('events.index', tab=tab),
+            'events_filter_reset_url': url_for('events.index', tab=tab, _anchor='gourmen-tabs'),
         }
     )
 

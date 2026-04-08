@@ -119,11 +119,12 @@
                     url_for('ggl.index', tab='tabelle', season=ggl_stats.season)
                 ) }}
 
-                {% set merch_status_value = ('Status: ' ~ merch_last_order.status_display) if merch_last_order else 'Status: TBD' %}
+                {% set merch_status_value = merch_last_order.status_display if merch_last_order else 'TBD' %}
+                {% set merch_date_line = merch_last_order.created_at.strftime('%d.%m.%Y') if merch_last_order else 'TBD' %}
                 {{ dashboard_info_tile(
-                    'Bestellung',
+                    'Merch-Status',
                     merch_status_value,
-                    None,
+                    merch_date_line,
                     url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch')
                 ) }}
             </div>
