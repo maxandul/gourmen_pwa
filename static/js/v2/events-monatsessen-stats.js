@@ -10,8 +10,29 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const gridColor = 'rgba(0, 0, 0, 0.08)';
-  const tickColor = '#64748b';
+  function getChartThemeColors() {
+    const root = document.documentElement;
+    const theme = root.getAttribute('data-theme');
+    const isDark = theme === 'dark';
+    return {
+      gridColor: isDark ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.08)',
+      tickColor: isDark ? '#cbd5e1' : '#64748b',
+      avgLineColor: isDark ? '#cbd5e1' : '#64748b',
+      tooltipBg: isDark ? 'rgba(15, 23, 42, 0.96)' : 'rgba(15, 23, 42, 0.9)',
+      tooltipText: '#f8fafc',
+      tooltipBorder: isDark ? 'rgba(148, 163, 184, 0.55)' : 'rgba(100, 116, 139, 0.35)',
+    };
+  }
+
+  function getTooltipTheme(colorsTheme) {
+    return {
+      backgroundColor: colorsTheme.tooltipBg,
+      titleColor: colorsTheme.tooltipText,
+      bodyColor: colorsTheme.tooltipText,
+      borderColor: colorsTheme.tooltipBorder,
+      borderWidth: 1,
+    };
+  }
   const barColors = [
     '#dc693c', '#73c8a8', '#45b7d1', '#96ceb4', '#8a9db1',
     '#f88958', '#2fa885', '#667a91', '#f59e0b', '#4f6477',
@@ -55,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const colors = labels.map((_, i) => barColors[i % barColors.length]);
 
+    const colorsTheme = getChartThemeColors();
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'bar',
       data: {
@@ -75,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: { display: false },
           tooltip: {
+            ...getTooltipTheme(colorsTheme),
             mode: 'nearest',
             intersect: true,
             callbacks: {
@@ -91,12 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
           x: {
             title: { display: true, text: xTitle, font: { size: 12, weight: '600' } },
             beginAtZero: true,
-            grid: { color: gridColor },
-            ticks: { color: tickColor },
+            grid: { color: colorsTheme.gridColor },
+            ticks: { color: colorsTheme.tickColor },
           },
           y: {
             grid: { display: false },
-            ticks: { color: tickColor, font: { size: 11 } },
+            ticks: { color: colorsTheme.tickColor, font: { size: 11 } },
           },
         },
       },
@@ -121,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const colors = labels.map((_, i) => barColors[i % barColors.length]);
 
+    const colorsTheme = getChartThemeColors();
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'bar',
       data: {
@@ -141,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: { display: false },
           tooltip: {
+            ...getTooltipTheme(colorsTheme),
             mode: 'nearest',
             intersect: true,
             callbacks: {
@@ -156,9 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
             min: 0,
             max: 5,
             title: { display: true, text: xTitle, font: { size: 12, weight: '600' } },
-            grid: { color: gridColor },
+            grid: { color: colorsTheme.gridColor },
             ticks: {
-              color: tickColor,
+              color: colorsTheme.tickColor,
               stepSize: 1,
               callback(v) {
                 return v;
@@ -167,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           y: {
             grid: { display: false },
-            ticks: { color: tickColor, font: { size: 11 } },
+            ticks: { color: colorsTheme.tickColor, font: { size: 11 } },
           },
         },
       },
@@ -191,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const colors = labels.map((_, i) => barColors[i % barColors.length]);
 
+    const colorsTheme = getChartThemeColors();
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'pie',
       data: {
@@ -209,9 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { color: tickColor, boxWidth: 12, font: { size: 11 } },
+            labels: { color: colorsTheme.tickColor, boxWidth: 12, font: { size: 11 } },
           },
           tooltip: {
+            ...getTooltipTheme(colorsTheme),
             mode: 'nearest',
             intersect: true,
           },
@@ -236,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const yMax = maxValue !== null ? Number((maxValue * 1.1).toFixed(2)) : undefined;
     const yMin = minValue > 0 ? Number((minValue * 0.9).toFixed(2)) : 0;
 
+    const colorsTheme = getChartThemeColors();
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'line',
       data: {
@@ -256,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ...(hasOverall ? [{
             label: 'Gesamtdurchschnitt',
             data: overallSeries,
-            borderColor: '#64748b',
+            borderColor: colorsTheme.avgLineColor,
             borderWidth: 2,
             borderDash: [6, 6],
             pointRadius: 0,
@@ -272,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: { display: false },
           tooltip: {
+            ...getTooltipTheme(colorsTheme),
             mode: 'nearest',
             intersect: true,
             callbacks: {
@@ -292,17 +321,17 @@ document.addEventListener('DOMContentLoaded', () => {
         scales: {
           x: {
             title: { display: true, text: 'Monatsessen (mit BillBro)', font: { size: 12, weight: '600' } },
-            grid: { color: gridColor },
-            ticks: { color: tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+            grid: { color: colorsTheme.gridColor },
+            ticks: { color: colorsTheme.tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
           },
           y: {
             title: { display: true, text: 'Ø Anteil (CHF)', font: { size: 12, weight: '600' } },
             beginAtZero: false,
             min: yMin,
             max: yMax,
-            grid: { color: gridColor },
+            grid: { color: colorsTheme.gridColor },
             ticks: {
-              color: tickColor,
+              color: colorsTheme.tickColor,
               callback(v) {
                 return `${v} CHF`;
               },

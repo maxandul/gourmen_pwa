@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const { labels = [], members = [], data = {}, currentUserId } = payload;
   if (!labels.length || !members.length || !Object.keys(data).length) return;
   const chartInstances = new Map();
+  const rootTheme = document.documentElement.getAttribute('data-theme');
+  const isDarkMode = rootTheme === 'dark';
+  const gridColor = isDarkMode ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.1)';
+  const tickColor = isDarkMode ? '#cbd5e1' : '#0f172a';
+  const tooltipBg = isDarkMode ? 'rgba(15, 23, 42, 0.96)' : 'rgba(15, 23, 42, 0.9)';
+  const tooltipBorder = isDarkMode ? 'rgba(148, 163, 184, 0.55)' : 'rgba(100, 116, 139, 0.35)';
 
   const memberColors = [
     '#dc693c', '#73c8a8', '#45b7d1', '#96ceb4', '#8a9db1',
@@ -201,10 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
             enabled: true,
             mode: 'nearest',
             intersect: true,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: tooltipBg,
             titleColor: '#fff',
             bodyColor: '#fff',
-            borderColor: '#666',
+            borderColor: tooltipBorder,
             borderWidth: 1,
             cornerRadius: 6,
             displayColors: false,
@@ -240,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
           x: {
             display: true,
             title: { display: true, text: 'Events', font: { size: 12, weight: 'bold' } },
-            grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
-            ticks: { font: { size: 11 } },
+            grid: { display: true, color: gridColor },
+            ticks: { color: tickColor, font: { size: 11 } },
             offset: true,
           },
           y: {
@@ -249,8 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
             title: { display: true, text: opts.yAxisTitle, font: { size: 12, weight: 'bold' } },
             beginAtZero: opts.unit === 'points',
             reverse: opts.rankOrder === 'asc',
-            grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
-            ticks: { font: { size: 11 } },
+            grid: { display: true, color: gridColor },
+            ticks: { color: tickColor, font: { size: 11 } },
             offset: true,
           },
         },
