@@ -198,6 +198,9 @@ def get_monatsessen_statistics(
     part_map: dict[tuple[int, int], Participation] = {
         (p.event_id, p.member_id): p for p in parts
     }
+    parts_by_event: dict[int, list[Participation]] = defaultdict(list)
+    for p in parts:
+        parts_by_event[p.event_id].append(p)
 
     ratings_rows: list[EventRating] = EventRating.query.filter(
         EventRating.event_id.in_(event_ids)
@@ -237,6 +240,21 @@ def get_monatsessen_statistics(
     avg_ms_participation_pct = (
         mean(event_participation_rates) if event_participation_rates else 0.0
     )
+
+    # Monatsessen mit BillBro-Daten (z. B. Rechnung, Schätzung, berechneter Anteil)
+    count_billbro_monatsessen = 0
+    for ev in past_ms:
+        event_parts = parts_by_event.get(ev.id, [])
+        has_billbro_data = (
+            ev.rechnungsbetrag_rappen is not None
+            or any(
+                (p.guess_bill_amount_rappen is not None)
+                or (p.calculated_share_rappen is not None)
+                for p in event_parts
+            )
+        )
+        if has_billbro_data:
+            count_billbro_monatsessen += 1
 
     # Ø Kosten pro Person (alle erfassten Anteile, teilnahme=True)
     share_rappen_values = [
@@ -448,6 +466,7 @@ def get_monatsessen_statistics(
 
     return {
         'count_past_monatsessen': len(past_ms),
+        'count_billbro_monatsessen': count_billbro_monatsessen,
         'avg_ms_participation_pct': int(round(avg_ms_participation_pct)),
         'avg_share_chf': int(round(avg_share_chf)) if avg_share_chf is not None else None,
         'avg_tip_pct': round(avg_tip_pct, 1) if avg_tip_pct is not None else None,

@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const { labels = [], members = [], data = {}, currentUserId } = payload;
   if (!labels.length || !members.length || !Object.keys(data).length) return;
+  const chartInstances = new Map();
 
   const memberColors = [
     '#dc693c', '#73c8a8', '#45b7d1', '#96ceb4', '#8a9db1',
@@ -54,8 +55,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const datasets = [];
     let currentUserDataset = null;
+    let lockedTooltipIndex = null;
 
-    sortedMembers.forEach((memberId) => {
+    const membersForChart = (() => {
+      if (opts.seriesKey !== 'avg_abs_diff_rappen') return sortedMembers;
+
+      return members.slice().sort((a, b) => {
+        const aData = data[a];
+        const bData = data[b];
+        const aSeries = aData?.cumulative_abs_diff_rappen || [];
+        const bSeries = bData?.cumulative_abs_diff_rappen || [];
+        const aRanks = aData?.ranks || [];
+        const bRanks = bData?.ranks || [];
+
+        let aCount = 0;
+        let bCount = 0;
+        aSeries.forEach((_, idx) => {
+          if (aRanks[idx] !== null && aRanks[idx] !== undefined) aCount += 1;
+        });
+        bSeries.forEach((_, idx) => {
+          if (bRanks[idx] !== null && bRanks[idx] !== undefined) bCount += 1;
+        });
+
+        const aAvg = aCount > 0 ? aSeries[aSeries.length - 1] / aCount : Number.POSITIVE_INFINITY;
+        const bAvg = bCount > 0 ? bSeries[bSeries.length - 1] / bCount : Number.POSITIVE_INFINITY;
+
+        return aAvg - bAvg;
+      });
+    })();
+
+    membersForChart.forEach((memberId) => {
       const memberData = data[memberId];
       if (!memberData || !memberData.member) return;
 
@@ -107,8 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUserDataset) datasets.push(currentUserDataset);
 
     const eventCount = labels.length;
-    const isMobile = window.innerWidth <= 768;
-    const containerWidth = Math.max(isMobile ? 400 : 600, eventCount * (isMobile ? 100 : 150));
+    const isMobileLayout = window.innerWidth <= 768;
+    const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+    const containerWidth = Math.max(isMobileLayout ? 400 : 600, eventCount * (isMobileLayout ? 100 : 150));
 
     const chart = new Chart(chartCanvas.getContext('2d'), {
       type: 'line',
@@ -116,23 +146,27 @@ document.addEventListener('DOMContentLoaded', () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        aspectRatio: isMobile && eventCount > 4 ? 0.8 : 1.2,
+        aspectRatio: isMobileLayout && eventCount > 4 ? 0.8 : 1.2,
         interaction: { intersect: false, mode: 'index' },
         onHover(event, elements) {
-          if (isMobile) {
+          if (isTouchDevice()) {
             event?.native?.target && (event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default');
           }
         },
         onClick(event) {
-          if (!isMobile) return;
+          if (!isTouchDevice()) return;
           const active = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
           if (!active.length) return;
           event.native?.preventDefault?.();
+          const tappedIndex = active[0].index;
           const tooltip = chart.tooltip;
-          const currentActive = tooltip.getActiveElements();
-          if (currentActive.length > 0) {
+          const sameIndexTapped = lockedTooltipIndex === tappedIndex;
+
+          if (sameIndexTapped) {
+            lockedTooltipIndex = null;
             tooltip.setActiveElements([], { x: 0, y: 0 });
           } else {
+            lockedTooltipIndex = tappedIndex;
             tooltip.setActiveElements(active, { x: event.x, y: event.y });
           }
           chart.update('none');
@@ -142,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
           layout: { padding: { left: 2, right: 2, top: 20, bottom: 20 } },
           tooltip: {
             enabled: true,
-            external: isMobile ? () => false : undefined,
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             titleColor: '#fff',
             bodyColor: '#fff',
@@ -190,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             display: true,
             title: { display: true, text: opts.yAxisTitle, font: { size: 12, weight: 'bold' } },
             beginAtZero: opts.unit === 'points',
+            reverse: opts.rankOrder === 'asc',
             grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
             ticks: { font: { size: 11 } },
             offset: true,
@@ -197,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         elements: {
           point: {
-            hoverBackgroundColor: isMobile ? undefined : '#fff',
+            hoverBackgroundColor: isTouchDevice() ? undefined : '#fff',
           },
         },
       },
@@ -216,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollContainer.style.overflowY = 'hidden';
       chart.resize();
     }, 60);
+    return chart;
   }
 
   function createChartLabels(labelsContainer, ds, rankOrder) {
@@ -246,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  initProgressionChart({
+  const progressionChart = initProgressionChart({
     canvasId: 'ggl-progression-chart',
     labelsContainerId: 'ggl-chart-labels',
     seriesKey: 'cumulative_points',
@@ -254,13 +289,87 @@ document.addEventListener('DOMContentLoaded', () => {
     unit: 'points',
     rankOrder: 'desc',
   });
+  if (progressionChart) chartInstances.set('ggl-progression-chart', progressionChart);
 
-  initProgressionChart({
+  const diffChart = initProgressionChart({
     canvasId: 'ggl-diff-chart',
     labelsContainerId: 'ggl-diff-chart-labels',
     seriesKey: 'avg_abs_diff_rappen',
     yAxisTitle: 'Ø absolute Differenz (CHF)',
     unit: 'chf',
     rankOrder: 'asc',
+  });
+  if (diffChart) chartInstances.set('ggl-diff-chart', diffChart);
+
+  const modal = document.getElementById('ggl-chart-fullscreen-modal');
+  const modalBody = modal ? modal.querySelector('[data-ggl-modal-body]') : null;
+  const expandButtons = Array.from(document.querySelectorAll('.ggl-chart-expand-btn'));
+  let activeChartNode = null;
+  let activePlaceholder = null;
+  let activeChartInstance = null;
+  let previousBodyOverflow = '';
+
+  function closeFullscreenModal() {
+    if (!modal || !modalBody) return;
+    if (activeChartNode && activePlaceholder && activePlaceholder.parentNode) {
+      activePlaceholder.parentNode.insertBefore(activeChartNode, activePlaceholder);
+      activePlaceholder.remove();
+      activeChartNode.classList.remove('ggl-chart--fullscreen');
+    }
+    modal.setAttribute('data-open', 'false');
+    modal.hidden = true;
+    document.body.style.overflow = previousBodyOverflow;
+
+    if (activeChartInstance) {
+      setTimeout(() => activeChartInstance.resize(), 60);
+    }
+
+    activeChartNode = null;
+    activePlaceholder = null;
+    activeChartInstance = null;
+  }
+
+  function openFullscreenModal(button) {
+    if (!modal || !modalBody) return;
+    const chartTarget = button.getAttribute('data-chart-target');
+    const chartCanvasId = button.getAttribute('data-chart-canvas-id');
+    const chartNode = chartTarget ? document.getElementById(chartTarget) : null;
+    if (!chartNode || !chartNode.parentNode) return;
+
+    if (activeChartNode) {
+      closeFullscreenModal();
+    }
+
+    activePlaceholder = document.createElement('div');
+    activePlaceholder.className = 'ggl-chart-placeholder';
+    chartNode.parentNode.insertBefore(activePlaceholder, chartNode);
+    modalBody.appendChild(chartNode);
+    chartNode.classList.add('ggl-chart--fullscreen');
+
+    activeChartNode = chartNode;
+    activeChartInstance = chartCanvasId ? chartInstances.get(chartCanvasId) || null : null;
+    previousBodyOverflow = document.body.style.overflow || '';
+
+    modal.hidden = false;
+    modal.setAttribute('data-open', 'true');
+    if (activeChartInstance) {
+      setTimeout(() => activeChartInstance.resize(), 60);
+    }
+  }
+
+  expandButtons.forEach((button) => {
+    button.addEventListener('click', () => openFullscreenModal(button));
+  });
+
+  if (modal) {
+    modal.querySelectorAll('[data-ggl-chart-modal-close]').forEach((el) => {
+      el.addEventListener('click', closeFullscreenModal);
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && modal.getAttribute('data-open') === 'true') {
+      closeFullscreenModal();
+    }
   });
 });

@@ -166,10 +166,20 @@
                 {{ lucide_icon('trophy') }}
                 Ranking
               </h2>
+              <div class="card__actions">
+                <button
+                  type="button"
+                  class="btn btn--outline btn--sm ggl-chart-expand-btn"
+                  data-chart-target="ggl-chart-ranking"
+                  data-chart-canvas-id="ggl-progression-chart"
+                  aria-label="Ranking-Chart im Vollbild anzeigen">
+                  {{ lucide_icon('expand') }}
+                </button>
+              </div>
             </div>
             <div class="card__body">
               <p class="ggl-chart__intro">Kumulierte Punkte je Event.</p>
-              <div class="ggl-chart">
+              <div class="ggl-chart" id="ggl-chart-ranking">
                 <div class="ggl-chart__scroll">
                   <div class="ggl-chart__container">
                     <canvas id="ggl-progression-chart" width="400" height="200" aria-label="Kumulierte Punkte — Verlauf über die Saison" role="img"></canvas>
@@ -187,10 +197,20 @@
                 {{ lucide_icon('target') }}
                 Differenz
               </h2>
+              <div class="card__actions">
+                <button
+                  type="button"
+                  class="btn btn--outline btn--sm ggl-chart-expand-btn"
+                  data-chart-target="ggl-chart-diff"
+                  data-chart-canvas-id="ggl-diff-chart"
+                  aria-label="Differenz-Chart im Vollbild anzeigen">
+                  {{ lucide_icon('expand') }}
+                </button>
+              </div>
             </div>
             <div class="card__body">
               <p class="ggl-chart__intro">Entwicklung der durchschnittlichen Schätz-Differenz.</p>
-              <div class="ggl-chart">
+              <div class="ggl-chart" id="ggl-chart-diff">
                 <div class="ggl-chart__scroll">
                   <div class="ggl-chart__container">
                     <canvas id="ggl-diff-chart" width="400" height="200" aria-label="Durchschnittliche absolute Schätzdifferenz in CHF — Verlauf über die Saison" role="img"></canvas>
@@ -199,6 +219,26 @@
                 </div>
               </div>
               <div class="ggl-chart__note">Mobile: Tippe auf eine Linie, um Tooltips zu togglen.</div>
+            </div>
+          </div>
+
+          <div
+            id="ggl-chart-fullscreen-modal"
+            class="modal"
+            data-open="false"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ggl-chart-fullscreen-title">
+            <div class="modal__backdrop" data-ggl-chart-modal-close></div>
+            <div class="modal__container ggl-chart-modal__container">
+              <div class="modal__header">
+                <h2 class="modal__title" id="ggl-chart-fullscreen-title">Chart-Vollbild</h2>
+                <button type="button" class="modal__close" data-ggl-chart-modal-close aria-label="Vollbild schließen">
+                  {{ lucide_icon('x') }}
+                </button>
+              </div>
+              <div class="modal__body ggl-chart-modal__body" data-ggl-modal-body></div>
             </div>
           </div>
 
@@ -216,7 +256,7 @@
           </script>
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.2" defer></script>
+          <script src="{{ url_for('static', filename='js/v2/ggl-season.js') }}?v=2.0.8" defer></script>
           {% else %}
           <div class="alert alert--info" role="status">
             <svg class="alert__icon" aria-hidden="true">

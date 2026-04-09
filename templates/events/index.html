@@ -256,11 +256,13 @@
                                     <a class="chip chip--accent"
                                        href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}">
                                         Bewerten
+                                        {{ lucide_icon('chevron-right') }}
                                     </a>
                                     {% elif event.allow_ratings and rating_count > 0 %}
                                     <a class="chip rating-chip--dynamic" style="--rating-hue: {{ '%.2f'|format(rating_hue) }};" href="{{ url_for('events.detail', event_id=event.id, tab='ratings') }}">
                                         {{ lucide_icon('star') }}
                                         {{ "%.1f"|format(overall) }}
+                                        {{ lucide_icon('chevron-right') }}
                                     </a>
                                     {% else %}
                                     —
@@ -276,25 +278,23 @@
                 </div>
                 
                 {% if events.pages > 1 %}
-                <div class="page-actions page-actions--centered mt-6">
+                <nav class="landing-pagination mt-6" aria-label="Seiten der Archiv-Tabelle">
                     {% if events.has_prev %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline">
-                        {{ lucide_icon('chevron-left') }}
-                        Vorherige
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Vorherige Seite der Archiv-Tabelle">
+                        Zurück
                     </a>
                     {% endif %}
                     
-                    <span class="page-info">
+                    <span class="landing-pagination__status">
                         Seite {{ events.page }} von {{ events.pages }}
                     </span>
                     
                     {% if events.has_next %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline">
-                        Nächste
-                        {{ lucide_icon('chevron-right') }}
+                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Nächste Seite der Archiv-Tabelle">
+                        Weiter
                     </a>
                     {% endif %}
-                </div>
+                </nav>
                 {% endif %}
                 {% elif events and not events.items %}
                 <div class="alert alert--info" role="status">
@@ -321,6 +321,7 @@
                         <div class="metrics-spotlight__metric">
                             <span class="metrics-spotlight__metric-label">Monatsessen</span>
                             <span class="metrics-spotlight__metric-value">{{ ms.count_past_monatsessen }}</span>
+                            <span class="metrics-spotlight__metric-hint">{{ ms.count_billbro_monatsessen }} mit BillBro</span>
                         </div>
                         <div class="metrics-spotlight__metric">
                             <span class="metrics-spotlight__metric-label">Ø Teilnahmequote</span>
@@ -340,10 +341,10 @@
                 <div class="metrics-insight-panel events-stats-summary-insights" aria-label="Auswertung">
                             <div class="metrics-insight-panel__section">
                                 <h3 class="metrics-insight-panel__heading">Dein Überblick</h3>
-                                <p>Du hast an <strong>{{ ms.user_confirmed }}</strong> von <strong>{{ ms.user_eligible_count }}</strong> Monatsessen teilgenommen. Deine Teilnahmequote liegt bei <strong>{{ ms.user_participation_pct }}&nbsp;%</strong>.</p>
-                                <p>Du bist <strong>{{ ms.user_esstyp_allin }}</strong> mal all-in gegangen, hast <strong>{{ ms.user_esstyp_normal }}</strong> mal normal gegessen und warst <strong>{{ ms.user_esstyp_sparsam }}</strong> mal genügsam.</p>
+                                <p>Du hast an <span class="metrics-insight-panel__value">{{ ms.user_confirmed }}</span> von <span class="metrics-insight-panel__value">{{ ms.user_eligible_count }}</span> Monatsessen teilgenommen. Deine Teilnahmequote liegt bei <span class="metrics-insight-panel__value">{{ ms.user_participation_pct }}&nbsp;%</span>.</p>
+                                <p>Du bist <span class="metrics-insight-panel__value">{{ ms.user_esstyp_allin }}</span> mal all-in gegangen, hast <span class="metrics-insight-panel__value">{{ ms.user_esstyp_normal }}</span> mal normal gegessen und warst <span class="metrics-insight-panel__value">{{ ms.user_esstyp_sparsam }}</span> mal genügsam.</p>
                                 {% if ms.user_avg_pay_chf is not none %}
-                                <p>Im Durchschnitt hast du <strong>{{ ms.user_avg_pay_chf }}&nbsp;CHF</strong> pro Essen bezahlt.</p>
+                                <p>Im Durchschnitt hast du <span class="metrics-insight-panel__value">{{ ms.user_avg_pay_chf }}&nbsp;CHF</span> pro Essen bezahlt.</p>
                                 {% else %}
                                 <p class="text-secondary">Für dich liegen in diesem Filter noch keine Anteilsbeträge vor.</p>
                                 {% endif %}
@@ -356,22 +357,22 @@
                                     </summary>
                                     <div class="disclosure__content">
                                         {% if ms.record_expensive %}
-                                        <p>Am teuersten war mit einem durchschnittlichen Anteil von <strong>{{ "%.2f"|format(ms.record_expensive.avg_chf) }}&nbsp;CHF</strong> das Essen im Restaurant <strong>{{ ms.record_expensive.restaurant }}</strong> von <strong>{{ ms.record_expensive.organizer }}</strong>.</p>
+                                        <p>Am teuersten war mit einem durchschnittlichen Anteil von <span class="metrics-insight-panel__value">{{ "%.2f"|format(ms.record_expensive.avg_chf) }}&nbsp;CHF</span> das Essen im Restaurant <span class="metrics-insight-panel__value">{{ ms.record_expensive.restaurant }}</span> von <span class="metrics-insight-panel__value">{{ ms.record_expensive.organizer }}</span>.</p>
                                         {% endif %}
                                         {% if ms.record_cheapest %}
-                                        <p>Am günstigsten lag der durchschnittliche Anteil bei <strong>{{ "%.2f"|format(ms.record_cheapest.avg_chf) }}&nbsp;CHF</strong> im Restaurant <strong>{{ ms.record_cheapest.restaurant }}</strong> von <strong>{{ ms.record_cheapest.organizer }}</strong>.</p>
+                                        <p>Am günstigsten lag der durchschnittliche Anteil bei <span class="metrics-insight-panel__value">{{ "%.2f"|format(ms.record_cheapest.avg_chf) }}&nbsp;CHF</span> im Restaurant <span class="metrics-insight-panel__value">{{ ms.record_cheapest.restaurant }}</span> von <span class="metrics-insight-panel__value">{{ ms.record_cheapest.organizer }}</span>.</p>
                                         {% endif %}
                                         {% if ms.record_max_tip %}
-                                        <p>Das höchste Trinkgeld erhielt das Restaurant <strong>{{ ms.record_max_tip.restaurant }}</strong>{% if ms.record_max_tip.overall_avg is not none %} ({{ stats_star_rating(ms.record_max_tip.overall_avg) }}){% endif %} mit <strong>{{ "%.2f"|format(ms.record_max_tip.chf) }}&nbsp;CHF</strong>.</p>
+                                        <p>Das höchste Trinkgeld erhielt das Restaurant <span class="metrics-insight-panel__value">{{ ms.record_max_tip.restaurant }}</span>{% if ms.record_max_tip.overall_avg is not none %} ({{ stats_star_rating(ms.record_max_tip.overall_avg) }}){% endif %} mit <span class="metrics-insight-panel__value">{{ "%.2f"|format(ms.record_max_tip.chf) }}&nbsp;CHF</span>.</p>
                                         {% endif %}
                                         {% if ms.record_best_rated and ms.record_worst_rated %}
-                                        <p>Das beste Restaurant war <strong>{{ ms.record_best_rated.restaurant }}</strong> ({{ stats_star_rating(ms.record_best_rated.overall_avg) }}), das schlechteste <strong>{{ ms.record_worst_rated.restaurant }}</strong> ({{ stats_star_rating(ms.record_worst_rated.overall_avg) }}).</p>
+                                        <p>Das beste Restaurant war <span class="metrics-insight-panel__value">{{ ms.record_best_rated.restaurant }}</span> ({{ stats_star_rating(ms.record_best_rated.overall_avg) }}), das schlechteste <span class="metrics-insight-panel__value">{{ ms.record_worst_rated.restaurant }}</span> ({{ stats_star_rating(ms.record_worst_rated.overall_avg) }}).</p>
                                         {% endif %}
                                         {% if not ms.record_expensive and not ms.record_cheapest and not ms.record_max_tip and not (ms.record_best_rated and ms.record_worst_rated) %}
                                         <p class="text-secondary">Hier ist noch nichts zu zeigen (z.&nbsp;B. fehlende Anteile, Trinkgelder oder Bewertungen).</p>
                                         {% endif %}
                                         {% if ms.top_kueche %}
-                                        <p>Am häufigsten haben wir <strong>{{ ms.top_kueche }}</strong> gegessen.</p>
+                                        <p>Am häufigsten haben wir <span class="metrics-insight-panel__value">{{ ms.top_kueche }}</span> gegessen.</p>
                                         {% else %}
                                         <p class="text-secondary">Keine Küchenangaben in diesem Filter.</p>
                                         {% endif %}
@@ -612,7 +613,7 @@
       return;
     }
 
-    var link = event.target.closest('.tabs__panel--active .page-actions a[href]');
+    var link = event.target.closest('.tabs__panel--active .page-actions a[href], .tabs__panel--active .landing-pagination a[href]');
     if (!link) return;
     if (
       event.defaultPrevented ||
