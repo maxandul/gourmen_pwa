@@ -16,14 +16,14 @@
 </a>
 {%- endmacro %}
 
-{% macro dashboard_info_tile(label, line1, line2=None, href=None) -%}
+{% macro dashboard_info_tile(label, line1, line2=None, href=None, line2_class=None) -%}
 {% if href %}
 <a class="dashboard-info-tile" href="{{ href }}">
     <span class="dashboard-info-tile__content">
         <span class="dashboard-info-tile__label">{{ label }}</span>
         <span class="dashboard-info-tile__value">
             <span class="dashboard-info-tile__line">{{ line1 }}</span>
-            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle{% if line2_class %} {{ line2_class }}{% endif %}">{{ line2 }}</span>{% endif %}
         </span>
     </span>
     {{ lucide_icon('chevron-right', 'icon dashboard-info-tile__chev') }}
@@ -34,7 +34,7 @@
         <span class="dashboard-info-tile__label">{{ label }}</span>
         <span class="dashboard-info-tile__value">
             <span class="dashboard-info-tile__line">{{ line1 }}</span>
-            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">{{ line2 }}</span>{% endif %}
+            {% if line2 %}<span class="dashboard-info-tile__line dashboard-info-tile__line--subtle{% if line2_class %} {{ line2_class }}{% endif %}">{{ line2 }}</span>{% endif %}
         </span>
     </span>
 </div>
@@ -116,14 +116,16 @@
                     'Nächstes Event',
                     next_event_restaurant if next_event else 'TBD',
                     next_event.display_date if next_event else 'TBD',
-                    url_for('events.detail', event_id=next_event.id) if next_event else None
+                    url_for('events.detail', event_id=next_event.id) if next_event else None,
+                    'dashboard-info-tile__line--hint'
                 ) }}
 
                 {{ dashboard_info_tile(
                     'Letzter Anteil',
                     latest_bill_participation.display_share if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'CHF TBD',
                     latest_bill_event.display_date if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'TBD',
-                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None
+                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None,
+                    'dashboard-info-tile__line--hint'
                 ) }}
 
                 {% set ggl_rank_value = ('Rang ' ~ ggl_stats.rank) if ggl_stats.rank else 'Rang TBD' %}
@@ -140,7 +142,8 @@
                     'Merch-Status',
                     merch_status_value,
                     merch_date_line,
-                    url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch')
+                    url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch'),
+                    'dashboard-info-tile__line--hint'
                 ) }}
             </div>
         </section>

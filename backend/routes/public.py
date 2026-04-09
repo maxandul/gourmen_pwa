@@ -1,10 +1,8 @@
 from flask import Blueprint, render_template, jsonify, current_app, send_from_directory, redirect, url_for, request
 from flask_login import current_user
 from backend.extensions import db
-from backend.models.event import Event
 from backend.models.member import Member
 from datetime import datetime
-from sqlalchemy import func
 
 from backend.services.monatsessen_stats import (
     get_landing_extras,
@@ -40,23 +38,9 @@ def landing():
         # Public stats
         member_count = Member.query.filter_by(is_active=True).count()
         
-        # Count unique restaurants from both 'restaurant' and 'place_name' fields
-        restaurant_names = (
-            db.session.query(
-                func.coalesce(Event.place_name, Event.restaurant).label('name')
-            )
-            .filter(
-                Event.published == True,
-                Event.datum < now,
-                db.or_(
-                    db.and_(Event.restaurant.isnot(None), Event.restaurant != ''),
-                    db.and_(Event.place_name.isnot(None), Event.place_name != '')
-                )
-            )
-            .distinct()
-            .all()
-        )
-        restaurant_count = len(restaurant_names)
+        # Keep hero counter aligned with landing table rules:
+        # only restaurants with at least one rating from past monthly events.
+        restaurant_count = table_total
 
         return render_template(
             'public/landing.html',

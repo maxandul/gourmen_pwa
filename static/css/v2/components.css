@@ -4060,6 +4060,11 @@ a.card-link:active {
   color: var(--color-text-secondary);
 }
 
+.dashboard-info-tile__line--hint {
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
 .dashboard-explore-nav {
   gap: 0;
 }

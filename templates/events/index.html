@@ -219,6 +219,15 @@
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
                  role="tabpanel">
                 {% if events and events.items %}
+                <div class="landing-hitlist-toolbar">
+                    <form class="landing-hitlist-filter events-archive-filter" role="search" aria-label="Archiv nach Restaurant, Organisator oder Datum durchsuchen">
+                        <p class="landing-hitlist-filter__hint">Suche nach Restaurant, Organisator oder Datum:</p>
+                        <div class="landing-hitlist-filter__field">
+                            <label class="sr-only" for="events-archive-search">Archiv durchsuchen</label>
+                            <input id="events-archive-search" name="q" type="search" class="form-field__input" value="" placeholder="Suche..." autocomplete="off">
+                        </div>
+                    </form>
+                </div>
                 <div class="table-responsive data-table-wrap" role="region" aria-label="Archiv vergangener Events">
                     <table class="data-table">
                         <thead>
@@ -243,7 +252,7 @@
                             {% if rating_value < 1 %}{% set rating_value = 1 %}{% endif %}
                             {% if rating_value > 5 %}{% set rating_value = 5 %}{% endif %}
                             {% set rating_hue = ((rating_value - 1) / 4 * 120) %}
-                            <tr>
+                            <tr data-search="{{ (event.display_date ~ ' ' ~ (event.restaurant or '') ~ ' ' ~ event.organisator.display_name_with_spirit)|lower }}">
                                 <td>{{ event.display_date }}</td>
                                 <td class="data-table__cell--event-type">
                                     <span class="sr-only">{{ event.event_typ.value }}</span>
@@ -275,6 +284,9 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+                <div class="empty-state events-archive-empty" role="status" hidden>
+                    <p class="empty-state__message">Keine Treffer in dieser Seite des Archivs.</p>
                 </div>
                 
                 {% if events.pages > 1 %}
@@ -674,6 +686,39 @@
   var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
   if (!eventsTabsContainer) return;
 
+  function initArchiveFilter(scope) {
+    var panel = scope || eventsTabsContainer.querySelector('.tabs__panel--active');
+    if (!panel) return;
+
+    var form = panel.querySelector('.events-archive-filter');
+    var input = panel.querySelector('#events-archive-search');
+    var tableWrap = panel.querySelector('.data-table-wrap[aria-label="Archiv vergangener Events"]');
+    if (!form || !input || !tableWrap) return;
+
+    var rows = Array.from(panel.querySelectorAll('tbody tr[data-search]'));
+    var empty = panel.querySelector('.events-archive-empty');
+    var pagination = panel.querySelector('.landing-pagination');
+
+    function applyFilter() {
+      var q = input.value.trim().toLowerCase();
+      var visibleCount = 0;
+
+      rows.forEach(function (row) {
+        var haystack = row.getAttribute('data-search') || '';
+        var isVisible = q === '' || haystack.includes(q);
+        row.hidden = !isVisible;
+        if (isVisible) visibleCount += 1;
+      });
+
+      if (empty) empty.hidden = visibleCount > 0 || q === '';
+      if (pagination) pagination.hidden = q !== '';
+    }
+
+    form.addEventListener('submit', function (event) { event.preventDefault(); });
+    input.addEventListener('input', applyFilter);
+    applyFilter();
+  }
+
   async function replaceActivePanelFromUrl(url) {
     var activePanel = eventsTabsContainer.querySelector('.tabs__panel--active');
     if (!activePanel) return;
@@ -697,6 +742,7 @@
     }
 
     activePanel.innerHTML = nextActivePanel.innerHTML;
+    initArchiveFilter(activePanel);
     window.history.replaceState({}, '', url);
   }
 
@@ -725,6 +771,8 @@
       window.location.href = link.href;
     });
   });
+
+  initArchiveFilter();
 })();
 </script>
 {% endblock %}
