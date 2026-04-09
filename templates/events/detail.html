@@ -133,50 +133,60 @@
                             {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
                             {% if beitritt_ok %}
                             <div class="dashboard-info-tile">
-                                <span class="dashboard-info-tile__label">Teilnahme</span>
-                                <span class="dashboard-info-tile__value">
-                                    <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <span class="chip-select-wrap">
-                                            <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer dieses Event">
-                                                <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
-                                                <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                                <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
-                                            </select>
-                                        </span>
-                                    </form>
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Teilnahme</span>
+                                    <span class="dashboard-info-tile__value">
+                                        <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <span class="chip-select-wrap">
+                                                <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer dieses Event">
+                                                    <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
+                                                    <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                                    <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                                </select>
+                                            </span>
+                                        </form>
+                                    </span>
                                 </span>
                             </div>
                             {% else %}
                             <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                                <span class="dashboard-info-tile__label">Teilnahme</span>
-                                <span class="dashboard-info-tile__value">
-                                    <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Nicht verfuegbar</span>
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Teilnahme</span>
+                                    <span class="dashboard-info-tile__value">
+                                        <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Nicht verfuegbar</span>
+                                    </span>
                                 </span>
                             </div>
                             {% endif %}
 
                             <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                                <span class="dashboard-info-tile__label">Restaurant</span>
-                                <span class="dashboard-info-tile__value">
-                                    <span class="dashboard-info-tile__line">
-                                        {% if event.restaurant %}{{ event.restaurant }}{% elif event.place_name %}{{ event.place_name }}{% else %}TBD{% endif %}
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Restaurant</span>
+                                    <span class="dashboard-info-tile__value">
+                                        <span class="dashboard-info-tile__line">
+                                            {% if event.restaurant %}{{ event.restaurant }}{% elif event.place_name %}{{ event.place_name }}{% else %}TBD{% endif %}
+                                        </span>
                                     </span>
                                 </span>
                             </div>
 
                             <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                                <span class="dashboard-info-tile__label">Organisator</span>
-                                <span class="dashboard-info-tile__value">
-                                    <span class="dashboard-info-tile__line">{{ event.organisator.display_name_with_spirit }}</span>
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Organisator</span>
+                                    <span class="dashboard-info-tile__value">
+                                        <span class="dashboard-info-tile__line">{{ event.organisator.display_name_with_spirit }}</span>
+                                    </span>
                                 </span>
                             </div>
 
                             <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                                <span class="dashboard-info-tile__label">Preislevel</span>
-                                <span class="dashboard-info-tile__value">
-                                    <span class="dashboard-info-tile__line">
-                                        {% if event.place_price_level %}{{ '€' * event.place_price_level }}{% else %}TBD{% endif %}
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Preislevel</span>
+                                    <span class="dashboard-info-tile__value">
+                                        <span class="dashboard-info-tile__line">
+                                            {% if event.place_price_level %}{{ '€' * event.place_price_level }}{% else %}TBD{% endif %}
+                                        </span>
                                     </span>
                                 </span>
                             </div>
@@ -197,7 +207,7 @@
                             <div class="info-row">
                                 <span class="info-row__label">Adresse:</span>
                                 <span class="info-row__value">
-                                    <a href="{{ event.place_maps_url }}" class="info-row__link" target="_blank" rel="noopener">Auf Google Maps anzeigen</a>
+                                    <a href="{{ event.place_maps_url }}" class="info-row__link" target="_blank" rel="noopener">Google Maps</a>
                                 </span>
                             </div>
                             {% endif %}
