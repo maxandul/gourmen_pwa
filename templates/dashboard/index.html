@@ -101,7 +101,7 @@
                     url_for('events.edit', event_id=restaurant_due_event.id),
                     'chef-hat',
                     'Restaurant ergänzen',
-                    (restaurant_due_event.event_typ.value ~ ' am ' ~ restaurant_due_event.display_date)
+                    ('Dein Essen am ' ~ restaurant_due_event.display_date)
                 ) }}
                 {% endif %}
             </div>
