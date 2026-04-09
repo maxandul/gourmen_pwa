@@ -342,7 +342,12 @@
                             <div class="metrics-insight-panel__section">
                                 <h3 class="metrics-insight-panel__heading">Dein Überblick</h3>
                                 <p>Du hast an <span class="metrics-insight-panel__value">{{ ms.user_confirmed }}</span> von <span class="metrics-insight-panel__value">{{ ms.user_eligible_count }}</span> Monatsessen teilgenommen. Deine Teilnahmequote liegt bei <span class="metrics-insight-panel__value">{{ ms.user_participation_pct }}&nbsp;%</span>.</p>
-                                <p>Du bist <span class="metrics-insight-panel__value">{{ ms.user_esstyp_allin }}</span> mal all-in gegangen, hast <span class="metrics-insight-panel__value">{{ ms.user_esstyp_normal }}</span> mal normal gegessen und warst <span class="metrics-insight-panel__value">{{ ms.user_esstyp_sparsam }}</span> mal genügsam.</p>
+                                {% set user_esstyp_total = ms.user_esstyp_allin + ms.user_esstyp_normal + ms.user_esstyp_sparsam %}
+                                {% if user_esstyp_total > 0 %}
+                                <p>Du bist bei <span class="metrics-insight-panel__value">{{ ((ms.user_esstyp_allin / user_esstyp_total) * 100)|round|int }}&nbsp;%</span> der Essen all-in gegangen, hast bei <span class="metrics-insight-panel__value">{{ ((ms.user_esstyp_normal / user_esstyp_total) * 100)|round|int }}&nbsp;%</span> normal gegessen und warst bei <span class="metrics-insight-panel__value">{{ ((ms.user_esstyp_sparsam / user_esstyp_total) * 100)|round|int }}&nbsp;%</span> sparsam unterwegs.</p>
+                                {% else %}
+                                <p class="text-secondary">Für dich liegen in diesem Filter noch keine Esstyp-Daten vor.</p>
+                                {% endif %}
                                 {% if ms.user_avg_pay_chf is not none %}
                                 <p>Im Durchschnitt hast du <span class="metrics-insight-panel__value">{{ ms.user_avg_pay_chf }}&nbsp;CHF</span> pro Essen bezahlt.</p>
                                 {% else %}
