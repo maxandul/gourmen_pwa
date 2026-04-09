@@ -68,7 +68,7 @@
 
     <div class="page-content">
 
-        {% if today_billbro_event or retro_cleanup_progress.pending > 0 or rsvp_prompt_event %}
+        {% if today_billbro_event or retro_cleanup_progress.pending > 0 or rsvp_prompt_event or restaurant_due_event %}
         <section class="dashboard-intent" aria-labelledby="dashboard-todo-heading">
             <h2 id="dashboard-todo-heading" class="dashboard-intent__heading">Zu erledigen</h2>
             <div class="dashboard-intent__grid">
@@ -94,6 +94,14 @@
                     'calendar',
                     'Zu-/Absage',
                     (rsvp_prompt_event.event_typ.value ~ ' am ' ~ rsvp_prompt_event.display_date)
+                ) }}
+                {% endif %}
+                {% if restaurant_due_event %}
+                {{ dashboard_intent_tile(
+                    url_for('events.edit', event_id=restaurant_due_event.id),
+                    'chef-hat',
+                    'Restaurant ergänzen',
+                    (restaurant_due_event.event_typ.value ~ ' am ' ~ restaurant_due_event.display_date)
                 ) }}
                 {% endif %}
             </div>

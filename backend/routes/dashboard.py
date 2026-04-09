@@ -65,6 +65,13 @@ def index():
 
     rsvp_prompt_event = RetroCleanupService.get_upcoming_rsvp_prompt_event(current_user.id)
     today_billbro_event = RetroCleanupService.get_today_billbro_prompt_event(current_user.id)
+    restaurant_due_event = Event.query.filter(
+        Event.organisator_id == current_user.id,
+        Event.published == True,
+        Event.datum >= today,
+        Event.datum <= (today + timedelta(days=30)),
+        ((Event.restaurant.is_(None)) | (Event.restaurant == ''))
+    ).order_by(Event.datum.asc()).first()
 
     merch_orders = (
         MerchOrder.query.filter_by(member_id=current_user.id)
@@ -85,6 +92,7 @@ def index():
         latest_bill_participation=latest_bill_participation,
         rsvp_prompt_event=rsvp_prompt_event,
         today_billbro_event=today_billbro_event,
+        restaurant_due_event=restaurant_due_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
     )
