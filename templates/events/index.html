@@ -219,9 +219,8 @@
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
                  role="tabpanel">
                 {% if events and events.items %}
-                <div class="landing-hitlist-toolbar">
+                <div class="landing-hitlist-toolbar events-archive-toolbar">
                     <form class="landing-hitlist-filter events-archive-filter" role="search" aria-label="Archiv nach Restaurant, Organisator oder Datum durchsuchen">
-                        <p class="landing-hitlist-filter__hint">Suche nach Restaurant, Organisator oder Datum:</p>
                         <div class="landing-hitlist-filter__field">
                             <label class="sr-only" for="events-archive-search">Archiv durchsuchen</label>
                             <input id="events-archive-search" name="q" type="search" class="form-field__input" value="" placeholder="Suche..." autocomplete="off">

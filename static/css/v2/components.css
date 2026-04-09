@@ -4065,6 +4065,11 @@ a.card-link:active {
   line-height: 1.35;
 }
 
+.events-archive-toolbar {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
 .dashboard-explore-nav {
   gap: 0;
 }
