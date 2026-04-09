@@ -15,7 +15,7 @@
 {%- endmacro %}
 
 {% macro stats_star_rating(avg) -%}
-<span class="events-stats-inline-rating" aria-label="Durchschnittsbewertung {{ '%.1f'|format(avg) }} von 5">{{ lucide_icon('star', 'icon events-stats-inline-rating__icon') }} {{ '%.1f'|format(avg) }}/5</span>
+<span class="events-stats-inline-rating" aria-label="Durchschnittsbewertung {{ '%.1f'|format(avg) }} von 5">{{ lucide_icon('star', 'icon events-stats-inline-rating__icon') }} {{ '%.1f'|format(avg) }}</span>
 {%- endmacro %}
 
 {% block title %}Events - Gourmen{% endblock %}
@@ -387,9 +387,19 @@
                             {{ lucide_icon('users') }}
                             Teilnahmequote
                         </h2>
+                        <div class="card__actions">
+                            <button
+                                type="button"
+                                class="btn btn--outline btn--sm events-stats-chart-expand-btn"
+                                data-chart-target="events-stats-chart-wrap-members"
+                                data-chart-canvas-id="events-stats-chart-members"
+                                aria-label="Teilnahmequote-Chart im Vollbild anzeigen">
+                                {{ lucide_icon('expand') }}
+                            </button>
+                        </div>
                     </div>
                     <div class="card__body">
-                        <div class="events-stats-chart">
+                        <div class="events-stats-chart" id="events-stats-chart-wrap-members">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
                                     <canvas id="events-stats-chart-members" width="400" height="240" aria-label="Teilnahmequoten je Mitglied" role="img"></canvas>
@@ -402,13 +412,52 @@
                 <div class="card">
                     <div class="card__header">
                         <h2 class="card__title">
+                            {{ lucide_icon('chart-line') }}
+                            Entwicklung Ø Kosten
+                        </h2>
+                        <div class="card__actions">
+                            <button
+                                type="button"
+                                class="btn btn--outline btn--sm events-stats-chart-expand-btn"
+                                data-chart-target="events-stats-chart-wrap-avg-share-trend"
+                                data-chart-canvas-id="events-stats-chart-avg-share-trend"
+                                aria-label="Entwicklung Ø Kosten im Vollbild anzeigen">
+                                {{ lucide_icon('expand') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <p class="text-secondary events-stats-chart__hint">Durchschnittlicher Anteil je Monatsessen inkl. Gesamtdurchschnitt.</p>
+                        <div class="events-stats-chart" id="events-stats-chart-wrap-avg-share-trend">
+                            <div class="events-stats-chart__scroll">
+                                <div class="events-stats-chart__container">
+                                    <canvas id="events-stats-chart-avg-share-trend" width="400" height="240" aria-label="Entwicklung der durchschnittlichen Kosten je Monatsessen mit BillBro" role="img"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h2 class="card__title">
                             {{ lucide_icon('banknote') }}
                             Ø Kosten / Organisator
                         </h2>
+                        <div class="card__actions">
+                            <button
+                                type="button"
+                                class="btn btn--outline btn--sm events-stats-chart-expand-btn"
+                                data-chart-target="events-stats-chart-wrap-organizers"
+                                data-chart-canvas-id="events-stats-chart-organizers"
+                                aria-label="Kosten-Chart im Vollbild anzeigen">
+                                {{ lucide_icon('expand') }}
+                            </button>
+                        </div>
                     </div>
                     <div class="card__body">
                         <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittelwert der durchschnittlichen Anteile je organisiertem Monatsessen.</p>
-                        <div class="events-stats-chart">
+                        <div class="events-stats-chart" id="events-stats-chart-wrap-organizers">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
                                     <canvas id="events-stats-chart-organizers" width="400" height="200" aria-label="Durchschnittskosten je Organisator" role="img"></canvas>
@@ -464,10 +513,20 @@
                             {{ lucide_icon('chart-column') }}
                             Ø Gesamtbewertung
                         </h2>
+                        <div class="card__actions">
+                            <button
+                                type="button"
+                                class="btn btn--outline btn--sm events-stats-chart-expand-btn"
+                                data-chart-target="events-stats-chart-wrap-organizer-ratings"
+                                data-chart-canvas-id="events-stats-chart-organizer-ratings"
+                                aria-label="Gesamtbewertungs-Chart im Vollbild anzeigen">
+                                {{ lucide_icon('expand') }}
+                            </button>
+                        </div>
                     </div>
                     <div class="card__body">
                         <p class="text-secondary events-stats-chart__hint">Pro Organisator: Mittel der durchschnittlichen Gesamtbewertungen je organisiertem Monatsessen.</p>
-                        <div class="events-stats-chart">
+                        <div class="events-stats-chart" id="events-stats-chart-wrap-organizer-ratings">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
                                     <canvas id="events-stats-chart-organizer-ratings" width="400" height="200" aria-label="Durchschnittliche Gesamtbewertung je Organisator" role="img"></canvas>
@@ -483,10 +542,20 @@
                             {{ lucide_icon('chart-column') }}
                             Küchen
                         </h2>
+                        <div class="card__actions">
+                            <button
+                                type="button"
+                                class="btn btn--outline btn--sm events-stats-chart-expand-btn"
+                                data-chart-target="events-stats-chart-wrap-kitchens"
+                                data-chart-canvas-id="events-stats-chart-kitchens"
+                                aria-label="Küchen-Chart im Vollbild anzeigen">
+                                {{ lucide_icon('expand') }}
+                            </button>
+                        </div>
                     </div>
                     <div class="card__body">
                         <p class="text-secondary events-stats-chart__hint">Absolute Anzahl Monatsessen pro Küche.</p>
-                        <div class="events-stats-chart">
+                        <div class="events-stats-chart" id="events-stats-chart-wrap-kitchens">
                             <div class="events-stats-chart__scroll">
                                 <div class="events-stats-chart__container">
                                     <canvas id="events-stats-chart-kitchens" width="400" height="220" aria-label="Küchen als absolute Anzahl" role="img"></canvas>
@@ -496,9 +565,31 @@
                     </div>
                 </div>
 
+                <div
+                    id="events-stats-chart-fullscreen-modal"
+                    class="modal"
+                    data-open="false"
+                    hidden
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="events-stats-chart-fullscreen-title">
+                    <div class="modal__backdrop" data-events-stats-modal-close></div>
+                    <div class="modal__container events-stats-chart-modal__container">
+                        <div class="modal__header">
+                            <h2 class="modal__title" id="events-stats-chart-fullscreen-title">Chart-Vollbild</h2>
+                            <button type="button" class="modal__close" data-events-stats-modal-close aria-label="Vollbild schließen">
+                                {{ lucide_icon('x') }}
+                            </button>
+                        </div>
+                        <div class="modal__body events-stats-chart-modal__body" data-events-stats-modal-body></div>
+                    </div>
+                </div>
+
                 <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.1.3" defer></script>
+                <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.2.3" defer></script>
                 {% else %}
                 <div class="empty-state" role="status">
                     <div class="empty-state__icon" aria-hidden="true">

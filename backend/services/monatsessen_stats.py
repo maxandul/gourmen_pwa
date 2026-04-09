@@ -404,6 +404,18 @@ def get_monatsessen_statistics(
         )
     organizer_chart.sort(key=lambda x: x['avg_chf'], reverse=True)
 
+    # Verlauf: Ø Anteil pro Monatsessen mit BillBro-Daten + Gesamtdurchschnitt als Referenzlinie
+    share_trend_labels: list[str] = []
+    share_trend_values: list[float] = []
+    share_trend_restaurants: list[str] = []
+    overall_avg_share_chf = round(mean([avg_r / 100.0 for _, avg_r in event_avgs]), 2) if event_avgs else None
+    for ev, avg_r in sorted(event_avgs, key=lambda t: t[0].datum):
+        date_label = ev.datum.strftime('%d.%m.%y')
+        restaurant_label = (ev.restaurant or ev.place_name or '').strip() or 'Monatsessen'
+        share_trend_labels.append(date_label)
+        share_trend_values.append(round(avg_r / 100.0, 2))
+        share_trend_restaurants.append(restaurant_label)
+
     # Restaurant-Tabelle (alle mit mind. einer Bewertung; Sortierung/Top 10 im Client)
     restaurant_ratings_rows: list[dict[str, Any]] = []
     for label, b in restaurant_rating_vals.items():
@@ -459,6 +471,12 @@ def get_monatsessen_statistics(
         'organizerRatings': {
             'labels': [x['label'] for x in organizer_rating_chart],
             'values': [x['avg'] for x in organizer_rating_chart],
+        },
+        'avgShareTrend': {
+            'labels': share_trend_labels,
+            'values': share_trend_values,
+            'restaurants': share_trend_restaurants,
+            'overallAvg': overall_avg_share_chf,
         },
         'restaurantRatings': restaurant_ratings_rows,
         'kitchens': {'labels': kitchen_labels, 'values': kitchen_values},

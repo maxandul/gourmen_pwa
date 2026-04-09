@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   const dataEl = document.getElementById('events-monatsessen-charts-data');
   if (!dataEl || !window.Chart) return;
+  if (window.ChartZoom) {
+    Chart.register(window.ChartZoom);
+  }
 
   let payload;
   try {
@@ -19,6 +22,41 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const TOP_RESTAURANTS = 10;
+  const chartInstances = new Map();
+
+  function attachTouchTooltipToggle(chart) {
+    let lockedKey = null;
+    const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+    chart.options.onClick = function onClick(event) {
+      if (!isTouchDevice()) return;
+      const tapped = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+      if (!tapped.length) return;
+      event.native?.preventDefault?.();
+      const el = tapped[0];
+      const key = `${el.datasetIndex}:${el.index}`;
+      const tooltip = chart.tooltip;
+      if (lockedKey === key) {
+        lockedKey = null;
+        tooltip.setActiveElements([], { x: 0, y: 0 });
+      } else {
+        lockedKey = key;
+        tooltip.setActiveElements([el], { x: event.x, y: event.y });
+      }
+      chart.update('none');
+    };
+  }
+
+  function registerChart(canvasId, chart) {
+    if (!chart) return;
+    chartInstances.set(canvasId, chart);
+    attachTouchTooltipToggle(chart);
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+      canvas.addEventListener('dblclick', () => {
+        if (typeof chart.resetZoom === 'function') chart.resetZoom();
+      });
+    }
+  }
 
   function barChart(canvasId, labels, values, xTitle) {
     const canvas = document.getElementById(canvasId);
@@ -42,9 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: true },
         plugins: {
           legend: { display: false },
           tooltip: {
+            mode: 'nearest',
+            intersect: true,
             callbacks: {
               label(ctx) {
                 const v = ctx.parsed.x;
@@ -52,6 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (xTitle.includes('CHF')) return `${v} CHF`;
                 return `${v}`;
               },
+            },
+          },
+          zoom: {
+            pan: { enabled: true, mode: 'x' },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              drag: { enabled: false },
+              mode: 'x',
             },
           },
         },
@@ -79,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.style.height = `${h}px`;
     }
     chart.resize();
+    registerChart(canvasId, chart);
   }
 
   /** Balken 1–5 (Gesamtbewertung) */
@@ -104,14 +155,26 @@ document.addEventListener('DOMContentLoaded', () => {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: true },
         plugins: {
           legend: { display: false },
           tooltip: {
+            mode: 'nearest',
+            intersect: true,
             callbacks: {
               label(ctx) {
                 const v = ctx.parsed.x;
                 return `${v} / 5`;
               },
+            },
+          },
+          zoom: {
+            pan: { enabled: true, mode: 'x' },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              drag: { enabled: false },
+              mode: 'x',
             },
           },
         },
@@ -146,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.style.height = `${h}px`;
     }
     chart.resize();
+    registerChart(canvasId, chart);
   }
 
   function pieChart(canvasId, labels, values) {
@@ -154,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const colors = labels.map((_, i) => barColors[i % barColors.length]);
 
-    new Chart(canvas.getContext('2d'), {
+    const chart = new Chart(canvas.getContext('2d'), {
       type: 'pie',
       data: {
         labels,
@@ -168,14 +232,147 @@ document.addEventListener('DOMContentLoaded', () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: true },
         plugins: {
           legend: {
             position: 'bottom',
             labels: { color: tickColor, boxWidth: 12, font: { size: 11 } },
           },
+          tooltip: {
+            mode: 'nearest',
+            intersect: true,
+          },
+          zoom: {
+            pan: { enabled: false },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              drag: { enabled: false },
+              mode: 'xy',
+            },
+          },
         },
       },
     });
+    registerChart(canvasId, chart);
+  }
+
+  function lineShareTrendChart(canvasId, labels, values, restaurants, overallAvg) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !labels.length || !values.length) return;
+
+    const trendColor = '#dc693c';
+    const hasOverall = overallAvg !== null && overallAvg !== undefined;
+    const overallSeries = hasOverall ? labels.map(() => Number(overallAvg)) : [];
+    const numericValues = values
+      .map((v) => Number(v))
+      .filter((v) => Number.isFinite(v));
+    const maxValue = numericValues.length ? Math.max(...numericValues, ...(hasOverall ? [Number(overallAvg)] : [])) : null;
+    const minValue = numericValues.length ? Math.min(...numericValues, ...(hasOverall ? [Number(overallAvg)] : [])) : 0;
+    const yMax = maxValue !== null ? Number((maxValue * 1.1).toFixed(2)) : undefined;
+    const yMin = minValue > 0 ? Number((minValue * 0.9).toFixed(2)) : 0;
+
+    const chart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Ø Anteil je Monatsessen',
+            data: values,
+            borderColor: trendColor,
+            backgroundColor: `${trendColor}20`,
+            pointBackgroundColor: trendColor,
+            pointBorderColor: trendColor,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            borderWidth: 2,
+            tension: 0.2,
+          },
+          ...(hasOverall ? [{
+            label: 'Gesamtdurchschnitt',
+            data: overallSeries,
+            borderColor: '#64748b',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+          }] : []),
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: true },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            mode: 'nearest',
+            intersect: true,
+            callbacks: {
+              title(ctx) {
+                if (!ctx || !ctx.length) return '';
+                const i = ctx[0].dataIndex;
+                const date = labels[i] || '';
+                const restaurant = (restaurants && restaurants[i]) ? restaurants[i] : '';
+                return restaurant ? `${date} ${restaurant}` : date;
+              },
+              label(ctx) {
+                const v = Number(ctx.parsed.y || 0).toFixed(2);
+                return `${ctx.dataset.label === 'Gesamtdurchschnitt' ? 'Gesamtdurchschnitt' : 'Ø Anteil'}: ${v} CHF`;
+              },
+            },
+          },
+          zoom: {
+            pan: { enabled: true, mode: 'x' },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              drag: { enabled: false },
+              mode: 'x',
+            },
+          },
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Monatsessen (mit BillBro)', font: { size: 12, weight: '600' } },
+            grid: { color: gridColor },
+            ticks: { color: tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+          },
+          y: {
+            title: { display: true, text: 'Ø Anteil (CHF)', font: { size: 12, weight: '600' } },
+            beginAtZero: false,
+            min: yMin,
+            max: yMax,
+            grid: { color: gridColor },
+            ticks: {
+              color: tickColor,
+              callback(v) {
+                return `${v} CHF`;
+              },
+            },
+          },
+        },
+        elements: {
+          point: {
+            hitRadius: 16,
+          },
+        },
+      },
+    });
+
+    const eventCount = labels.length;
+    const isMobileLayout = window.innerWidth <= 768;
+    const minWidth = Math.max(isMobileLayout ? 560 : 760, eventCount * (isMobileLayout ? 110 : 140));
+    const container = canvas.closest('.events-stats-chart__container');
+    if (container) {
+      container.style.minWidth = `${minWidth}px`;
+      container.style.width = `${minWidth}px`;
+      container.style.height = isMobileLayout ? '340px' : '420px';
+    }
+    chart.resize();
+    registerChart(canvasId, chart);
   }
 
   const mp = payload.memberParticipation;
@@ -201,6 +398,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const k = payload.kitchens;
   if (k && k.labels && k.values && k.labels.length) {
     barChart('events-stats-chart-kitchens', k.labels, k.values, 'Anzahl Monatsessen');
+  }
+
+  const ast = payload.avgShareTrend;
+  if (ast && ast.labels && ast.values && ast.labels.length) {
+    lineShareTrendChart(
+      'events-stats-chart-avg-share-trend',
+      ast.labels,
+      ast.values,
+      ast.restaurants || [],
+      ast.overallAvg,
+    );
   }
 
   /* —— Restaurant-Tabelle (sortierbar, Top 10) —— */
@@ -320,4 +528,67 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSortButtons();
     }
   }
+
+  const modal = document.getElementById('events-stats-chart-fullscreen-modal');
+  const modalBody = modal ? modal.querySelector('[data-events-stats-modal-body]') : null;
+  const expandButtons = Array.from(document.querySelectorAll('.events-stats-chart-expand-btn'));
+  let activeChartNode = null;
+  let activePlaceholder = null;
+  let activeChartInstance = null;
+  let previousBodyOverflow = '';
+
+  function closeFullscreenModal() {
+    if (!modal || !modalBody) return;
+    if (activeChartNode && activePlaceholder && activePlaceholder.parentNode) {
+      activePlaceholder.parentNode.insertBefore(activeChartNode, activePlaceholder);
+      activePlaceholder.remove();
+      activeChartNode.classList.remove('events-stats-chart--fullscreen');
+    }
+    modal.setAttribute('data-open', 'false');
+    modal.hidden = true;
+    document.body.style.overflow = previousBodyOverflow;
+    if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+    activeChartNode = null;
+    activePlaceholder = null;
+    activeChartInstance = null;
+  }
+
+  function openFullscreenModal(button) {
+    if (!modal || !modalBody) return;
+    const chartTarget = button.getAttribute('data-chart-target');
+    const chartCanvasId = button.getAttribute('data-chart-canvas-id');
+    const chartNode = chartTarget ? document.getElementById(chartTarget) : null;
+    if (!chartNode || !chartNode.parentNode) return;
+
+    if (activeChartNode) closeFullscreenModal();
+
+    activePlaceholder = document.createElement('div');
+    activePlaceholder.className = 'events-stats-chart-placeholder';
+    chartNode.parentNode.insertBefore(activePlaceholder, chartNode);
+    modalBody.appendChild(chartNode);
+    chartNode.classList.add('events-stats-chart--fullscreen');
+
+    activeChartNode = chartNode;
+    activeChartInstance = chartCanvasId ? chartInstances.get(chartCanvasId) || null : null;
+    previousBodyOverflow = document.body.style.overflow || '';
+    modal.hidden = false;
+    modal.setAttribute('data-open', 'true');
+    if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+  }
+
+  expandButtons.forEach((button) => {
+    button.addEventListener('click', () => openFullscreenModal(button));
+  });
+
+  if (modal) {
+    modal.querySelectorAll('[data-events-stats-modal-close]').forEach((el) => {
+      el.addEventListener('click', closeFullscreenModal);
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && modal.getAttribute('data-open') === 'true') {
+      closeFullscreenModal();
+    }
+  });
 });

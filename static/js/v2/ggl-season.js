@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   Chart.register(ChartDataLabels);
+  if (window.ChartZoom) {
+    Chart.register(window.ChartZoom);
+  }
 
   function formatChfFromRappen(rappen) {
     return `${(Math.abs(rappen) / 100).toFixed(2)} CHF`;
@@ -147,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         responsive: true,
         maintainAspectRatio: false,
         aspectRatio: isMobileLayout && eventCount > 4 ? 0.8 : 1.2,
-        interaction: { intersect: false, mode: 'index' },
+        interaction: { intersect: true, mode: 'nearest' },
         onHover(event, elements) {
           if (isTouchDevice()) {
             event?.native?.target && (event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default');
@@ -155,18 +158,41 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         onClick(event) {
           if (!isTouchDevice()) return;
-          const active = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
-          if (!active.length) return;
+          const tappedPoint = chart.getElementsAtEventForMode(
+            event,
+            'nearest',
+            { intersect: true },
+            true
+          );
+          if (!tappedPoint.length) return;
           event.native?.preventDefault?.();
-          const tappedIndex = active[0].index;
+          const tappedIndex = tappedPoint[0].index;
+          const tappedDatasetIndex = tappedPoint[0].datasetIndex;
+          const tappedValue = chart.data.datasets[tappedDatasetIndex]?.data?.[tappedIndex];
+          if (tappedValue === null || tappedValue === undefined) return;
+
+          const equalValueElements = chart.data.datasets
+            .map((dataset, datasetIndex) => ({
+              datasetIndex,
+              index: tappedIndex,
+              value: dataset?.data?.[tappedIndex],
+            }))
+            .filter((el) => {
+              if (el.value === null || el.value === undefined) return false;
+              return Math.abs(Number(el.value) - Number(tappedValue)) < 0.0001;
+            })
+            .map(({ datasetIndex, index }) => ({ datasetIndex, index }));
+
+          const active = equalValueElements.length ? equalValueElements : [{ datasetIndex: tappedDatasetIndex, index: tappedIndex }];
           const tooltip = chart.tooltip;
-          const sameIndexTapped = lockedTooltipIndex === tappedIndex;
+          const key = `${tappedIndex}:${Number(tappedValue).toFixed(4)}`;
+          const sameIndexTapped = lockedTooltipIndex === key;
 
           if (sameIndexTapped) {
             lockedTooltipIndex = null;
             tooltip.setActiveElements([], { x: 0, y: 0 });
           } else {
-            lockedTooltipIndex = tappedIndex;
+            lockedTooltipIndex = key;
             tooltip.setActiveElements(active, { x: event.x, y: event.y });
           }
           chart.update('none');
@@ -176,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
           layout: { padding: { left: 2, right: 2, top: 20, bottom: 20 } },
           tooltip: {
             enabled: true,
+            mode: 'nearest',
+            intersect: true,
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             titleColor: '#fff',
             bodyColor: '#fff',
@@ -210,6 +238,18 @@ document.addEventListener('DOMContentLoaded', () => {
             },
           },
           datalabels: { display: false },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x',
+            },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              drag: { enabled: false },
+              mode: 'x',
+            },
+          },
         },
         scales: {
           x: {
@@ -232,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements: {
           point: {
             hoverBackgroundColor: isTouchDevice() ? undefined : '#fff',
+            hitRadius: 16,
           },
         },
       },
@@ -250,6 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollContainer.style.overflowY = 'hidden';
       chart.resize();
     }, 60);
+
+    chartCanvas.addEventListener('dblclick', () => {
+      if (typeof chart.resetZoom === 'function') chart.resetZoom();
+    });
+
     return chart;
   }
 
