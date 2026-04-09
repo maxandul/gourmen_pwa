@@ -5,6 +5,7 @@ Handles Push Subscription Management und VAPID Keys
 
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
+from backend.extensions import csrf
 from backend.services.push_notifications import PushNotificationService
 from backend.services.vapid_service import VAPIDService
 from backend.models.push_subscription import PushSubscription
@@ -13,6 +14,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('push_notifications', __name__)
+
+
+def _is_authorized_cron_request():
+    expected_auth = current_app.config.get('CRON_AUTH_TOKEN')
+    if not expected_auth:
+        if current_app.debug or current_app.config.get('ENV') == 'development':
+            logger.warning("CRON_AUTH_TOKEN not set; allowing legacy cron request in development mode")
+            return True
+        logger.error("CRON_AUTH_TOKEN missing in non-development environment")
+        return False
+
+    header_token = request.headers.get('X-Cron-Auth')
+    bearer_token = request.headers.get('Authorization', '').removeprefix('Bearer ').strip()
+    query_token = request.args.get('token')
+    return expected_auth in {header_token, bearer_token, query_token}
 
 @bp.route('/api/vapid-public-key', methods=['GET'])
 def get_vapid_public_key():
@@ -182,16 +198,16 @@ def test_push_notification():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/push/cron/3-week-reminders', methods=['POST'])
+@csrf.exempt
 def trigger_3_week_reminders():
     """
     Cron-Job Endpoint für 3-Wochen-Erinnerungen
     Sollte mit einem API-Key gesichert werden
     """
     try:
-        # TODO: API-Key Authentifizierung hinzufügen
-        # auth_header = request.headers.get('Authorization')
-        # if auth_header != f'Bearer {current_app.config.get("CRON_API_KEY")}':
-        #     return jsonify({'error': 'Unauthorized'}), 401
+        if not _is_authorized_cron_request():
+            logger.warning(f"Unauthorized legacy cron request from {request.remote_addr}")
+            return jsonify({'error': 'Unauthorized'}), 401
         
         result = PushNotificationService.check_and_send_3_week_reminders()
         

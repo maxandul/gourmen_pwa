@@ -223,7 +223,7 @@ class PushNotificationService:
             
             # Push-Benachrichtigung Payload
             payload = {
-                'title': f'{event.event_typ.value} vom [event.display_date]',
+                'title': f'{event.event_typ.value} vom {event.display_date}',
                 'body': f"Dein Event findet in 3 Wochen statt. {non_responded_count} Mitglieder haben noch nicht geantwortet und heute einen Reminder erhalten.",
                 'icon': ICON_PATH,
                 'badge': BADGE_PATH,  # Monochromes Icon für Android

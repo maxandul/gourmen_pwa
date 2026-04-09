@@ -84,6 +84,10 @@ class Config:
     # Google Maps API Keys
     GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
     GOOGLE_MAPS_API_KEY_FRONTEND = os.environ.get('GOOGLE_MAPS_API_KEY_FRONTEND')
+
+    # Cron endpoint authentication
+    # In production this must be set; development may run without token.
+    CRON_AUTH_TOKEN = os.environ.get('CRON_AUTH_TOKEN')
     
     # Web Push / VAPID settings
     # Keys müssen als Environment Variables gesetzt sein (Railway/Production)

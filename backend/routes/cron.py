@@ -12,7 +12,31 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('cron', __name__)
 
-@bp.route('/cron/3-week-reminders', methods=['POST'])
+
+def _is_authorized_cron_request():
+    """
+    Prüft Cron-Auth robust über:
+    - X-Cron-Auth
+    - Authorization: Bearer <token>
+    - ?token=<token> (Fallback für Scheduler ohne Header-Support)
+    """
+    expected_auth = current_app.config.get('CRON_AUTH_TOKEN')
+
+    # Lokale Entwicklung ohne Token erlauben, aber klar loggen.
+    if not expected_auth:
+        if current_app.debug or current_app.config.get('ENV') == 'development':
+            logger.warning("CRON_AUTH_TOKEN not set; allowing cron request in development mode")
+            return True
+        logger.error("CRON_AUTH_TOKEN missing in non-development environment")
+        return False
+
+    header_token = request.headers.get('X-Cron-Auth')
+    bearer_token = request.headers.get('Authorization', '').removeprefix('Bearer ').strip()
+    query_token = request.args.get('token')
+
+    return expected_auth in {header_token, bearer_token, query_token}
+
+@bp.route('/cron/3-week-reminders', methods=['POST', 'GET'])
 @csrf.exempt
 def cron_3_week_reminders():
     """
@@ -20,11 +44,7 @@ def cron_3_week_reminders():
     Railway Cron-Job: curl -X POST https://your-app.railway.app/cron/3-week-reminders
     """
     try:
-        # Einfache Authentifizierung über Header (für Railway Cron)
-        auth_header = request.headers.get('X-Cron-Auth')
-        expected_auth = current_app.config.get('CRON_AUTH_TOKEN', 'gourmen-cron-2024')
-        
-        if auth_header != expected_auth:
+        if not _is_authorized_cron_request():
             logger.warning(f"Unauthorized cron request from {request.remote_addr}")
             return jsonify({'error': 'Unauthorized'}), 401
         
@@ -59,7 +79,7 @@ def cron_status():
         logger.error(f"Error getting cron status: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/cron/weekly-reminders', methods=['POST'])
+@bp.route('/cron/weekly-reminders', methods=['POST', 'GET'])
 @csrf.exempt
 def cron_weekly_reminders():
     """
@@ -67,11 +87,7 @@ def cron_weekly_reminders():
     Railway Cron-Job: curl -X POST https://your-app.railway.app/cron/weekly-reminders
     """
     try:
-        # Einfache Authentifizierung über Header (für Railway Cron)
-        auth_header = request.headers.get('X-Cron-Auth')
-        expected_auth = current_app.config.get('CRON_AUTH_TOKEN', 'gourmen-cron-2024')
-        
-        if auth_header != expected_auth:
+        if not _is_authorized_cron_request():
             logger.warning(f"Unauthorized cron request from {request.remote_addr}")
             return jsonify({'error': 'Unauthorized'}), 401
         
@@ -88,7 +104,7 @@ def cron_weekly_reminders():
         logger.error(f"Error in cron weekly reminders: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/cron/rating-reminders', methods=['POST'])
+@bp.route('/cron/rating-reminders', methods=['POST', 'GET'])
 @csrf.exempt
 def cron_rating_reminders():
     """
@@ -96,11 +112,7 @@ def cron_rating_reminders():
     Railway Cron-Job: curl -X POST https://your-app.railway.app/cron/rating-reminders
     """
     try:
-        # Einfache Authentifizierung über Header (für Railway Cron)
-        auth_header = request.headers.get('X-Cron-Auth')
-        expected_auth = current_app.config.get('CRON_AUTH_TOKEN', 'gourmen-cron-2024')
-        
-        if auth_header != expected_auth:
+        if not _is_authorized_cron_request():
             logger.warning(f"Unauthorized cron request from {request.remote_addr}")
             return jsonify({'error': 'Unauthorized'}), 401
         
