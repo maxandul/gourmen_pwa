@@ -34,9 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   Chart.register(ChartDataLabels);
-  if (window.ChartZoom) {
-    Chart.register(window.ChartZoom);
-  }
 
   function formatChfFromRappen(rappen) {
     return `${(Math.abs(rappen) / 100).toFixed(2)} CHF`;
@@ -238,18 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
             },
           },
           datalabels: { display: false },
-          zoom: {
-            pan: {
-              enabled: true,
-              mode: 'x',
-            },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              drag: { enabled: false },
-              mode: 'x',
-            },
-          },
         },
         scales: {
           x: {
@@ -291,11 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollContainer.style.overflowY = 'hidden';
       chart.resize();
     }, 60);
-
-    chartCanvas.addEventListener('dblclick', () => {
-      if (typeof chart.resetZoom === 'function') chart.resetZoom();
-    });
-
     return chart;
   }
 

@@ -587,9 +587,7 @@
 
                 <script type="application/json" id="events-monatsessen-charts-data">{{ ms.charts_json|tojson }}</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-                <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
-                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.2.3" defer></script>
+                <script src="{{ url_for('static', filename='js/v2/events-monatsessen-stats.js') }}?v=1.2.4" defer></script>
                 {% else %}
                 <div class="empty-state" role="status">
                     <div class="empty-state__icon" aria-hidden="true">

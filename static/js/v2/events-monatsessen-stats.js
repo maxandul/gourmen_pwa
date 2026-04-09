@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const dataEl = document.getElementById('events-monatsessen-charts-data');
   if (!dataEl || !window.Chart) return;
-  if (window.ChartZoom) {
-    Chart.register(window.ChartZoom);
-  }
 
   let payload;
   try {
@@ -50,12 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!chart) return;
     chartInstances.set(canvasId, chart);
     attachTouchTooltipToggle(chart);
-    const canvas = document.getElementById(canvasId);
-    if (canvas) {
-      canvas.addEventListener('dblclick', () => {
-        if (typeof chart.resetZoom === 'function') chart.resetZoom();
-      });
-    }
   }
 
   function barChart(canvasId, labels, values, xTitle) {
@@ -93,15 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (xTitle.includes('CHF')) return `${v} CHF`;
                 return `${v}`;
               },
-            },
-          },
-          zoom: {
-            pan: { enabled: true, mode: 'x' },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              drag: { enabled: false },
-              mode: 'x',
             },
           },
         },
@@ -168,15 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
               },
             },
           },
-          zoom: {
-            pan: { enabled: true, mode: 'x' },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              drag: { enabled: false },
-              mode: 'x',
-            },
-          },
         },
         scales: {
           x: {
@@ -241,15 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
           tooltip: {
             mode: 'nearest',
             intersect: true,
-          },
-          zoom: {
-            pan: { enabled: false },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              drag: { enabled: false },
-              mode: 'xy',
-            },
           },
         },
       },
@@ -322,15 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const v = Number(ctx.parsed.y || 0).toFixed(2);
                 return `${ctx.dataset.label === 'Gesamtdurchschnitt' ? 'Gesamtdurchschnitt' : 'Ø Anteil'}: ${v} CHF`;
               },
-            },
-          },
-          zoom: {
-            pan: { enabled: true, mode: 'x' },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              drag: { enabled: false },
-              mode: 'x',
             },
           },
         },
