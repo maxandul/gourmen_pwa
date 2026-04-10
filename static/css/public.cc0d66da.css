@@ -178,11 +178,11 @@
   width: 270px;
   height: 270px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background:
     linear-gradient(transparent, transparent) padding-box,
     var(--gradient-brand-text) border-box;
-  opacity: 0.46;
+  opacity: 0.32;
   z-index: 0;
 }
 

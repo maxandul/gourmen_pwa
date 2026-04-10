@@ -1999,6 +1999,7 @@ a.btn:active {
   --tabs-panel-body-bg: var(--color-surface);
   --tabs-panel-fade-edge: var(--color-bg-base);
   border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   background: transparent;
   box-shadow: var(--shadow-sm);
@@ -2062,19 +2063,6 @@ a.btn:active {
   border: none;
   border-radius: 0;
   box-shadow: none;
-}
-
-.tabs.tabs--panel .tabs__panel--active > .data-table-wrap {
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.tabs.tabs--panel .tabs__panel--active > .card:first-of-type,
-.tabs.tabs--panel .tabs__panel--active > .empty-state:first-of-type {
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 /* GGL (Spielverlauf) & Events → Statistiken: Chart-Karten-Header explizit wie Standard-Card */
@@ -3937,7 +3925,7 @@ a.card-link:active {
   padding: var(--space-4);
   box-sizing: border-box;
   background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--logo-orange) 70%, var(--card-border));
+  border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   text-decoration: none;
@@ -3949,7 +3937,6 @@ a.card-link:active {
 
 .dashboard-intent-tile:hover {
   background: var(--color-surface-hover);
-  border-color: color-mix(in srgb, var(--logo-orange) 88%, var(--card-border));
   box-shadow: var(--shadow-md);
   text-decoration: none;
 }
@@ -4036,15 +4023,9 @@ a.card-link:active {
   gap: var(--space-2);
   min-height: 5.5rem;
   padding: var(--space-3);
-  border: 1px solid transparent;
+  border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
-  background:
-    linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--logo-orange) 68%, transparent),
-      color-mix(in srgb, var(--logo-teal) 68%, transparent)
-    ) border-box;
+  background: var(--card-bg);
   color: inherit;
   text-decoration: none;
   transition: box-shadow var(--transition-fast), background var(--transition-fast);
@@ -4053,13 +4034,7 @@ a.card-link:active {
 }
 
 .dashboard-info-tile:hover {
-  background:
-    linear-gradient(var(--color-surface-hover), var(--color-surface-hover)) padding-box,
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--logo-orange) 76%, transparent),
-      color-mix(in srgb, var(--logo-teal) 76%, transparent)
-    ) border-box;
+  background: var(--color-surface-hover);
   box-shadow: var(--shadow-md);
   text-decoration: none;
 }

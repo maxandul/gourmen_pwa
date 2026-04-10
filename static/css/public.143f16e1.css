@@ -102,7 +102,7 @@
   margin: 0;
   padding-bottom: var(--space-3);
   letter-spacing: -0.02em;
-  display: block;
+  display: inline;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
   background: var(--gradient-brand-text);
@@ -164,7 +164,7 @@
   height: 260px;
   border-radius: 50%;
   background: var(--logo-navy-dark);  /* #1b232e - matches logo background! */
-  z-index: 1;
+  z-index: 0;
 }
 
 /* Light Mode: Same navy color to match logo */
@@ -175,15 +175,15 @@
 .landing-hero__visual::after {
   content: '';
   position: absolute;
-  width: 270px;
-  height: 270px;
+  width: 266px;
+  height: 266px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background:
     linear-gradient(transparent, transparent) padding-box,
     var(--gradient-brand-text) border-box;
-  opacity: 0.46;
-  z-index: 0;
+  opacity: 0.24;
+  z-index: -1;
 }
 
 .landing-logo {
@@ -192,7 +192,7 @@
   max-width: 248px;
   height: 248px;
   object-fit: contain;
-  z-index: 2;
+  z-index: 1;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
   transition: none;
 }
@@ -395,8 +395,8 @@
   }
   
   .landing-hero__visual::after {
-    width: 230px;
-    height: 230px;
+    width: 226px;
+    height: 226px;
   }
   
   .landing-logo {

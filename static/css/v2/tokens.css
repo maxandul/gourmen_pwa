@@ -15,6 +15,27 @@
   --logo-teal: #73c8a8;
 
   /* ============================================
+     BRAND GRADIENTS (Orange ↔ Teal)
+     ============================================ */
+  /* Wie erste Umsetzung; Orange minimal länger sichtbar (54% statt 52%) */
+  --gradient-brand-text: linear-gradient(
+    135deg,
+    var(--logo-orange) 0%,
+    var(--brand-secondary-400) 54%,
+    var(--logo-teal) 100%
+  );
+  --gradient-brand-wash: radial-gradient(
+      circle at 22% 48%,
+      color-mix(in srgb, var(--brand-accent-500) 25%, transparent) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 78% 78%,
+      color-mix(in srgb, var(--brand-secondary-500) 20%, transparent) 0%,
+      transparent 48%
+    );
+
+  /* ============================================
      BRAND PALETTES (50-900 Scale)
      ============================================ */
   
@@ -147,7 +168,7 @@
    ============================================ */
 :root {
   /* Backgrounds - Matter/Less glossy with more Navy tone */
-  --color-bg-base: var(--brand-primary-900);
+  --color-bg-base: var(--brand-primary-950);
   --color-bg-subtle: var(--logo-navy-dark);
   --color-bg-muted: var(--brand-primary-800);
   --color-bg-elevated: var(--logo-navy-medium);
@@ -248,7 +269,7 @@
    ============================================ */
 [data-theme="dark"] {
   /* Backgrounds - Matter/Less glossy with more Navy tone */
-  --color-bg-base: var(--brand-primary-900);
+  --color-bg-base: var(--brand-primary-950);
   --color-bg-subtle: var(--logo-navy-dark);
   --color-bg-muted: var(--brand-primary-800);
   --color-bg-elevated: var(--logo-navy-medium);

@@ -33,7 +33,7 @@
 
 /* Light Mode - Heller Theme-aware User Bar */
 [data-theme="light"] .user-bar {
-  background: linear-gradient(135deg, var(--brand-primary-100), #ffffff);
+  background: linear-gradient(135deg, var(--brand-primary-200), #ffffff);
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-default);
   box-shadow: 0 2px 8px rgba(27, 35, 46, 0.08);
@@ -49,15 +49,18 @@
   min-height: 44px;
   width: 44px;
   height: 44px;
-  background: rgba(27, 35, 46, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: var(--radius-md);
+  background:
+    linear-gradient(rgba(27, 35, 46, 0.92), rgba(27, 35, 46, 0.92)) padding-box,
+    var(--gradient-brand-text) border-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .logo-link:hover {
-  background: rgba(27, 35, 46, 1);
-  border-color: rgba(255, 255, 255, 0.8);
+  background:
+    linear-gradient(rgba(27, 35, 46, 1), rgba(27, 35, 46, 1)) padding-box,
+    var(--gradient-brand-text) border-box;
 }
 
 .user-bar-logo {
@@ -85,14 +88,16 @@
 
 /* Light Mode - Anpassungen für Buttons und Text */
 [data-theme="light"] .logo-link {
-  background: rgba(27, 35, 46, 1);
-  border-color: var(--color-border-default);
+  background:
+    linear-gradient(rgba(27, 35, 46, 1), rgba(27, 35, 46, 1)) padding-box,
+    var(--gradient-brand-text) border-box;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 [data-theme="light"] .logo-link:hover {
-  background: #243241;
-  border-color: var(--brand-primary-600);
+  background:
+    linear-gradient(#243241, #243241) padding-box,
+    var(--gradient-brand-text) border-box;
 }
 
 [data-theme="light"] .user-name {
@@ -130,7 +135,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-2);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   transition: all var(--transition-fast);
   text-decoration: none;
   color: var(--color-text-tertiary);

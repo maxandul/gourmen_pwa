@@ -4,14 +4,14 @@
    Logo-based Design System
    BEM Naming, Responsive First, Light/Dark Theme
    Version: 2.0
-   Last Updated: 2026-04-10 (brand gradient — baseline + leicht mehr Orange)
+   Last Updated: 2026-04-10 (brand gradient tokens)
    ================================================================ */
 
 /* Import Order */
-@import url('v2/tokens.css?v=20260410s');      /* Design Tokens & Theme Variables */
-@import url('v2/base.css?v=20260410s');        /* Reset, Typography, Base Elements */
-@import url('v2/layout.css?v=20260410s');      /* Base Layout (User Bar, Nav, Main Content) */
-@import url('v2/components.css?v=20260410s');  /* All Components */
+@import url('v2/tokens.css');      /* Design Tokens & Theme Variables */
+@import url('v2/base.css');        /* Reset, Typography, Base Elements */
+@import url('v2/layout.css');      /* Base Layout (User Bar, Nav, Main Content) */
+@import url('v2/components.css');  /* All Components */
 
 /* ================================================================
    DEMO PAGE SPECIFIC STYLES
