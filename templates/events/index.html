@@ -216,17 +216,26 @@
             </div>
             
             <!-- Tab 3: Archiv -->
-            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }}"
-                 role="tabpanel">
-                {% if events and events.items %}
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'archiv' else '' }} events-archive-panel"
+                 role="tabpanel"
+                 id="events-archive-panel">
+                {% if tab_param == 'archiv' %}
                 <div class="landing-hitlist-toolbar events-archive-toolbar">
-                    <form class="landing-hitlist-filter events-archive-filter" role="search" aria-label="Archiv nach Restaurant, Organisator oder Datum durchsuchen">
+                    <form method="get" action="{{ url_for('events.index') }}" class="landing-hitlist-filter events-archive-filter" role="search" aria-label="Archiv durchsuchen">
+                        <input type="hidden" name="tab" value="archiv">
+                        {% if selected_year %}
+                        <input type="hidden" name="year" value="{{ selected_year }}">
+                        {% endif %}
+                        {% if selected_organizer_id %}
+                        <input type="hidden" name="organisator_id" value="{{ selected_organizer_id }}">
+                        {% endif %}
                         <div class="landing-hitlist-filter__field">
                             <label class="sr-only" for="events-archive-search">Archiv durchsuchen</label>
-                            <input id="events-archive-search" name="q" type="search" class="form-field__input" value="" placeholder="Suche..." autocomplete="off">
+                            <input id="events-archive-search" name="q" type="search" class="form-field__input" value="{{ archiv_search_q|e }}" placeholder="Suche..." autocomplete="off">
                         </div>
                     </form>
                 </div>
+                {% if archiv_events.total > 0 %}
                 <div class="table-responsive data-table-wrap" role="region" aria-label="Archiv vergangener Events">
                     <table class="data-table">
                         <thead>
@@ -240,7 +249,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for event in events.items %}
+                            {% for event in archiv_events.items %}
                             {% set rating_done = event.has_rating_from_participant(current_user.id) if event.has_rating_from_participant is defined else False %}
                             {% set avg_ratings = event.get_average_ratings() or {} %}
                             {% set overall = avg_ratings.get('overall', 0) %}
@@ -251,7 +260,7 @@
                             {% if rating_value < 1 %}{% set rating_value = 1 %}{% endif %}
                             {% if rating_value > 5 %}{% set rating_value = 5 %}{% endif %}
                             {% set rating_hue = ((rating_value - 1) / 4 * 120) %}
-                            <tr data-search="{{ (event.display_date ~ ' ' ~ (event.restaurant or '') ~ ' ' ~ event.organisator.display_name_with_spirit)|lower }}">
+                            <tr>
                                 <td>{{ event.display_date }}</td>
                                 <td class="data-table__cell--event-type">
                                     <span class="sr-only">{{ event.event_typ.value }}</span>
@@ -284,36 +293,38 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="empty-state events-archive-empty" role="status" hidden>
-                    <p class="empty-state__message">Keine Treffer in dieser Seite des Archivs.</p>
-                </div>
                 
-                {% if events.pages > 1 %}
+                {% if archiv_events.pages > 1 %}
                 <nav class="landing-pagination mt-6" aria-label="Seiten der Archiv-Tabelle">
-                    {% if events.has_prev %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.prev_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Vorherige Seite der Archiv-Tabelle">
+                    {% if archiv_events.has_prev %}
+                    <a href="{{ url_for('events.index', tab='archiv', page=archiv_events.prev_num, _anchor='gourmen-tabs', **archiv_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Vorherige Seite der Archiv-Tabelle">
                         Zurück
                     </a>
                     {% endif %}
                     
                     <span class="landing-pagination__status">
-                        Seite {{ events.page }} von {{ events.pages }}
+                        Seite {{ archiv_events.page }} von {{ archiv_events.pages }}
                     </span>
                     
-                    {% if events.has_next %}
-                    <a href="{{ url_for('events.index', tab='archiv', page=events.next_num, _anchor='gourmen-tabs', **events_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Nächste Seite der Archiv-Tabelle">
+                    {% if archiv_events.has_next %}
+                    <a href="{{ url_for('events.index', tab='archiv', page=archiv_events.next_num, _anchor='gourmen-tabs', **archiv_filter_args) }}" class="btn btn--outline btn--sm" aria-label="Nächste Seite der Archiv-Tabelle">
                         Weiter
                     </a>
                     {% endif %}
                 </nav>
                 {% endif %}
-                {% elif events and not events.items %}
+                {% elif archiv_search_q %}
+                <div class="empty-state" role="status">
+                    <p class="empty-state__message">Keine Treffer für diese Suche.</p>
+                </div>
+                {% else %}
                 <div class="alert alert--info" role="status">
                     {{ lucide_icon('info', 'icon alert__icon') }}
                     <div class="alert__content">
                         <div class="alert__message">Keine vergangenen Events im Archiv.</div>
                     </div>
                 </div>
+                {% endif %}
                 {% endif %}
             </div>
             
@@ -685,37 +696,23 @@
   var eventsTabsContainer = document.querySelector('.tabs[aria-label="Events-Ansichten"]');
   if (!eventsTabsContainer) return;
 
-  function initArchiveFilter(scope) {
-    var panel = scope || eventsTabsContainer.querySelector('.tabs__panel--active');
-    if (!panel) return;
-
-    var form = panel.querySelector('.events-archive-filter');
-    var input = panel.querySelector('#events-archive-search');
-    var tableWrap = panel.querySelector('.data-table-wrap[aria-label="Archiv vergangener Events"]');
-    if (!form || !input || !tableWrap) return;
-
-    var rows = Array.from(panel.querySelectorAll('tbody tr[data-search]'));
-    var empty = panel.querySelector('.events-archive-empty');
-    var pagination = panel.querySelector('.landing-pagination');
-
-    function applyFilter() {
-      var q = input.value.trim().toLowerCase();
-      var visibleCount = 0;
-
-      rows.forEach(function (row) {
-        var haystack = row.getAttribute('data-search') || '';
-        var isVisible = q === '' || haystack.includes(q);
-        row.hidden = !isVisible;
-        if (isVisible) visibleCount += 1;
-      });
-
-      if (empty) empty.hidden = visibleCount > 0 || q === '';
-      if (pagination) pagination.hidden = q !== '';
-    }
-
-    form.addEventListener('submit', function (event) { event.preventDefault(); });
-    input.addEventListener('input', applyFilter);
-    applyFilter();
+  function archivSearchUrlFromForm(form, page) {
+    if (!form) return null;
+    var action = form.getAttribute('action') || window.location.pathname;
+    var url = new URL(action, window.location.origin);
+    url.search = '';
+    var params = new URLSearchParams();
+    params.set('tab', 'archiv');
+    var y = form.querySelector('input[name="year"]');
+    if (y && y.value) params.set('year', y.value);
+    var o = form.querySelector('input[name="organisator_id"]');
+    if (o && o.value) params.set('organisator_id', o.value);
+    var qEl = form.querySelector('#events-archive-search');
+    var qv = (qEl && qEl.value ? qEl.value : '').trim();
+    if (qv) params.set('q', qv);
+    params.set('page', String(page));
+    url.search = params.toString();
+    return url.toString();
   }
 
   async function replaceActivePanelFromUrl(url) {
@@ -741,8 +738,36 @@
     }
 
     activePanel.innerHTML = nextActivePanel.innerHTML;
-    initArchiveFilter(activePanel);
+    if (activePanel.classList && activePanel.classList.contains('events-archive-panel')) {
+      initArchiveSearch(activePanel);
+    }
     window.history.replaceState({}, '', url);
+  }
+
+  function initArchiveSearch(panel) {
+    var form = panel ? panel.querySelector('.events-archive-filter') : null;
+    if (!form) return;
+    var input = form.querySelector('#events-archive-search');
+    if (!input) return;
+    var debounce = null;
+    function runSearch(page) {
+      var u = archivSearchUrlFromForm(form, page);
+      if (!u) return;
+      replaceActivePanelFromUrl(u).catch(function () {
+        window.location.href = u;
+      });
+    }
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      clearTimeout(debounce);
+      runSearch(1);
+    });
+    input.addEventListener('input', function () {
+      clearTimeout(debounce);
+      debounce = setTimeout(function () {
+        runSearch(1);
+      }, 300);
+    });
   }
 
   eventsTabsContainer.addEventListener('click', function (event) {
@@ -771,7 +796,8 @@
     });
   });
 
-  initArchiveFilter();
+  var archivPanelMount = document.querySelector('.events-archive-panel');
+  if (archivPanelMount) initArchiveSearch(archivPanelMount);
 })();
 </script>
 {% endblock %}

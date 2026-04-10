@@ -31,16 +31,21 @@ def landing():
 
         now = datetime.utcnow()
         landing_extra = get_landing_extras(now)
-        table_rows, table_total, table_total_pages, table_page = get_landing_restaurant_table(
-            now, page=page, per_page=10
+        table_query = (request.args.get('q') or '').strip()
+        table_rows, table_total, table_total_pages, table_page, hitlist_baseline_total = (
+            get_landing_restaurant_table(
+                now,
+                page=page,
+                per_page=10,
+                query=table_query or None,
+            )
         )
 
         # Public stats
         member_count = Member.query.filter_by(is_active=True).count()
         
-        # Keep hero counter aligned with landing table rules:
-        # only restaurants with at least one rating from past monthly events.
-        restaurant_count = table_total
+        # Hero „Restaurant-Count“ = gleiche Regeln wie Hitlist (ohne Textsuche).
+        restaurant_count = hitlist_baseline_total
 
         return render_template(
             'public/landing.html',
@@ -53,7 +58,7 @@ def landing():
             table_total=table_total,
             table_page=table_page,
             table_total_pages=table_total_pages,
-            table_query='',
+            table_query=table_query,
         )
     except Exception:
         # Fallback if database is not ready

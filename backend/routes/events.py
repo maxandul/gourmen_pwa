@@ -7,6 +7,7 @@ from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import DateField, SelectField, StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, NumberRange
+from sqlalchemy import or_, func, cast, String
 from backend.extensions import db
 from backend.models.event import Event, EventType
 from backend.models.participation import Participation, Esstyp
@@ -22,6 +23,18 @@ from backend.forms.rating import EventRatingForm
 bp = Blueprint('events', __name__)
 
 CLEANUP_RSVP_UNDO_SESSION_KEY = 'cleanup_rsvp_undo'
+
+
+def _archive_search_like_needle(term: str) -> str:
+    """LIKE-Muster mit Escaping von % und _ (escape='\\')."""
+    t = (
+        term.strip()
+        .lower()
+        .replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")
+    )
+    return f"%{t}%"
 
 
 def _cleanup_rsvp_undo_available() -> bool:
@@ -190,9 +203,11 @@ def index():
         return redirect(url_for('events.index', **params))
 
     now = datetime.utcnow()
+    archiv_search_q = ''
 
     context = {
         'active_tab': tab,
+        'archiv_events': None,
     }
 
     # Globale Filter (Jahr / Organisator) — alle Tabs, URL-Parameter identisch wie bisher
@@ -265,8 +280,9 @@ def index():
         context['events'] = upcoming_query.order_by(Event.datum.asc()).all()
 
     elif tab == 'archiv':
-        # Past events with pagination
+        # Past events with pagination (optional Volltext q über alle Seiten)
         page = request.args.get('page', 1, type=int)
+        archiv_search_q = request.args.get('q', '').strip()
 
         query = Event.query.filter(
             Event.published == True,
@@ -274,11 +290,32 @@ def index():
         )
         query = _apply_event_filters(query)
 
-        events = query.order_by(Event.datum.desc()).paginate(
+        if archiv_search_q:
+            needle = _archive_search_like_needle(archiv_search_q)
+            query = query.join(Member, Event.organisator_id == Member.id).filter(
+                or_(
+                    func.lower(func.coalesce(Event.restaurant, '')).like(needle, escape='\\'),
+                    func.lower(func.coalesce(Event.place_name, '')).like(needle, escape='\\'),
+                    func.lower(func.coalesce(Member.vorname, '')).like(needle, escape='\\'),
+                    func.lower(func.coalesce(Member.nachname, '')).like(needle, escape='\\'),
+                    func.lower(
+                        func.concat(
+                            func.coalesce(Member.vorname, ''),
+                            ' ',
+                            func.coalesce(Member.nachname, ''),
+                        )
+                    ).like(needle, escape='\\'),
+                    func.lower(cast(Event.datum, String)).like(needle, escape='\\'),
+                    func.lower(cast(Event.event_typ, String)).like(needle, escape='\\'),
+                )
+            )
+
+        archiv_page = query.order_by(Event.datum.desc()).paginate(
             page=page, per_page=10, error_out=False
         )
 
-        context['events'] = events
+        context['events'] = archiv_page
+        context['archiv_events'] = archiv_page
 
     elif tab == 'stats':
         monatsessen_stats = get_monatsessen_statistics(
@@ -288,7 +325,13 @@ def index():
             current_member_id=current_user.id,
         )
         context['monatsessen_stats'] = monatsessen_stats
-    
+
+    archiv_filter_args = dict(events_filter_args)
+    if archiv_search_q:
+        archiv_filter_args['q'] = archiv_search_q
+    context['archiv_search_q'] = archiv_search_q
+    context['archiv_filter_args'] = archiv_filter_args
+
     return render_template('events/index.html', **context)
 
 @bp.route('/year-planning')

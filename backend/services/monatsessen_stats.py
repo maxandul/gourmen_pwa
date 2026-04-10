@@ -6,7 +6,7 @@ from datetime import datetime
 from statistics import mean
 from typing import Any
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_
 
 from backend.models.event import Event, EventType
 from backend.models.member import Member
@@ -54,6 +54,24 @@ def _meta_for_restaurant_label(past_ms: list[Event], label: str) -> tuple[str | 
     return cuisine, address
 
 
+def _latest_event_for_restaurant_label(past_ms: list[Event], label: str) -> Event | None:
+    matching = [e for e in past_ms if _event_restaurant_label(e) == label]
+    if not matching:
+        return None
+    return max(matching, key=lambda e: e.datum)
+
+
+def _landing_hitlist_sort_key(row: dict[str, Any]) -> tuple:
+    """Mit Bewertung zuerst (nach Ø absteigend), sonst nach letztem Besuch."""
+    avg = row.get('overall_avg')
+    latest: datetime = row['_latest_datum']
+    name = row.get('restaurant') or ''
+    ts = latest.timestamp()
+    if avg is not None:
+        return (0, -float(avg), -ts, name)
+    return (1, -ts, name)
+
+
 def get_landing_extras(now: datetime) -> dict[str, Any]:
     """Letztes besuchtes Restaurant (Monatsessen) und Datum des nächsten Monatsessens für die Landingpage."""
     last_ev = (
@@ -99,22 +117,32 @@ def get_landing_restaurant_table(
     now: datetime,
     page: int = 1,
     per_page: int = 10,
-) -> tuple[list[dict[str, Any]], int, int]:
+    query: str | None = None,
+) -> tuple[list[dict[str, Any]], int, int, int, int]:
     """
-    Öffentliche Landing: Monatsessen-Restaurants mit mindestens einer Bewertung,
-    sortiert nach Ø Gesamtbewertung absteigend. Paginierung ab 1.
+    Öffentliche Landing-Hitlist: alle Monatsessen-Restaurants bis einschliesslich heute,
+    ausser Events mit deaktivierten Bewertungen (allow_ratings=False).
+
+    Rückgabe: (page_rows, filtered_total, total_pages, page, baseline_total)
+    baseline_total = Anzahl Einträge vor Textsuche (für Hero „Restaurant-Count“).
     """
+    today = now.date()
     past_ms: list[Event] = (
         Event.query.filter(
             Event.published.is_(True),
             Event.event_typ == EventType.MONATSESSEN,
-            Event.datum < now,
+            Event.allow_ratings.is_(True),
+            func.date(Event.datum) <= today,
+            or_(
+                and_(Event.restaurant.isnot(None), Event.restaurant != ''),
+                and_(Event.place_name.isnot(None), Event.place_name != ''),
+            ),
         )
         .order_by(Event.datum.asc())
         .all()
     )
     if not past_ms:
-        return [], 0, 1, 1
+        return [], 0, 1, 1, 0
 
     event_ids = [e.id for e in past_ms]
     ratings_rows: list[EventRating] = EventRating.query.filter(
@@ -129,28 +157,56 @@ def get_landing_restaurant_table(
         label = event_to_restaurant_label.get(eid, '—')
         restaurant_rating_vals[label].append(float(row.average_rating))
 
+    labels = sorted({_event_restaurant_label(e) for e in past_ms})
+
     rows_full: list[dict[str, Any]] = []
-    for label, ovs in restaurant_rating_vals.items():
-        if not ovs:
+    for label in labels:
+        latest_ev = _latest_event_for_restaurant_label(past_ms, label)
+        if not latest_ev:
             continue
+        ovs = restaurant_rating_vals.get(label, [])
+        overall_avg = round(mean(ovs), 1) if ovs else None
         cuisine, address = _meta_for_restaurant_label(past_ms, label)
+        ort = (latest_ev.place_locality or '').strip() or None
         rows_full.append(
             {
                 'restaurant': label,
-                'overall_avg': round(mean(ovs), 1),
+                'ort': ort,
+                'overall_avg': overall_avg,
                 'homepage': _homepage_for_restaurant_label(past_ms, label),
                 'kueche': cuisine,
                 'adresse': address,
+                'besucht_am': latest_ev.display_date,
+                '_latest_datum': latest_ev.datum,
             }
         )
-    rows_full.sort(key=lambda x: (-x['overall_avg'], x['restaurant']))
+    rows_full.sort(key=_landing_hitlist_sort_key)
+    for r in rows_full:
+        r.pop('_latest_datum', None)
+
+    baseline_total = len(rows_full)
+
+    qn = (query or "").strip().lower()
+    if qn:
+
+        def _row_matches(row: dict[str, Any]) -> bool:
+            hay = (
+                f"{row.get('restaurant') or ''} "
+                f"{row.get('ort') or ''} "
+                f"{row.get('kueche') or ''} "
+                f"{row.get('adresse') or ''} "
+                f"{row.get('besucht_am') or ''}"
+            ).lower()
+            return qn in hay
+
+        rows_full = [r for r in rows_full if _row_matches(r)]
 
     total = len(rows_full)
     total_pages = max(1, (total + per_page - 1) // per_page) if total > 0 else 1
     page = max(1, min(page, total_pages))
     start = (page - 1) * per_page
     page_rows = rows_full[start : start + per_page]
-    return page_rows, total, total_pages, page
+    return page_rows, total, total_pages, page, baseline_total
 
 
 def _organizer_spirit_rufname(member: Member | None) -> str:
