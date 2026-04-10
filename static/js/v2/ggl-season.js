@@ -13,12 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const { labels = [], members = [], data = {}, currentUserId } = payload;
   if (!labels.length || !members.length || !Object.keys(data).length) return;
   const chartInstances = new Map();
-  const rootTheme = document.documentElement.getAttribute('data-theme');
-  const isDarkMode = rootTheme === 'dark';
-  const gridColor = isDarkMode ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.1)';
-  const tickColor = isDarkMode ? '#cbd5e1' : '#0f172a';
-  const tooltipBg = isDarkMode ? 'rgba(15, 23, 42, 0.96)' : 'rgba(15, 23, 42, 0.9)';
-  const tooltipBorder = isDarkMode ? 'rgba(148, 163, 184, 0.55)' : 'rgba(100, 116, 139, 0.35)';
+
+  function getGglChartTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      gridColor: isDark ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.1)',
+      tickColor: isDark ? '#cbd5e1' : '#0f172a',
+      tooltipBg: isDark ? 'rgba(15, 23, 42, 0.96)' : 'rgba(15, 23, 42, 0.9)',
+      tooltipBorder: isDark ? 'rgba(148, 163, 184, 0.55)' : 'rgba(100, 116, 139, 0.35)',
+    };
+  }
 
   const memberColors = [
     '#dc693c', '#73c8a8', '#45b7d1', '#96ceb4', '#8a9db1',
@@ -146,6 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
     const containerWidth = Math.max(isMobileLayout ? 400 : 600, eventCount * (isMobileLayout ? 100 : 150));
 
+    const axisTheme = getGglChartTheme();
+
     const chart = new Chart(chartCanvas.getContext('2d'), {
       type: 'line',
       data: { labels, datasets },
@@ -207,10 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
             enabled: true,
             mode: 'nearest',
             intersect: true,
-            backgroundColor: tooltipBg,
+            backgroundColor: axisTheme.tooltipBg,
             titleColor: '#fff',
             bodyColor: '#fff',
-            borderColor: tooltipBorder,
+            borderColor: axisTheme.tooltipBorder,
             borderWidth: 1,
             cornerRadius: 6,
             displayColors: false,
@@ -245,18 +251,30 @@ document.addEventListener('DOMContentLoaded', () => {
         scales: {
           x: {
             display: true,
-            title: { display: true, text: 'Events', font: { size: 12, weight: 'bold' } },
-            grid: { display: true, color: gridColor },
-            ticks: { color: tickColor, font: { size: 11 } },
+            title: {
+              display: true,
+              text: 'Events',
+              color: axisTheme.tickColor,
+              font: { size: 12, weight: 'bold' },
+            },
+            grid: { display: true, color: axisTheme.gridColor, borderColor: axisTheme.gridColor },
+            ticks: { color: axisTheme.tickColor, font: { size: 11 } },
+            border: { display: true, color: axisTheme.gridColor },
             offset: true,
           },
           y: {
             display: true,
-            title: { display: true, text: opts.yAxisTitle, font: { size: 12, weight: 'bold' } },
+            title: {
+              display: true,
+              text: opts.yAxisTitle,
+              color: axisTheme.tickColor,
+              font: { size: 12, weight: 'bold' },
+            },
             beginAtZero: opts.unit === 'points',
             reverse: opts.rankOrder === 'asc',
-            grid: { display: true, color: gridColor },
-            ticks: { color: tickColor, font: { size: 11 } },
+            grid: { display: true, color: axisTheme.gridColor, borderColor: axisTheme.gridColor },
+            ticks: { color: axisTheme.tickColor, font: { size: 11 } },
+            border: { display: true, color: axisTheme.gridColor },
             offset: true,
           },
         },
@@ -332,6 +350,32 @@ document.addEventListener('DOMContentLoaded', () => {
     rankOrder: 'asc',
   });
   if (diffChart) chartInstances.set('ggl-diff-chart', diffChart);
+
+  function applyThemeToGglCharts() {
+    const t = getGglChartTheme();
+    chartInstances.forEach((chart) => {
+      const { options } = chart;
+      if (options.plugins?.tooltip) {
+        options.plugins.tooltip.backgroundColor = t.tooltipBg;
+        options.plugins.tooltip.borderColor = t.tooltipBorder;
+      }
+      ['x', 'y'].forEach((key) => {
+        const sc = options.scales[key];
+        if (!sc) return;
+        if (sc.grid) {
+          sc.grid.color = t.gridColor;
+          if ('borderColor' in sc.grid) sc.grid.borderColor = t.gridColor;
+        }
+        if (sc.ticks) sc.ticks.color = t.tickColor;
+        if (sc.title) sc.title.color = t.tickColor;
+        if (sc.border) sc.border.color = t.gridColor;
+        else sc.border = { display: true, color: t.gridColor };
+      });
+      chart.update('none');
+    });
+  }
+
+  document.documentElement.addEventListener('themechange', applyThemeToGglCharts);
 
   const modal = document.getElementById('ggl-chart-fullscreen-modal');
   const modalBody = modal ? modal.querySelector('[data-ggl-modal-body]') : null;

@@ -15,8 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const theme = root.getAttribute('data-theme');
     const isDark = theme === 'dark';
     return {
-      gridColor: isDark ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.08)',
-      tickColor: isDark ? '#cbd5e1' : '#64748b',
+      /* Abgestimmt mit GGL (`ggl-season.js`) */
+      gridColor: isDark ? 'rgba(203, 213, 225, 0.34)' : 'rgba(0, 0, 0, 0.1)',
+      tickColor: isDark ? '#cbd5e1' : '#0f172a',
       avgLineColor: isDark ? '#cbd5e1' : '#64748b',
       tooltipBg: isDark ? 'rgba(15, 23, 42, 0.96)' : 'rgba(15, 23, 42, 0.9)',
       tooltipText: '#f8fafc',
@@ -112,14 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         scales: {
           x: {
-            title: { display: true, text: xTitle, font: { size: 12, weight: '600' } },
+            title: {
+              display: true,
+              text: xTitle,
+              color: colorsTheme.tickColor,
+              font: { size: 12, weight: '600' },
+            },
             beginAtZero: true,
-            grid: { color: colorsTheme.gridColor },
+            grid: { color: colorsTheme.gridColor, borderColor: colorsTheme.gridColor },
             ticks: { color: colorsTheme.tickColor },
+            border: { display: true, color: colorsTheme.gridColor },
           },
           y: {
             grid: { display: false },
             ticks: { color: colorsTheme.tickColor, font: { size: 11 } },
+            border: { display: true, color: colorsTheme.gridColor },
           },
         },
       },
@@ -180,8 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
           x: {
             min: 0,
             max: 5,
-            title: { display: true, text: xTitle, font: { size: 12, weight: '600' } },
-            grid: { color: colorsTheme.gridColor },
+            title: {
+              display: true,
+              text: xTitle,
+              color: colorsTheme.tickColor,
+              font: { size: 12, weight: '600' },
+            },
+            grid: { color: colorsTheme.gridColor, borderColor: colorsTheme.gridColor },
             ticks: {
               color: colorsTheme.tickColor,
               stepSize: 1,
@@ -189,10 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return v;
               },
             },
+            border: { display: true, color: colorsTheme.gridColor },
           },
           y: {
             grid: { display: false },
             ticks: { color: colorsTheme.tickColor, font: { size: 11 } },
+            border: { display: true, color: colorsTheme.gridColor },
           },
         },
       },
@@ -320,22 +335,34 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         scales: {
           x: {
-            title: { display: true, text: 'Monatsessen (mit BillBro)', font: { size: 12, weight: '600' } },
-            grid: { color: colorsTheme.gridColor },
+            title: {
+              display: true,
+              text: 'Monatsessen (mit BillBro)',
+              color: colorsTheme.tickColor,
+              font: { size: 12, weight: '600' },
+            },
+            grid: { color: colorsTheme.gridColor, borderColor: colorsTheme.gridColor },
             ticks: { color: colorsTheme.tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+            border: { display: true, color: colorsTheme.gridColor },
           },
           y: {
-            title: { display: true, text: 'Ø Anteil (CHF)', font: { size: 12, weight: '600' } },
+            title: {
+              display: true,
+              text: 'Ø Anteil (CHF)',
+              color: colorsTheme.tickColor,
+              font: { size: 12, weight: '600' },
+            },
             beginAtZero: false,
             min: yMin,
             max: yMax,
-            grid: { color: colorsTheme.gridColor },
+            grid: { color: colorsTheme.gridColor, borderColor: colorsTheme.gridColor },
             ticks: {
               color: colorsTheme.tickColor,
               callback(v) {
                 return `${v} CHF`;
               },
             },
+            border: { display: true, color: colorsTheme.gridColor },
           },
         },
         elements: {
@@ -575,4 +602,40 @@ document.addEventListener('DOMContentLoaded', () => {
       closeFullscreenModal();
     }
   });
+
+  function syncStatsChartsTheme() {
+    const t = getChartThemeColors();
+    const tt = getTooltipTheme(t);
+    chartInstances.forEach((chart) => {
+      const { options } = chart;
+      if (options.plugins?.tooltip) {
+        Object.assign(options.plugins.tooltip, tt);
+      }
+      if (options.plugins?.legend?.labels) {
+        options.plugins.legend.labels.color = t.tickColor;
+      }
+      if (chart.config.type === 'line' && chart.data.datasets?.length) {
+        chart.data.datasets.forEach((ds) => {
+          if (ds.label === 'Gesamtdurchschnitt') {
+            ds.borderColor = t.avgLineColor;
+          }
+        });
+      }
+      Object.keys(options.scales || {}).forEach((key) => {
+        const sc = options.scales[key];
+        if (!sc) return;
+        if (sc.grid && sc.grid.display !== false) {
+          sc.grid.color = t.gridColor;
+          if ('borderColor' in sc.grid) sc.grid.borderColor = t.gridColor;
+        }
+        if (sc.ticks) sc.ticks.color = t.tickColor;
+        if (sc.title && sc.title.display) sc.title.color = t.tickColor;
+        if (sc.border) sc.border.color = t.gridColor;
+        else sc.border = { display: true, color: t.gridColor };
+      });
+      chart.update('none');
+    });
+  }
+
+  document.documentElement.addEventListener('themechange', syncStatsChartsTheme);
 });
