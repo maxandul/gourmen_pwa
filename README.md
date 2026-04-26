@@ -1,17 +1,21 @@
-# Gourmen Webapp
+# Gourmen PWA
 
-Eine mobile-first Vereins-Webapp für den Gourmen-Verein mit Flask.
+Mobile-first Vereins-Webapp für den Gourmen-Verein mit Flask.
+
+> **Für AI-Agents**: siehe [`AGENTS.md`](AGENTS.md) als Eingangstor und [`docs/`](docs/) für stabile Anchor-Docs (Architektur, Konventionen, Domain, UI). Aktive Vorhaben unter [`docs/initiatives/`](docs/initiatives/).
 
 ## Features
 
-- **Mobile-first Design** mit PWA-Unterstützung
-- **Sichere Authentifizierung** mit 2FA (TOTP ohne QR)
-- **Event-Management** mit Teilnahme-Tracking
-- **BillBro-Schätzspiel** mit fractional ranking
-- **GGL (Gourmen Guessing League)** für Saisonwertungen
+- **Mobile-first Design** mit PWA-Unterstützung (Service Worker, Push)
+- **Sichere Authentifizierung** mit 2FA (TOTP)
+- **Event-Management** mit Teilnahme-Tracking (Monatsessen, Ausflug, Generalversammlung)
+- **BillBro** – Bill-Splitting nach Verzehr-Rolle (sparsam/normal/allin)
+- **GGL (Gourmen Guessing League)** – Schätzspiel mit Saisonwertung
+- **Event-Ratings** in drei Dimensionen (Food, Drinks, Service)
+- **Vereins-Merch-Shop** mit Varianten und Bestellungen
 - **Dokumenten-Management** mit Soft-Delete
 - **Audit-Logging** für sensible Aktionen
-- **Verschlüsselte sensible Daten** mit Step-Up-Authentifizierung
+- **Verschlüsselte sensible Daten** (Fernet) mit Step-Up-Authentifizierung
 
 ## Technologie-Stack
 
@@ -119,20 +123,28 @@ flask db downgrade
 ## Projektstruktur
 
 ```
-gourmen_webapp/
+gourmen_pwa/
+├── AGENTS.md               # Eingangstor für AI-Agents
 ├── backend/
 │   ├── app.py              # Flask App Factory
 │   ├── config.py           # Konfiguration
 │   ├── extensions.py       # Flask Extensions
 │   ├── models/             # SQLAlchemy Models
 │   ├── routes/             # Blueprint Routes
-│   └── services/           # Business Logic
+│   └── services/           # Business Logic (Service-Layer)
 ├── templates/              # Jinja2 Templates
-├── static/                 # CSS, JS, Images
+├── static/                 # CSS (BEM + Tokens V2), JS, Images, sw.js
 ├── migrations/             # Alembic Migrations
+├── scripts/                # Einmal-Skripte und Tools
+├── docs/                   # Dokumentation
+│   ├── ARCHITECTURE.md     # Stack & Modul-Struktur
+│   ├── CONVENTIONS.md      # Code-Standards
+│   ├── DOMAIN.md           # Vereins-Begriffe (BillBro, GGL, ...)
+│   ├── UI.md               # Designsystem & Component Registry
+│   └── initiatives/        # Aktive und archivierte Vorhaben
 ├── requirements.txt        # Python Dependencies
-├── Procfile               # Railway Deployment
-└── README.md              # Diese Datei
+├── Procfile                # Railway Deployment
+└── README.md               # Diese Datei
 ```
 
 ## Sicherheit

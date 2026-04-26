@@ -1,0 +1,114 @@
+---
+description: "Pattern für zeitlich begrenzte Vorhaben (Initiatives) im Repo: Master + Phasen-Docs, Branch-Naming, Doc-Pflege"
+globs:
+  - "docs/initiatives/**/*.md"
+alwaysApply: false
+---
+
+# Initiative-Pattern
+
+Eine Initiative = ein zeitlich begrenztes Vorhaben mit klarem Anfang und Ende. Lebt unter `docs/initiatives/<slug>/`. Generelle Übersicht in `docs/initiatives/README.md`.
+
+## Pre-Flight (Pflicht vor jeder Code-Änderung in einer Phase)
+
+1. `AGENTS.md` lesen (Eingangstor)
+2. `docs/initiatives/<slug>/README.md` lesen (Master-Plan + Status-Tabelle)
+3. `docs/initiatives/<slug>/PHASE_NN_<name>.md` lesen (zugewiesene Phase)
+4. Stabile Anchor-Docs lesen je nach Aufgabe:
+   - `docs/ARCHITECTURE.md` bei Backend-Änderungen
+   - `docs/CONVENTIONS.md` bei Code-Änderungen
+   - `docs/DOMAIN.md` bei Vereins-Bezug
+   - `docs/UI.md` bei Frontend-Änderungen
+5. Pre-Conditions der Phase verifizieren (z.B. „Phase X muss done sein", „ENV-Variable Y gesetzt")
+6. `git branch` prüfen: musst auf `phase/NN-<slug>-<name>` sein. Sonst:
+   ```
+   git checkout master
+   git pull
+   git checkout -b phase/NN-<slug>-<name>
+   ```
+7. `git status` prüfen: keine uncommittete Reste vom letzten Versuch.
+
+## Während der Arbeit
+
+- **Eine Phase = ein Branch** (keine Vorgriffe auf spätere Phasen)
+- **DB-Migrationen** in eigenem Commit, nie zusammen mit Code-Änderungen
+- **Acceptance-Criteria** ist der Vertrag. Nichts darüber hinaus implementieren ("Out of Scope" strikt)
+- **Bestehende Funktionalität** darf nie kaputt gehen. Vor jedem Commit lokal testen.
+- **Service-Layer-Pattern**: externe Integrationen (R2, Resend, RaiseNow, Meta) gehen über `backend/services/<name>.py`, nie direkt in Routes
+- **Idempotenz** bei Webhooks (TWINT, WhatsApp) ist Pflicht
+- **Secrets** nur via ENV, niemals im Code, niemals committed
+- Bei **Sub-Task-Abschluss**: lokal verifizieren bevor zum nächsten Sub-Task
+
+## Konventionen
+
+### Branch-Naming
+
+```
+phase/NN-<slug>-<kurzname>
+```
+
+Beispiele:
+- `phase/01-modules-mail`
+- `phase/03-modules-files`
+- `phase/02-redesign-something` (für hypothetische zukünftige Initiative)
+
+### Commit-Messages
+
+```
+phase NN: kurzbeschreibung
+
+Optional Details über mehrere Zeilen.
+```
+
+Beispiele:
+- `phase 01: add MailService with Resend SDK`
+- `phase 02: migrate auth tokens from session to db`
+- `phase 02: add password_reset.html email template`
+
+DB-Migrationen separat:
+- `phase 02: migration für auth_tokens table`
+
+## Doc-Updates (Pflicht)
+
+Nach jedem nicht-trivialen Change:
+
+- **Initiative-README Status-Tabelle**: bei Phase-Abschluss `pending` → `done`, mit Datum + Branch + kurzer Notiz
+- **Anchor-Docs**: 
+  - Neuer Modul / Service → `docs/ARCHITECTURE.md`
+  - Neues Code-Pattern oder Konvention → `docs/CONVENTIONS.md`
+  - Neuer Vereins-Begriff → `docs/DOMAIN.md`
+  - Neue UI-Klasse oder neues Pattern → `docs/UI.md` Component Registry
+- **`env.example`**: bei neuen ENV-Variablen
+
+Eine Code-Änderung **ohne** entsprechende Doc-Updates ist ein **unvollständiger Auftrag**.
+
+## Initiative-Abschluss
+
+Wenn alle Phasen `done` sind:
+
+1. **Konsolidierung**: bleibende Erkenntnisse in stabile Anchor-Docs übernehmen
+2. **Cursor-Rules** initiative-spezifisch (falls existierten): entfernen
+3. **Initiative-Ordner verschieben** nach `docs/initiatives/_archive/<datum>_<slug>/`:
+   - Datum-Format: `YYYY-MM` oder `YYYY-Q<n>`
+   - Beispiel: `docs/initiatives/_archive/2026-Q4_modules-and-hosting/`
+4. **`docs/initiatives/README.md`** aktualisieren: aus „Aktuelle Initiativen" raus, ins „Archiv"
+5. **Commit** mit Message wie: `archive initiative: modules-and-hosting completed 2026-Q4`
+
+## Eskalation
+
+Wenn folgendes auftritt: stoppen und User fragen.
+
+- Acceptance-Criteria nicht erreichbar mit dem geplanten Vorgehen
+- Out-of-Scope-Feature dringend nötig (Mini-Phase als Sub-Doc anlegen oder mit User besprechen)
+- DB-Migration konfliktiert oder verlangt Daten-Migration
+- Pre-Conditions können nicht verifiziert werden (z.B. ENV-Var fehlt)
+- Doc-Diskrepanz: Anchor-Doc widerspricht Code-Realität
+- Sicherheits-Bedenken bei einer geforderten Lösung
+
+Lieber 5 Min Diskussion als 5 Stunden falscher Weg.
+
+## Was diese Rule NICHT macht
+
+- Kein automatisches Doc-Update – das ist Pflicht der ausführenden Stelle
+- Keine Build-Validierung – manuelle Checks nötig
+- Keine Migrations-Magic – Alembic-Standard-Workflow
