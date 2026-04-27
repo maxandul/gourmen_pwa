@@ -1,6 +1,7 @@
 import logging
 import smtplib
 import socket
+import threading
 from typing import Any
 from email.message import EmailMessage
 from email.utils import make_msgid
@@ -117,3 +118,34 @@ class MailService:
         except Exception as exc:
             logger.error("Mail-Versand fehlgeschlagen: %s", exc, exc_info=True)
             return {'success': False, 'message_id': None, 'error': str(exc)}
+
+    @staticmethod
+    def send_async(
+        to: str | list[str],
+        subject: str,
+        html: str,
+        text: str | None = None,
+        tags: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
+        """Dispatch mail in background so request latency stays low."""
+        app = current_app._get_current_object()
+
+        def _worker():
+            with app.app_context():
+                result = MailService.send(
+                    to=to,
+                    subject=subject,
+                    html=html,
+                    text=text,
+                    tags=tags,
+                )
+                if not result.get('success'):
+                    logger.warning(
+                        "Async-Mail fehlgeschlagen: to=%s subject=%s error=%s",
+                        to,
+                        subject,
+                        result.get('error'),
+                    )
+
+        threading.Thread(target=_worker, daemon=True).start()
+        return {'success': True, 'message_id': None, 'error': None, 'queued': True}
