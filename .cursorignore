@@ -1,19 +1,41 @@
-# Cursor AI sollte diese Dateien NICHT bearbeiten
+# Cursor AI: generierte/temporäre/sensible Dateien ignorieren
+
+# Python cache/artefakte
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
 .Python
+
+# virtuelle Umgebungen
 venv/
 .venv/
 env/
+
+# lokale Secrets
 .env
+.env.*
+!.env.example
+
+# lokale Laufzeitdaten/DB
 instance/
 *.db
 *.sqlite
 *.sqlite3
-migrations/versions/
+
+# Test/Tool-Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Build-Artefakte
+build/
+dist/
+*.egg-info/
+
+# Git intern
 .git/
 
-# Templates sind OK zu bearbeiten - KEINE Ignorierung!
-# templates/ <-- NICHT ignorieren!
+# WICHTIG: migrations/versions NICHT ignorieren (Alembic muss bearbeitbar bleiben)
+# WICHTIG: templates NICHT ignorieren

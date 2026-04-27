@@ -88,6 +88,15 @@ class Config:
     # Cron endpoint authentication
     # In production this must be set; development may run without token.
     CRON_AUTH_TOKEN = os.environ.get('CRON_AUTH_TOKEN')
+
+    # Mail / SMTP (Infomaniak)
+    MAIL_FROM_ADDRESS = os.environ.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
+    MAIL_REPLY_TO = os.environ.get('MAIL_REPLY_TO', MAIL_FROM_ADDRESS)
+    MAIL_SMTP_HOST = os.environ.get('MAIL_SMTP_HOST', 'mail.infomaniak.com')
+    MAIL_SMTP_PORT = int(os.environ.get('MAIL_SMTP_PORT', '587'))
+    MAIL_SMTP_USERNAME = os.environ.get('MAIL_SMTP_USERNAME')
+    MAIL_SMTP_PASSWORD = os.environ.get('MAIL_SMTP_PASSWORD')
+    MAIL_SMTP_USE_TLS = os.environ.get('MAIL_SMTP_USE_TLS', 'true').lower() in ('1', 'true', 'yes')
     
     # Web Push / VAPID settings
     # Keys müssen als Environment Variables gesetzt sein (Railway/Production)
