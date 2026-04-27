@@ -213,14 +213,19 @@ class SecurityService:
         session.pop('sensitive_access_until', None)
     
     @staticmethod
-    def log_audit_event(action, entity, entity_id=None, field=None, extra_data=None):
+    def log_audit_event(action, entity, entity_id=None, field=None, extra_data=None, actor_id=None):
         """Log an audit event"""
         try:
             from flask_login import current_user
-            actor_id = current_user.id if current_user.is_authenticated else None
+            resolved_actor_id = actor_id
+            if resolved_actor_id is None:
+                resolved_actor_id = current_user.id if current_user.is_authenticated else None
+            if resolved_actor_id is None and entity == 'member' and entity_id is not None:
+                # Public auth flows have no logged-in user; in that case the member itself is actor.
+                resolved_actor_id = entity_id
             
             audit_event = AuditEvent(
-                actor_id=actor_id,
+                actor_id=resolved_actor_id,
                 action=action,
                 entity=entity,
                 entity_id=entity_id,

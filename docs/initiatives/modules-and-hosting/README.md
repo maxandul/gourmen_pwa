@@ -13,9 +13,9 @@ Erweiterung der Gourmen-PWA um neue Module (Mail, Files, Login-Verbesserungen, B
 | Entscheidung | Begründung |
 |---|---|
 | **App-Hosting bleibt Railway** | Null Operations-Aufwand, automatische Backups, Postgres + Redis eingebaut |
-| **Domain bei Cloudflare** | Günstig (~10 USD/Jahr), beste DNS-UI, gleiches Konto wie R2 |
-| **Files in Cloudflare R2** | S3-kompatibel, kein Egress, sehr günstig (10 GB free) |
-| **Mail über Resend** | 3000 Mails/Monat gratis, einfache API |
+| **Domain/DNS bei Infomaniak** | Bereits umgesetzt in Phase 0, zentrale Verwaltung für Verein und Mail-DNS |
+| **Files in Infomaniak Object Storage** | S3-kompatibel, passt zur gewählten Public-Cloud-Basis |
+| **Mail über Infomaniak Mail Service** | Eine zentrale Vereinsadresse (`kontakt@`/`info@`) für System- und Vereinskommunikation |
 | **TWINT via RaiseNow** | Schweizer Vereins-Acquirer, kein HR-Eintrag nötig, Buchhaltungs-Integration |
 | **WhatsApp via Meta Cloud API** | Einzige offizielle Option, kein Selbst-Host möglich |
 | **Login bleibt Eigenbau** | Flask-Login + 2FA bereits robust, nur Reset-Flows reparieren |
@@ -32,13 +32,13 @@ Erweiterung der Gourmen-PWA um neue Module (Mail, Files, Login-Verbesserungen, B
          │ Webhooks            │ API-Calls
          ▼                     ▼
 ┌─────────────────────────────────────────────────┐
-│  Cloudflare                                     │
-│  - DNS, Domain, Email Routing                   │
-│  - R2 (S3-kompatibler File-Storage)             │
+│  Infomaniak                                     │
+│  - DNS, Domain, Mail Service                    │
+│  - Object Storage (S3-kompatibel)               │
 └─────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────┐
 │  Externe SaaS                                   │
-│  - Resend (E-Mail)                              │
+│  - optionale Mail-API (später falls nötig)      │
 │  - RaiseNow (TWINT)                             │
 │  - Meta Cloud API (WhatsApp)                    │
 └─────────────────────────────────────────────────┘
@@ -49,7 +49,7 @@ Erweiterung der Gourmen-PWA um neue Module (Mail, Files, Login-Verbesserungen, B
 | # | Phase | Aufwand | Voraussetzung |
 |---|---|---|---|
 | 0 | Infra-Setup (Konten anlegen) | ~2h einmalig | – |
-| 1 | Mail-Infrastruktur (Resend) | ~0.5 Tag | Phase 0 |
+| 1 | Mail-Infrastruktur | ~0.5 Tag | Phase 0 |
 | 2 | Login-Verbesserungen | ~2 Tage | Phase 1 |
 | 3 | File-Storage (R2) | ~3-4 Tage | Phase 0 |
 | 4 | Buchhaltung-Modul | ~1-2 Wochen | Phase 3 |
@@ -77,9 +77,9 @@ Phase 3 (Files) ist Voraussetzung für Phase 4 (Belege in Buchhaltung).
 
 | Phase | Status | Branch | Datum | Notizen |
 |---|---|---|---|---|
-| 0 | pending | – | – | – |
-| 1 | pending | – | – | – |
-| 2 | pending | – | – | – |
+| 0 | done | n/a (manuell) | 2026-04-27 | DNS/TLS (`www` + `app`), Mailbox und Object Storage auf Infomaniak eingerichtet |
+| 1 | done | phase/01-modules-mail | 2026-04-27 | SMTP-Mailservice (Infomaniak), Templates und erfolgreicher Admin-Smoke-Test |
+| 2 | in_progress | phase/02-modules-login | 2026-04-27 | Token-basierte Reset-/Onboarding-Flows implementiert; reale Mail-E2E-Validierung noch offen |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | – |
 | 5 | pending | – | – | – |
@@ -94,4 +94,4 @@ Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 - **Kein eigener Auth-Service** (Auth0, Clerk, etc.): bestehender Login wird repariert, nicht ersetzt
 - **Keine native Mobile-App**: PWA bleibt das Ziel
 - **Kein eigenes WhatsApp-Hosting**: Meta-Cloud-API ist gesetzt
-- **Kein eigener Mailserver**: Resend bleibt Provider
+- **Kein eigener Mailserver**: Mail bleibt bei einem externen Provider

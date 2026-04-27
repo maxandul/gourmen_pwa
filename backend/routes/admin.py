@@ -1,6 +1,8 @@
 import json
+import hashlib
+import secrets
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
@@ -12,8 +14,10 @@ from backend.models.member import Member, Role, Funktion
 from backend.models.event import Event, EventType
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
+from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, AuditAction, require_step_up
+from backend.services.mail import MailService
 
 bp = Blueprint('admin', __name__)
 
@@ -90,6 +94,52 @@ def index():
         pending_orders_count=pending_orders_count,
         total_revenue_chf=total_revenue_chf
     )
+
+
+@bp.route('/mail/test')
+@login_required
+@admin_required
+def mail_test():
+    """Sendet eine Test-Mail an den aktuell eingeloggten Admin."""
+    html = render_template(
+        'emails/test.html',
+        display_name=current_user.display_name,
+        actor_email=current_user.email,
+    )
+    text = (
+        "Test-Mail von Gourmen\n\n"
+        f"Hallo {current_user.display_name},\n"
+        "diese E-Mail wurde als Smoke-Test aus dem Admin-Bereich versendet."
+    )
+    result = MailService.send(
+        to=current_user.email,
+        subject='Gourmen Mail-Test',
+        html=html,
+        text=text,
+        tags={'type': 'mail_test', 'actor_id': str(current_user.id)},
+    )
+
+    SecurityService.log_audit_event(
+        AuditAction.EVENT_SEND_REMINDER,
+        'mail',
+        extra_data={
+            'to': current_user.email,
+            'success': result.get('success', False),
+            'message_id': result.get('message_id'),
+            'error': result.get('error'),
+        },
+    )
+
+    if result.get('success'):
+        if result.get('message_id'):
+            flash('Test-Mail erfolgreich versendet.', 'success')
+        else:
+            flash('Test-Mail im Log ausgegeben (SMTP-Zugang nicht konfiguriert).', 'warning')
+    else:
+        flash(f"Test-Mail fehlgeschlagen: {result.get('error', 'Unbekannter Fehler')}", 'error')
+        current_app.logger.error("Admin Mail-Test fehlgeschlagen: %s", result.get('error'))
+
+    return redirect(url_for('admin.index'))
 
 class MemberForm(FlaskForm):
     # Basic info
@@ -241,7 +291,9 @@ def create_member():
             role=Role(form.role.data),
             is_active=form.is_active.data
         )
-        member.set_password(form.password.data)
+        # Fallback-Passwort bleibt bestehen; Onboarding-Flow setzt danach das echte Passwort.
+        initial_password = form.password.data or SecurityService.generate_secure_password()
+        member.set_password(initial_password)
         
         db.session.add(member)
         db.session.commit()
@@ -268,11 +320,57 @@ def create_member():
             from flask import current_app
             current_app.logger.error(f"Failed to save sensitive data for member {member.id}: {e}")
         
+        onboarding_token = secrets.token_urlsafe(32)
+        onboarding_token_row = AuthToken(
+            member_id=member.id,
+            token_hash=hashlib.sha256(onboarding_token.encode('utf-8')).hexdigest(),
+            purpose=AuthTokenPurpose.ONBOARDING,
+            expires_at=datetime.utcnow() + timedelta(days=7),
+            request_ip=request.remote_addr,
+        )
+        db.session.add(onboarding_token_row)
+
+        activation_url = url_for('auth.activate', token=onboarding_token, _external=True)
+        onboarding_html = render_template(
+            'emails/onboarding.html',
+            display_name=member.display_name,
+            activation_url=activation_url,
+            valid_for='7 Tage',
+        )
+        onboarding_text = (
+            f"Hallo {member.display_name},\n\n"
+            "dein Gourmen-Account wurde erstellt.\n"
+            f"Aktiviere deinen Account hier: {activation_url}\n\n"
+            "Der Link ist 7 Tage gueltig."
+        )
+        mail_result = MailService.send(
+            to=member.email,
+            subject='Willkommen bei Gourmen - Account aktivieren',
+            html=onboarding_html,
+            text=onboarding_text,
+            tags={'type': 'onboarding', 'member_id': str(member.id)},
+        )
+
         SecurityService.log_audit_event(
             AuditAction.ADMIN_CREATE_MEMBER, 'member', member.id
         )
-        
-        flash('Mitglied erfolgreich erstellt', 'success')
+        SecurityService.log_audit_event(
+            AuditAction.SEND_ONBOARDING_MAIL,
+            'member',
+            member.id,
+            extra_data={
+                'success': mail_result.get('success', False),
+                'message_id': mail_result.get('message_id'),
+                'error': mail_result.get('error'),
+                'admin_id': current_user.id,
+            },
+        )
+        db.session.commit()
+
+        if mail_result.get('success'):
+            flash('Mitglied erstellt und Onboarding-Mail versendet.', 'success')
+        else:
+            flash('Mitglied erstellt, aber Onboarding-Mail fehlgeschlagen.', 'warning')
         return redirect(url_for('admin.members'))
     
     return render_template('admin/create_member.html', form=form)

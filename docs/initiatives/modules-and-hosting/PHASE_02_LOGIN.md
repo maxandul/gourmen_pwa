@@ -1,6 +1,6 @@
 # Phase 2 – Login-Verbesserungen
 
-**Status**: pending  
+**Status**: in_progress  
 **Aufwand**: ~2 Tage (1 Tag Code, 0.5 Tag Tests, 0.5 Tag Polish)  
 **Branch**: `phase/02-modules-login`
 
@@ -18,7 +18,7 @@ Echtes Passwort-Reset und 2FA-Reset auf Basis von Mail aus Phase 1. Onboarding-M
 
 ### 1. Token-Tabelle in DB
 
-- [ ] Neues Model `backend/models/auth_token.py`
+- [x] Neues Model `backend/models/auth_token.py`
   - Felder:
     - `id` (PK)
     - `member_id` (FK → members, ondelete CASCADE)
@@ -28,93 +28,93 @@ Echtes Passwort-Reset und 2FA-Reset auf Basis von Mail aus Phase 1. Onboarding-M
     - `used_at` (DateTime, nullable)
     - `created_at` (DateTime, default utcnow)
     - `request_ip` (VARCHAR 45, optional, für Audit)
-- [ ] Index auf `(member_id, purpose, used_at)` für Cleanup
-- [ ] Alembic-Migration erstellen: `flask db migrate -m "add auth_tokens"`
+- [x] Index auf `(member_id, purpose, used_at)` für Cleanup
+- [x] Alembic-Migration erstellt (`6f9a2d1c4b7e_add_auth_tokens_table.py`)
 - [ ] **Separater Commit** für Migration
-- [ ] Lokal testen: `flask db upgrade && flask db downgrade && flask db upgrade`
+- [x] Lokal getestet: `flask db upgrade && flask db downgrade && flask db upgrade`
 
 ### 2. Forgot-Password-Flow umbauen
 
 In `backend/routes/auth.py`:
 
-- [ ] `forgot_password` umbauen:
-  - [ ] User-Lookup mit Email
-  - [ ] Bei existierendem User:
-    - [ ] Sicheres Token generieren (`secrets.token_urlsafe(32)`)
-    - [ ] Hash in DB speichern (`AuthToken` mit `purpose=PASSWORD_RESET`, `expires_at=now+1h`)
-    - [ ] Reset-Link `url_for('auth.reset_password', token=token, _external=True)`
-    - [ ] Mail an User-Email via `MailService` mit Template `password_reset.html`
-  - [ ] Bei nicht-existierendem User: silently skip (kein User-Enumeration!)
-  - [ ] Immer gleiche Antwort: „Wenn die Adresse existiert, wurde eine Mail versendet"
-- [ ] `reset_password/<token>`:
-  - [ ] Token in DB suchen (gehasht)
-  - [ ] `expires_at` und `used_at` prüfen
-  - [ ] Bei Erfolg: Passwort setzen + `used_at` markieren + Audit-Log
-- [ ] Alte Session-basierte Logik entfernen (`session['last_generated_reset_url']`)
-- [ ] Route `show_reset_link` entfernen (war Workaround)
+- [x] `forgot_password` umbauen:
+  - [x] User-Lookup mit Email
+  - [x] Bei existierendem User:
+    - [x] Sicheres Token generieren (`secrets.token_urlsafe(32)`)
+    - [x] Hash in DB speichern (`AuthToken` mit `purpose=PASSWORD_RESET`, `expires_at=now+1h`)
+    - [x] Reset-Link `url_for('auth.reset_password', token=token, _external=True)`
+    - [x] Mail an User-Email via `MailService` mit Template `password_reset.html`
+  - [x] Bei nicht-existierendem User: silently skip (kein User-Enumeration!)
+  - [x] Immer gleiche Antwort: „Wenn die Adresse existiert, wurde eine Mail versendet"
+- [x] `reset_password/<token>`:
+  - [x] Token in DB suchen (gehasht)
+  - [x] `expires_at` und `used_at` prüfen
+  - [x] Bei Erfolg: Passwort setzen + `used_at` markieren + Audit-Log
+- [x] Alte Session-basierte Reset-Logik entfernen (`session['last_generated_reset_url']`)
+- [x] Route `show_reset_link` entfernen (war Workaround)
 
 ### 3. Mail-Template Passwort-Reset
 
-- [ ] `templates/emails/password_reset.html`
-  - Erbt von `templates/emails/base.html`
-  - Begrüßung mit Member-Display-Name
-  - Link mit klarem Call-to-Action
-  - Hinweis: Link 1 Stunde gültig
-  - Hinweis: wenn nicht selbst angefordert, ignorieren
+- [x] `templates/emails/password_reset.html`
+  - [x] Erbt von `templates/emails/base.html`
+  - [x] Begrüßung mit Member-Display-Name
+  - [x] Link mit klarem Call-to-Action
+  - [x] Hinweis: Link 1 Stunde gültig
+  - [x] Hinweis: wenn nicht selbst angefordert, ignorieren
 
 ### 4. 2FA-Reset analog
 
-- [ ] `request_2fa_reset`:
-  - [ ] Token in DB statt Session (`purpose=MFA_RESET`)
-  - [ ] Mail-Template `templates/emails/2fa_reset.html`
-- [ ] `reset_2fa/<token>`:
-  - [ ] Token in DB suchen
-  - [ ] 2FA disablen + Backup-Codes löschen + `used_at` markieren
-  - [ ] Audit-Log
+- [x] `request_2fa_reset`:
+  - [x] Token in DB statt Session (`purpose=MFA_RESET`)
+  - [x] Mail-Template `templates/emails/2fa_reset.html`
+- [x] `reset_2fa/<token>`:
+  - [x] Token in DB suchen
+  - [x] 2FA disablen + Backup-Codes löschen + `used_at` markieren
+  - [x] Audit-Log
 
 ### 5. Onboarding-Mail
 
 Bei Member-Erstellung durch Admin:
 
-- [ ] In `backend/routes/admin.py` (oder wo Members erstellt werden):
-  - [ ] Onboarding-Token erstellen (`purpose=ONBOARDING`, `expires_at=now+7d`)
-  - [ ] Mail an neuen Member mit „Account aktivieren"-Link
-  - [ ] Template `templates/emails/onboarding.html`
-- [ ] Aktivierungs-Route `auth.activate/<token>`:
-  - [ ] User setzt eigenes Passwort
-  - [ ] Token markieren als used
-  - [ ] Login + Redirect Dashboard
-- [ ] Admin-UI: zeigen, dass Onboarding-Mail versendet wurde
-- [ ] **Bestehender** `INIT_ADMIN_EMAIL/PASSWORD`-Mechanismus bleibt für Bootstrap-Admin
+- [x] In `backend/routes/admin.py` (oder wo Members erstellt werden):
+  - [x] Onboarding-Token erstellen (`purpose=ONBOARDING`, `expires_at=now+7d`)
+  - [x] Mail an neuen Member mit „Account aktivieren"-Link
+  - [x] Template `templates/emails/onboarding.html`
+- [x] Aktivierungs-Route `auth.activate/<token>`:
+  - [x] User setzt eigenes Passwort
+  - [x] Token markieren als used
+  - [x] Login + Redirect Dashboard
+- [x] Admin-UI: zeigen, dass Onboarding-Mail versendet wurde (Flash-Feedback im Create-Flow)
+- [x] **Bestehender** `INIT_ADMIN_EMAIL/PASSWORD`-Mechanismus bleibt für Bootstrap-Admin
 
 ### 6. Cleanup
 
-- [ ] Alte Session-basierte Reset-Logik vollständig entfernen
-- [ ] Audit-Aktionen ergänzen falls neue (`USE_ONBOARDING_TOKEN` o.ä.)
-- [ ] Initial-Passwort-Mechanismus (`needs_password_change`) bleibt als Fallback
+- [x] Alte Session-basierte Reset-Logik vollständig entfernen
+- [x] Audit-Aktionen ergänzen falls neue (`USE_ONBOARDING_TOKEN` o.ä.)
+- [x] Initial-Passwort-Mechanismus (`needs_password_change`) bleibt als Fallback
 
 ### 7. Token-Cleanup-Job
 
-- [ ] In `run_cron_reminders.py` (oder neuer Cron): `AuthToken.query.filter(expires_at < now - 30d).delete()` einmal täglich
+- [x] In `run_cron_reminders.py` (oder neuer Cron): `AuthToken.query.filter(expires_at < now - 30d).delete()` einmal täglich
   - Optional, aber gute Hygiene
 
 ### 8. Doc-Updates
 
-- [ ] `docs/ARCHITECTURE.md`: Auth-Flow-Sektion erweitern um Token-Tabelle und Mail-basierte Reset-Flows
-- [ ] `docs/ARCHITECTURE.md`: „Bekannte Schwächen" Login-Punkt entfernen
+- [x] `docs/ARCHITECTURE.md`: Auth-Flow-Sektion erweitern um Token-Tabelle und Mail-basierte Reset-Flows
+- [x] `docs/ARCHITECTURE.md`: „Bekannte Schwächen" Login-Punkt entfernen
 
 ## Acceptance-Criteria
 
-- [ ] User kann „Passwort vergessen" → Mail empfangen → von beliebigem Gerät resetten
-- [ ] 2FA-Reset funktioniert analog
-- [ ] Neue Mitglieder bekommen Onboarding-Mail mit Aktivierungs-Link
-- [ ] Bestehende User mit gesetztem Passwort sind unbeeinträchtigt
-- [ ] Token werden nach Verwendung als `used_at` markiert (kein Replay)
-- [ ] Abgelaufene Token zeigen sinnvolle Fehlermeldung
-- [ ] Kein User-Enumeration (gleiche Antwort egal ob User existiert)
-- [ ] Audit-Log enthält alle Reset-Aktionen
-- [ ] Tests grün
-- [ ] DB-Migration sauber (up + down funktioniert)
+- [ ] User kann „Passwort vergessen" → Mail empfangen → von beliebigem Gerät resetten (E2E mit realer Mailadresse ausstehend)
+- [ ] 2FA-Reset funktioniert analog (E2E mit realer Mailadresse ausstehend)
+- [ ] Neue Mitglieder bekommen Onboarding-Mail mit Aktivierungs-Link (E2E mit realer Mailadresse ausstehend)
+- [x] Bestehende User mit gesetztem Passwort sind unbeeinträchtigt
+- [x] Token werden nach Verwendung als `used_at` markiert (kein Replay)
+- [x] Abgelaufene Token zeigen sinnvolle Fehlermeldung
+- [x] Kein User-Enumeration (gleiche Antwort egal ob User existiert)
+- [x] Audit-Log enthält alle Reset-Aktionen
+- [x] Tests grün (lokaler Smoke-Test via test_client + UI-Sanity)
+- [x] DB-Migration sauber (up + down funktioniert)
 
 ## Out of Scope
 

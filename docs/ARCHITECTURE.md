@@ -88,7 +88,7 @@ Services in `backend/services/` sind die einzige Stelle für:
 
 - Komplexe Business-Logik (BillBro-Kalkulation, GGL-Punkte)
 - Verschlüsselung und 2FA (`SecurityService`)
-- Externe Integrationen (Google Places, Web-Push, später Resend, R2, Stripe, Meta)
+- Externe Integrationen (Google Places, Web-Push, Infomaniak Mail/Storage, Stripe, Meta)
 
 **Routes** rufen Services, **Services** rufen Models. Routes enthalten keine Geschäftslogik außer Permission-Checks und Form-Handling.
 
@@ -132,6 +132,12 @@ STEP-UP (sensible Aktionen)
 SENSITIVE-FELDER (MemberSensitive, totp_secret_encrypted)
   └─ Fernet-Encryption via CRYPTO_KEY
      (CRYPTO_KEY-Verlust = Daten-Verlust!)
+
+RESET / ONBOARDING TOKENS
+  ├─ Tabelle auth_tokens (Hash statt Klartext, purpose + expires_at + used_at)
+  ├─ Password-Reset via Mail (1h gueltig)
+  ├─ 2FA-Reset via Mail (1h gueltig)
+  └─ Onboarding-Aktivierung via Mail (7 Tage gueltig)
 ```
 
 ## PWA-Aspekte
@@ -161,8 +167,8 @@ Drei Reminder-Typen:
 | **Railway** | App-Hosting (Web + Cron + Postgres + Redis-Plugin) | aktiv |
 | **Google Places API** | Restaurant-Daten beim Event-Anlegen | aktiv |
 | **Google Maps API** | Karten-Anzeige im Frontend | aktiv |
-| **Cloudflare** (geplant) | Domain-Registrar, DNS, R2 für Files | geplant Phase 0 |
-| **Resend** (geplant) | Transaktionale E-Mails | geplant Phase 1 |
+| **Infomaniak** | Domain/DNS, Mail-Service, Object Storage | aktiv |
+| **Infomaniak Mail (SMTP)** | Transaktionale E-Mails aus der App | aktiv (Phase 1) |
 | **RaiseNow / Stripe** (geplant) | TWINT-Zahlungen | geplant Phase 6 |
 | **Meta Cloud API** (geplant) | WhatsApp Business | geplant Phase 7 |
 
@@ -211,7 +217,6 @@ Cron-Trigger → run_cron_reminders.py
 
 ## Bekannte Schwächen
 
-- **Login-Reset-Flow**: Token aktuell in Flask-Session statt DB → nur im selben Browser nutzbar. Wird in Phase 2 gefixt.
 - **`Document`-Model**: Felder für File-Upload vorbereitet, aber bisher nur URLs. Wird in Phase 3 implementiert.
 - **Drei Hilfs-Routes** (`init_db`, `migrate`, `test_migrate`): einmalige Migration-Helper, sollten bei Cleanup entfernt werden.
 - **Tests**: aktuell kein automatisches Test-Setup. Manuell + Production-Smoke-Testing.

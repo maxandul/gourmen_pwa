@@ -39,6 +39,8 @@ class AuditAction(Enum):
     REQUEST_2FA_RESET = 'REQUEST_2FA_RESET'
     RESET_2FA = 'RESET_2FA'
     ENABLE_2FA = 'ENABLE_2FA'
+    USE_ONBOARDING_TOKEN = 'USE_ONBOARDING_TOKEN'
+    SEND_ONBOARDING_MAIL = 'SEND_ONBOARDING_MAIL'
     ADMIN_RESET_PASSWORD = 'ADMIN_RESET_PASSWORD'
     ADMIN_RESET_2FA = 'ADMIN_RESET_2FA'
 
@@ -104,6 +106,8 @@ class AuditEvent(db.Model):
             AuditAction.REQUEST_2FA_RESET: '2FA-Reset angefordert',
             AuditAction.RESET_2FA: '2FA zurückgesetzt',
             AuditAction.ENABLE_2FA: '2FA aktiviert',
+            AuditAction.USE_ONBOARDING_TOKEN: 'Onboarding-Link verwendet',
+            AuditAction.SEND_ONBOARDING_MAIL: 'Onboarding-Mail versendet',
             AuditAction.ADMIN_RESET_PASSWORD: 'Passwort zurückgesetzt (Admin)',
             AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)'
         }
