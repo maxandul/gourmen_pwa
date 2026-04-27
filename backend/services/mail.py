@@ -32,6 +32,14 @@ class MailService:
         if not to_recipients:
             return {'success': False, 'message_id': None, 'error': 'no_recipient'}
 
+        if not smtp_host:
+            logger.warning(
+                "SMTP-Host fehlt. Mailversand wird uebersprungen. to=%s subject=%s",
+                to_recipients,
+                subject,
+            )
+            return {'success': True, 'message_id': None, 'error': 'smtp_host_missing'}
+
         if not smtp_username or not smtp_password:
             logger.warning(
                 "SMTP-Zugang fehlt. Test-Modus aktiv, Mail wird nur geloggt. "
@@ -55,7 +63,7 @@ class MailService:
             message.set_content(text or 'Diese E-Mail enthaelt eine HTML-Version.')
             message.add_alternative(html, subtype='html')
 
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
                 if use_tls:
                     server.starttls()
                 server.login(smtp_username, smtp_password)

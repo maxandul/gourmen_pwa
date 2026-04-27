@@ -1,14 +1,14 @@
 {% extends "emails/base.html" %}
 
 {% block content %}
-<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;">Hallo {{ display_name }},</p>
+<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;">Hallo {{ display_name }}</p>
 <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;">
-  du hast einen Reset deiner Zwei-Faktor-Authentifizierung angefordert.
+  Du hast einen Reset deiner Zwei-Faktor-Authentifizierung angefordert.
 </p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
   <tr>
-    <td style="background:#1d4ed8;border-radius:6px;">
+    <td style="background:#dc693c;border-radius:6px;">
       <a href="{{ reset_url }}" style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">
         2FA zuruecksetzen
       </a>
@@ -24,6 +24,6 @@
 </p>
 <p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;word-break:break-all;">
   Link nicht klickbar? Dann kopiere ihn in deinen Browser:<br>
-  <a href="{{ reset_url }}" style="color:#1d4ed8;text-decoration:underline;">{{ reset_url }}</a>
+  <a href="{{ reset_url }}" style="color:#c35428;text-decoration:underline;">{{ reset_url }}</a>
 </p>
 {% endblock %}

@@ -35,9 +35,11 @@
 
                     <div class="form-actions">
                         {{ form.submit(class="btn btn--primary") }}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn--outline">{{ lucide_icon('log-in') }} Zurück zum Login</a>
                     </div>
                 </form>
+                <div class="form-actions" style="margin-top: var(--space-3);">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn--outline">{{ lucide_icon('log-in') }} Zurück zum Login</a>
+                </div>
             </div>
         </div>
 

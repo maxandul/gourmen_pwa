@@ -108,8 +108,8 @@ def mail_test():
     )
     text = (
         "Test-Mail von Gourmen\n\n"
-        f"Hallo {current_user.display_name},\n"
-        "diese E-Mail wurde als Smoke-Test aus dem Admin-Bereich versendet."
+        f"Hallo {current_user.display_name}\n"
+        "Diese E-Mail wurde als Smoke-Test aus dem Admin-Bereich versendet."
     )
     result = MailService.send(
         to=current_user.email,
@@ -338,8 +338,8 @@ def create_member():
             valid_for='7 Tage',
         )
         onboarding_text = (
-            f"Hallo {member.display_name},\n\n"
-            "dein Gourmen-Account wurde erstellt.\n"
+            f"Hallo {member.display_name}\n\n"
+            "Dein Gourmen-Account wurde erstellt.\n"
             f"Aktiviere deinen Account hier: {activation_url}\n\n"
             "Der Link ist 7 Tage gueltig."
         )

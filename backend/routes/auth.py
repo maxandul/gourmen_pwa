@@ -504,8 +504,8 @@ def forgot_password():
                 valid_for='1 Stunde',
             )
             text = (
-                f"Hallo {user.display_name},\n\n"
-                "du hast eine Anfrage zum Zuruecksetzen deines Passworts gestellt.\n"
+                f"Hallo {user.display_name}\n\n"
+                "Du hast eine Anfrage zum Zuruecksetzen deines Passworts gestellt.\n"
                 f"Setze dein Passwort ueber diesen Link zurueck: {reset_url}\n\n"
                 "Der Link ist 1 Stunde gueltig.\n"
                 "Falls du das nicht warst, kannst du diese Mail ignorieren."
@@ -610,8 +610,8 @@ def request_2fa_reset():
                     valid_for='1 Stunde',
                 )
                 text = (
-                    f"Hallo {user.display_name},\n\n"
-                    "du hast einen 2FA-Reset angefordert.\n"
+                    f"Hallo {user.display_name}\n\n"
+                    "Du hast einen 2FA-Reset angefordert.\n"
                     f"Setze 2FA ueber diesen Link zurueck: {reset_url}\n\n"
                     "Der Link ist 1 Stunde gueltig."
                 )
