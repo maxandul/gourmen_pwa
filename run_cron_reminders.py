@@ -38,6 +38,9 @@ def run_all_reminders(test_reminder: bool = False):
         # Importiere Flask App und Services
         from backend.app import create_app
         from backend.services.cron_service import CronService
+        from backend.extensions import db
+        from backend.models.auth_token import AuthToken
+        from datetime import datetime, timedelta
         
         # Erstelle Flask App Context
         app = create_app()
@@ -117,6 +120,17 @@ def run_all_reminders(test_reminder: bool = False):
             else:
                 logger.error(f"   ❌ Rating reminders failed: {result_rating.get('error', 'Unknown')}")
                 all_success = False
+
+            logger.info("")
+
+            # ========================================
+            # 4. Auth-Token Cleanup (taeglich)
+            # ========================================
+            logger.info("🧹 [4/4] Cleaning up old auth tokens...")
+            cutoff = datetime.utcnow() - timedelta(days=30)
+            deleted_count = AuthToken.query.filter(AuthToken.expires_at < cutoff).delete()
+            db.session.commit()
+            logger.info(f"   ✅ Auth-Token cleanup: {deleted_count} rows deleted")
             
             logger.info("")
             logger.info("=" * 60)

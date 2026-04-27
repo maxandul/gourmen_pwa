@@ -1,0 +1,92 @@
+---
+description: "Verbindliche UI-Regeln: BEM, Design Tokens, Component Registry, Cache-Buster für PWA-Updates"
+globs:
+  - "templates/**/*.html"
+  - "static/css/**/*.css"
+  - "static/js/**/*.js"
+  - "static/sw.js"
+  - "static/manifest.json"
+alwaysApply: false
+---
+
+# UI-Konventionen (verbindlich)
+
+Vollständige Spezifikation: `docs/UI.md` – **vor jeder UI-Änderung lesen**.
+
+## Pre-Flight für jede UI-Änderung
+
+1. `docs/UI.md` Component Registry lesen (Sektion 5)
+2. Mit `grep` prüfen: gibt es eine bestehende Klasse für das, was du machen willst?
+   - Suche nach semantisch ähnlichen Klassen
+   - Suche nach möglichen Modifikatoren
+3. Tokens prüfen: ist der Wert (Farbe, Spacing) bereits in `static/css/v2/tokens.css`?
+
+## Pflichten
+
+### Klassen / BEM
+
+- **BEM-Naming**: `block__element--modifier` (englisch)
+- **ERST suchen, DANN erfinden**: keine Klasse nebenbei einführen
+- **Neue Klasse** = `docs/UI.md` Component Registry aktualisieren + Begründung im Commit
+- **Modifier statt Variante**: lieber `card--filter` als neue Klasse `filter-card`
+
+### Werte / Tokens
+
+- **Nur Design Tokens**: keine Hardcode-Farben (`#FFAA00`), keine Hardcode-Pixel (`16px`)
+- **Tokens** in `static/css/v2/tokens.css` definiert (Logo, Brand-Paletten, Spacing, Typography, etc.)
+- **Bei fehlendem Token**: erst Token in `tokens.css` ergänzen, dann verwenden
+- **Semantische Tokens** (`--color-bg-base`, `--color-surface`, ...) bevorzugen über Brand-Paletten
+
+### Cache-Buster (Pflicht nach JEDER UI-Änderung)
+
+Nach jeder Änderung an Templates / CSS / JS / SW:
+
+- [ ] `static/sw.js`: `CACHE_NAME`, `STATIC_CACHE`, `DYNAMIC_CACHE` Versions-Suffix bumpen
+- [ ] `templates/base.html`: `?v=X.Y.Z`-Parameter aller Script/CSS-Tags bumpen
+- [ ] `static/js/pwa.js`: `textContent = '<version>'` bumpen
+
+Helfer-Skript: `python scripts/update_pwa_version.py 1.3.6` – danach in den drei Files visuell verifizieren.
+
+Versionierung Semver: Patch (Bug-Fix), Minor (Feature), Major (Breaking).
+
+Details: `docs/UI.md` Sektion 7.
+
+## Verbote
+
+- ❌ **Keine Inline-Styles** in HTML außer mit explizitem User-OK + Begründung
+- ❌ **Keine generischen Klassennamen** (`.btn-blue`, `.card-2`, `.text-bold`)
+- ❌ **Kein Tailwind, DaisyUI, Bootstrap o.ä.** ohne ausdrücklichen Auftrag
+- ❌ **Keine `!important`** außer dokumentiert (Beispiel `[hidden]` in `base.css`)
+- ❌ **Keine Brand-Farben direkt** in Komponenten – nur semantische Tokens
+- ❌ **Keine neuen Pattern** ohne User-OK + Component Registry-Update
+- ❌ **Keine Breadcrumb-Navs** – `.page-back` zum Elternziel verwenden
+
+## Bei Unsicherheit
+
+Stoppen, User fragen. Lieber 5 Min Diskussion als eine erfundene Klasse, die das System verwässert.
+
+Speziell:
+
+- Soll's wirklich eine neue Klasse werden, oder reicht ein Modifier?
+- Existiert ein ähnliches Pattern an anderer Stelle, das man wiederverwenden kann?
+- Bei Theme-Konflikten (Dark/Light): beide Modi getestet?
+
+## Workflow für UI-Änderungen
+
+```
+1. docs/UI.md lesen
+2. Bei aktiver Initiative: deren Phasen-Doc lesen
+3. Mit grep prüfen: existiert eine passende Klasse schon?
+4. Bei Lücke: Decision Tree anwenden (docs/UI.md Sektion 4)
+5. Code schreiben (BEM, Tokens)
+6. Cache-Buster bumpen (sw.js, base.html, pwa.js)
+7. Lokal testen: Mobile + Desktop, Dark + Light
+8. Bei neuer Klasse: docs/UI.md Component Registry erweitern
+9. Commit
+```
+
+## Was diese Rule NICHT macht
+
+- Keine automatische Token-Validierung – Disziplin nötig
+- Kein Lint für BEM-Konformität – manuelle Prüfung
+- Keine Auto-Cache-Buster – `update_pwa_version.py` muss aktiv aufgerufen werden

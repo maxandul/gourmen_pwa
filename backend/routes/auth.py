@@ -1,16 +1,19 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app
+import hashlib
+import secrets
+from datetime import datetime, timedelta
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from backend.extensions import db, limiter
-from backend.models.member import Member, Role
+from backend.models.member import Member
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
+from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, AuditAction
-from backend.extensions import csrf
-import secrets
-from datetime import datetime, timedelta
+from backend.services.mail import MailService
 
 bp = Blueprint('auth', __name__)
 
@@ -58,6 +61,36 @@ class ResetPasswordForm(FlaskForm):
         EqualTo('new_password', message='Passwörter müssen übereinstimmen')
     ])
     submit = SubmitField('Passwort zurücksetzen')
+
+
+def _hash_auth_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: timedelta, request_ip: str | None):
+    token = secrets.token_urlsafe(32)
+    token_hash = _hash_auth_token(token)
+    token_row = AuthToken(
+        member_id=member_id,
+        token_hash=token_hash,
+        purpose=purpose,
+        expires_at=datetime.utcnow() + expires_in,
+        request_ip=request_ip,
+    )
+    db.session.add(token_row)
+    return token
+
+
+def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose):
+    token_hash = _hash_auth_token(raw_token)
+    auth_token = AuthToken.query.filter_by(token_hash=token_hash, purpose=purpose).first()
+    if not auth_token:
+        return None, "missing"
+    if auth_token.used_at is not None:
+        return None, "used"
+    if auth_token.expires_at < datetime.utcnow():
+        return None, "expired"
+    return auth_token, None
 
 @bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute", methods=['POST'])
@@ -445,25 +478,58 @@ def change_password():
     
     return render_template('auth/change_password.html', form=form)
 
-@bp.route('/forgot-password', methods=['GET'])
-@limiter.limit("3 per hour")
+@bp.route('/forgot-password', methods=['GET', 'POST'])
+@limiter.limit("3 per hour", methods=['POST'])
 def forgot_password():
-    """Forgot password - show admin contacts instead of sending email"""
+    """Request password reset by mail without user enumeration."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
-    admins = Member.query.filter_by(is_active=True).filter(Member.role == Role.ADMIN).all()
-    return render_template('auth/forgot_password.html', admins=admins)
 
-@bp.route('/reset-link')
-def show_reset_link():
-    """Display the most recently generated password reset link stored in session.
-    This is a temporary helper to avoid email during development/deployment without mail server.
-    """
-    link_data = session.get('last_generated_reset_url')
-    if not link_data:
-        flash('Kein Reset-Link vorhanden. Bitte fordern Sie zuerst einen Link an.', 'info')
-        return redirect(url_for('auth.forgot_password'))
-    return render_template('auth/show_reset_link.html', reset_url=link_data.get('url'))
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+
+        if user:
+            token = _issue_auth_token(
+                member_id=user.id,
+                purpose=AuthTokenPurpose.PASSWORD_RESET,
+                expires_in=timedelta(hours=1),
+                request_ip=request.remote_addr,
+            )
+            reset_url = url_for('auth.reset_password', token=token, _external=True)
+            html = render_template(
+                'emails/password_reset.html',
+                display_name=user.display_name,
+                reset_url=reset_url,
+                valid_for='1 Stunde',
+            )
+            text = (
+                f"Hallo {user.display_name},\n\n"
+                "du hast eine Anfrage zum Zuruecksetzen deines Passworts gestellt.\n"
+                f"Setze dein Passwort ueber diesen Link zurueck: {reset_url}\n\n"
+                "Der Link ist 1 Stunde gueltig.\n"
+                "Falls du das nicht warst, kannst du diese Mail ignorieren."
+            )
+            MailService.send(
+                to=user.email,
+                subject='Gourmen Passwort zuruecksetzen',
+                html=html,
+                text=text,
+                tags={'type': 'password_reset', 'member_id': str(user.id)},
+            )
+            SecurityService.log_audit_event(
+                AuditAction.REQUEST_PASSWORD_RESET,
+                'member',
+                user.id,
+                extra_data={'ip': request.remote_addr},
+                actor_id=user.id,
+            )
+            db.session.commit()
+
+        flash('Wenn die Adresse existiert, wurde eine Mail versendet.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/forgot_password.html', form=form)
 
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -471,36 +537,19 @@ def reset_password(token):
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
     
-    # Verify token
-    token_data = session.get(f'reset_token_{token}')
-    if not token_data:
+    auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.PASSWORD_RESET)
+    if token_error == "missing":
         flash('Ungültiger oder abgelaufener Reset-Link', 'error')
         return redirect(url_for('auth.login'))
-    
-    # Check expiration (support both iso string and unix timestamp)
-    import time
-    expires_valid = True
-    try:
-        if 'expires_at_ts' in token_data:
-            if int(time.time()) > int(token_data['expires_at_ts']):
-                expires_valid = False
-        elif 'expires_at' in token_data:
-            expires_at = datetime.fromisoformat(token_data['expires_at'])
-            if datetime.utcnow() > expires_at:
-                expires_valid = False
-        else:
-            expires_valid = False
-    except Exception:
-        expires_valid = False
-
-    if not expires_valid:
-        session.pop(f'reset_token_{token}', None)
+    if token_error == "used":
+        flash('Dieser Reset-Link wurde bereits verwendet.', 'error')
+        return redirect(url_for('auth.login'))
+    if token_error == "expired":
         flash('Reset-Link ist abgelaufen', 'error')
         return redirect(url_for('auth.login'))
-    
-    user = Member.query.get(token_data['user_id'])
+
+    user = Member.query.get(auth_token.member_id)
     if not user or not user.is_active:
-        session.pop(f'reset_token_{token}', None)
         flash('Ungültiger Reset-Link', 'error')
         return redirect(url_for('auth.login'))
     
@@ -515,24 +564,20 @@ def reset_password(token):
         
         # Update password
         user.set_password(form.new_password.data)
+        auth_token.used_at = datetime.utcnow()
         db.session.commit()
-        
-        # Remove token
-        session.pop(f'reset_token_{token}', None)
-        
+
         # Log audit event
         SecurityService.log_audit_event(
             AuditAction.RESET_PASSWORD, 'member', user.id,
-            extra_data={'ip': request.remote_addr}
+            extra_data={'ip': request.remote_addr},
+            actor_id=user.id,
         )
         
         flash('Passwort erfolgreich zurücksetzt. Sie können sich jetzt anmelden.', 'success')
         return redirect(url_for('auth.login'))
     
     return render_template('auth/reset_password.html', form=form, token=token)
-
-# Import here to avoid circular imports
-from datetime import datetime 
 
 # 2FA Reset via Email
 @bp.route('/2fa/reset-request', methods=['GET', 'POST'])
@@ -551,39 +596,46 @@ def request_2fa_reset():
             # Check if user has 2FA enabled
             mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
             if mfa_data and mfa_data.is_totp_enabled:
-                # Generate reset token
-                token = secrets.token_urlsafe(32)
-                expires_at = datetime.utcnow() + timedelta(hours=1)
-                
-                # Store token in session (in production, use database or Redis)
-                import time
-                session[f'2fa_reset_token_{token}'] = {
-                    'user_id': user.id,
-                    'expires_at': int(time.time()) + 3600  # Unix timestamp, 1 Stunde gültig
-                }
-                
-                # Generate reset URL
+                token = _issue_auth_token(
+                    member_id=user.id,
+                    purpose=AuthTokenPurpose.MFA_RESET,
+                    expires_in=timedelta(hours=1),
+                    request_ip=request.remote_addr,
+                )
                 reset_url = url_for('auth.reset_2fa', token=token, _external=True)
-                
-                # Store the URL in session for display page
-                session['last_generated_reset_url'] = {
-                    'url': reset_url,
-                    'created_at': datetime.utcnow().isoformat()
-                }
-                # Also log to server logs for ops access (development fallback)
-                current_app.logger.info(f"2FA reset link for {user.email}: {reset_url}")
+                html = render_template(
+                    'emails/2fa_reset.html',
+                    display_name=user.display_name,
+                    reset_url=reset_url,
+                    valid_for='1 Stunde',
+                )
+                text = (
+                    f"Hallo {user.display_name},\n\n"
+                    "du hast einen 2FA-Reset angefordert.\n"
+                    f"Setze 2FA ueber diesen Link zurueck: {reset_url}\n\n"
+                    "Der Link ist 1 Stunde gueltig."
+                )
+                MailService.send(
+                    to=user.email,
+                    subject='Gourmen 2FA zuruecksetzen',
+                    html=html,
+                    text=text,
+                    tags={'type': '2fa_reset', 'member_id': str(user.id)},
+                )
                 
                 # Log audit event
                 SecurityService.log_audit_event(
                     AuditAction.REQUEST_2FA_RESET, 'member', user.id,
-                    extra_data={'ip': request.remote_addr}
+                    extra_data={'ip': request.remote_addr},
+                    actor_id=user.id,
                 )
+                db.session.commit()
             else:
                 # Don't reveal if 2FA is enabled or not
                 pass
         
-        # Always redirect to link display page to allow copy without email
-        return redirect(url_for('auth.show_reset_link'))
+        flash('Wenn die Adresse existiert, wurde eine Mail versendet.', 'success')
+        return redirect(url_for('auth.login'))
     
     return render_template('auth/request_2fa_reset.html', form=form)
 
@@ -593,25 +645,19 @@ def reset_2fa(token):
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
     
-    # Verify token
-    token_data = session.get(f'2fa_reset_token_{token}')
-    if not token_data:
+    auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.MFA_RESET)
+    if token_error == "missing":
         flash('Ungültiger oder abgelaufener 2FA Reset-Link', 'error')
         return redirect(url_for('auth.login'))
-    
-    # Check expiration
-    import time
-    current_timestamp = int(time.time())
-    expires_at_timestamp = token_data['expires_at']
-    
-    if current_timestamp > expires_at_timestamp:
-        session.pop(f'2fa_reset_token_{token}', None)
+    if token_error == "used":
+        flash('Dieser 2FA Reset-Link wurde bereits verwendet.', 'error')
+        return redirect(url_for('auth.login'))
+    if token_error == "expired":
         flash('2FA Reset-Link ist abgelaufen', 'error')
         return redirect(url_for('auth.login'))
-    
-    user = Member.query.get(token_data['user_id'])
+
+    user = Member.query.get(auth_token.member_id)
     if not user or not user.is_active:
-        session.pop(f'2fa_reset_token_{token}', None)
         flash('Ungültiger 2FA Reset-Link', 'error')
         return redirect(url_for('auth.login'))
     
@@ -626,19 +672,65 @@ def reset_2fa(token):
         # Delete backup codes
         MFABackupCode.query.filter_by(member_id=user.id).delete()
         
-        db.session.commit()
-    
-    # Remove token
-    session.pop(f'2fa_reset_token_{token}', None)
+    auth_token.used_at = datetime.utcnow()
+    db.session.commit()
     
     # Log audit event
     SecurityService.log_audit_event(
         AuditAction.RESET_2FA, 'member', user.id,
-        extra_data={'ip': request.remote_addr}
+        extra_data={'ip': request.remote_addr},
+        actor_id=user.id,
     )
     
     flash('2FA erfolgreich zurückgesetzt. Sie können sich jetzt anmelden und 2FA neu einrichten.', 'success')
     return redirect(url_for('auth.login'))
+
+
+@bp.route('/activate/<token>', methods=['GET', 'POST'])
+def activate(token):
+    """Activate account via onboarding token."""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+
+    auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.ONBOARDING)
+    if token_error == "missing":
+        flash('Ungültiger oder abgelaufener Aktivierungs-Link', 'error')
+        return redirect(url_for('auth.login'))
+    if token_error == "used":
+        flash('Dieser Aktivierungs-Link wurde bereits verwendet.', 'error')
+        return redirect(url_for('auth.login'))
+    if token_error == "expired":
+        flash('Aktivierungs-Link ist abgelaufen.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(auth_token.member_id)
+    if not user or not user.is_active:
+        flash('Ungültiger Aktivierungs-Link', 'error')
+        return redirect(url_for('auth.login'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        is_valid, message = SecurityService.validate_password_strength(form.new_password.data)
+        if not is_valid:
+            flash(message, 'error')
+            return render_template('auth/reset_password.html', form=form, token=token)
+
+        user.set_password(form.new_password.data)
+        auth_token.used_at = datetime.utcnow()
+        db.session.commit()
+
+        SecurityService.log_audit_event(
+            AuditAction.USE_ONBOARDING_TOKEN,
+            'member',
+            user.id,
+            extra_data={'ip': request.remote_addr},
+            actor_id=user.id,
+        )
+        login_user(user, remember=False)
+        flash('Account aktiviert. Willkommen bei Gourmen!', 'success')
+        return redirect(url_for('dashboard.index'))
+
+    return render_template('auth/reset_password.html', form=form, token=token)
 
 # Remember this device for 2FA
 @bp.route('/2fa/remember-device', methods=['POST'])
