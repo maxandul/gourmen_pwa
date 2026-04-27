@@ -1,4 +1,4 @@
-# Phase 1 – Mail-Infrastruktur (Resend)
+# Phase 1 – Mail-Infrastruktur (Infomaniak SMTP)
 
 **Status**: pending  
 **Aufwand**: ~0.5 Tag (4 Stunden)  
@@ -11,16 +11,15 @@ Transaktionale E-Mails aus der App versenden können, mit klarem Service-Layer u
 ## Pre-Conditions
 
 - Phase 0 abgeschlossen
-- `RESEND_API_KEY` und `RESEND_FROM_EMAIL` in Railway gesetzt
-- Domain mit verifiziertem DKIM bei Resend
+- `MAIL_FROM_ADDRESS`, `MAIL_SMTP_HOST`, `MAIL_SMTP_PORT`, `MAIL_SMTP_USERNAME`, `MAIL_SMTP_PASSWORD` in Railway gesetzt
+- Domain/Mail bei Infomaniak aktiv, DKIM/SPF/DMARC korrekt
 - Branch `phase/01-modules-mail` von `master` erstellt
 
 ## Tasks
 
 ### 1. Dependency
 
-- [ ] `resend` Python-SDK in `requirements.txt` aufnehmen
-  - Aktuelle stabile Version pinnen (z.B. `resend==2.x.x`)
+- [ ] Keine zusätzliche SDK nötig (SMTP über Python-Standardbibliothek)
 - [ ] `pip install -r requirements.txt` lokal
 
 ### 2. Service-Layer
@@ -29,11 +28,11 @@ Datei `backend/services/mail.py`:
 
 - [ ] Klasse `MailService` mit folgenden Methoden:
   - [ ] `send(to: str | list, subject: str, html: str, text: str | None = None, tags: dict | None = None) -> dict`
-  - [ ] Liest `RESEND_API_KEY` und `RESEND_FROM_EMAIL` aus `current_app.config`
-  - [ ] Test-Modus: wenn `RESEND_API_KEY` leer, Mail nur loggen statt senden
+  - [ ] Liest SMTP-Config (`MAIL_SMTP_*`) und Absender (`MAIL_FROM_ADDRESS`) aus `current_app.config`
+  - [ ] Test-Modus: wenn SMTP-Zugang leer, Mail nur loggen statt senden
   - [ ] Errors werden geloggt, nicht geworfen (Mail-Versand ist „best effort")
   - [ ] Strukturierte Rückgabe: `{'success': bool, 'message_id': str | None, 'error': str | None}`
-- [ ] Optional: Idempotency-Key per Aufruf (wenn Resend das unterstützt)
+- [ ] Optional: zusätzliche Header/Tags für spätere Auswertung
 
 ### 3. Templates
 
@@ -55,17 +54,17 @@ Datei `backend/services/mail.py`:
 
 ### 5. Konfiguration
 
-- [ ] `backend/config.py`: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` aus ENV lesen
+- [ ] `backend/config.py`: `MAIL_FROM_ADDRESS`, `MAIL_REPLY_TO`, `MAIL_SMTP_*` aus ENV lesen
 - [ ] `env.example`: neue Variablen dokumentieren
 
 ### 6. Doc-Updates
 
-- [ ] `docs/ARCHITECTURE.md`: Resend in „Externe Services"-Tabelle Status auf `aktiv`
+- [ ] `docs/ARCHITECTURE.md`: Infomaniak Mail in „Externe Services"-Tabelle Status auf `aktiv`
 - [ ] `docs/CONVENTIONS.md`: nichts zwingend (Service-Layer-Pattern existiert schon)
 
 ## Acceptance-Criteria
 
-- [ ] `MailService.send(...)` funktioniert lokal mit echtem Resend-Key
+- [ ] `MailService.send(...)` funktioniert lokal mit echtem SMTP-Zugang
 - [ ] `/admin/mail/test` schickt erfolgreich Mail an Admin
 - [ ] Im Test-Modus (kein API-Key) wird Mail geloggt statt gesendet
 - [ ] Mail kommt mit korrekter Absender-Adresse `noreply@gourmen.ch` an
@@ -93,9 +92,9 @@ Pre-Flight:
 - docs/CONVENTIONS.md lesen (Service-Layer-Pattern)
 - docs/ARCHITECTURE.md lesen
 - docs/initiatives/modules-and-hosting/README.md lesen
-- Phase-0 muss abgeschlossen sein, Resend-API-Key in Railway gesetzt
+- Phase-0 muss abgeschlossen sein, SMTP-Zugangsdaten in Railway gesetzt
 
-Implementiere Phase 1 (Mail-Infrastruktur via Resend) gemäss Phasen-Doc:
+Implementiere Phase 1 (Mail-Infrastruktur via Infomaniak SMTP) gemäss Phasen-Doc:
 - Halte dich strikt an Tasks und Acceptance-Criteria
 - Nichts darüber hinaus implementieren (Out of Scope strikt)
 - Service-Layer-Pattern verwenden (siehe docs/CONVENTIONS.md)
@@ -105,13 +104,13 @@ Nach jedem Sub-Task lokal testen.
 Am Ende:
 - Acceptance-Criteria abhaken
 - Initiative-README Status-Tabelle: Phase 1 → done
-- Doc-Updates: Resend in ARCHITECTURE.md auf aktiv setzen
+- Doc-Updates: Infomaniak Mail in ARCHITECTURE.md auf aktiv setzen
 - Commit-Message-Vorschlag, dann auf User-Bestätigung warten
 ```
 
 ## Hinweise
 
-- **Resend SDK** ist sehr schlank, brauchst nicht viel Wrapping
+- SMTP über Standardbibliothek reicht für den Start
 - **HTML-Mails** brauchen Inline-CSS (Outlook etc. unterstützen `<style>` schlecht)
 - **Test-Mail-Inhalt**: simpel halten – „Test-Mail von Gourmen App, gesendet von <user>"
-- Resend hat eine **Sandbox-Adresse** (`onboarding@resend.dev`) für initialen Test, falls deine Domain noch nicht verifiziert ist
+- Für initiale Tests erst lokal gegen eigene Adresse senden, danach in Railway
