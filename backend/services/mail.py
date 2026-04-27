@@ -9,8 +9,10 @@ from flask import current_app
 logger = logging.getLogger(__name__)
 
 
-class _SMTPPreferIPv4(smtplib.SMTP):
-    """SMTP client that falls back to IPv4 when IPv6 egress is unavailable."""
+class _SMTPIPv4FallbackMixin:
+    """Fallback to IPv4 when default socket path is unreachable."""
+
+    max_ipv4_attempts = 1
 
     def _get_socket(self, host, port, timeout):
         try:
@@ -25,12 +27,20 @@ class _SMTPPreferIPv4(smtplib.SMTP):
                 raise
 
             last_error = exc
-            for _, _, _, _, sockaddr in ipv4_infos:
+            for _, _, _, _, sockaddr in ipv4_infos[: self.max_ipv4_attempts]:
                 try:
                     return socket.create_connection(sockaddr, timeout)
                 except OSError as ipv4_exc:
                     last_error = ipv4_exc
             raise last_error
+
+
+class _SMTPPreferIPv4(_SMTPIPv4FallbackMixin, smtplib.SMTP):
+    """SMTP client with IPv4 fallback."""
+
+
+class _SMTPSSLPreferIPv4(_SMTPIPv4FallbackMixin, smtplib.SMTP_SSL):
+    """SMTP_SSL client with IPv4 fallback."""
 
 
 class MailService:
@@ -51,6 +61,9 @@ class MailService:
         smtp_username = current_app.config.get('MAIL_SMTP_USERNAME')
         smtp_password = current_app.config.get('MAIL_SMTP_PASSWORD')
         use_tls = current_app.config.get('MAIL_SMTP_USE_TLS', True)
+        use_ssl = current_app.config.get('MAIL_SMTP_USE_SSL', False)
+        smtp_timeout = int(current_app.config.get('MAIL_SMTP_TIMEOUT_SECONDS', 3))
+        max_ipv4_attempts = int(current_app.config.get('MAIL_SMTP_MAX_IPV4_ATTEMPTS', 1))
         from_email = current_app.config.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
         reply_to = current_app.config.get('MAIL_REPLY_TO', from_email)
 
@@ -88,8 +101,11 @@ class MailService:
             message.set_content(text or 'Diese E-Mail enthaelt eine HTML-Version.')
             message.add_alternative(html, subtype='html')
 
-            with _SMTPPreferIPv4(smtp_host, smtp_port, timeout=10) as server:
-                if use_tls:
+            smtp_client_cls = _SMTPSSLPreferIPv4 if use_ssl else _SMTPPreferIPv4
+            smtp_client_cls.max_ipv4_attempts = max(1, max_ipv4_attempts)
+
+            with smtp_client_cls(smtp_host, smtp_port, timeout=smtp_timeout) as server:
+                if use_tls and not use_ssl:
                     server.starttls()
                 server.login(smtp_username, smtp_password)
                 server.send_message(message)

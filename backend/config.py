@@ -97,6 +97,9 @@ class Config:
     MAIL_SMTP_USERNAME = os.environ.get('MAIL_SMTP_USERNAME')
     MAIL_SMTP_PASSWORD = os.environ.get('MAIL_SMTP_PASSWORD')
     MAIL_SMTP_USE_TLS = os.environ.get('MAIL_SMTP_USE_TLS', 'true').lower() in ('1', 'true', 'yes')
+    MAIL_SMTP_USE_SSL = os.environ.get('MAIL_SMTP_USE_SSL', 'false').lower() in ('1', 'true', 'yes')
+    MAIL_SMTP_TIMEOUT_SECONDS = int(os.environ.get('MAIL_SMTP_TIMEOUT_SECONDS', '3'))
+    MAIL_SMTP_MAX_IPV4_ATTEMPTS = int(os.environ.get('MAIL_SMTP_MAX_IPV4_ATTEMPTS', '1'))
     
     # Web Push / VAPID settings
     # Keys müssen als Environment Variables gesetzt sein (Railway/Production)
