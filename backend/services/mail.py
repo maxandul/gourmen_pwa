@@ -1,11 +1,36 @@
 import logging
 import smtplib
+import socket
 from typing import Any
 from email.message import EmailMessage
 from email.utils import make_msgid
 from flask import current_app
 
 logger = logging.getLogger(__name__)
+
+
+class _SMTPPreferIPv4(smtplib.SMTP):
+    """SMTP client that falls back to IPv4 when IPv6 egress is unavailable."""
+
+    def _get_socket(self, host, port, timeout):
+        try:
+            return super()._get_socket(host, port, timeout)
+        except OSError as exc:
+            # Railway setups with disabled IPv6 egress can fail with Errno 101.
+            if getattr(exc, "errno", None) != 101:
+                raise
+
+            ipv4_infos = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+            if not ipv4_infos:
+                raise
+
+            last_error = exc
+            for _, _, _, _, sockaddr in ipv4_infos:
+                try:
+                    return socket.create_connection(sockaddr, timeout)
+                except OSError as ipv4_exc:
+                    last_error = ipv4_exc
+            raise last_error
 
 
 class MailService:
@@ -63,7 +88,7 @@ class MailService:
             message.set_content(text or 'Diese E-Mail enthaelt eine HTML-Version.')
             message.add_alternative(html, subtype='html')
 
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            with _SMTPPreferIPv4(smtp_host, smtp_port, timeout=10) as server:
                 if use_tls:
                     server.starttls()
                 server.login(smtp_username, smtp_password)
