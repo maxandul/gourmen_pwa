@@ -510,7 +510,7 @@ def forgot_password():
                 "Der Link ist 1 Stunde gueltig.\n"
                 "Falls du das nicht warst, kannst du diese Mail ignorieren."
             )
-            MailService.send(
+            MailService.send_async(
                 to=user.email,
                 subject='Gourmen Passwort zuruecksetzen',
                 html=html,
@@ -615,7 +615,7 @@ def request_2fa_reset():
                     f"Setze 2FA ueber diesen Link zurueck: {reset_url}\n\n"
                     "Der Link ist 1 Stunde gueltig."
                 )
-                MailService.send(
+                MailService.send_async(
                     to=user.email,
                     subject='Gourmen 2FA zuruecksetzen',
                     html=html,
