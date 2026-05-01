@@ -74,8 +74,8 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 
 | Phase | Status | Branch | Datum | Notizen |
 |---|---|---|---|---|
-| 0 | pending | – | – | – |
-| 1 | pending | – | – | – |
+| 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
+| 1 | in_progress | master | 2026-05-01 | Workspace + DNS-Cutover erfolgt (MX/SPF/DMARC, DKIM aktiv, Alias-Test ok); Shared-Drive-Rollout fuer restliche Mitglieder offen |
 | 2 | pending | – | – | – |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | Inhaltlich analog `modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive |
