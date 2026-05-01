@@ -19,8 +19,8 @@
 - [x] Organisation anlegen, Super-Admin festlegen (Vereinskonto)  
 - [x] Domain `gourmen.ch` hinzufuegen und verifizieren (TXT bei Infomaniak DNS)  
 - [x] Nutzer `kontakt@gourmen.ch` (oder gewaehltes Primaer-Konto) anlegen  
-- [ ] Alias(e) z. B. `admin@gourmen.ch` auf gleiche Mailbox legen  
-- [ ] Shared Drive Status pruefen (bereits vorhanden; alle sehen alles)  
+- [x] Alias(e) z. B. `admin@gourmen.ch` auf gleiche Mailbox legen (Test ok 2026-05-01)  
+- [ ] Shared Drive: fuer **alle** vorgesehenen Mitglieder ausrollen („alle sehen alles“)  
 
 ### B. DNS bei Infomaniak
 
@@ -40,8 +40,8 @@
 
 - [x] MX zeigen auf Google; Mails kommen in Gmail/Workspace an  
 - [x] SPF/DKIM/DMARC sind gesetzt (mindestens SPF + DKIM „pass“ in Tests)  
-- [ ] Vereinskonto + Aliase funktionieren  
-- [ ] Kein Datenverlust bei Migration (oder bewusst dokumentiertes Archiv)  
+- [x] Vereinskonto + Aliase funktionieren  
+- [ ] Kein Datenverlust bei Migration (oder bewusst dokumentiertes Archiv; Infomaniak-Postfach derzeit bewusst parallel)  
 
 ## Umsetzungslog (2026-05-01)
 
@@ -78,5 +78,5 @@
 ```
 Phase 1 ist ueberwiegend OPERATIONS, nicht Flask-Code.
 Dokumentiere alle DNS-Aenderungen und Workspace-Schritte in einem kurzen internen Log (ohne Secrets).
-Nach Abschluss: PHASE_02 anstossen (App SMTP / Relay).
+Nach Abschluss: PHASE_02 — siehe `AGENT_HANDOFF.md` (Railway SMTP / Entscheid Vorstand).
 ```

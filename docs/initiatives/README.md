@@ -18,6 +18,7 @@ Jede Initiative bekommt einen eigenen Slug-Ordner:
 ```
 docs/initiatives/<slug>/
 ├── README.md                    ← Master-Plan, Strategie, Phasen-Tabelle, Status-Tracker
+├── AGENT_HANDOFF.md             ← optional: Status quo bei Agent-Wechsel (nicht jede Initiative)
 ├── PHASE_NN_<name>.md           ← Detail-Doc pro Phase mit Pre-Conditions,
 │                                  Tasks, Acceptance-Criteria, Cursor-Briefing
 └── ggf. weitere Detail-Docs

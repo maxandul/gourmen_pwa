@@ -4,6 +4,8 @@
 **Start**: 2026-05  
 **Branch-Prefix**: `phase/NN-workspace-<kurzname>`
 
+**Agent-Wechsel / Einstieg**: zuerst [`AGENT_HANDOFF.md`](AGENT_HANDOFF.md) lesen (Status quo 2026-05-01, Phase 1/2, Git, Railway-SMTP-Befund).
+
 ## Zweck dieser Initiative
 
 Neuer Master-Plan fuer Agenten nach strategischem Pivot: **Domain/DNS bleibt bei Infomaniak**, zentrale Vereinsarbeit (Mail, Shared Drive, Docs) laeuft **langfristig ueber Google Workspace**. Die **Gourmen-PWA bleibt auf Railway** (Web, Cron, Postgres, Redis).
@@ -75,8 +77,8 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | Phase | Status | Branch | Datum | Notizen |
 |---|---|---|---|---|
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
-| 1 | in_progress | master | 2026-05-01 | Workspace + DNS-Cutover erfolgt (MX/SPF/DMARC, DKIM aktiv, Alias-Test ok); Shared-Drive-Rollout fuer restliche Mitglieder offen |
-| 2 | pending | – | – | – |
+| 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM ok, Mailtests ok; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
+| 2 | blocked | – | 2026-05-01 | Railway Hobby: SMTP TCP-Timeout (verifiziert). Stakeholder: kein Resend. Entscheid: Pro+SMTP vs Hobby+HTTPS-API — `AGENT_HANDOFF.md`; optional Resend nur auf Branch `phase/02-workspace-system-mail` (nicht master) |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | Inhaltlich analog `modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive |
 | 5 | pending | – | – | siehe `modules-and-hosting/PHASE_05_CALENDAR.md` |
