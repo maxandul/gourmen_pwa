@@ -1,5 +1,5 @@
 {
-  "static/css/main-v2.css": "static/css/main-v2.203575ef.css",
+  "static/css/main-v2.css": "static/css/main-v2.17b92268.css",
   "static/css/public.css": "static/css/public.7c8fae54.css",
   "static/css/v2/components.css": "static/css/v2/components.70668d0c.css",
   "static/js/app.js": "static/js/app.fcc48062.js",
@@ -35,5 +35,5 @@
   "static/img/pwa/splash/splash-1640x2360.png": "static/img/pwa/splash/splash-1640x2360.84e744a1.png",
   "static/img/pwa/splash/splash-1668x2388.png": "static/img/pwa/splash/splash-1668x2388.ac2cc977.png",
   "static/img/pwa/splash/splash-2048x2732.png": "static/img/pwa/splash/splash-2048x2732.88abdf66.png",
-  "static/offline.html": "static/offline.bc403e7a.html"
+  "static/offline.html": "static/offline.93a37fba.html"
 }

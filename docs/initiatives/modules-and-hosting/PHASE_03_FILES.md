@@ -1,4 +1,4 @@
-# Phase 3 – File-Storage über Cloudflare R2
+# Phase 3 – File-Storage über Infomaniak Object Storage
 
 **Status**: pending  
 **Aufwand**: ~3-4 Tage  
@@ -6,11 +6,11 @@
 
 ## Ziel
 
-Echte Datei-Uploads (Belege, Bilder, Dokumente) im `Document`-Modell und neuen Routes, gespeichert in Cloudflare R2. Vorbereitung für Phase 4 (Buchhaltungs-Belege).
+Echte Datei-Uploads (Belege, Bilder, Dokumente) im `Document`-Modell und neuen Routes, gespeichert in Infomaniak Object Storage (S3-kompatibel). Vorbereitung für Phase 4 (Buchhaltungs-Belege).
 
 ## Pre-Conditions
 
-- Phase 0 abgeschlossen (R2-Bucket + ENV-Variablen `R2_*`)
+- Phase 0 abgeschlossen (Object-Storage-Bucket + ENV-Variablen `OBJECT_STORAGE_*`)
 - Bucket per `aws s3 ls --endpoint=...` erreichbar
 - Branch `phase/03-modules-files` von `master` erstellt
 
@@ -26,7 +26,7 @@ Echte Datei-Uploads (Belege, Bilder, Dokumente) im `Document`-Modell und neuen R
 Datei `backend/services/storage.py`:
 
 - [ ] Klasse `StorageService` mit `boto3` S3-Client
-- [ ] Konfiguration aus `current_app.config`: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET`, `R2_PUBLIC_URL`
+- [ ] Konfiguration aus `current_app.config`: `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, `OBJECT_STORAGE_ENDPOINT`, `OBJECT_STORAGE_BUCKET`, `OBJECT_STORAGE_PUBLIC_URL`
 - [ ] Methoden:
   - [ ] `upload(file_obj, key: str, content_type: str) -> str` – returns SHA-256-Checksum
   - [ ] `download_url(key: str, expires: int = 300) -> str` – pre-signed URL
@@ -43,7 +43,7 @@ In `backend/models/document.py`:
   - [ ] `file_key` (VARCHAR 500, nullable) – S3-Key im Bucket
   - [ ] `mime_type` (VARCHAR 100, nullable)
   - [ ] `size_bytes` (BIGINT, nullable)
-  - [ ] `storage_provider` (VARCHAR 50, default `'r2'`)
+  - [ ] `storage_provider` (VARCHAR 50, default `'infomaniak_object_storage'`)
   - [ ] `original_filename` (VARCHAR 500, nullable) – ursprünglicher Dateiname für Download
   - [ ] `checksum` schon da, jetzt SHA-256 verwenden
 - [ ] `url`-Feld nullable machen (für File-Documents leer, weil per pre-signed URL)
@@ -66,7 +66,7 @@ In `backend/routes/docs.py`:
 - [ ] SHA-256 berechnen
 - [ ] Bei Bildern: EXIF-Strip via Pillow (Privacy: GPS-Daten in Smartphone-Fotos entfernen)
 - [ ] Duplikat-Check: bei gleichem SHA-256 vom selben User existierenden Key wiederverwenden, neuen `Document`-Eintrag mit Reference erstellen
-- [ ] In R2 hochladen via `StorageService` mit Key-Pattern: `<member_id>/<sha256>/<safe_filename>`
+- [ ] In Infomaniak Object Storage hochladen via `StorageService` mit Key-Pattern: `<member_id>/<sha256>/<safe_filename>`
 - [ ] `Document`-Eintrag erstellen mit `file_key`, `mime_type`, `size_bytes`, `original_filename`, `checksum`
 - [ ] Audit-Log (`UPLOAD_DOCUMENT`)
 
@@ -85,8 +85,8 @@ In `backend/routes/docs.py`:
 
 - [ ] `POST /docs/<id>/delete`
   - [ ] Soft-Delete: `deleted_at = now`
-  - [ ] **Nicht** R2-Object löschen (Soft-Delete!)
-  - [ ] Hard-Delete (R2-Object weg) erst nach 30 Tagen via separatem Cleanup-Job (optional, später)
+  - [ ] **Nicht** Object-Storage-Object löschen (Soft-Delete!)
+  - [ ] Hard-Delete (Object-Storage-Object weg) erst nach 30 Tagen via separatem Cleanup-Job (optional, später)
 
 ### 7. Frontend
 
@@ -106,26 +106,26 @@ In `backend/routes/docs.py`:
 
 ### 9. Konfiguration
 
-- [ ] `backend/config.py`: R2-ENV lesen, `MAX_FILE_SIZE_BYTES`, `USER_QUOTA_BYTES`, `MIME_WHITELIST`
+- [ ] `backend/config.py`: Object-Storage-ENV lesen, `MAX_FILE_SIZE_BYTES`, `USER_QUOTA_BYTES`, `MIME_WHITELIST`
 - [ ] `env.example` aktualisieren
 
 ### 10. Doc-Updates
 
 - [ ] `docs/ARCHITECTURE.md`: 
-  - „Externe Services" Cloudflare R2 auf `aktiv`
+  - „Externe Services" Infomaniak Object Storage auf `aktiv`
   - „Bekannte Schwächen" Document-Punkt entfernen
 - [ ] `docs/CONVENTIONS.md`: optional File-Upload-Pattern dokumentieren wenn neu
 
 ## Acceptance-Criteria
 
 - [ ] User kann PDF/JPG hochladen, sieht's in Documents-Liste
-- [ ] Download über Pre-signed URL funktioniert (Browser lädt direkt von R2, nicht durch App)
+- [ ] Download über Pre-signed URL funktioniert (Browser lädt direkt von Object Storage, nicht durch App)
 - [ ] Mime-Whitelist greift: `.exe` wird abgelehnt
 - [ ] Quota greift: 51× 10 MB nicht möglich
 - [ ] Doppelter Upload (gleiches SHA-256 vom selben User) wird deduped
 - [ ] EXIF von Smartphone-Foto ist im Upload entfernt (mit `exiftool` verifizieren)
 - [ ] Bestehende URL-Documents funktionieren weiter
-- [ ] Soft-Delete macht Document unsichtbar, R2-Object bleibt (vorerst)
+- [ ] Soft-Delete macht Document unsichtbar, Object-Storage-Object bleibt (vorerst)
 - [ ] Tests grün
 - [ ] DB-Migration sauber
 
@@ -135,7 +135,7 @@ In `backend/routes/docs.py`:
 - Keine Image-Resizing / Thumbnails (separate Mini-Phase)
 - Keine Foto-Galerie-Ansicht
 - Kein Sharing per Link an externe (nur eingeloggte User)
-- Kein Hard-Delete-Job für R2 (kommt später)
+- Kein Hard-Delete-Job für Object Storage (kommt später)
 
 ## Cursor-Agent-Briefing
 
@@ -147,9 +147,9 @@ Pre-Flight:
 - AGENTS.md lesen
 - docs/ARCHITECTURE.md lesen
 - docs/CONVENTIONS.md lesen (Service-Layer, Models)
-- Phase 0 abgeschlossen, R2-Bucket erreichbar
+- Phase 0 abgeschlossen, Object Storage erreichbar
 
-Implementiere Phase 3 (File-Storage R2) gemäss Phasen-Doc:
+Implementiere Phase 3 (File-Storage auf Infomaniak Object Storage) gemäss Phasen-Doc:
 - DB-Migration in eigenem Commit
 - Bestehende Document-Routen müssen funktionieren bleiben
 - StorageService als sauber abstrahierte Schicht (austauschbar gegen MinIO später)
@@ -169,9 +169,9 @@ Am Ende:
 
 ## Hinweise
 
-- **R2 ist S3-kompatibel** – nutze `boto3` mit `endpoint_url=R2_ENDPOINT`
-- **Pre-signed URLs** funktionieren in R2 wie in AWS S3
-- **Public-URL-Pattern**: wenn Bucket public ist, kann statt pre-signed auch `R2_PUBLIC_URL/<key>` verwendet werden – aber für Vereinsdaten ist private + pre-signed sicherer
+- **Infomaniak Object Storage ist S3-kompatibel** – nutze `boto3` mit `endpoint_url=OBJECT_STORAGE_ENDPOINT`
+- **Pre-signed URLs** funktionieren wie in AWS S3
+- **Public-URL-Pattern**: wenn Bucket public ist, kann statt pre-signed auch `OBJECT_STORAGE_PUBLIC_URL/<key>` verwendet werden – aber für Vereinsdaten ist private + pre-signed sicherer
 - **Key-Pattern** `<member_id>/<sha256>/<filename>` ist eindeutig + dedup-fähig
 - **EXIF-Strip** via Pillow: `Image.open(...).save(buf, format=..., exif=b'')`
 - **Quota-Check** vor Upload, nicht nach – sonst hochlädst du erst und löschst dann

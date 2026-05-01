@@ -75,7 +75,7 @@ Vollständige Liste in `static/css/v2/tokens.css`. Wichtigste Gruppen:
 
 ### Semantische Tokens (Theme-abhängig)
 
-Diese sind in `:root` für Dark-Default, in `[data-theme="light"]` und `[data-theme="dark"]` überschrieben:
+Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` überschreibt für Dunkelmodus:
 
 - `--color-bg-base`, `--color-bg-subtle`, `--color-bg-muted`, `--color-bg-elevated`
 - `--color-surface`, `--color-surface-secondary`, `--color-surface-elevated`
