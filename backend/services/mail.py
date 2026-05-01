@@ -5,6 +5,8 @@ import threading
 from typing import Any
 from email.message import EmailMessage
 from email.utils import make_msgid
+
+import requests
 from flask import current_app
 
 logger = logging.getLogger(__name__)
@@ -45,7 +47,75 @@ class _SMTPSSLPreferIPv4(_SMTPIPv4FallbackMixin, smtplib.SMTP_SSL):
 
 
 class MailService:
-    """Versendet transaktionale Mails via SMTP (best effort)."""
+    """Versendet transaktionale Mails via Resend (HTTPS) oder SMTP (best effort)."""
+
+    _RESEND_API_URL = 'https://api.resend.com/emails'
+
+    @staticmethod
+    def _send_resend(
+        to_recipients: list[str],
+        subject: str,
+        html: str,
+        text: str | None,
+        from_email: str,
+        reply_to: str,
+        tags: dict[str, str] | None,
+        api_key: str,
+        timeout: int,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            'from': from_email,
+            'to': to_recipients,
+            'subject': subject,
+            'html': html,
+            'text': text or 'Diese E-Mail enthaelt eine HTML-Version.',
+            'reply_to': reply_to,
+        }
+        if tags:
+            payload['headers'] = {
+                f'X-Gourmen-Tag-{key}': str(value) for key, value in tags.items()
+            }
+
+        try:
+            response = requests.post(
+                MailService._RESEND_API_URL,
+                json=payload,
+                headers={
+                    'Authorization': f'Bearer {api_key}',
+                    'Content-Type': 'application/json',
+                },
+                timeout=timeout,
+            )
+            if response.ok:
+                data = response.json() if response.content else {}
+                resend_id = data.get('id')
+                message_id = f'resend:{resend_id}' if resend_id else None
+                logger.info(
+                    "Mail erfolgreich versendet (Resend): id=%s to=%s",
+                    resend_id,
+                    to_recipients,
+                )
+                return {'success': True, 'message_id': message_id, 'error': None}
+
+            err_body = response.text[:500] if response.text else ''
+            try:
+                err_json = response.json()
+                detail = err_json.get('message') or err_body
+            except ValueError:
+                detail = err_body or str(response.status_code)
+            logger.error(
+                "Resend-Mail fehlgeschlagen: status=%s body=%s",
+                response.status_code,
+                err_body,
+            )
+            return {
+                'success': False,
+                'message_id': None,
+                'error': f"resend: {detail}"[:400],
+            }
+        except requests.RequestException as exc:
+            logger.error("Resend-Mail fehlgeschlagen: %s", exc, exc_info=True)
+            return {'success': False, 'message_id': None, 'error': str(exc)}
 
     @staticmethod
     def send(
@@ -57,6 +127,27 @@ class MailService:
     ) -> dict[str, Any]:
         """Sendet eine Mail und gibt ein strukturiertes Resultat zurück."""
         to_recipients = [to] if isinstance(to, str) else to
+        from_email = current_app.config.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
+        reply_to = current_app.config.get('MAIL_REPLY_TO', from_email)
+        resend_key = current_app.config.get('RESEND_API_KEY')
+        http_timeout = int(current_app.config.get('MAIL_HTTP_TIMEOUT_SECONDS', 15))
+
+        if not to_recipients:
+            return {'success': False, 'message_id': None, 'error': 'no_recipient'}
+
+        if resend_key:
+            return MailService._send_resend(
+                to_recipients=to_recipients,
+                subject=subject,
+                html=html,
+                text=text,
+                from_email=from_email,
+                reply_to=reply_to,
+                tags=tags,
+                api_key=resend_key,
+                timeout=http_timeout,
+            )
+
         smtp_host = current_app.config.get('MAIL_SMTP_HOST')
         smtp_port = current_app.config.get('MAIL_SMTP_PORT', 587)
         smtp_username = current_app.config.get('MAIL_SMTP_USERNAME')
@@ -65,11 +156,6 @@ class MailService:
         use_ssl = current_app.config.get('MAIL_SMTP_USE_SSL', False)
         smtp_timeout = int(current_app.config.get('MAIL_SMTP_TIMEOUT_SECONDS', 3))
         max_ipv4_attempts = int(current_app.config.get('MAIL_SMTP_MAX_IPV4_ATTEMPTS', 1))
-        from_email = current_app.config.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
-        reply_to = current_app.config.get('MAIL_REPLY_TO', from_email)
-
-        if not to_recipients:
-            return {'success': False, 'message_id': None, 'error': 'no_recipient'}
 
         if not smtp_host:
             logger.warning(

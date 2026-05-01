@@ -76,7 +76,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 |---|---|---|---|---|
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
 | 1 | in_progress | master | 2026-05-01 | Workspace + DNS-Cutover erfolgt (MX/SPF/DMARC, DKIM aktiv, Alias-Test ok); Shared-Drive-Rollout fuer restliche Mitglieder offen |
-| 2 | pending | – | – | – |
+| 2 | in_progress | phase/02-workspace-system-mail | 2026-05-01 | Resend/HTTPS implementiert (Railway SMTP blockiert auf Hobby); Domain/API-Key in Resend + Railway setzen, dann Prod-Tests |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | Inhaltlich analog `modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive |
 | 5 | pending | – | – | siehe `modules-and-hosting/PHASE_05_CALENDAR.md` |

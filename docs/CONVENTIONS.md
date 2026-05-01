@@ -54,6 +54,7 @@ class <Name>Service:
 - **Strukturierte Rückgabe** (Dict mit `success`, `data` o.ä.) statt rohem API-Response
 - **Errors loggen, nicht crashen** außer bei wirklich kritischen Fehlern (z.B. `CRYPTO_KEY` fehlt)
 - **Konfiguration aus `current_app.config`** lesen, nicht direkt aus `os.environ`
+- **Transaktionale E-Mails** nur über `MailService` (`RESEND_API_KEY` gesetzt → Resend/HTTPS, sonst SMTP)
 
 ## Routes / Blueprints
 

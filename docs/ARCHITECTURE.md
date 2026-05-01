@@ -88,7 +88,7 @@ Services in `backend/services/` sind die einzige Stelle für:
 
 - Komplexe Business-Logik (BillBro-Kalkulation, GGL-Punkte)
 - Verschlüsselung und 2FA (`SecurityService`)
-- Externe Integrationen (Google Places, Web-Push, Infomaniak Mail/Storage, Stripe, Meta)
+- Externe Integrationen (Google Places, Web-Push, Resend/SMTP-Mail, Infomaniak Storage, Stripe, Meta)
 
 **Routes** rufen Services, **Services** rufen Models. Routes enthalten keine Geschäftslogik außer Permission-Checks und Form-Handling.
 
@@ -100,6 +100,7 @@ Aktuelle Services:
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
 | `MoneyService` | Beträge in Rappen rechnen, Rundung, Trinkgeld-Regeln |
 | `PlacesService` | Google-Places-Lookup für Restaurant-Daten |
+| `MailService` | Transaktionale E-Mails (Resend HTTPS oder SMTP) |
 | `PushNotificationService` | Web-Push-Versand via pywebpush, Subscription-Mgmt |
 | `VAPIDService` | VAPID-Key-Bereitstellung für Push |
 | `CronService` | Reminder-Trigger (3-Wochen, Montag, Rating-Tag) |
@@ -167,12 +168,13 @@ Drei Reminder-Typen:
 | **Railway** | App-Hosting (Web + Cron + Postgres + Redis-Plugin) | aktiv |
 | **Google Places API** | Restaurant-Daten beim Event-Anlegen | aktiv |
 | **Google Maps API** | Karten-Anzeige im Frontend | aktiv |
-| **Infomaniak** | Domain/DNS, Mail-Service, Object Storage | aktiv |
-| **Infomaniak Mail (SMTP)** | Transaktionale E-Mails aus der App | aktiv (Phase 1) |
+| **Infomaniak** | Domain/DNS, Object Storage | aktiv |
+| **Resend (HTTPS)** | Transaktionale E-Mails aus der App (Production, empfohlen) | aktiv (Phase 2) |
+| **SMTP (Infomaniak / sonst)** | Transaktionale E-Mails lokal oder mit SMTP-faehigem Hosting | optional |
 | **RaiseNow / Stripe** (geplant) | TWINT-Zahlungen | geplant Phase 6 |
 | **Meta Cloud API** (geplant) | WhatsApp Business | geplant Phase 7 |
 
-Aktive Initiative für die Erweiterung: `docs/initiatives/modules-and-hosting/`.
+Aktive Initiative: `docs/initiatives/workspace-railway/` (ältere Detailphasen: `modules-and-hosting/`).
 
 ## Datenfluss-Beispiele
 
