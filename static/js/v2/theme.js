@@ -12,7 +12,7 @@
 class ThemeManager {
   constructor() {
     this.themeKey = 'theme';
-    this.defaultTheme = 'dark'; // Entspricht deiner Präferenz
+    this.defaultTheme = 'light';
     this.html = document.documentElement;
     this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -40,19 +40,14 @@ class ThemeManager {
 
   /**
    * Get current theme
-   * Priority: localStorage > system preference > default
+   * Priority: localStorage > Standard (Hell), solange keine gespeicherte Wahl
    */
   getTheme() {
     const saved = localStorage.getItem(this.themeKey);
     if (saved && (saved === 'light' || saved === 'dark')) {
       return saved;
     }
-    
-    // Fallback to system preference
-    if (this.mediaQuery.matches) {
-      return 'dark';
-    }
-    return 'light';
+    return this.defaultTheme;
   }
 
   /**
@@ -132,7 +127,7 @@ class ThemeManager {
       light: '#ffffff'   // White
     };
     
-    metaThemeColor.setAttribute('content', colors[theme] || colors.dark);
+    metaThemeColor.setAttribute('content', colors[theme] || colors[this.defaultTheme]);
   }
 
   /**

@@ -1,8 +1,12 @@
 # Initiative: Modules & Hosting
 
-**Status**: aktiv  
+> **Superseded (Inhalt)**: Massgeblicher Plan fuer neue Arbeit ist  
+> **`docs/initiatives/workspace-railway/`** (Google Workspace + Shared Drive, Domain/DNS Infomaniak, App auf Railway).  
+> Dieser Ordner bleibt als **historische Detail-Referenz** (alte Phasennummern, R2/Object-Storage-Entwuerfe).
+
+**Status**: abgeloest (Referenz)  
 **Start**: 2026-04  
-**Branch-Prefix**: `phase/NN-modules-<name>`
+**Branch-Prefix**: `phase/NN-modules-<name>` (historisch)
 
 ## Ziel
 
@@ -13,9 +17,9 @@ Erweiterung der Gourmen-PWA um neue Module (Mail, Files, Login-Verbesserungen, B
 | Entscheidung | Begründung |
 |---|---|
 | **App-Hosting bleibt Railway** | Null Operations-Aufwand, automatische Backups, Postgres + Redis eingebaut |
-| **Domain/DNS bei Infomaniak** | Bereits umgesetzt in Phase 0, zentrale Verwaltung für Verein und Mail-DNS |
-| **Files in Infomaniak Object Storage** | S3-kompatibel, passt zur gewählten Public-Cloud-Basis |
-| **Mail über Infomaniak Mail Service** | Eine zentrale Vereinsadresse (`kontakt@`/`info@`) für System- und Vereinskommunikation |
+| **Domain/DNS bei Infomaniak** | Bleibt; Details zu Mail siehe Initiative `workspace-railway` |
+| **Files** | **Pivot:** Google Shared Drive statt Infomaniak Object Storage – siehe `workspace-railway/PHASE_03_*` |
+| **Mail** | **Pivot:** Google Workspace statt Infomaniak Mail Service – siehe `workspace-railway/PHASE_01_*` / `PHASE_02_*` |
 | **TWINT via RaiseNow** | Schweizer Vereins-Acquirer, kein HR-Eintrag nötig, Buchhaltungs-Integration |
 | **WhatsApp via Meta Cloud API** | Einzige offizielle Option, kein Selbst-Host möglich |
 | **Login bleibt Eigenbau** | Flask-Login + 2FA bereits robust, nur Reset-Flows reparieren |
@@ -56,8 +60,9 @@ Erweiterung der Gourmen-PWA um neue Module (Mail, Files, Login-Verbesserungen, B
 | 5 | Kalender (iCal) | ~1 Tag | – |
 | 6 | TWINT/Payments | ~5 Tage | Phase 1, 4 |
 | 7 | WhatsApp | ~1 Woche Code + Meta-Wartezeit | Phase 1 |
+| 8 | Mail-Zustellbarkeit Prod (Follow-up) | ~0.5-1 Tag Diagnose + ggf. 0.5 Tag Fix | Phase 1, 2 |
 
-**Empfohlene Reihenfolge**: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7  
+**Empfohlene Reihenfolge**: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8  
 Phase 1 ist Schlüssel-Investition: schaltet Phasen 2, 4, 6, 7 mit Mail-Funktionalität frei.  
 Phase 3 (Files) ist Voraussetzung für Phase 4 (Belege in Buchhaltung).
 
@@ -79,12 +84,13 @@ Phase 3 (Files) ist Voraussetzung für Phase 4 (Belege in Buchhaltung).
 |---|---|---|---|---|
 | 0 | done | n/a (manuell) | 2026-04-27 | DNS/TLS (`www` + `app`), Mailbox und Object Storage auf Infomaniak eingerichtet |
 | 1 | done | phase/01-modules-mail | 2026-04-27 | SMTP-Mailservice (Infomaniak), Templates und erfolgreicher Admin-Smoke-Test |
-| 2 | in_progress | phase/02-modules-login | 2026-04-27 | Token-basierte Reset-/Onboarding-Flows implementiert; reale Mail-E2E-Validierung noch offen |
-| 3 | pending | – | – | – |
+| 2 | done | phase/02-modules-login | 2026-04-27 | Token-basierte Reset-/Onboarding-Flows implementiert; Prod-Mailzustellung als Follow-up in Phase 8 ausgelagert |
+| 3 | in_progress | phase/03-modules-files | 2026-04-27 | Fortsetzung laut Priorisierung; Mail-Prod-Problem wird separat nachgezogen |
 | 4 | pending | – | – | – |
 | 5 | pending | – | – | – |
 | 6 | pending | – | – | – |
 | 7 | pending | – | – | – |
+| 8 | pending | – | – | SMTP-Timeouts/fehlende Zustellung in Production dokumentiert; Diagnose/Fix nachgelagert |
 
 Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 

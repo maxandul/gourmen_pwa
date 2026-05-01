@@ -164,9 +164,61 @@
 }
 
 /* ============================================
-   DEFAULT THEME - Dark Mode (V2 Standard)
+   DEFAULT THEME - Light Mode (V2 Standard)
    ============================================ */
 :root {
+  /* Backgrounds - Subtle navy tint instead of pure white */
+  --color-bg-base: var(--brand-primary-50);     /* #f5f7f9 - Very light navy tint */
+  --color-bg-subtle: #ffffff;                    /* Pure white for subtle areas */
+  --color-bg-muted: var(--brand-primary-100);
+  --color-bg-elevated: #ffffff;                 /* Pure white for elevated surfaces */
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Surfaces */
+  --color-surface: #ffffff;                      /* Cards remain pure white */
+  --color-surface-secondary: var(--brand-primary-50);
+  --color-surface-tertiary: var(--brand-primary-100);
+  --color-surface-hover: var(--brand-primary-100);
+  --color-surface-elevated: #ffffff;
+  --color-surface-overlay: var(--brand-primary-100);
+  
+  /* Borders */
+  --color-border-subtle: var(--brand-primary-200);
+  --color-border-default: var(--brand-primary-300);
+  --color-border-strong: var(--brand-primary-400);
+  
+  /* Text */
+  --color-text-primary: var(--logo-navy-dark);
+  --color-text-secondary: var(--brand-primary-600);
+  --color-text-tertiary: var(--brand-primary-500);
+  --color-text-disabled: var(--brand-primary-400);
+  --color-text-inverse: #ffffff;
+  --color-text-link: var(--logo-orange);
+  --color-text-link-hover: var(--brand-accent-600);
+  
+  /* Interactive */
+  --color-interactive-primary: var(--logo-orange);
+  --color-interactive-primary-hover: var(--brand-accent-600);
+  --color-interactive-primary-active: var(--brand-accent-700);
+  --color-interactive-primary-subtle: rgba(220, 105, 60, 0.1);
+  
+  /* Status */
+  --color-success: var(--status-success-light);
+  --color-warning: var(--status-warning-light);
+  --color-error: var(--status-error-light);
+  --color-info: var(--status-info-light);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   DARK THEME - Semantic Tokens
+   ============================================ */
+[data-theme="dark"] {
   /* Backgrounds - Matter/Less glossy with more Navy tone */
   --color-bg-base: var(--brand-primary-950);
   --color-bg-subtle: var(--logo-navy-dark);
@@ -201,104 +253,6 @@
   --color-interactive-primary-hover: var(--brand-accent-400);
   --color-interactive-primary-active: var(--brand-accent-600);
   --color-interactive-primary-subtle: rgba(220, 105, 60, 0.1);
-  
-  /* Status */
-  --color-success: var(--status-success-dark);
-  --color-warning: var(--status-warning-dark);
-  --color-error: var(--status-error-dark);
-  --color-info: var(--status-info-dark);
-  
-  /* Shadows - Softer with Navy tone for matte appearance */
-  --shadow-sm: 0 1px 2px rgba(6, 10, 13, 0.3);
-  --shadow-md: 0 4px 6px rgba(6, 10, 13, 0.4);
-  --shadow-lg: 0 10px 15px rgba(6, 10, 13, 0.5);
-  --shadow-xl: 0 20px 25px rgba(6, 10, 13, 0.6);
-}
-
-/* ============================================
-   LIGHT THEME - Semantic Tokens
-   ============================================ */
-[data-theme="light"] {
-  /* Backgrounds - Subtle navy tint instead of pure white */
-  --color-bg-base: var(--brand-primary-50);     /* #f5f7f9 - Very light navy tint */
-  --color-bg-subtle: #ffffff;                    /* Pure white for subtle areas */
-  --color-bg-muted: var(--brand-primary-100);
-  --color-bg-elevated: #ffffff;                 /* Pure white for elevated surfaces */
-  --color-bg-overlay: rgba(0, 0, 0, 0.5);
-  
-  /* Surfaces */
-  --color-surface: #ffffff;                      /* Cards remain pure white */
-  --color-surface-secondary: var(--brand-primary-50);
-  --color-surface-tertiary: var(--brand-primary-100);
-  --color-surface-hover: var(--brand-primary-100);
-  
-  /* Borders */
-  --color-border-subtle: var(--brand-primary-200);
-  --color-border-default: var(--brand-primary-300);
-  --color-border-strong: var(--brand-primary-400);
-  
-  /* Text */
-  --color-text-primary: var(--logo-navy-dark);
-  --color-text-secondary: var(--brand-primary-600);
-  --color-text-tertiary: var(--brand-primary-500);
-  --color-text-disabled: var(--brand-primary-400);
-  --color-text-inverse: #ffffff;
-  --color-text-link: var(--logo-orange);
-  --color-text-link-hover: var(--brand-accent-600);
-  
-  /* Interactive */
-  --color-interactive-primary: var(--logo-orange);
-  --color-interactive-primary-hover: var(--brand-accent-600);
-  --color-interactive-primary-active: var(--brand-accent-700);
-  
-  /* Status */
-  --color-success: var(--status-success-light);
-  --color-warning: var(--status-warning-light);
-  --color-error: var(--status-error-light);
-  --color-info: var(--status-info-light);
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* ============================================
-   DARK THEME - Semantic Tokens
-   ============================================ */
-[data-theme="dark"] {
-  /* Backgrounds - Matter/Less glossy with more Navy tone */
-  --color-bg-base: var(--brand-primary-950);
-  --color-bg-subtle: var(--logo-navy-dark);
-  --color-bg-muted: var(--brand-primary-800);
-  --color-bg-elevated: var(--logo-navy-medium);
-  --color-bg-overlay: rgba(27, 35, 46, 0.85);
-  
-  /* Surfaces */
-  --color-surface: var(--logo-navy-dark);
-  --color-surface-secondary: var(--logo-navy-medium);
-  --color-surface-tertiary: var(--brand-primary-600);
-  --color-surface-hover: var(--brand-primary-600);
-  
-  /* Borders */
-  --color-border-subtle: var(--brand-primary-700);
-  --color-border-default: var(--brand-primary-600);
-  --color-border-strong: var(--brand-primary-500);
-  
-  /* Text */
-  --color-text-primary: var(--brand-primary-50);
-  --color-text-secondary: var(--brand-primary-300);
-  --color-text-tertiary: var(--brand-primary-400);
-  --color-text-disabled: var(--brand-primary-600);
-  --color-text-inverse: var(--logo-navy-dark);
-  --color-text-link: var(--brand-accent-400);
-  --color-text-link-hover: var(--brand-accent-300);
-  
-  /* Interactive */
-  --color-interactive-primary: var(--logo-orange);
-  --color-interactive-primary-hover: var(--brand-accent-400);
-  --color-interactive-primary-active: var(--brand-accent-600);
   
   /* Status */
   --color-success: var(--status-success-dark);

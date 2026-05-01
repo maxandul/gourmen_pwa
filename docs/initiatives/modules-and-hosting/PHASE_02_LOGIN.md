@@ -1,12 +1,14 @@
 # Phase 2 – Login-Verbesserungen
 
-**Status**: in_progress  
+**Status**: done  
 **Aufwand**: ~2 Tage (1 Tag Code, 0.5 Tag Tests, 0.5 Tag Polish)  
 **Branch**: `phase/02-modules-login`
 
 ## Ziel
 
 Echtes Passwort-Reset und 2FA-Reset auf Basis von Mail aus Phase 1. Onboarding-Mail beim Account-Anlegen. Token werden in der DB statt Flask-Session gespeichert (geräte-übergreifend nutzbar).
+
+> Hinweis: Offene Produktions-Themen zur SMTP-Zustellbarkeit wurden bewusst in `PHASE_08_MAIL_PROD_FOLLOWUP.md` ausgelagert, damit Phase 3 parallel fortgesetzt werden kann.
 
 ## Pre-Conditions
 

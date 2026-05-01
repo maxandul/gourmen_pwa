@@ -17,6 +17,9 @@ Diese drei stabilen Anchor-Docs sind Pflicht-Lektüre, je nach Aufgabe:
 
 Bei aktiver Initiative zusätzlich deren `docs/initiatives/<name>/README.md` und das relevante `PHASE_NN_*.md`.
 
+**Aktuelle Initiative (Stand):** `docs/initiatives/workspace-railway/` (Google Workspace + Shared Drive; Domain/DNS Infomaniak).  
+Der Ordner `docs/initiatives/modules-and-hosting/` ist nur noch **historische Referenz**.
+
 ## Cursor-Rules
 
 - `.cursor/rules/ui.mdc` – Pflicht-UI-Regeln (BEM, Tokens, Cache-Buster). Greift bei `templates/`, `static/css/`, `static/js/`.
@@ -28,6 +31,36 @@ Bei aktiver Initiative zusätzlich deren `docs/initiatives/<name>/README.md` und
 - `docs/*` – Doku-Restrukturierung
 - `phase/NN-<initiative>-<name>` – einzelne Phasen einer Initiative
 - `redesign` – historischer Branch (Initiative abgeschlossen)
+
+## GitHub- und Railway-CLI
+
+Dieses Repo wird aktiv mit **GitHub CLI (`gh`)** und **Railway CLI (`railway`)** betrieben. Agenten sollen diese Tools gezielt nutzen statt Workarounds.
+
+### GitHub CLI (`gh`)
+
+- PR-Workflow bevorzugen: Feature-Branch → `gh pr create` → `gh pr merge`
+- Merge auf `master` triggert Deploy auf Railway
+- Nach Merge prüfen, ob der erwartete Commit wirklich in Production angekommen ist
+- Keine geheimen Werte (Tokens, Passwoerter, Keys) in PR-Text, Commit-Message oder Issue-Kommentaren posten
+
+### Railway CLI (`railway`)
+
+- Fuer produktive Checks und DB-Arbeiten immer explizit Projekt/Environment/Service angeben (nicht auf lokales Linking verlassen)
+  - `--project <id>`
+  - `--environment <id>`
+  - `--service <id|name>`
+- Typische Befehle:
+  - Deploy-Status: `railway status --json`
+  - Variablen lesen/setzen: `railway variables ...`
+  - Remote-Kommandos im Web-Service: `railway ssh ... "/opt/venv/bin/flask db upgrade"`
+  - Logs: `railway logs ...`
+- Nach produktiven Migrationen immer verifizieren (`flask db current`)
+- Bei Mail-/Netzwerkproblemen in Railway immer Egress/Timeout als Ursache mitpruefen (nicht nur App-Code)
+
+### Safety
+
+- Niemals Secrets aus Railway (`railway variables --json`) in Doku, Commits oder Chat-Ausgaben uebernehmen
+- Keine destruktiven DB-Operationen in Production ohne klare User-Freigabe
 
 ## Doc-Pflege ist Teil jeder Änderung
 

@@ -44,7 +44,8 @@ docs/initiatives/<slug>/
 
 | Slug | Status | Beschreibung | Start | Ende |
 |---|---|---|---|---|
-| `modules-and-hosting` | aktiv | Module-Erweiterung (Mail, Files, Buchhaltung, TWINT, ...) auf Railway | 2026-04 | – |
+| `workspace-railway` | aktiv | Google Workspace (Mail + Shared Drive) + Railway-PWA; Domain/DNS Infomaniak; neue Phasen ab 0 | 2026-05 | – |
+| `modules-and-hosting` | Referenz / abgeloest | Historischer Phasenplan und Detail-Docs; nicht mehr massgeblich fuer neue Arbeit | 2026-04 | 2026-05 |
 
 ## Archiv
 
