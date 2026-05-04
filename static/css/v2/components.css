@@ -4739,3 +4739,134 @@ a.card--dash-tile__hit {
     min-width: min(100%, 12rem);
   }
 }
+
+/* ============================================
+   Dashboard Trip-Hero
+   ============================================
+   Zeitlich begrenzte Hero-Card auf dem Dashboard fuer Sondereinsaetze
+   (aktuell: Hamburg-2026-Jubilaeumsreise).
+   Visuell unterscheidbar von .dashboard-intent (Routine-TODOs) durch
+   Brand-Gradient, groesseres Logo und Countdown-Pille. Nach Cutoff
+   verschwindet die Section serverseitig wieder.
+   ============================================ */
+.dashboard-trip-hero {
+  margin: 0 0 var(--space-3);
+}
+
+.dashboard-trip-hero__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--card-radius);
+  border: 1px solid color-mix(in srgb, var(--logo-orange) 60%, var(--card-border));
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--logo-orange) 10%, var(--card-bg)) 0%,
+      var(--card-bg) 60%,
+      color-mix(in srgb, var(--logo-teal) 8%, var(--card-bg)) 100%);
+  box-shadow: var(--card-shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.dashboard-trip-hero__link:hover {
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.dashboard-trip-hero__link:focus-visible {
+  outline: 2px solid var(--color-interactive-primary);
+  outline-offset: 2px;
+}
+
+.dashboard-trip-hero__logo {
+  flex-shrink: 0;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--logo-navy-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-trip-hero__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dashboard-trip-hero__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dashboard-trip-hero__eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-interactive-primary);
+}
+
+.dashboard-trip-hero__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: 1.25;
+}
+
+.dashboard-trip-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.dashboard-trip-hero__countdown {
+  font-weight: var(--font-semibold);
+  color: var(--logo-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-trip-hero__dot {
+  color: var(--color-text-tertiary);
+}
+
+.dashboard-trip-hero__cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-interactive-primary);
+}
+
+.dashboard-trip-hero__chev {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--transition-fast);
+}
+
+.dashboard-trip-hero__link:hover .dashboard-trip-hero__chev {
+  transform: translateX(2px);
+}
+
+@media (max-width: 480px) {
+  .dashboard-trip-hero__cta-label {
+    display: none;
+  }
+  .dashboard-trip-hero__cta .icon {
+    color: var(--color-text-tertiary);
+  }
+}

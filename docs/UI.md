@@ -233,6 +233,7 @@ Verhalten:
 |---|---|
 | `.dashboard-intent` | Container mit `__heading`, `__grid` |
 | `.dashboard-intent-tile` | Kachel mit `__icon`, `__body`, `__title`, `__meta`, `__chev`, `--static` |
+| `.dashboard-trip-hero` | Hero-Card fuer zeitlich begrenzte Sondereinsaetze (z.B. Vereinsreisen). Markup: `__link`, `__logo`, `__body`, `__eyebrow`, `__title`, `__meta`, `__countdown`, `__dot`, `__cta`, `__cta-label`, `__chev`. **Server-side abgeschaltet** nach Cutoff – nicht via CSS verstecken. |
 
 #### Events / Ratings
 

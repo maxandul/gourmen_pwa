@@ -5,6 +5,7 @@ from backend.models.participation import Participation
 from backend.models.merch_order import MerchOrder, OrderStatus
 from backend.services.ggl_rules import GGLService
 from backend.services.retro_cleanup import RetroCleanupService
+from backend.routes.events import hamburg2026_is_visible
 from datetime import datetime, timedelta
 
 bp = Blueprint('dashboard', __name__)
@@ -95,6 +96,7 @@ def index():
         restaurant_due_event=restaurant_due_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
+        hamburg2026_visible=hamburg2026_is_visible(),
     )
 
  

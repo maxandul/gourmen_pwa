@@ -3,7 +3,7 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.0.0';
+const PWA_VERSION = '3.4.1';
 
 class PWA {
     constructor() {

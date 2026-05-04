@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session, abort
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import DateField, SelectField, StringField, SubmitField, IntegerField
@@ -23,6 +23,16 @@ from backend.forms.rating import EventRatingForm
 bp = Blueprint('events', __name__)
 
 CLEANUP_RSVP_UNDO_SESSION_KEY = 'cleanup_rsvp_undo'
+
+# Hamburg-Jubilaeumsreise (5 Jahre Verein, 29.-31.05.2026):
+# Dashboard-Hero und Reise-Tool sind sichtbar bis zur Heimreise + Buffer.
+# Nach diesem Zeitpunkt verschwindet der Eintrag automatisch und das Tool
+# liefert 404, bis es entweder gepflegt oder entfernt wird.
+HAMBURG2026_VISIBLE_UNTIL = datetime(2026, 6, 1, 6, 0)
+
+
+def hamburg2026_is_visible(now: datetime | None = None) -> bool:
+    return (now or datetime.now()) < HAMBURG2026_VISIBLE_UNTIL
 
 
 def _archive_search_like_needle(term: str) -> str:
@@ -382,6 +392,23 @@ def create_year_planning():
 def archive():
     """Redirect to archive tab"""
     return redirect(url_for('events.index', tab='archiv', **request.args))
+
+
+# ============================================================
+# Hamburg 2026 Jubilaeumsreise (zeitlich begrenzt, siehe HAMBURG2026_VISIBLE_UNTIL)
+# ============================================================
+
+@bp.route('/hamburg2026')
+@login_required
+def hamburg2026():
+    """Standalone Reise-Tool fuer das Jubilaeumswochenende Hamburg 29.-31.05.2026.
+
+    Single-File-Template, das ohne base.html-Wrapper rendert (eigener Theme-Toggle
+    und eigenes Layout). Sichtbar bis HAMBURG2026_VISIBLE_UNTIL, danach 404.
+    """
+    if not hamburg2026_is_visible():
+        abort(404)
+    return render_template('events/hamburg2026.html')
 
 @bp.route('/cleanup')
 @login_required

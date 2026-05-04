@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Hamburg 2026 – 5 Jahre. 11 Gourmen. 1 Stadt. Programm, Locations, Checkliste, Kontakte.">
+  <title>Hamburg 2026</title>
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+        integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <script>
+    // Theme vor erstem Paint setzen, sonst FOUC. Synchron im Head, Pflicht.
+    (function () {
+      try {
+        var stored = localStorage.getItem('hamburg2026:theme');
+        var prefers = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', stored || prefers);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <style>
+    /* =========================================================================
+       Tokens 1:1 aus gourmen_pwa (static/css/v2/tokens.css)
+       Beim PWA-Einbau muss hier nichts angepasst werden.
+       ========================================================================= */
+    :root {
+      /* Logo-Farben (Foundation) */
+      --logo-navy-dark: #1b232e;
+      --logo-navy-medium: #354e5e;
+      --logo-orange: #dc693c;
+      --logo-teal: #73c8a8;
+
+      /* Brand Primary (Navy) */
+      --brand-primary-50:  #f5f7f9;
+      --brand-primary-100: #e8ecf0;
+      --brand-primary-200: #d1d9e1;
+      --brand-primary-300: #b4c0cd;
+      --brand-primary-400: #8a9db1;
+      --brand-primary-500: #667a91;
+      --brand-primary-600: #4f6477;
+      --brand-primary-700: #354e5e;
+      --brand-primary-800: #1b232e;
+      --brand-primary-900: #0f151a;
+      --brand-primary-950: #060a0d;
+
+      /* Brand Accent (Orange) */
+      --brand-accent-300: #fbab84;
+      --brand-accent-400: #f88958;
+      --brand-accent-500: #dc693c;
+      --brand-accent-600: #c35428;
+      --brand-accent-700: #a3421f;
+
+      /* Brand Secondary (Teal) */
+      --brand-secondary-300: #73c8a8;
+      --brand-secondary-400: #4db896;
+      --brand-secondary-500: #2fa885;
+
+      /* Brand Warm (Red, sparsam) */
+      --brand-warm-500: #ef4444;
+      --brand-warm-600: #dc2626;
+
+      /* Spacing (8px-Basis) */
+      --space-1:  0.25rem;
+      --space-2:  0.5rem;
+      --space-3:  0.75rem;
+      --space-4:  1rem;
+      --space-5:  1.5rem;
+      --space-6:  2rem;
+      --space-8:  3rem;
+      --space-10: 4rem;
+
+      /* Typography */
+      --text-xs:   0.75rem;
+      --text-sm:   0.875rem;
+      --text-base: 1rem;
+      --text-lg:   1.125rem;
+      --text-xl:   1.25rem;
+      --text-2xl:  1.5rem;
+      --text-3xl:  1.875rem;
+      --text-4xl:  2.25rem;
+      --font-normal:   400;
+      --font-medium:   500;
+      --font-semibold: 600;
+      --font-bold:     700;
+
+      /* Radius */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-full: 9999px;
+
+      /* Transitions */
+      --transition-fast:   150ms ease;
+      --transition-normal: 200ms ease;
+      --transition-slow:   300ms ease;
+
+      /* Z-Index */
+      --z-base:    0;
+      --z-sticky:  200;
+      --z-modal:   500;
+
+      /* Light-Theme semantische Tokens (Default) */
+      --color-bg-base:       var(--brand-primary-50);
+      --color-bg-subtle:     #ffffff;
+      --color-bg-muted:      var(--brand-primary-100);
+      --color-bg-elevated:   #ffffff;
+
+      --color-surface:           #ffffff;
+      --color-surface-secondary: var(--brand-primary-50);
+      --color-surface-hover:     var(--brand-primary-100);
+
+      --color-border-subtle:  var(--brand-primary-200);
+      --color-border-default: var(--brand-primary-300);
+      --color-border-strong:  var(--brand-primary-400);
+
+      --color-text-primary:    var(--logo-navy-dark);
+      --color-text-secondary:  var(--brand-primary-600);
+      --color-text-tertiary:   var(--brand-primary-500);
+      --color-text-disabled:   var(--brand-primary-400);
+      --color-text-inverse:    #ffffff;
+      --color-text-link:       var(--logo-orange);
+      --color-text-link-hover: var(--brand-accent-600);
+
+      --color-interactive-primary:        var(--logo-orange);
+      --color-interactive-primary-hover:  var(--brand-accent-600);
+      --color-interactive-primary-active: var(--brand-accent-700);
+
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-error:   #ef4444;
+      --color-info:    #3b82f6;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] {
+      --color-bg-base:       var(--brand-primary-950);
+      --color-bg-subtle:     var(--logo-navy-dark);
+      --color-bg-muted:      var(--brand-primary-800);
+      --color-bg-elevated:   var(--logo-navy-medium);
+
+      --color-surface:           var(--logo-navy-dark);
+      --color-surface-secondary: var(--logo-navy-medium);
+      --color-surface-hover:     var(--brand-primary-600);
+
+      --color-border-subtle:  var(--brand-primary-700);
+      --color-border-default: var(--brand-primary-600);
+      --color-border-strong:  var(--brand-primary-500);
+
+      --color-text-primary:    var(--brand-primary-50);
+      --color-text-secondary:  var(--brand-primary-300);
+      --color-text-tertiary:   var(--brand-primary-400);
+      --color-text-disabled:   var(--brand-primary-600);
+      --color-text-inverse:    var(--logo-navy-dark);
+      --color-text-link:       var(--brand-accent-400);
+      --color-text-link-hover: var(--brand-accent-300);
+
+      --color-interactive-primary:        var(--logo-orange);
+      --color-interactive-primary-hover:  var(--brand-accent-400);
+      --color-interactive-primary-active: var(--brand-accent-600);
+
+      --color-success: #34d399;
+      --color-warning: #fbbf24;
+      --color-error:   #f87171;
+      --color-info:    #60a5fa;
+
+      --shadow-sm: 0 1px 2px rgba(6, 10, 13, 0.3);
+      --shadow-md: 0 4px 6px rgba(6, 10, 13, 0.4);
+      --shadow-lg: 0 10px 15px rgba(6, 10, 13, 0.5);
+    }
+
+    /* =========================================================================
+       Reset / Globals
+       ========================================================================= */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                   'Helvetica Neue', Arial, sans-serif;
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--color-text-primary);
+      background: var(--color-bg-base);
+      -webkit-font-smoothing: antialiased;
+      transition: background var(--transition-normal), color var(--transition-normal);
+    }
+    h1, h2, h3, h4 { margin: 0 0 var(--space-3); line-height: 1.25; color: var(--color-text-primary); }
+    p { margin: 0 0 var(--space-3); }
+    a { color: var(--color-text-link); text-decoration: none; transition: color var(--transition-fast); }
+    a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
+    a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--logo-orange);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
+    img, svg { max-width: 100%; display: block; }
+    button { font: inherit; cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+
+    /* =========================================================================
+       Layout Container
+       ========================================================================= */
+    .hamburg-app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
+    @media (min-width: 768px) {
+      .hamburg-app { padding: var(--space-6); }
+    }
+
+    /* =========================================================================
+       Hero
+       ========================================================================= */
+    .hamburg-hero {
+      text-align: center;
+      padding: var(--space-6) var(--space-3) var(--space-5);
+    }
+    .hamburg-hero__title {
+      font-size: var(--text-3xl);
+      font-weight: var(--font-bold);
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-2);
+    }
+    .hamburg-hero__subtitle {
+      color: var(--color-text-secondary);
+      font-size: var(--text-base);
+      margin-bottom: var(--space-5);
+    }
+    .hamburg-hero__countdown {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+    .hamburg-hero__countdown-label {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+    }
+    .hamburg-hero__countdown-value {
+      font-size: var(--text-3xl);
+      font-weight: var(--font-bold);
+      color: var(--logo-orange);
+      font-variant-numeric: tabular-nums;
+    }
+    .hamburg-hero__pills {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+    }
+    .hamburg-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-2) var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      color: var(--color-text-primary);
+    }
+    .hamburg-hero__hints {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      max-width: 480px;
+      margin: 0 auto;
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .hamburg-hero__hint { display: flex; gap: var(--space-2); align-items: center; justify-content: center; }
+
+    /* Theme-Toggle */
+    .hamburg-theme-toggle {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border-subtle);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition-fast);
+    }
+    .hamburg-theme-toggle:hover { background: var(--color-surface-hover); }
+    .hamburg-theme-toggle__icon { width: 20px; height: 20px; }
+    [data-theme="light"] .hamburg-theme-toggle__icon--moon { display: none; }
+    [data-theme="dark"]  .hamburg-theme-toggle__icon--sun  { display: none; }
+
+    /* Back-to-App-Link (verlaesst das Reise-Tool und geht zurueck ins PWA-Dashboard) */
+    .hamburg-back {
+      position: absolute;
+      top: var(--space-4);
+      left: var(--space-4);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      min-height: 44px;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border-subtle);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      text-decoration: none;
+      transition: background var(--transition-fast);
+    }
+    .hamburg-back:hover { background: var(--color-surface-hover); text-decoration: none; }
+    .hamburg-back__icon { width: 18px; height: 18px; }
+
+    /* =========================================================================
+       Section
+       ========================================================================= */
+    .hamburg-section {
+      margin-bottom: var(--space-8);
+    }
+    .hamburg-section__title {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-bold);
+      margin-bottom: var(--space-4);
+      padding-left: var(--space-2);
+      border-left: 4px solid var(--logo-orange);
+    }
+    .hamburg-section--collapsible > summary {
+      list-style: none;
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: stretch;
+      border-radius: var(--radius-md);
+      transition: background var(--transition-fast);
+    }
+    .hamburg-section--collapsible > summary:hover { background: var(--color-surface-hover); }
+    .hamburg-section--collapsible > summary::-webkit-details-marker { display: none; }
+    .hamburg-section--collapsible > summary > .hamburg-section__title {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0;
+    }
+    .hamburg-section--collapsible > summary > .hamburg-section__title::after {
+      content: '▾';
+      margin-left: auto;
+      padding-right: var(--space-3);
+      font-size: var(--text-xl);
+      color: var(--logo-orange);
+      transition: transform var(--transition-fast);
+    }
+    .hamburg-section--collapsible[open] > summary > .hamburg-section__title::after {
+      transform: rotate(180deg);
+    }
+    .hamburg-section--collapsible[open] > summary { margin-bottom: var(--space-4); }
+
+    /* =========================================================================
+       Tabs (Programm Tag-für-Tag)
+       ========================================================================= */
+    .hamburg-tabs__nav {
+      display: flex;
+      gap: var(--space-1);
+      background: var(--color-surface);
+      padding: var(--space-1);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+      margin-bottom: var(--space-4);
+      position: sticky;
+      top: var(--space-2);
+      z-index: var(--z-sticky);
+      box-shadow: var(--shadow-sm);
+    }
+    .hamburg-tabs__tab {
+      flex: 1;
+      padding: var(--space-3) var(--space-2);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: var(--font-semibold);
+      font-size: var(--text-base);
+      color: var(--color-text-secondary);
+      transition: background var(--transition-fast), color var(--transition-fast);
+      min-height: 44px;
+    }
+    .hamburg-tabs__tab:hover { background: var(--color-surface-hover); color: var(--color-text-primary); }
+    .hamburg-tabs__tab--active {
+      background: var(--logo-orange);
+      color: var(--color-text-inverse);
+    }
+    .hamburg-tabs__tab--active:hover { background: var(--brand-accent-600); color: var(--color-text-inverse); }
+    .hamburg-tabs__panel { display: none; }
+    .hamburg-tabs__panel--active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================================================
+       Timeline
+       ========================================================================= */
+    .hamburg-timeline { display: flex; flex-direction: column; gap: var(--space-3); }
+    .hamburg-timeline-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .hamburg-timeline-item--critical {
+      border-left: 4px solid var(--logo-orange);
+      background: var(--color-bg-elevated);
+    }
+    .hamburg-timeline-item__time {
+      font-size: var(--text-lg);
+      font-weight: var(--font-bold);
+      color: var(--logo-orange);
+      font-variant-numeric: tabular-nums;
+    }
+    .hamburg-timeline-item__time-secondary {
+      display: block;
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-normal);
+    }
+    .hamburg-timeline-item__content { min-width: 0; }
+    .hamburg-timeline-item__title {
+      font-size: var(--text-base);
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-1);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .hamburg-timeline-item__icon { font-size: var(--text-xl); }
+    .hamburg-timeline-item__details {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin: var(--space-1) 0 0;
+    }
+    .hamburg-timeline-item__address {
+      font-size: var(--text-sm);
+      color: var(--color-text-link);
+      margin-top: var(--space-2);
+      display: inline-block;
+    }
+    .hamburg-timeline-item__note {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-2);
+      font-style: italic;
+    }
+    .hamburg-timeline-item__inline-link {
+      color: var(--color-text-link);
+      font-weight: var(--font-medium);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .hamburg-timeline-item__inline-link:hover { color: var(--color-text-link-hover); }
+    .hamburg-timeline-item__actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: var(--space-2);
+    }
+    .hamburg-timeline-item__website {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-bg-muted);
+      color: var(--color-text-link);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      text-decoration: none;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+    .hamburg-timeline-item__website:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text-link-hover);
+      text-decoration: none;
+    }
+
+    /* =========================================================================
+       Disclosure (Inspirations-Pool)
+       ========================================================================= */
+    .hamburg-disclosure {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-top: var(--space-4);
+    }
+    .hamburg-disclosure[open] { box-shadow: var(--shadow-sm); }
+    .hamburg-disclosure__summary {
+      cursor: pointer;
+      font-weight: var(--font-semibold);
+      padding: var(--space-1) 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      list-style: none;
+    }
+    .hamburg-disclosure__summary::-webkit-details-marker { display: none; }
+    .hamburg-disclosure__summary::before {
+      content: '▸';
+      transition: transform var(--transition-fast);
+      color: var(--logo-orange);
+    }
+    .hamburg-disclosure[open] .hamburg-disclosure__summary::before { transform: rotate(90deg); }
+    .hamburg-disclosure__body { padding-top: var(--space-3); }
+    .hamburg-disclosure__intro {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-3);
+    }
+    .hamburg-inspiration {
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .hamburg-inspiration:last-child { border-bottom: none; }
+    .hamburg-inspiration__title {
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-1);
+      font-size: var(--text-base);
+    }
+    .hamburg-inspiration__body {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    /* =========================================================================
+       Map
+       ========================================================================= */
+    #hamburg-map {
+      width: 100%;
+      height: 320px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+      margin-bottom: var(--space-4);
+      z-index: var(--z-base);
+    }
+    .hamburg-map__attribution {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      margin-bottom: var(--space-4);
+      text-align: right;
+    }
+    .hamburg-pin-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .hamburg-pin-list__item {
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .hamburg-pin-list__icon { font-size: var(--text-xl); flex-shrink: 0; }
+    .hamburg-pin-list__content { flex: 1; min-width: 0; }
+    .hamburg-pin-list__name { font-weight: var(--font-semibold); margin-bottom: 2px; }
+    .hamburg-pin-list__address { font-size: var(--text-sm); color: var(--color-text-secondary); }
+    .hamburg-pin-list__website {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      margin-top: var(--space-1);
+      padding: 2px var(--space-2);
+      background: var(--color-bg-muted);
+      color: var(--color-text-link);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      text-decoration: none;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+    .hamburg-pin-list__website:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text-link-hover);
+      text-decoration: none;
+    }
+
+    /* =========================================================================
+       Checklist
+       ========================================================================= */
+    .hamburg-checklist__group {
+      margin-bottom: var(--space-5);
+    }
+    .hamburg-checklist__group-title {
+      font-size: var(--text-lg);
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-3);
+      color: var(--color-text-primary);
+    }
+    .hamburg-checklist__item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .hamburg-checklist__item:hover { background: var(--color-surface-hover); }
+    .hamburg-checklist__checkbox {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      accent-color: var(--logo-orange);
+    }
+    .hamburg-checklist__label {
+      flex: 1;
+      font-size: var(--text-base);
+      color: var(--color-text-primary);
+    }
+    .hamburg-checklist__item--checked .hamburg-checklist__label {
+      text-decoration: line-through;
+      color: var(--color-text-tertiary);
+    }
+    .hamburg-checklist__reset {
+      margin-top: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      background: transparent;
+      border: 1px solid var(--color-border-default);
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      transition: all var(--transition-fast);
+    }
+    .hamburg-checklist__reset:hover {
+      background: var(--color-surface-hover);
+      border-color: var(--color-border-strong);
+    }
+
+    /* =========================================================================
+       Contacts
+       ========================================================================= */
+    .hamburg-contacts__group { margin-bottom: var(--space-5); }
+    .hamburg-contacts__group-title {
+      font-size: var(--text-lg);
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .hamburg-contacts__list { list-style: none; padding: 0; margin: 0; }
+    .hamburg-contacts__item {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+      gap: var(--space-1);
+    }
+    .hamburg-contacts__name {
+      font-weight: var(--font-semibold);
+      color: var(--color-text-primary);
+      font-size: var(--text-base);
+    }
+    .hamburg-contacts__role {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .hamburg-contacts__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+    .hamburg-contacts__link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-bg-muted);
+      color: var(--color-text-link);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      text-decoration: none;
+      transition: background var(--transition-fast);
+    }
+    .hamburg-contacts__link:hover { background: var(--color-surface-hover); text-decoration: none; }
+    .hamburg-contacts__emergency {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: var(--space-2);
+    }
+    .hamburg-contacts__emergency-item {
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .hamburg-contacts__emergency-number {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-bold);
+      color: var(--brand-warm-500);
+      font-variant-numeric: tabular-nums;
+    }
+    .hamburg-contacts__emergency-label {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* =========================================================================
+       Hausregeln
+       ========================================================================= */
+    .hamburg-rules {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-left: 4px solid var(--logo-teal);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+    .hamburg-rules__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .hamburg-rules__item {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+    .hamburg-rules__icon { font-size: var(--text-xl); flex-shrink: 0; }
+    .hamburg-rules__text { font-size: var(--text-sm); color: var(--color-text-primary); }
+    .hamburg-rules__text strong { color: var(--logo-orange); }
+
+    /* =========================================================================
+       Footer
+       ========================================================================= */
+    .hamburg-footer {
+      text-align: center;
+      padding: var(--space-6) 0 var(--space-4);
+      color: var(--color-text-tertiary);
+      font-size: var(--text-sm);
+      border-top: 1px solid var(--color-border-subtle);
+      margin-top: var(--space-8);
+    }
+  </style>
+</head>
+<body>
+
+  <a class="hamburg-back" href="{{ url_for('dashboard.index') }}" aria-label="Zurueck zum Dashboard">
+    <svg class="hamburg-back__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m15 18-6-6 6-6"/>
+    </svg>
+    <span>App</span>
+  </a>
+
+  <button class="hamburg-theme-toggle" id="hamburg-theme-toggle" aria-label="Theme wechseln" type="button">
+    <svg class="hamburg-theme-toggle__icon hamburg-theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+    </svg>
+    <svg class="hamburg-theme-toggle__icon hamburg-theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <main class="hamburg-app">
+
+    <!-- ================================================================
+         Hero
+         ================================================================ -->
+    <header class="hamburg-hero">
+      <h1 class="hamburg-hero__title">Hamburg 2026</h1>
+      <p class="hamburg-hero__subtitle">5 Jahre. 11 Gourmen. 1 Stadt.</p>
+
+      <div class="hamburg-hero__countdown">
+        <div class="hamburg-hero__countdown-label">Noch bis Abflug Zürich</div>
+        <div class="hamburg-hero__countdown-value" id="hamburg-countdown" aria-live="polite">…</div>
+      </div>
+
+      <div class="hamburg-hero__pills">
+        <span class="hamburg-pill">📅&nbsp;29.–31. Mai 2026</span>
+        <span class="hamburg-pill">✈️&nbsp;ZRH ↔ HAM</span>
+        <span class="hamburg-pill">🏨&nbsp;Cityhotel Monopol</span>
+      </div>
+
+      <div class="hamburg-hero__hints">
+        <span class="hamburg-hero__hint">🎒&nbsp;Nur Handgepäck</span>
+        <span class="hamburg-hero__hint">⏰&nbsp;Treffpunkt 06:30&nbsp;Uhr Flughafen Zürich · Swiss-Schalter</span>
+      </div>
+    </header>
+
+    <!-- ================================================================
+         Programm Tag-für-Tag
+         ================================================================ -->
+    <section class="hamburg-section" aria-labelledby="programm-title">
+      <h2 class="hamburg-section__title" id="programm-title">Programm</h2>
+
+      <div class="hamburg-tabs">
+        <div class="hamburg-tabs__nav" role="tablist" aria-label="Programm Tag-für-Tag">
+          <button class="hamburg-tabs__tab hamburg-tabs__tab--active" role="tab" aria-selected="true"
+                  aria-controls="panel-fr" id="tab-fr" data-tab="fr" type="button">Fr 29.05.</button>
+          <button class="hamburg-tabs__tab" role="tab" aria-selected="false"
+                  aria-controls="panel-sa" id="tab-sa" data-tab="sa" type="button">Sa 30.05.</button>
+          <button class="hamburg-tabs__tab" role="tab" aria-selected="false"
+                  aria-controls="panel-so" id="tab-so" data-tab="so" type="button">So 31.05.</button>
+        </div>
+
+        <!-- Panels werden via JS gefüllt aus dem PROGRAMM-Datenobjekt -->
+        <div class="hamburg-tabs__panel hamburg-tabs__panel--active" role="tabpanel"
+             id="panel-fr" aria-labelledby="tab-fr"></div>
+        <div class="hamburg-tabs__panel" role="tabpanel" id="panel-sa" aria-labelledby="tab-sa"></div>
+        <div class="hamburg-tabs__panel" role="tabpanel" id="panel-so" aria-labelledby="tab-so"></div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         Locations + Karte
+         ================================================================ -->
+    <details class="hamburg-section hamburg-section--collapsible">
+      <summary><h2 class="hamburg-section__title">Locations</h2></summary>
+      <div id="hamburg-map" role="application" aria-label="Karte aller Programm-Locations"></div>
+      <p class="hamburg-map__attribution">Karten-Tiles: © OpenStreetMap-Mitwirkende</p>
+      <ul class="hamburg-pin-list" id="hamburg-pin-list"></ul>
+    </details>
+
+    <!-- ================================================================
+         Persönliche Checkliste
+         ================================================================ -->
+    <details class="hamburg-section hamburg-section--collapsible">
+      <summary><h2 class="hamburg-section__title">Persönliche Checkliste</h2></summary>
+      <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-4);">
+        Stand wird im Browser gespeichert – jede:r sieht den eigenen Fortschritt.
+      </p>
+      <div class="hamburg-checklist" id="hamburg-checklist"></div>
+      <button class="hamburg-checklist__reset" id="hamburg-checklist-reset" type="button">
+        Checkliste zurücksetzen
+      </button>
+    </details>
+
+    <!-- ================================================================
+         Kontakte + Notfälle
+         ================================================================ -->
+    <details class="hamburg-section hamburg-section--collapsible">
+      <summary><h2 class="hamburg-section__title">Kontakte</h2></summary>
+
+      <div class="hamburg-contacts__group">
+        <h3 class="hamburg-contacts__group-title">Vor Ort</h3>
+        <ul class="hamburg-contacts__list" id="hamburg-contacts-list"></ul>
+      </div>
+
+      <div class="hamburg-contacts__group">
+        <h3 class="hamburg-contacts__group-title">Notfälle Deutschland</h3>
+        <div class="hamburg-contacts__emergency">
+          <a class="hamburg-contacts__emergency-item" href="tel:112">
+            <div class="hamburg-contacts__emergency-number">112</div>
+            <div class="hamburg-contacts__emergency-label">Feuerwehr · Rettung</div>
+          </a>
+          <a class="hamburg-contacts__emergency-item" href="tel:110">
+            <div class="hamburg-contacts__emergency-number">110</div>
+            <div class="hamburg-contacts__emergency-label">Polizei</div>
+          </a>
+          <a class="hamburg-contacts__emergency-item" href="tel:116117">
+            <div class="hamburg-contacts__emergency-number">116&nbsp;117</div>
+            <div class="hamburg-contacts__emergency-label">Ärztlicher Notdienst</div>
+          </a>
+        </div>
+      </div>
+    </details>
+
+    <!-- ================================================================
+         Hausregeln
+         ================================================================ -->
+    <details class="hamburg-section hamburg-section--collapsible">
+      <summary><h2 class="hamburg-section__title">Gut zu wissen</h2></summary>
+      <div class="hamburg-rules">
+        <ul class="hamburg-rules__list">
+          <li class="hamburg-rules__item">
+            <span class="hamburg-rules__icon">🍶</span>
+            <span class="hamburg-rules__text">
+              <strong>Glasflaschen-Verbot Reeperbahn</strong> Fr 22:00 bis Mo 06:00 –
+              Bussgeld bis 5'000&nbsp;€. Keine eigenen Glasflaschen mit auf den Kiez.
+            </span>
+          </li>
+          <li class="hamburg-rules__item">
+            <span class="hamburg-rules__icon">🥊</span>
+            <span class="hamburg-rules__text">
+              <strong>«Zur Ritze» Boxerkeller</strong> – Stopp auf der Kieztour,
+              Wirt erwartet Getränkebestellung im Keller. Mitspielen, Bier holen.
+            </span>
+          </li>
+          <li class="hamburg-rules__item">
+            <span class="hamburg-rules__icon">💶</span>
+            <span class="hamburg-rules__text">
+              <strong>Trinkgeld</strong> – 5–10% in Restaurants, an Bars Aufrunden.
+            </span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <footer class="hamburg-footer">
+      Gourmen 5 – Hamburg 29.–31. Mai 2026
+    </footer>
+
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+          integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+  <script defer>
+    /* =========================================================================
+       Inhalts-Daten (am Anfang, damit Andreas sie ggf. in Jinja-Renders
+       verwandeln kann beim PWA-Einbau).
+       ========================================================================= */
+
+    const PROGRAMM = {
+      fr: {
+        label: 'Freitag 29.05.2026',
+        items: [
+          { time: '06:30', icon: '✈️', title: 'Treffpunkt Flughafen Zürich',
+            details: 'Swiss-Schalter, Check-in für LX 1052' },
+          { time: '08:30', icon: '🛫', title: 'Abflug Zürich',
+            details: 'LX 1052 · Swiss Economy', detailSecondary: 'Ankunft 10:00 Hamburg',
+            url: 'https://www.swiss.com/ch/de/book-and-manage/flightstatus?flightNumber=LX1052&date=2026-05-29' },
+          { time: '10:30', icon: '🚐', title: 'Limobus Hamburg-Edition',
+            details: '«Hamburg-Edition» bis 16 Pers., 2h Party-Ride',
+            url: 'https://www.limobus-hamburg.de/hamburg-edition/',
+            critical: true },
+          { time: '12:30', icon: '🧳', title: 'Gepäck im Hotel deponieren',
+            details: 'Konsignation am Empfang' },
+          { time: '12:45', icon: '🐟', title: 'Streetfood-Mittag',
+            details: 'Fischfraktion → <a class="hamburg-timeline-item__inline-link" href="https://kleine-haie-grosse-fische.eatbu.com/?lang=de" target="_blank" rel="noopener">Kleine Haie Grosse Fische</a> (Querstr. 4) · Burger/Vegi → <a class="hamburg-timeline-item__inline-link" href="https://grilly-idol.de/" target="_blank" rel="noopener">Grilly Idol</a> (Clemens-Schultz-Str. 40)',
+            note: 'Treffen zum Picknick am Park Fiction (Pinnasberg)' },
+          { time: 'ab 15:00', icon: '🛏️', title: 'Hotel-Check-in (flexibel)',
+            details: 'Standard ab 15:00. Hauptsache 16:00 ready.' },
+          { time: '16:00', icon: '🎭', title: 'Titten Tina’s Kieztour',
+            details: 'Comedy pur · Boxerkeller · exklusiv · ca. 2h',
+            address: 'Treffpunkt Reeperbahn 56, rechts neben McDonald’s',
+            url: 'https://www.kieztour.com/',
+            critical: true },
+          { time: '18:30', icon: '🎸', title: 'Abendessen ZWICK St. Pauli',
+            details: 'Live-Event «50 Jahre RUDOLF ROCK & Die Schocker»',
+            address: 'Spielbudenplatz 9',
+            url: 'https://www.zwick4u.com/zwick-st-pauli-de-14.html' },
+          { time: 'ab 21:00', icon: '🍺', title: 'Bar-Crawl (spontan)',
+            details: 'Zum Silbersack · Gretel & Alfons · Zum Anker · 20up Bar' }
+        ]
+      },
+      sa: {
+        label: 'Samstag 30.05.2026',
+        items: [
+          { time: 'morgens', icon: '☕', title: 'Frühstück',
+            details: 'Im Hotel oder spontan auswärts' },
+          { time: '10:00', icon: '⛵', title: 'Hafenrundfahrt',
+            details: '~1h, ca. 18&nbsp;€ pro Person, Live-Erklärung Kapitän',
+            address: 'Anlegestelle Landungsbrücken (10–15 Min Fussweg)' },
+          { time: 'Mittag', icon: '🥨', title: 'Mittagessen offen',
+            details: 'Individuell – Landungsbrücken-Imbisse, Speicherstadt, oder spontan' },
+          { time: 'Nachmittag', icon: '🌇', title: 'Freier Nachmittag',
+            details: 'Inspirations-Pool unten – jeder nach Lust und Laune' },
+          { time: '18:30', icon: '🚐', title: 'Sammelpunkt Speicherstadt',
+            details: 'Stambula-Sprinter holt die Gruppe ab',
+            critical: true },
+          { time: '19:00', icon: '🌿', title: 'Abendessen HYGGE Brasserie',
+            details: 'Highlight-Dinner im Landhaus Flottbek',
+            address: 'Baron-Voght-Str. 179',
+            url: 'https://www.hygge-hamburg.de/de' },
+          { time: '00:30', icon: '🚐', title: 'Sprinter zurück ins Hotel',
+            details: 'Stambula-Rückfahrt → Cityhotel Monopol' }
+        ],
+        inspirations: [
+          { title: 'Speicherstadt + Elbphilharmonie Plaza',
+            body: 'UNESCO-Quartier mit Wasserschloss-Postkartenmotiv, danach kostenlos rauf auf die Plaza. U3 ab St. Pauli → Baumwall, ca. 10 Min. Tickets vorbuchen spart Wartezeit. 1.5–2.5h.' },
+          { title: 'Schanze flanieren',
+            body: 'Schulterblatt, Streetart, Vintage-Boutiquen, alternative Cafés. 15 Min Fussweg ab Hotel. Kein Plan nötig.' },
+          { title: 'Außenalster',
+            body: 'Spaziergang um den See (~7.4&nbsp;km Rundweg) oder Tretboot/SUP, falls Wetter mitspielt. U1 Stephansplatz.' },
+          { title: 'Michel-Turmaufstieg',
+            body: 'St. Michaelis Kirche, 5–10 Min ab Hotel, ca. 6&nbsp;€ Eintritt, beste 360°-Sicht über Hamburg in 30–45 Min.' },
+          { title: 'Miniatur Wunderland',
+            body: 'Grösste Modelleisenbahn der Welt. Lieben oder doof finden, dazwischen nichts. 2–3h, in der Speicherstadt. Tickets unbedingt online vorbuchen.' },
+          { title: 'Karoviertel Vintage-Bummel',
+            body: 'Marktstrasse + Umgebung, kleine Designer-Läden, Concept Stores, Cafés. 10 Min Fussweg, direkt nördlich der Reeperbahn.' },
+          { title: 'Beatles-Spuren',
+            body: 'Beatles-Platz, ehemaliger Indra Club, Star-Club-Gedenktafel. 5 Min ab Hotel, kostenlos, ca. 30 Min Selbst-Tour.' }
+        ]
+      },
+      so: {
+        label: 'Sonntag 31.05.2026',
+        items: [
+          { time: 'bis 11:00', icon: '🧳', title: 'Hotel-Check-out',
+            details: 'Mit Gepäck – kein Retour ins Hotel' },
+          { time: '10:00', icon: '🏖️', title: 'Deluxe-Frühstück StrandPauli',
+            details: 'Reservierung Nr. 20730 · 7 klassisch · 1 vegetarisch · 3 pescetarisch',
+            address: 'Hafenstr. 89 (10 Min Fussweg vom Hotel)' },
+          { time: 'nach Frühstück', icon: '🌊', title: 'Wer mag bleibt am Strand',
+            details: 'Andere können nochmal in die Stadt' },
+          { time: '16:00', icon: '🚐', title: 'Stambula-Sprinter zum Flughafen',
+            details: 'Abfahrt ab StrandPauli mit Gepäck',
+            critical: true },
+          { time: '19:15', icon: '🛫', title: 'Rückflug Hamburg',
+            details: 'LX 1059 · Swiss Economy', detailSecondary: 'Ankunft 20:35 Zürich',
+            url: 'https://www.swiss.com/ch/de/book-and-manage/flightstatus?flightNumber=LX1059&date=2026-05-31' }
+        ]
+      }
+    };
+
+    const PINS = [
+      { id: 'hotel',  icon: '🏨', name: 'Cityhotel Monopol',          addr: 'Reeperbahn 48–52', lat: 53.5495, lng: 9.9603,
+        website: 'https://www.smartcityhotel-hamburg.de/' },
+      { id: 'khgf',   icon: '🐟', name: 'Kleine Haie Grosse Fische',  addr: 'Querstr. 4',       lat: 53.5503, lng: 9.9610 },
+      { id: 'grilly', icon: '🍔', name: 'Grilly Idol',                addr: 'Clemens-Schultz-Str. 40', lat: 53.5510, lng: 9.9605 },
+      { id: 'park',   icon: '🌴', name: 'Park Fiction',               addr: 'Pinnasberg / Antoniterpark', lat: 53.5448, lng: 9.9603 },
+      { id: 'kiez',   icon: '🎭', name: 'Kieztour-Treffpunkt',        addr: 'Reeperbahn 56',    lat: 53.5497, lng: 9.9595 },
+      { id: 'zwick',  icon: '🎸', name: 'ZWICK St. Pauli',            addr: 'Spielbudenplatz 9', lat: 53.5499, lng: 9.9617 },
+      { id: 'land',   icon: '⛵', name: 'Landungsbrücken',            addr: 'Brücke 1–10',      lat: 53.5460, lng: 9.9695 },
+      { id: 'speich', icon: '🏛️', name: 'Speicherstadt (Treffpunkt Sa)', addr: 'Wasserschloss · Poggenmühlenbrücke', lat: 53.5436, lng: 9.9907 },
+      { id: 'hygge',  icon: '🌿', name: 'HYGGE Brasserie & Bar',      addr: 'Baron-Voght-Str. 179', lat: 53.5683, lng: 9.9077 },
+      { id: 'strand', icon: '🏖️', name: 'StrandPauli',                addr: 'Hafenstr. 89',     lat: 53.5443, lng: 9.9612 },
+      { id: 'flug',   icon: '✈️', name: 'Flughafen Hamburg',           addr: 'Fuhlsbüttel',      lat: 53.6304, lng: 9.9918 }
+    ];
+
+    const KONTAKTE = [
+      { name: 'Cityhotel Monopol',     role: 'Hotel · Reeperbahn 48–52',
+        tel: null,                       mail: null,
+        note: 'Direktnummer folgt mit den Hotelplan-Reiseunterlagen' },
+      { name: 'Hotelplan 24h-Notfall', role: 'Carmen Hösli · Direct Sales',
+        tel: '+41432118884',             mail: 'info@hotelplan.ch' },
+      { name: 'Limobus',               role: 'Bernhard Sadler · Party-Transfer',
+        tel: '+491724507474',            mail: 'buchung@limobus-hamburg.de' },
+      { name: 'Kieztour',              role: 'Marlon Klemm · Titten Tina’s Kieztour',
+        tel: '+4915156135489',           mail: 'kontakt@kieztour.com' },
+      { name: 'Stambula',              role: 'Sprinter-Transfers Sa und So',
+        tel: null,                       mail: 'vertrieb@stambula.de',
+        note: 'Telefonnummer folgt nach Bestätigung' }
+    ];
+
+    const CHECKLISTE = [
+      { group: 'Dokumente', items: [
+        'Reisepass oder Schweizer ID (gültig)',
+        'Versicherungskarte oder Krankenkassen-App'
+      ]},
+      { group: 'Zahlungsmittel', items: [
+        'EC- oder Kreditkarte (Cashless-Zonen)',
+        'Etwas Bargeld in EUR für Trinkgeld, Bars, Snacks (~100–200&nbsp;€)'
+      ]},
+      { group: 'Kleidung', items: [
+        'Wettergerecht (12–22°C im Mai, Regen möglich)',
+        'Bequeme Schuhe für viel Laufen',
+        'Gourmen-Kleidung für ZWICK und HYGGE',
+        'Eine Schicht mehr für die Hafenrundfahrt – Wind!'
+      ]},
+      { group: 'Sonstiges', items: [
+        'Powerbank',
+        'Kopfhörer',
+        'Sonnenbrille',
+        'Toilettenartikel',
+        'Reiseapotheke (Schmerzmittel, Pflaster, Magenmittel)',
+        'Handgepäck-tauglich packen ✋'
+      ]}
+    ];
+
+    const LS_PREFIX = 'hamburg2026:';
+    const ABFLUG_TS = new Date('2026-05-29T08:30:00+02:00').getTime();
+
+    /* =========================================================================
+       Theme-Toggle
+       ========================================================================= */
+    (function initTheme() {
+      const btn = document.getElementById('hamburg-theme-toggle');
+      btn.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem(LS_PREFIX + 'theme', next); } catch (e) {}
+      });
+    })();
+
+    /* =========================================================================
+       Countdown
+       ========================================================================= */
+    (function initCountdown() {
+      const el = document.getElementById('hamburg-countdown');
+      function fmt(n) { return n.toLocaleString('de-CH'); }
+      function tick() {
+        const now = Date.now();
+        const diff = ABFLUG_TS - now;
+        if (diff <= 0) {
+          el.textContent = 'Es geht los!';
+          return;
+        }
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        if (days >= 2) {
+          el.textContent = fmt(days) + ' Tage · ' + hours + 'h';
+        } else if (days >= 1) {
+          el.textContent = days + 'd · ' + hours + 'h · ' + mins + 'min';
+        } else {
+          el.textContent = hours + 'h · ' + mins + 'min';
+        }
+      }
+      tick();
+      setInterval(tick, 60000);
+    })();
+
+    /* =========================================================================
+       Programm-Tabs rendern
+       ========================================================================= */
+    (function renderProgramm() {
+      function renderItem(it) {
+        const time = '<div class="hamburg-timeline-item__time">' + it.time +
+          (it.detailSecondary ? '<span class="hamburg-timeline-item__time-secondary">' + it.detailSecondary + '</span>' : '') +
+          '</div>';
+        const title = '<div class="hamburg-timeline-item__title">' +
+          '<span class="hamburg-timeline-item__icon" aria-hidden="true">' + it.icon + '</span>' +
+          it.title + '</div>';
+        const details = it.details ? '<p class="hamburg-timeline-item__details">' + it.details + '</p>' : '';
+        const addr = it.address
+          ? '<a class="hamburg-timeline-item__address" href="https://www.openstreetmap.org/search?query=' +
+            encodeURIComponent(it.address) + '" target="_blank" rel="noopener">📍 ' + it.address + '</a>'
+          : '';
+        const note = it.note ? '<p class="hamburg-timeline-item__note">' + it.note + '</p>' : '';
+        const website = it.url
+          ? '<div class="hamburg-timeline-item__actions">' +
+              '<a class="hamburg-timeline-item__website" href="' + it.url + '" target="_blank" rel="noopener">Website ↗</a>' +
+            '</div>'
+          : '';
+        const cls = 'hamburg-timeline-item' + (it.critical ? ' hamburg-timeline-item--critical' : '');
+        return '<article class="' + cls + '">' + time +
+               '<div class="hamburg-timeline-item__content">' + title + details + addr + note + website + '</div></article>';
+      }
+
+      function renderInspirations(inspirations) {
+        if (!inspirations || !inspirations.length) return '';
+        let html = '<details class="hamburg-disclosure">' +
+          '<summary class="hamburg-disclosure__summary">Inspirations-Pool für den freien Nachmittag</summary>' +
+          '<div class="hamburg-disclosure__body">' +
+          '<p class="hamburg-disclosure__intro">Sieben Optionen – such dir aus, was dich zieht. Alle ohne Reservation, alle gut machbar in 2–3h.</p>';
+        inspirations.forEach(i => {
+          html += '<article class="hamburg-inspiration">' +
+            '<h4 class="hamburg-inspiration__title">' + i.title + '</h4>' +
+            '<p class="hamburg-inspiration__body">' + i.body + '</p></article>';
+        });
+        return html + '</div></details>';
+      }
+
+      ['fr', 'sa', 'so'].forEach(key => {
+        const panel = document.getElementById('panel-' + key);
+        const data = PROGRAMM[key];
+        const timeline = '<div class="hamburg-timeline">' + data.items.map(renderItem).join('') + '</div>';
+        panel.innerHTML = timeline + renderInspirations(data.inspirations);
+      });
+
+      const tabs = document.querySelectorAll('.hamburg-tabs__tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => {
+            t.classList.remove('hamburg-tabs__tab--active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('hamburg-tabs__tab--active');
+          tab.setAttribute('aria-selected', 'true');
+          const target = tab.dataset.tab;
+          document.querySelectorAll('.hamburg-tabs__panel').forEach(p => {
+            p.classList.toggle('hamburg-tabs__panel--active', p.id === 'panel-' + target);
+          });
+        });
+      });
+    })();
+
+    /* =========================================================================
+       Pin-Liste
+       ========================================================================= */
+    (function renderPins() {
+      const ul = document.getElementById('hamburg-pin-list');
+      ul.innerHTML = PINS.map(p => {
+        const website = p.website
+          ? '<a class="hamburg-pin-list__website" href="' + p.website + '" target="_blank" rel="noopener">Website ↗</a>'
+          : '';
+        return '<li class="hamburg-pin-list__item">' +
+          '<span class="hamburg-pin-list__icon" aria-hidden="true">' + p.icon + '</span>' +
+          '<div class="hamburg-pin-list__content">' +
+            '<div class="hamburg-pin-list__name">' + p.name + '</div>' +
+            '<a class="hamburg-pin-list__address" href="https://www.openstreetmap.org/?mlat=' +
+              p.lat + '&mlon=' + p.lng + '#map=18/' + p.lat + '/' + p.lng + '" target="_blank" rel="noopener">' +
+              p.addr + '</a>' +
+            (website ? '<div>' + website + '</div>' : '') +
+          '</div>' +
+        '</li>';
+      }).join('');
+    })();
+
+    /* =========================================================================
+       Karte (Leaflet)
+       Container liegt in einem <details>, das default zu ist. Leaflet kann
+       Höhe/Breite erst messen, sobald das Element sichtbar ist – daher beim
+       ersten Öffnen invalidateSize() + fitBounds() nochmal aufrufen.
+       ========================================================================= */
+    let hamburgMap = null;
+    let hamburgMapBounds = null;
+    function initMap() {
+      if (typeof L === 'undefined' || hamburgMap) return;
+      hamburgMap = L.map('hamburg-map', { scrollWheelZoom: false }).setView([53.5495, 9.9603], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap-Mitwirkende'
+      }).addTo(hamburgMap);
+      const markers = [];
+      PINS.forEach(p => {
+        const m = L.marker([p.lat, p.lng]).addTo(hamburgMap)
+          .bindPopup('<strong>' + p.name + '</strong><br>' + p.addr);
+        markers.push(m);
+      });
+      const group = L.featureGroup(markers);
+      hamburgMapBounds = group.getBounds().pad(0.1);
+      hamburgMap.fitBounds(hamburgMapBounds);
+    }
+    function refreshMap() {
+      if (!hamburgMap) { initMap(); return; }
+      hamburgMap.invalidateSize();
+      if (hamburgMapBounds) hamburgMap.fitBounds(hamburgMapBounds);
+    }
+    function attachMapDisclosureListener() {
+      const mapEl = document.getElementById('hamburg-map');
+      if (!mapEl) return;
+      const details = mapEl.closest('details');
+      if (!details) return;
+      details.addEventListener('toggle', () => { if (details.open) refreshMap(); });
+    }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      window.addEventListener('load', initMap);
+      attachMapDisclosureListener();
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', initMap);
+        attachMapDisclosureListener();
+      });
+    }
+
+    /* =========================================================================
+       Kontakte
+       ========================================================================= */
+    (function renderKontakte() {
+      const ul = document.getElementById('hamburg-contacts-list');
+      ul.innerHTML = KONTAKTE.map(k => {
+        const links = [];
+        if (k.tel)  links.push('<a class="hamburg-contacts__link" href="tel:' + k.tel + '">📞 anrufen</a>');
+        if (k.mail) links.push('<a class="hamburg-contacts__link" href="mailto:' + k.mail + '">✉️ Mail</a>');
+        const note = k.note ? '<div class="hamburg-contacts__role" style="font-style:italic;">' + k.note + '</div>' : '';
+        return '<li class="hamburg-contacts__item">' +
+                 '<div class="hamburg-contacts__name">' + k.name + '</div>' +
+                 '<div class="hamburg-contacts__role">' + k.role + '</div>' +
+                 (links.length ? '<div class="hamburg-contacts__links">' + links.join('') + '</div>' : '') +
+                 note +
+               '</li>';
+      }).join('');
+    })();
+
+    /* =========================================================================
+       Checkliste mit localStorage
+       ========================================================================= */
+    (function renderChecklist() {
+      const root = document.getElementById('hamburg-checklist');
+      const stateKey = LS_PREFIX + 'checklist';
+
+      function loadState() {
+        try { return JSON.parse(localStorage.getItem(stateKey) || '{}'); }
+        catch (e) { return {}; }
+      }
+      function saveState(state) {
+        try { localStorage.setItem(stateKey, JSON.stringify(state)); }
+        catch (e) {}
+      }
+
+      let state = loadState();
+
+      function render() {
+        let html = '';
+        CHECKLISTE.forEach((g, gi) => {
+          html += '<div class="hamburg-checklist__group">' +
+            '<h3 class="hamburg-checklist__group-title">' + g.group + '</h3>';
+          g.items.forEach((label, ii) => {
+            const id = 'check-' + gi + '-' + ii;
+            const checked = !!state[id];
+            html += '<label class="hamburg-checklist__item' + (checked ? ' hamburg-checklist__item--checked' : '') + '" for="' + id + '">' +
+              '<input class="hamburg-checklist__checkbox" type="checkbox" id="' + id + '" data-key="' + id + '"' +
+                (checked ? ' checked' : '') + '>' +
+              '<span class="hamburg-checklist__label">' + label + '</span></label>';
+          });
+          html += '</div>';
+        });
+        root.innerHTML = html;
+        root.querySelectorAll('input[type=checkbox]').forEach(cb => {
+          cb.addEventListener('change', e => {
+            const key = e.target.dataset.key;
+            state[key] = e.target.checked;
+            saveState(state);
+            e.target.closest('.hamburg-checklist__item').classList.toggle('hamburg-checklist__item--checked', e.target.checked);
+          });
+        });
+      }
+      render();
+
+      document.getElementById('hamburg-checklist-reset').addEventListener('click', () => {
+        if (!confirm('Checkliste wirklich zurücksetzen?')) return;
+        state = {};
+        saveState(state);
+        render();
+      });
+    })();
+  </script>
+
+</body>
+</html>
