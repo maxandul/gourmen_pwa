@@ -150,6 +150,32 @@ RESET / ONBOARDING TOKENS
 - **Push-Notifications** via VAPID (`VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`); Subscriptions in DB
 - **Asset-Manifest** mit Cache-Bust-Hashes (`scripts/fingerprint_assets.py`)
 
+### Service-Worker Caching-Strategie
+
+Single Source of Truth für die Version: `const VERSION` in `static/sw.js` und `const PWA_VERSION` in `static/js/pwa.js` (beide werden von `scripts/update_pwa_version.py` synchron gehoben).
+
+| Request-Typ | Strategie | Cache | Begründung |
+|---|---|---|---|
+| **HTML / Navigation** (`request.mode === 'navigate'` oder `Accept: text/html`) | `networkOnlyHtml` mit `cache: 'no-store'`, optional Navigation Preload | **kein** SW-Cache | HTML ist fluechtig + version-gebunden; aus dem Cache zurueckgespielte Seiten waren die Hauptursache fuer „Updates kommen nicht an". |
+| **Static Assets** (gehashte Filenames in `STATIC_ASSETS`) | `cacheFirst(STATIC_CACHE)` | versioniert (`gourmen-static-v<X>`) | Hash im Filename → Inhalt unveränderlich, sofortiger Hit. |
+| **API / sonstige GETs** | `networkFirst(DYNAMIC_CACHE)` | versioniert (`gourmen-dynamic-v<X>`) | Frische Daten bevorzugt, Offline-Fallback aus Cache. |
+| **Offline-Fallback** | `caches.match('/static/offline.<hash>.html')` | STATIC_CACHE | Wird nur bei Netzwerkfehler ausgeliefert. |
+
+### Update-Pfad (skipWaiting + clients.claim)
+
+1. **Install** des neuen SW: `self.skipWaiting()` synchron im Install-Handler → kein `waiting`-State.
+2. **Activate** des neuen SW:
+   - alle Caches mit nicht-aktivem Namen werden geloescht;
+   - der eigene `DYNAMIC_CACHE` wird zusaetzlich frisch geleert (gegen HTML-Reste aus Vorversionen);
+   - `navigationPreload.enable()` (falls verfuegbar);
+   - `self.clients.claim()` → der neue SW kontrolliert sofort alle offenen Tabs;
+   - alle Clients erhalten `postMessage({ type: 'SW_ACTIVATED', ... })`.
+3. **Client** (`static/js/pwa.js`):
+   - `controllerchange`-Listener triggert genau **einmal** ein `window.location.reload()` (Reload-Guard `_reloadingForUpdate`);
+   - die allererste Aktivierung (vorher kein Controller) reloadet **nicht**, weil die Page bereits korrekt laeuft.
+
+Praktische Konsequenz: Ein neuer Deploy braucht keinen manuellen Cache-Clear mehr. Tab offen lassen → spaetestens beim naechsten Update-Check (alle 5 min oder beim Fokus) installiert sich der neue SW, claimt die Page und reloadet einmal.
+
 ## Cron-Jobs
 
 `run_cron_reminders.py` ist ein **One-Shot-Script** (kein Daemon), wird vom Hosting-Scheduler aufgerufen. Steuerung via `SERVICE_TYPE=cron` in `start.sh`.

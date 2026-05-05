@@ -139,7 +139,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.page-back` | – | „Zurück"-Link mit chevron-left |
 | `.bottom-nav` | – | Bottom-Navigation Mobile |
 | `.sidebar` | – | Desktop-Sidebar ab 1024px |
-| `.user-bar` | – | Top-Leiste mit Theme-Toggle und User-Menu |
+| `.user-bar` | – | Top-Leiste mit Theme-Toggle und User-Menu (versteckt sich auf Mobile/Tablet via `body[data-topbar-hidden]` beim Runterscrollen) |
 | `.user-menu` | – | mit `__summary`, `__panel`, `__list`, `__link`, `__link--danger`, `__sep`, `__badge` |
 | `.settings-nav` | – | mit `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron` |
 
@@ -195,9 +195,37 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
-| `.tabs` | `--panel` | Tab-Container (mit `--panel` für Bereichs-Tabs) |
+| `.tabs` | `--panel`, `--sticky` | Tab-Container (mit `--panel` für Bereichs-Tabs, `--sticky` damit `.tabs__nav` beim Scrollen unter der User-Bar klebt) |
 | `.tabs__nav` / `.tabs__tab` | – | Tab-Navigation |
 | `.disclosure` | – | Aufklappbares Element (für Tool-Strip) |
+
+**`.tabs--sticky`-Hinweise**:
+- Opt-in pro Seite. Nur an Seiten mit langem, tab-getriebenem Inhalt (aktuell Events-Index, Event-Detail, GGL).
+- Klebt bei `top: calc(var(--topbar-offset, 60px) + var(--safe-area-top))` mit `z-index: var(--z-sticky)` (200) – User-Bar (`--z-fixed` 300) bleibt darüber.
+- Hintergrund deckend (`--color-bg-base`), damit darunter scrollender Content nicht durchscheint.
+- Setzt `overflow: visible` auf `.tabs` und `.tabs.tabs--panel` (sonst klebte sticky innerhalb der Box statt am Viewport).
+- Beißt sich bewusst nicht mit `position: fixed`-Layern (User-Bar oben, Bottom-Nav unten).
+- Bei aktivem Topbar-Auto-Hide (siehe unten) rückt die Tab-Leiste über `--topbar-offset` automatisch nach oben, wenn die User-Bar versteckt ist.
+
+### 5.7.1 Topbar Auto-Hide (Mobile + Tablet)
+
+Auf Bildschirmen `< 1024px` versteckt sich die `.user-bar` beim Runterscrollen, beim Hochscrollen oder oben angekommen kommt sie zurück.
+
+| Bestandteil | Datei | Zweck |
+|---|---|---|
+| Body-Modifier | `body[data-topbar-hidden="true"]` | wird per JS gesetzt, triggert CSS |
+| CSS-Variable | `--topbar-offset` | Default 60px, im Hide-Zustand 0px – Sticky-Tabs reagieren |
+| CSS | `static/css/v2/layout.css` | `.user-bar` `transform: translateY(-100%)` + `transition` |
+| JS | `static/js/v2/topbar-scroll.js` | Scroll-Listener mit Schwellwert + Modal-Pause |
+
+**Spielregeln**:
+- Nur Mobile + Tablet (`max-width: 1023px`); JS-Listener wird auf Desktop nicht angehängt.
+- Schwellwert: 16 px Scroll-Down zum Verstecken, 4 px Scroll-Up zum Wiederzeigen (asymmetrisch).
+- Im obersten Bereich (`scrollY < 80`) ist die Topbar immer sichtbar.
+- Wenn ein Modal/Drawer offen ist (`[role="dialog"][aria-modal]`, `details.user-menu[open]`, `body[data-sidebar-open]`), pausiert die Hide-Logik – sonst springt der Header beim Bedienen.
+- `prefers-reduced-motion: reduce` deaktiviert die Slide-Animation, der Toggle bleibt aber funktional.
+
+**Erweiterung**: weitere Drawer/Dialoge müssen entweder das `aria-modal="true"`-Pattern nutzen oder zusätzliche Selektoren in `topbar-scroll.js#isModalOpen()` ergänzen.
 
 ### 5.8 Tool-Strip (Filter / Planung)
 
@@ -298,57 +326,52 @@ Komponenten ohne Verwendung in Templates können ohne Diskussion gelöscht werde
 
 ## 7. Cache-Buster (Pflicht nach UI-Änderungen!)
 
-PWA-Browser-Caches werden nur invalidiert wenn die Asset-URLs sich ändern. Daher: nach **JEDER** UI-Änderung Cache-Version bumpen.
+Browser- und Service-Worker-Caches werden nur invalidiert wenn die Asset-URLs sich ändern. Workflow nach **jeder** UI-Änderung:
 
-### Was bumpen
+### A) PWA-Version bumpen
 
-#### `static/sw.js`
+Single Source of Truth: `const VERSION` in `static/sw.js` und `const PWA_VERSION` in `static/js/pwa.js`. Beide werden vom Helper-Skript synchron gehoben:
 
-```javascript
-const CACHE_NAME = 'gourmen-v1.3.6';        // ← bumpen!
-const STATIC_CACHE = 'gourmen-static-v1.3.6';
-const DYNAMIC_CACHE = 'gourmen-dynamic-v1.3.6';
+```bash
+python scripts/update_pwa_version.py 3.6.1
 ```
 
-#### `templates/base.html`
+Das Skript aktualisiert:
 
-```html
-<script src="{{ url_for('static', filename='js/pwa.js') }}?v=1.3.6" defer></script>
-<script src="{{ url_for('static', filename='js/app.js') }}?v=1.3.6" defer></script>
+- `static/sw.js`: `const VERSION = '...'` (daraus leiten sich `CACHE_NAME` / `STATIC_CACHE` / `DYNAMIC_CACHE` ab)
+- `static/js/pwa.js`: `const PWA_VERSION = '...'`
+- `templates/base.html`: alle `?v=...` Querystrings
+
+### B) Asset-Fingerprints regenerieren
+
+```bash
+python scripts/fingerprint_assets.py
 ```
 
-#### `static/js/pwa.js` (optional)
+Das aktualisiert `static/asset-manifest.json` und schreibt die gehashten Kopien (z. B. `pwa.f5bddfe5.js`). **Wichtig**: Wenn ein Hash sich ändert, muss er manuell in den Templates nachgezogen werden, die ihn referenzieren – aktuell:
 
-```javascript
-updateAppInfo() {
-    const versionSpan = document.getElementById('app-version');
-    if (versionSpan) {
-        versionSpan.textContent = '1.3.6';  // ← auch ändern
-    }
-}
-```
+- `templates/partials/_head_stylesheets.html` (CSS)
+- `templates/partials/_head_deferred_scripts.html` (`pwa.js`)
+- `static/sw.js` (`STATIC_ASSETS` und der Pfad zur `offline.<hash>.html` in `networkOnlyHtml`/`networkFirst`)
+- `templates/offline.html`, `static/offline.html`
+
+### C) Update kommt automatisch beim User an
+
+Dank `skipWaiting()` + `clients.claim()` + `controllerchange`-Reload-Guard (siehe `docs/ARCHITECTURE.md` → „Service-Worker Caching-Strategie") braucht der User **keinen** manuellen Cache-Clear. Innerhalb von max. 5 Minuten (oder beim nächsten Tab-Fokus) installiert sich der neue SW, claimt die Page und reloadet einmal.
+
+HTML wird vom SW grundsätzlich nicht mehr gecacht (`networkOnlyHtml`-Strategie) – Template-Änderungen sind also auch ohne Hash-Änderung sofort sichtbar, sobald der neue SW aktiv ist. Trotzdem die Version bumpen, damit der neue SW überhaupt erkannt wird und seinen Activate-Lifecycle durchläuft.
 
 ### Wann bumpen
 
-- ✅ **Immer**: CSS-Änderung, JS-Änderung, Template-Änderung, Icon-Änderung, Manifest-Änderung
+- ✅ **Immer**: CSS-/JS-/Template-/Icon-/Manifest-Änderung
 - ⚡ **Optional**: reine Backend-Änderungen ohne Frontend-Effekt
 
 ### Versionierung
 
 Semantic Versioning:
-- **Patch** (1.3.5 → 1.3.6): Bug-Fixes, kleine Änderungen
-- **Minor** (1.3.6 → 1.4.0): Neue Features (abwärtskompatibel)
-- **Major** (1.4.0 → 2.0.0): Breaking Changes
-
-### Helfer-Skript
-
-`scripts/update_pwa_version.py` automatisiert das Bumpen. Aufruf:
-
-```bash
-python scripts/update_pwa_version.py 1.3.6
-```
-
-(Dann verifizieren in `sw.js`, `base.html`, `pwa.js`.)
+- **Patch** (3.6.0 → 3.6.1): Bug-Fixes, kleine Änderungen
+- **Minor** (3.6.1 → 3.7.0): Neue Features (abwärtskompatibel)
+- **Major** (3.7.0 → 4.0.0): Breaking Changes
 
 ## 8. Entscheidungslog
 
@@ -367,7 +390,7 @@ Wenn von Grundsatz-Entscheidungen abgewichen wird, hier dokumentieren.
 3. Mit grep prüfen: existiert eine passende Klasse schon?
 4. Bei Lücke: Decision Tree anwenden (Sektion 4)
 5. Code schreiben (BEM, Tokens)
-6. Cache-Buster bumpen (sw.js, base.html, pwa.js)
+6. Cache-Buster: `python scripts/update_pwa_version.py <new-version>` + `python scripts/fingerprint_assets.py` (+ ggf. Hashes in den `_head_*.html`-Partials nachziehen)
 7. Lokal testen: Mobile + Desktop, Dark + Light
 8. Bei neuer Klasse: docs/UI.md Component Registry erweitern
 9. Commit

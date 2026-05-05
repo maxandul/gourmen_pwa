@@ -25,29 +25,23 @@ def update_version(new_version: str) -> None:
     print()
     
     # 1. Service Worker (sw.js)
+    # Aktuell wird die Version zentral via `const VERSION = '...'` gesetzt;
+    # CACHE_NAME/STATIC_CACHE/DYNAMIC_CACHE leiten daraus ab. Der Bumper darf
+    # daher NUR die VERSION-Konstante ersetzen.
     sw_file = Path('static/sw.js')
     if sw_file.exists():
         content = sw_file.read_text(encoding='utf-8')
-        
-        # Ersetze alle Cache-Namen
-        content = re.sub(
-            r"const CACHE_NAME = 'gourmen-v[\d.]+';",
-            f"const CACHE_NAME = 'gourmen-v{new_version}';",
-            content
+        new_content, n = re.subn(
+            r"const VERSION = '[\d.]+';",
+            f"const VERSION = '{new_version}';",
+            content,
+            count=1,
         )
-        content = re.sub(
-            r"const STATIC_CACHE = 'gourmen-static-v[\d.]+';",
-            f"const STATIC_CACHE = 'gourmen-static-v{new_version}';",
-            content
-        )
-        content = re.sub(
-            r"const DYNAMIC_CACHE = 'gourmen-dynamic-v[\d.]+';",
-            f"const DYNAMIC_CACHE = 'gourmen-dynamic-v{new_version}';",
-            content
-        )
-        
-        sw_file.write_text(content, encoding='utf-8')
-        print("✅ static/sw.js aktualisiert")
+        if n == 0:
+            print("⚠️  static/sw.js: VERSION-Konstante nicht gefunden")
+        else:
+            sw_file.write_text(new_content, encoding='utf-8')
+            print("✅ static/sw.js aktualisiert")
     else:
         print("⚠️  static/sw.js nicht gefunden")
     
@@ -69,19 +63,23 @@ def update_version(new_version: str) -> None:
         print("⚠️  templates/base.html nicht gefunden")
     
     # 3. PWA JavaScript (pwa.js)
+    # Single Source of Truth ist die `const PWA_VERSION = '...'` ganz oben.
+    # Daraus speist sich u.a. updateAppInfo(); deshalb muss zwingend diese
+    # Konstante ersetzt werden.
     pwa_file = Path('static/js/pwa.js')
     if pwa_file.exists():
         content = pwa_file.read_text(encoding='utf-8')
-        
-        # Ersetze App-Version in updateAppInfo()
-        content = re.sub(
-            r"versionSpan\.textContent = '[^']+';",
-            f"versionSpan.textContent = '{new_version}';",
-            content
+        new_content, n = re.subn(
+            r"const PWA_VERSION = '[\d.]+';",
+            f"const PWA_VERSION = '{new_version}';",
+            content,
+            count=1,
         )
-        
-        pwa_file.write_text(content, encoding='utf-8')
-        print("✅ static/js/pwa.js aktualisiert")
+        if n == 0:
+            print("⚠️  static/js/pwa.js: PWA_VERSION-Konstante nicht gefunden")
+        else:
+            pwa_file.write_text(new_content, encoding='utf-8')
+            print("✅ static/js/pwa.js aktualisiert")
     else:
         print("⚠️  static/js/pwa.js nicht gefunden")
     
@@ -89,10 +87,12 @@ def update_version(new_version: str) -> None:
     print(f"🎉 Version erfolgreich auf {new_version} aktualisiert!")
     print()
     print("📋 Nächste Schritte:")
-    print("   1. Änderungen testen: python start.py")
-    print("   2. Git Commit: git commit -am 'Bump version to v{}'".format(new_version))
-    print("   3. Git Tag: git tag v{}".format(new_version))
-    print("   4. Deployment durchführen")
+    print("   1. Asset-Hashes regenerieren:  python scripts/fingerprint_assets.py")
+    print("      -> falls sich pwa.js/CSS-Hashes geändert haben, manuell")
+    print("         in templates/partials/_head_*.html nachziehen.")
+    print("   2. Lokal testen:               python start.py")
+    print("   3. Commit + Tag:               git commit -am 'Bump PWA to v{0}' && git tag v{0}".format(new_version))
+    print("   4. Deploy via Merge auf master.")
     print()
 
 
@@ -106,10 +106,10 @@ def show_current_versions() -> None:
     sw_file = Path('static/sw.js')
     if sw_file.exists():
         content = sw_file.read_text(encoding='utf-8')
-        match = re.search(r"const CACHE_NAME = 'gourmen-v([\d.]+)';", content)
+        match = re.search(r"const VERSION = '([\d.]+)';", content)
         if match:
             print(f"   sw.js:        v{match.group(1)}")
-    
+
     # Base Template
     base_file = Path('templates/base.html')
     if base_file.exists():
@@ -117,12 +117,12 @@ def show_current_versions() -> None:
         match = re.search(r'\?v=([\d.]+)', content)
         if match:
             print(f"   base.html:    v{match.group(1)}")
-    
+
     # PWA JavaScript
     pwa_file = Path('static/js/pwa.js')
     if pwa_file.exists():
         content = pwa_file.read_text(encoding='utf-8')
-        match = re.search(r"versionSpan\.textContent = '([\d.]+)';", content)
+        match = re.search(r"const PWA_VERSION = '([\d.]+)';", content)
         if match:
             print(f"   pwa.js:       v{match.group(1)}")
     

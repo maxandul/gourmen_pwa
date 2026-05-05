@@ -3,16 +3,18 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.4.1';
+const VERSION = '3.6.1';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
+// Aktive Caches dieser SW-Version - alles andere wird beim Activate gelöscht
+const ACTIVE_CACHES = new Set([STATIC_CACHE, DYNAMIC_CACHE, CACHE_NAME]);
 
 // Assets die gecacht werden sollen (nur wirklich statische Dateien!)
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/static/manifest.json',
-    '/static/css/main-v2.17b92268.css',
+    '/static/css/main-v2.7e8d8733.css',
     '/static/css/public.7c8fae54.css',
     '/static/favicon.6d319de4.ico',
     '/static/favicon.0c03bb1d.svg',
@@ -28,7 +30,7 @@ const STATIC_ASSETS = [
     '/static/img/pwa/apple-touch-icon-180.8b095258.png',
     '/static/img/pwa/badge-72.d5fcf4dc.png',
     '/static/img/pwa/badge-96.054a5b81.png',
-    '/static/offline.93a37fba.html'
+    '/static/offline.38ed652d.html'
 ];
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
@@ -43,113 +45,105 @@ const API_CACHE = [
 
 // Install Event - Cache static assets
 self.addEventListener('install', (event) => {
-    console.log('Service Worker: Installing...');
-    
+    console.log('Service Worker: Installing version', VERSION);
+
+    // Sofort skipWaiting() aufrufen - der neue SW wartet nicht auf Tab-Schliessung.
+    // Synchron im Install-Handler, damit es sicher vor 'waiting' passiert.
+    self.skipWaiting();
+
     event.waitUntil(
         (async () => {
             const cache = await caches.open(STATIC_CACHE);
             console.log('Service Worker: Caching static assets');
-            
-            // Cache assets mit besseren Fehlerbehandlung für Apple-Geräte
+
             const cachePromises = STATIC_ASSETS.map(async (url) => {
                 try {
                     const response = await fetch(url, {
-                        cache: 'no-cache', // Verhindert Cache-Probleme auf iOS
+                        cache: 'no-cache',
                         credentials: 'same-origin'
                     });
-                    
+
                     if (response.ok) {
                         await cache.put(url, response);
-                        console.log('Service Worker: Cached successfully:', url);
                     } else {
                         console.warn('Service Worker: Failed to cache (HTTP error):', url, response.status);
                     }
                 } catch (e) {
-                    // Schlucke Fehler einzelner Assets (z. B. 401/404), damit die Installation nicht komplett fehlschlägt
                     console.warn('Service Worker: Asset konnte nicht gecacht werden:', url, e && e.message ? e.message : e);
                 }
             });
-            
+
             await Promise.allSettled(cachePromises);
             console.log('Service Worker: Static assets caching completed');
         })()
     );
-    
-    // Apple Safari kompatibler skipWaiting
-    event.waitUntil(
-        new Promise((resolve) => {
-            // Verzögerung für bessere Safari-Kompatibilität
-            setTimeout(() => {
-                if (self.registration.active) {
-                    console.log('Service Worker: Update detected, skipping waiting...');
-                    self.skipWaiting();
-                } else {
-                    console.log('Service Worker: First installation, activating immediately');
-                    // Bei der ersten Installation sofort aktivieren
-                    self.skipWaiting();
-                }
-                resolve();
-            }, 200);
-        })
-    );
-    
-    // Notify clients about new installation
-    self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
+});
+
+// Activate Event - Clean up old caches + claim clients sofort
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker: Activating version', VERSION);
+
+    event.waitUntil((async () => {
+        // 1) Alle alten/fremden Caches loeschen (auch Dynamic-Caches frueherer Versionen,
+        //    die potenziell veraltete HTML-Antworten enthalten koennten).
+        const cacheNames = await caches.keys();
+        await Promise.all(
+            cacheNames
+                .filter((name) => !ACTIVE_CACHES.has(name))
+                .map((name) => {
+                    console.log('Service Worker: Deleting old cache:', name);
+                    return caches.delete(name);
+                })
+        );
+
+        // 2) Eigenen Dynamic-Cache fuer diese Version komplett zuruecksetzen,
+        //    damit garantiert keine HTML-Reste aus der vorherigen Session uebrig sind.
+        await caches.delete(DYNAMIC_CACHE);
+
+        // 3) Navigation Preload aktivieren (falls verfuegbar) -> schnellere HTML-Antworten.
+        if (self.registration.navigationPreload) {
+            try {
+                await self.registration.navigationPreload.enable();
+            } catch (e) {
+                console.warn('Service Worker: navigationPreload.enable() failed:', e);
+            }
+        }
+
+        // 4) Sofort die Kontrolle uebernehmen, damit alle offenen Tabs den neuen SW
+        //    benutzen. Der pwa.js-controllerchange-Listener triggert dann ein Reload.
+        await self.clients.claim();
+
+        // 5) Alle Clients informieren, dass eine neue Version aktiv ist.
+        const clients = await self.clients.matchAll({ includeUncontrolled: true });
+        clients.forEach((client) => {
             client.postMessage({
-                type: 'SW_INSTALLED',
-                data: { 
-                    version: CACHE_NAME,
-                    userAgent: self.navigator?.userAgent || 'unknown'
-                }
+                type: 'SW_ACTIVATED',
+                data: { version: VERSION, cache: CACHE_NAME }
             });
         });
-    });
+
+        console.log('Service Worker: Activated and claimed all clients');
+    })());
 });
 
-// Activate Event - Clean up old caches
-self.addEventListener('activate', (event) => {
-    console.log('Service Worker: Activating...');
-    
-    event.waitUntil(
-        Promise.all([
-            // Clean up old caches
-            caches.keys().then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cacheName) => {
-                        if (cacheName !== STATIC_CACHE && 
-                            cacheName !== DYNAMIC_CACHE && 
-                            cacheName !== CACHE_NAME) {
-                            console.log('Service Worker: Deleting old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        }
-                    })
-                );
-            }),
-            
-            // Take control of all clients
-            self.clients.claim()
-        ])
-    );
-});
-
-// Fetch Event - Network first with cache fallback
+// Fetch Event - HTML strikt vom Netz, Static-Assets cache-first, API network-first
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
-    
-    // Ignore non-HTTP(S) schemes (e.g., chrome-extension://)
+
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
         return;
     }
 
-    // Skip non-GET requests
     if (request.method !== 'GET') {
         return;
     }
-    
-    // Handle different types of requests
-    if (isStaticAsset(request)) {
+
+    if (isNavigationRequest(request)) {
+        // HTML/Navigation: NIE aus dem SW-Cache. Frisches HTML vom Server,
+        // Offline-Fallback ist die offline.html aus STATIC_CACHE.
+        event.respondWith(networkOnlyHtml(event));
+    } else if (isStaticAsset(request)) {
         event.respondWith(cacheFirst(request, STATIC_CACHE));
     } else if (isApiRequest(request)) {
         event.respondWith(networkFirst(request, DYNAMIC_CACHE));
@@ -249,6 +243,35 @@ self.addEventListener('sync', (event) => {
     }
 });
 
+// Network-Only Strategy fuer HTML/Navigation:
+// - Versucht zuerst Navigation Preload Response (falls aktiv)
+// - Sonst frischer fetch() mit cache: 'no-store' (umgeht Browser-HTTP-Cache)
+// - Keine Cache-Schreibe -> nichts veraltet, Updates kommen sofort an
+// - Offline-Fallback: offline.html aus STATIC_CACHE
+async function networkOnlyHtml(event) {
+    const request = event.request;
+    try {
+        if (event.preloadResponse) {
+            const preload = await event.preloadResponse;
+            if (preload) return preload;
+        }
+
+        return await fetch(request, {
+            cache: 'no-store',
+            credentials: 'same-origin'
+        });
+    } catch (error) {
+        console.log('Service Worker: HTML offline -> offline.html', error && error.message);
+        const offlineResponse = await caches.match('/static/offline.38ed652d.html');
+        if (offlineResponse) return offlineResponse;
+        return new Response('Offline - Keine Verbindung', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+    }
+}
+
 // Cache First Strategy
 async function cacheFirst(request, cacheName) {
     try {
@@ -321,7 +344,7 @@ async function networkFirst(request, cacheName) {
         
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.93a37fba.html');
+        const offlineResponse = await caches.match('/static/offline.38ed652d.html');
         if (offlineResponse) {
             return offlineResponse;
         }
@@ -335,6 +358,15 @@ async function networkFirst(request, cacheName) {
             }
         });
     }
+}
+
+// Erkennt HTML-/Navigation-Requests (Page-Loads, GET text/html).
+// Bewusst breit gefasst: request.mode === 'navigate' deckt Top-Level-Navigationen ab,
+// der Accept-Header faengt eingebettete HTML-Fetches (z.B. via fetch()) zusaetzlich.
+function isNavigationRequest(request) {
+    if (request.mode === 'navigate') return true;
+    const accept = request.headers.get('accept') || '';
+    return accept.includes('text/html');
 }
 
 // Check if request is for static assets

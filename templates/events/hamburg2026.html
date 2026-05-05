@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Hamburg 2026 – 5 Jahre. 11 Gourmen. 1 Stadt. Programm, Locations, Checkliste, Kontakte.">
+  <meta name="description" content="Hamburg 2026 – 11 Gourmen. 3 Tage. 1 Stadt. Programm, Locations, Checkliste, Kontakte.">
   <title>Hamburg 2026</title>
 
   <link rel="stylesheet"
@@ -763,6 +763,57 @@
     .hamburg-rules__text strong { color: var(--logo-orange); }
 
     /* =========================================================================
+       Kosten-Tabelle
+       ========================================================================= */
+    .hamburg-cost-intro {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .hamburg-cost-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+    }
+    .hamburg-cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+      background: var(--color-surface);
+    }
+    .hamburg-cost-table th,
+    .hamburg-cost-table td {
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: top;
+    }
+    .hamburg-cost-table thead th {
+      background: var(--color-bg-muted);
+      font-weight: var(--font-semibold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+    }
+    .hamburg-cost-table th:not(:first-child),
+    .hamburg-cost-table td:not(:first-child) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .hamburg-cost-table tbody tr:last-child td { border-bottom: none; }
+    .hamburg-cost-table__total td {
+      background: var(--color-bg-muted);
+      font-weight: var(--font-bold);
+      color: var(--color-text-primary);
+      border-top: 2px solid var(--logo-orange);
+    }
+    .hamburg-cost-table__dash { color: var(--color-text-tertiary); }
+
+    /* =========================================================================
        Footer
        ========================================================================= */
     .hamburg-footer {
@@ -800,7 +851,7 @@
          ================================================================ -->
     <header class="hamburg-hero">
       <h1 class="hamburg-hero__title">Hamburg 2026</h1>
-      <p class="hamburg-hero__subtitle">5 Jahre. 11 Gourmen. 1 Stadt.</p>
+      <p class="hamburg-hero__subtitle">11 Gourmen. 3 Tage. 1 Stadt.</p>
 
       <div class="hamburg-hero__countdown">
         <div class="hamburg-hero__countdown-label">Noch bis Abflug Zürich</div>
@@ -865,6 +916,47 @@
       <button class="hamburg-checklist__reset" id="hamburg-checklist-reset" type="button">
         Checkliste zurücksetzen
       </button>
+    </details>
+
+    <!-- ================================================================
+         Kosten
+         ================================================================ -->
+    <details class="hamburg-section hamburg-section--collapsible">
+      <summary><h2 class="hamburg-section__title">Kosten</h2></summary>
+      <p class="hamburg-cost-intro">
+        Pro Person, in CHF, gerundet (1&nbsp;EUR ≈ 0.95&nbsp;CHF). Wo «Verein» steht, läuft der Posten über die Vereinskasse – inkl. Trinkgeld bei Vereinsessen. Bei Bar-Drinks und Snacks auf eigene Rechnung wurde kein Trinkgeld kalkuliert.
+      </p>
+      <div class="hamburg-cost-table-wrap">
+        <table class="hamburg-cost-table">
+          <thead>
+            <tr>
+              <th scope="col">Posten</th>
+              <th scope="col">Kosten</th>
+              <th scope="col">Verein</th>
+              <th scope="col">selbst</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Flug ZRH–HAM–ZRH + Hotel + Service (Hotelplan, bereits bezahlt)</td><td>528</td><td>528</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Limobus Party-Transfer Fr Flughafen → Hotel inkl. Drinks im Bus</td><td>85</td><td>85</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Streetfood-Mittag Fr (KHGF / Grilly Idol + Park Fiction)</td><td>20</td><td>20</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Kieztour «Titten Tina» Fr 16:00 inkl. obligater Drink in «Zur Ritze»</td><td>54</td><td>54</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Abendessen ZWICK St. Pauli Fr 18:30–21:00 (à la carte inkl. zusätzliche Drinks und Trinkgeld)</td><td>83</td><td>83</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Verein-Reserve Drinks/Bar Fr oder Sa-Abend</td><td>20</td><td>20</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Bar-Crawl Fr-Spätabend (1 Cocktail + 2 Bier, eigene Rechnung)</td><td>28</td><td class="hamburg-cost-table__dash">–</td><td>28</td></tr>
+            <tr><td>Hafenrundfahrt Sa 10:00 ab Landungsbrücken</td><td>17</td><td>17</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Stambula Sprinter Sa/So (3 Etappen)</td><td>80</td><td>80</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Mittagessen Sa nach Lust und Laune</td><td>20</td><td class="hamburg-cost-table__dash">–</td><td>20</td></tr>
+            <tr><td>Snacks, Kaffee, Souvenirs zwischendurch</td><td>30</td><td class="hamburg-cost-table__dash">–</td><td>30</td></tr>
+            <tr><td>Optionale Aktivität Sa-Nachmittag (z.&nbsp;B. Miniatur Wunderland ~25&nbsp;€)</td><td>24</td><td class="hamburg-cost-table__dash">–</td><td>24</td></tr>
+            <tr><td>Abendessen HYGGE Sa 19:00 open end (5-Gang + Weinbegleitung + Kaffee/Schnaps + Trinkgeld)</td><td>188</td><td>188</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Drinks Sa-Spätnacht zurück im Kiez (1–2 Drinks, freiwillig)</td><td>14</td><td class="hamburg-cost-table__dash">–</td><td>14</td></tr>
+            <tr><td>StrandPauli Deluxe-Frühstück So 10:00 (inkl. Trinkgeld)</td><td>20</td><td>20</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr><td>Kurtaxe Hotel (vor Ort)</td><td>3</td><td>3</td><td class="hamburg-cost-table__dash">–</td></tr>
+            <tr class="hamburg-cost-table__total"><td>Total pro Person</td><td>~1'214</td><td>~1'098</td><td>~116</td></tr>
+          </tbody>
+        </table>
+      </div>
     </details>
 
     <!-- ================================================================
@@ -989,8 +1081,8 @@
             details: 'Individuell – Landungsbrücken-Imbisse, Speicherstadt, oder spontan' },
           { time: 'Nachmittag', icon: '🌇', title: 'Freier Nachmittag',
             details: 'Inspirations-Pool unten – jeder nach Lust und Laune' },
-          { time: '18:30', icon: '🚐', title: 'Sammelpunkt Speicherstadt',
-            details: 'Stambula-Sprinter holt die Gruppe ab',
+          { time: '18:00', icon: '🚐', title: 'Sammelpunkt Speicherstadt',
+            details: 'Stambula-Sprinter holt die Gruppe ab · Bereitstellung 18:00, Abfahrt 18:15',
             critical: true },
           { time: '19:00', icon: '🌿', title: 'Abendessen HYGGE Brasserie',
             details: 'Highlight-Dinner im Landhaus Flottbek',
@@ -1061,9 +1153,15 @@
         tel: '+491724507474',            mail: 'buchung@limobus-hamburg.de' },
       { name: 'Kieztour',              role: 'Marlon Klemm · Titten Tina’s Kieztour',
         tel: '+4915156135489',           mail: 'kontakt@kieztour.com' },
-      { name: 'Stambula',              role: 'Sprinter-Transfers Sa und So',
-        tel: null,                       mail: 'vertrieb@stambula.de',
-        note: 'Telefonnummer folgt nach Bestätigung' }
+      { name: 'ZWICK St. Pauli',       role: 'Hans-Henry Müller · Reservierung Nr. 16665, Fr 18:30–21:00',
+        tel: '+494031792116',            mail: 'hhm@zwick4u.com' },
+      { name: 'HYGGE Brasserie & Bar', role: 'Jutta Eggert · Sa 19:00 open end',
+        tel: '+494082274181',            mail: 'j.eggert@landhaus-flottbek.de' },
+      { name: 'Stambula Bustouristik', role: 'Sibel Öztürk · Sprinter Sa und So',
+        tel: '+494020001157',            mail: 'osi@stambula.de',
+        note: 'Angebot Nr. 20260530006 · 922,25 € brutto' },
+      { name: 'StrandPauli Beachclub', role: 'Reservation Nr. 20730 · So 10:00',
+        tel: null,                       mail: 'buchungen@strandpauli.de' }
     ];
 
     const CHECKLISTE = [
