@@ -37,7 +37,8 @@ class PlacesService:
             'types': 'restaurant|food',
             'key': api_key,
             'language': 'de',
-            'components': 'country:ch'  # Restrict to Switzerland
+            # Schweiz + typische Auslandsreise-Ziele (Google Places erlaubt max. 5 Laender)
+            'components': 'country:ch|country:de|country:at|country:fr|country:it'
         }
         
         if session_token:
