@@ -2105,25 +2105,32 @@ a.btn:active {
 .tabs.tabs--sticky,
 .tabs.tabs--panel.tabs--sticky {
   overflow: visible;
-  /* WICHTIG: position: sticky klebt nur, solange der CONTAINER (also dieser
-     .tabs--sticky-Block) noch im Viewport durchscrollt wird. Bei kurzen
-     Panel-Inhalten (z.B. Events-Tab "Kommend" mit nur 0-5 Events) wuerde der
-     Container nach wenigen Pixeln aus dem Viewport scrollen und das sticky
-     .tabs__nav nach oben mitnehmen - genau das beobachtete Symptom.
-     Mit min-height: 100vh ist der Container immer mind. so hoch wie das
-     sichtbare Viewport, daher klebt das nav fuer den ganzen Page-Scroll. */
-  min-height: 100vh;
-  /* Kleine Reserve, damit der Container auch bei extrem kurzem Inhalt nicht
-     dem letzten Pixel hinterherrutscht (Safari-Edge-Case bei dvh-Wechsel). */
-  min-height: 100dvh;
 }
 
-.tabs--sticky .tabs__nav {
+/* Sticky-Wrapper-Pattern:
+   Das eigentliche Sticky-Element ist NICHT die .tabs__nav (die hat overflow-x:auto
+   fuer horizontalen Scroll der Tabs auf engen Mobile-Viewports - und overflow auf
+   einem sticky-Element ist ein bekannter Browser-Killer fuer position:sticky).
+   Stattdessen kapselt .tabs__nav-sticky das nav als overflow-freier Sticky-Container.
+   Im Template:
+     <div class="tabs tabs--panel tabs--sticky">
+       <div class="tabs__nav-sticky"><nav class="tabs__nav">...</nav></div>
+       <div class="tabs__content">...</div>
+     </div> */
+.tabs--sticky .tabs__nav-sticky {
   position: sticky;
   top: calc(var(--topbar-offset, 60px) + var(--safe-area-top, 0px));
   z-index: var(--z-sticky);
   background: var(--color-bg-base);
   transition: top var(--transition-normal);
+  /* WICHTIG: keine overflow-Property hier - sonst Sticky-Killer.
+     Der horizontale Scroll der Tabs wird von .tabs__nav (innen) gehandhabt. */
+}
+
+/* In .tabs--panel-Variante zieht der Sticky-Wrapper den fade-edge-Hintergrund mit,
+   damit das nav bei aktivem Klebezustand nicht "auf der Karte" schwebt. */
+.tabs--panel.tabs--sticky .tabs__nav-sticky {
+  background: var(--tabs-panel-fade-edge, var(--color-bg-base));
 }
 
 .form-actions--start {

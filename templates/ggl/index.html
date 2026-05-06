@@ -55,6 +55,7 @@
       </div>
     </div>
     <div class="tabs tabs--panel tabs--sticky" id="gourmen-tabs" aria-label="Guessing League — Ansichten">
+      <div class="tabs__nav-sticky">
       <nav class="tabs__nav" role="tablist">
         <a href="{{ url_for('ggl.index', tab='performance', season=selected_season, _anchor='gourmen-tabs') }}"
            data-force-navigation="true"
@@ -81,6 +82,7 @@
           Spielverlauf
         </a>
       </nav>
+      </div>
 
       <div class="tabs__content">
         <!-- Tab: Performance (tab=performance; tab=aktuell → Redirect) -->
