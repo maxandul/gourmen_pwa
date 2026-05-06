@@ -348,7 +348,7 @@ Das Skript aktualisiert:
 python scripts/fingerprint_assets.py
 ```
 
-Das aktualisiert `static/asset-manifest.json` und schreibt die gehashten Kopien (z. B. `pwa.f5bddfe5.js`). **Wichtig**: Wenn ein Hash sich ändert, muss er manuell in den Templates nachgezogen werden, die ihn referenzieren – aktuell:
+Das aktualisiert `static/asset-manifest.json` und schreibt die gehashten Kopien (z. B. `pwa.<hash>.js`). **Wichtig**: Wenn ein Hash sich ändert, muss er manuell in den Templates nachgezogen werden, die ihn referenzieren – aktuell:
 
 - `templates/partials/_head_stylesheets.html` (CSS)
 - `templates/partials/_head_deferred_scripts.html` (`pwa.js`)

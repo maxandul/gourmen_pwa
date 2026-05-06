@@ -2105,6 +2105,17 @@ a.btn:active {
 .tabs.tabs--sticky,
 .tabs.tabs--panel.tabs--sticky {
   overflow: visible;
+  /* WICHTIG: position: sticky klebt nur, solange der CONTAINER (also dieser
+     .tabs--sticky-Block) noch im Viewport durchscrollt wird. Bei kurzen
+     Panel-Inhalten (z.B. Events-Tab "Kommend" mit nur 0-5 Events) wuerde der
+     Container nach wenigen Pixeln aus dem Viewport scrollen und das sticky
+     .tabs__nav nach oben mitnehmen - genau das beobachtete Symptom.
+     Mit min-height: 100vh ist der Container immer mind. so hoch wie das
+     sichtbare Viewport, daher klebt das nav fuer den ganzen Page-Scroll. */
+  min-height: 100vh;
+  /* Kleine Reserve, damit der Container auch bei extrem kurzem Inhalt nicht
+     dem letzten Pixel hinterherrutscht (Safari-Edge-Case bei dvh-Wechsel). */
+  min-height: 100dvh;
 }
 
 .tabs--sticky .tabs__nav {

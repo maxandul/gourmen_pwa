@@ -1,20 +1,20 @@
-/**
- * Service Worker für Gourmen PWA
- * Verbesserte Offline-Funktionalität und Update-Management
+﻿/**
+ * Service Worker fÃ¼r Gourmen PWA
+ * Verbesserte Offline-FunktionalitÃ¤t und Update-Management
  */
 
-const VERSION = '3.6.1';
+const VERSION = '3.6.2';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
-// Aktive Caches dieser SW-Version - alles andere wird beim Activate gelöscht
+// Aktive Caches dieser SW-Version - alles andere wird beim Activate gelÃ¶scht
 const ACTIVE_CACHES = new Set([STATIC_CACHE, DYNAMIC_CACHE, CACHE_NAME]);
 
 // Assets die gecacht werden sollen (nur wirklich statische Dateien!)
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/static/manifest.json',
-    '/static/css/main-v2.7e8d8733.css',
+    '/static/css/main-v2.cca11feb.css',
     '/static/css/public.7c8fae54.css',
     '/static/favicon.6d319de4.ico',
     '/static/favicon.0c03bb1d.svg',
@@ -30,7 +30,7 @@ const STATIC_ASSETS = [
     '/static/img/pwa/apple-touch-icon-180.8b095258.png',
     '/static/img/pwa/badge-72.d5fcf4dc.png',
     '/static/img/pwa/badge-96.054a5b81.png',
-    '/static/offline.38ed652d.html'
+    '/static/offline.da0edebe.html'
 ];
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
@@ -235,7 +235,7 @@ self.addEventListener('notificationclick', (event) => {
     );
 });
 
-// Background Sync Event (für zukünftige Offline-Funktionen)
+// Background Sync Event (fÃ¼r zukÃ¼nftige Offline-Funktionen)
 // Konsolidierter Background-Sync-Handler
 self.addEventListener('sync', (event) => {
     if (event.tag === 'background-sync') {
@@ -262,7 +262,7 @@ async function networkOnlyHtml(event) {
         });
     } catch (error) {
         console.log('Service Worker: HTML offline -> offline.html', error && error.message);
-        const offlineResponse = await caches.match('/static/offline.38ed652d.html');
+        const offlineResponse = await caches.match('/static/offline.da0edebe.html');
         if (offlineResponse) return offlineResponse;
         return new Response('Offline - Keine Verbindung', {
             status: 503,
@@ -322,7 +322,7 @@ async function networkFirst(request, cacheName) {
         
         if (networkResponse.ok) {
             const cache = await caches.open(cacheName);
-            // Klone Response für Cache, da Safari manchmal Probleme mit bereits gelesenen Responses hat
+            // Klone Response fÃ¼r Cache, da Safari manchmal Probleme mit bereits gelesenen Responses hat
             const responseClone = networkResponse.clone();
             try {
                 await cache.put(request, responseClone);
@@ -335,7 +335,7 @@ async function networkFirst(request, cacheName) {
     } catch (error) {
         console.log('Network failed, trying cache:', error);
         
-        // Prüfe zuerst im Cache
+        // PrÃ¼fe zuerst im Cache
         const cachedResponse = await caches.match(request);
         if (cachedResponse) {
             console.log('Service Worker: Serving from cache:', request.url);
@@ -344,7 +344,7 @@ async function networkFirst(request, cacheName) {
         
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.38ed652d.html');
+        const offlineResponse = await caches.match('/static/offline.da0edebe.html');
         if (offlineResponse) {
             return offlineResponse;
         }
