@@ -115,6 +115,7 @@ def index():
         members_count=members_count,
         admins_count=admins_count,
         upcoming_events_count=upcoming_events_count,
+        current_season=current_season,
         current_season_events=current_season_events,
         audit_events_count=audit_events_count,
         active_articles_count=active_articles_count,

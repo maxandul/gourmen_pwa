@@ -206,7 +206,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
-| `.hub-grid` | – | Auto-Fit-Grid für Hub-Seiten (Member, Admin, Settings) |
+| `.hub-grid` | – | Auto-Fit-Grid für Hub-Seiten (Member, Settings); Admin-Übersicht nutzt `admin-hub` |
+| `.admin-hub`, `.admin-hub__hero`, `.admin-hub__metrics`, `.admin-hub__cta` | – | Admin-Dashboard (`admin/index`): grosse verlinkte Hero-Kacheln mit Kennzahlen statt `hub-card` |
 | `.hub-card` | `--featured` | Kachel auf Hub-Grid (kombiniert mit `.card`) |
 
 ### 5.6 Forms

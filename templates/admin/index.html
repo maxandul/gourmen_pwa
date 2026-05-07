@@ -1,86 +1,115 @@
 {% extends "base.html" %}
+{% set _sprite = url_for('static', filename='icons/lucide-sprite.7e463391.svg') %}
+
 {% block title %}Admin - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
   <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('member.index') }}">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <use href="{{ _sprite }}#chevron-left"></use>
+        </svg>
+        <span>Zurück zu Verein</span>
+      </a>
+    </p>
     <h1>
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <use href="/static/icons/lucide-sprite.svg#settings"></use>
+        <use href="{{ _sprite }}#settings"></use>
       </svg>
       Admin-Bereich
     </h1>
   </div>
 
-  {% if not current_user.is_admin() %}
-  <p class="text-secondary" style="margin-bottom: var(--space-4);">Hinweis: Bearbeiten, sensible Daten und sicherheitsrelevante Aktionen sind nur für Admins.</p>
-  {% endif %}
+  <div class="page-content admin-hub">
+    {% if not current_user.is_admin() %}
+    <p class="admin-hub__hint">Hinweis: Bearbeiten, sensible Daten und sicherheitsrelevante Aktionen sind nur für Admins.</p>
+    {% endif %}
 
-  <div class="page-content hub-grid">
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#users"></use>
-          </svg>
-          Mitgliederverwaltung
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Aktive Mitglieder</span>
-          <span class="info-row__value">{{ members_count or 0 }}</span>
+    <div class="admin-hub__grid">
+      <a href="{{ url_for('admin.members') }}" class="admin-hub__hero admin-hub__hero--members">
+        <svg class="icon admin-hub__decal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <use href="{{ _sprite }}#users"></use>
+        </svg>
+        <div class="admin-hub__hero-inner">
+          <div class="admin-hub__hero-copy">
+            <span class="admin-hub__eyebrow">Mitgliederverwaltung</span>
+            <h2 class="admin-hub__title">Mitglieder und Kontakte</h2>
+            <p class="admin-hub__lede">
+              Übersicht über den Verein: aktive Mitglieder, Admins und kommende Events.
+              Saison {{ current_season }}: {{ current_season_events }} Events erfasst.
+            </p>
+          </div>
+          <div class="admin-hub__metrics" role="group" aria-label="Kennzahlen Mitglieder und Events">
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ members_count or 0 }}</span>
+              <span class="admin-hub__metric-label">Aktive</span>
+            </div>
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ admins_count or 0 }}</span>
+              <span class="admin-hub__metric-label">Admins</span>
+            </div>
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ upcoming_events_count or 0 }}</span>
+              <span class="admin-hub__metric-label">Kommend</span>
+            </div>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-row__label">Admins</span>
-          <span class="info-row__value">{{ admins_count or 0 }}</span>
+        <div class="admin-hub__cta-row">
+          <span class="admin-hub__cta">
+            {% if current_user.is_admin() %}
+            Mitglieder verwalten
+            {% else %}
+            Mitgliederliste öffnen
+            {% endif %}
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <use href="{{ _sprite }}#chevron-right"></use>
+            </svg>
+          </span>
         </div>
-        <div class="info-row">
-          <span class="info-row__label">Letzte Aktivität</span>
-          <span class="info-row__value">Heute</span>
-        </div>
-      </div>
-      <div class="card__footer">
-        <a href="{{ url_for('admin.members') }}" class="btn btn--primary">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#user-cog"></use>
-          </svg>
-          {% if current_user.is_admin() %}Mitglieder verwalten{% else %}Mitgliederliste{% endif %}
-        </a>
-      </div>
-    </div>
+      </a>
 
-    <div class="card hub-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#shopping-bag"></use>
-          </svg>
-          Merch-Verwaltung
-        </h2>
-      </div>
-      <div class="card__body">
-        <div class="info-row">
-          <span class="info-row__label">Verfügbare Artikel</span>
-          <span class="info-row__value">{{ active_articles_count or 0 }}</span>
+      <a href="{{ url_for('admin.merch') }}" class="admin-hub__hero admin-hub__hero--merch">
+        <svg class="icon admin-hub__decal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <use href="{{ _sprite }}#shirt"></use>
+        </svg>
+        <div class="admin-hub__hero-inner">
+          <div class="admin-hub__hero-copy">
+            <span class="admin-hub__eyebrow">Merch</span>
+            <h2 class="admin-hub__title">Shop und Bestellungen</h2>
+            <p class="admin-hub__lede">
+              Artikel, offene Lieferungen und Gewinn aus bereits gelieferten Bestellungen.
+            </p>
+          </div>
+          <div class="admin-hub__metrics" role="group" aria-label="Kennzahlen Merch">
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ active_articles_count or 0 }}</span>
+              <span class="admin-hub__metric-label">Artikel aktiv</span>
+            </div>
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ pending_orders_count or 0 }}</span>
+              <span class="admin-hub__metric-label">Offen</span>
+            </div>
+            <div class="admin-hub__metric">
+              <span class="admin-hub__metric-value">{{ "%.2f"|format(total_revenue_chf or 0) }}</span>
+              <span class="admin-hub__metric-label">CHF Gewinn</span>
+            </div>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-row__label">Offene Bestellungen</span>
-          <span class="info-row__value">{{ pending_orders_count or 0 }}</span>
+        <div class="admin-hub__cta-row">
+          <span class="admin-hub__cta">
+            {% if current_user.is_admin() %}
+            Merch verwalten
+            {% else %}
+            Merch ansehen
+            {% endif %}
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <use href="{{ _sprite }}#chevron-right"></use>
+            </svg>
+          </span>
         </div>
-        <div class="info-row">
-          <span class="info-row__label">Gesamtumsatz (Gewinn)</span>
-          <span class="info-row__value">{{ "%.2f"|format(total_revenue_chf or 0) }} CHF</span>
-        </div>
-      </div>
-      <div class="card__footer">
-        <a href="{{ url_for('admin.merch') }}" class="btn btn--primary">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <use href="/static/icons/lucide-sprite.svg#shopping-cart"></use>
-          </svg>
-          {% if current_user.is_admin() %}Merch verwalten{% else %}Merch ansehen{% endif %}
-        </a>
-      </div>
+      </a>
     </div>
   </div>
 </div>
