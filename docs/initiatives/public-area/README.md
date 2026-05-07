@@ -41,7 +41,7 @@ Stand 2026-05 nicht Teil dieser Initiative:
 
 | Route | Zweck |
 |---|---|
-| `/` | Landing: Hero · Stats-Strip · Hitlist-Teaser (Top 5) · Teaser-Card "Ueber uns" |
+| `/` | Landing: Hero (inkl. Pitch, KPI-Band, Link Ueber uns) · Hitlist-Teaser (Top 5) |
 | `/ueber-uns` | Verein, Leitbild, Geschichte, Aktivitaeten-Sektion, Funktionen aus `Funktion`-Enum (nur abstrakte Texte) |
 | `/restaurants` | Vollansicht Gourmen-Hitlist mit Suche + Pagination |
 
@@ -52,7 +52,7 @@ Alle Routes leben im bestehenden `public`-Blueprint.
 | # | Phase | Inhalt | Status |
 |---|---|---|---|
 | 1 | Shell-Split + Login-Reposition | Public-Top-Nav + Public-Footer-Partial; Hero ohne Login-Button; Login-Pfad ueber den `.user-menu`-Avatar (immer sichtbar – im anonymen Zustand enthaelt das Dropdown nur "Anmelden"); Pill-Tabs auf allen Viewports; Hitlist auf Landing zum Top-5-Teaser; Route `/restaurants` | **done** 2026-05 (visuell verifiziert; PWA v3.7.9) |
-| 2 | Ueber-uns-Seite | Route `/ueber-uns` (`public.about`), Template `public/about.html`; Topnav-Pill + Drawer; Teaser-Card auf `/`; Sektionen Leitbild, Geschichte, Aktivitaeten, Funktionen (anonymisiert) | **done** 2026-05 (PWA v3.7.9) |
+| 2 | Ueber-uns-Seite | Route `/ueber-uns` (`public.about`), Template `public/about.html`; Topnav-Pill + Drawer; von `/` erreichbar (Hero-CTA statt Teaser-Card); Sektionen Leitbild, Geschichte, Aktivitaeten, Funktionen (anonymisiert) | **done** 2026-05 (PWA v3.7.9) |
 | 3 | Hitlist-Vollansicht polieren | `/restaurants` ueber den 1:1-Stand aus Phase 1 hinaus aufwerten (z.B. Sortier-Optionen, klarere Hierarchie) | pending |
 
 Phase 1 ist der eigentliche Strukturschritt. Phase 2 und 3 sind Content- bzw. Polishing-Arbeit auf der etablierten Shell.
@@ -75,7 +75,7 @@ Phase 1 ist der eigentliche Strukturschritt. Phase 2 und 3 sind Content- bzw. Po
 
 - `/ueber-uns` erreichbar, in Public-Top-Nav verlinkt.
 - Sektionen: Leitbild ("Meh isch meh"), Vereinsgeschichte (seit 2021), Aktivitaeten (Monatsessen / GGL / Ausflug / BillBro / GV), Funktionen (Vereinspraesident, Kommissionspraesident, Schatzmeister, Marketingchef, Reisekommissar, Rechnungspruefer, Mitglied) – jeweils mit kurzem Beschriebstext, **abstrakt** ohne Personennamen.
-- Teaser-Card auf `/` verlinkt nach `/ueber-uns`.
+- Von `/` zur Ueber-uns-Seite verlinken (z. B. Hero-Bereich oder Nav).
 
 ### Phase 3
 

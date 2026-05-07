@@ -147,6 +147,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: Start → `public.landing`, Über uns → `public.about` (`/ueber-uns`), Hitlist → `public.restaurants` (`/restaurants`); `__tab`, `__tab--active`. |
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
+| `.landing-hero--integrated` | mit `landing-hero__grid`, `landing-hero__pitch`, `landing-hero__stats`, `landing-hero__about-cta` | `public.landing`: ein Card-Block fuer Hero, Vereinstext (Pitch), KPI-Band (`metrics-spotlight`) und kleiner Ueber-uns-CTA. |
 | `.public-about` | – | Zusaetzlicher Wrapper auf `public.about` (mit `landing`): Typo/Abstaende fuer Fliesstext und Listen in `.card__body`. |
 | `.app-shell-promos` | – | In `#top-notifications` eingehängter Flex-Strip (App-Shell, nicht `data-layout="public"`): Platz für `.btn`-Hinweise aus `static/js/pwa.js` (Installieren, Push); `:empty` blendet aus. |
 | `.app-shell-install-banner__steps` | mit `__body` (`.stack-vertical`), `__actions` | Struktur für iOS/Android-PWA-Alerts in `pwa.js`; sitzt in `#top-notifications`. |
