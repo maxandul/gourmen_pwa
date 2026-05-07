@@ -5,20 +5,9 @@
 </svg>
 {%- endmacro %}
 
-{% macro landing_page_url(page_num) -%}
-{%- set params = {'page': page_num} -%}
-{%- if request.args.get('show') == '1' -%}
-{%- set _ = params.update({'show': '1'}) -%}
-{%- endif -%}
-{%- if table_query -%}
-{%- set _ = params.update({'q': table_query}) -%}
-{%- endif -%}
-{{ url_for('public.landing', **params) }}
-{%- endmacro %}
-
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.7c8fae54.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.7c57332e.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -35,13 +24,6 @@
             <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
             <h1 id="landing-hero-heading">Gourmen</h1>
             <p class="lead landing-lead-quote">«Meh isch meh!»</p>
-            <div class="landing-actions">
-                {% if current_user.is_authenticated %}
-                <a href="{{ url_for('dashboard.index') }}" class="btn btn--primary">{{ lucide_icon('id-card', 'icon') }} Zum Memberbereich</a>
-                {% else %}
-                <a href="{{ url_for('auth.login') }}" class="btn btn--primary">{{ lucide_icon('log-in', 'icon') }} Anmelden</a>
-                {% endif %}
-            </div>
         </div>
         <div class="landing-hero__visual">
             <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
@@ -82,31 +64,14 @@
         </div>
     </section>
 
-    <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
         <h2 id="landing-restaurants-heading" class="landing-section-title">
             {{ lucide_icon('star') }}
-            Gourmen-Hitlist
+            Top 5 Hitlist
         </h2>
-        <div class="landing-hitlist-toolbar">
-            <form class="landing-hitlist-filter" role="search" aria-label="Restaurant, Küche oder Adresse in der Gourmen-Hitlist suchen">
-                {% if request.args.get('show') == '1' %}
-                <input type="hidden" name="show" value="1">
-                {% endif %}
-                <p class="landing-hitlist-filter__hint">Suche nach Restaurants, Küchen oder Adressen:</p>
-                <div class="landing-hitlist-filter__field">
-                    <label class="sr-only" for="hitlist-search">Restaurant suchen</label>
-                    <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query|e }}" placeholder="Suche..." autocomplete="off">
-                </div>
-            </form>
-        </div>
         <div class="landing-hitlist-block">
-        {% if table_total == 0 %}
+        {% if restaurant_count == 0 %}
         <div class="empty-state" role="status">
-            {% if table_query %}
-            <p class="empty-state__message">Keine Treffer für diese Suche.</p>
-            {% else %}
             <p class="empty-state__message">Noch keine Einträge in der Gourmen-Hitlist.</p>
-            {% endif %}
         </div>
         {% else %}
         <div class="table-responsive data-table-wrap" role="region" aria-labelledby="landing-restaurants-heading">
@@ -121,7 +86,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in table_rows %}
+                    {% for row in hitlist_teaser_rows %}
                     <tr>
                         <td>{{ row.restaurant }}</td>
                         <td class="landing-restaurants-table__col-ort">{% if row.ort %}{{ row.ort }}{% else %}<span class="text-secondary">—</span>{% endif %}</td>
@@ -155,17 +120,12 @@
                 </tbody>
             </table>
         </div>
-        {% if table_total_pages > 1 %}
-        <nav class="landing-pagination" aria-label="Seiten der Restaurant-Tabelle">
-            {% if table_page > 1 %}
-            <a href="{{ landing_page_url(table_page - 1) }}" class="btn btn--outline btn--sm">Zurück</a>
-            {% endif %}
-            <span class="landing-pagination__status">Seite {{ table_page }} von {{ table_total_pages }}</span>
-            {% if table_page < table_total_pages %}
-            <a href="{{ landing_page_url(table_page + 1) }}" class="btn btn--outline btn--sm">Weiter</a>
-            {% endif %}
-        </nav>
-        {% endif %}
+        <div class="landing-hitlist-cta">
+            <a href="{{ url_for('public.restaurants') }}" class="btn btn--outline">
+                {{ lucide_icon('list', 'icon') }}
+                Alle {{ restaurant_count }} Restaurants ansehen
+            </a>
+        </div>
         {% endif %}
         </div>
     </section>
@@ -182,78 +142,4 @@
         </div>
     </footer>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-(() => {
-  const form = document.querySelector('.landing-hitlist-filter');
-  const input = document.getElementById('hitlist-search');
-  const block = document.querySelector('.landing-hitlist-block');
-  if (!form || !input || !block) return;
-
-  const buildHitlistUrl = (pageNum) => {
-    const u = new URL(window.location.href);
-    u.searchParams.set('page', String(pageNum));
-    const q = input.value.trim();
-    if (q) u.searchParams.set('q', q);
-    else u.searchParams.delete('q');
-    return u.pathname + u.search;
-  };
-
-  let searchDebounce = null;
-
-  const keepScrollPosition = async (updater) => {
-    const beforeTop = block.getBoundingClientRect().top;
-    await updater();
-    const afterTop = block.getBoundingClientRect().top;
-    window.scrollBy(0, afterTop - beforeTop);
-  };
-
-  const loadTablePage = async (url) => {
-    try {
-      const response = await fetch(url, {
-        headers: { 'X-Requested-With': 'fetch' },
-        credentials: 'same-origin',
-      });
-      if (!response.ok) {
-        window.location.href = url;
-        return;
-      }
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const nextBlock = doc.querySelector('.landing-hitlist-block');
-      if (!nextBlock) {
-        window.location.href = url;
-        return;
-      }
-      await keepScrollPosition(async () => {
-        block.innerHTML = nextBlock.innerHTML;
-      });
-      window.history.replaceState({}, '', url);
-    } catch (error) {
-      window.location.href = url;
-    }
-  };
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    clearTimeout(searchDebounce);
-    loadTablePage(buildHitlistUrl(1));
-  });
-  input.addEventListener('input', () => {
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => {
-      loadTablePage(buildHitlistUrl(1));
-    }, 300);
-  });
-  block.addEventListener('click', (event) => {
-    const link = event.target.closest('.landing-pagination a[href]');
-    if (!link) return;
-    event.preventDefault();
-    loadTablePage(link.href);
-  });
-})();
-</script>
 {% endblock %}

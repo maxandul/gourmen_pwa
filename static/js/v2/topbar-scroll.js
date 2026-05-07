@@ -35,6 +35,9 @@
     if (document.querySelector('[role="dialog"][aria-modal="true"]:not([hidden])')) {
       return true;
     }
+    if (document.querySelector('dialog.public-drawer[open]')) {
+      return true;
+    }
     if (document.querySelector('details.user-menu[open]')) {
       return true;
     }

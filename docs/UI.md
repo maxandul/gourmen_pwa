@@ -139,7 +139,14 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.page-back` | – | „Zurück"-Link mit chevron-left |
 | `.bottom-nav` | – | Bottom-Navigation Mobile |
 | `.sidebar` | – | Desktop-Sidebar ab 1024px |
-| `.user-bar` | – | Top-Leiste mit Theme-Toggle und User-Menu (versteckt sich auf Mobile/Tablet via `body[data-topbar-hidden]` beim Runterscrollen) |
+| *(Body)* | `data-layout="public"` | Nur wenn `request.endpoint.startswith('public.')`: App-Navigation nicht im Markup; Main-Content volle Breite (kein Sidebar-`margin-left`), reduziertes unteres Padding ohne Bottom-Nav. |
+| `.user-bar` | `public-topnav` (zusammen auf `public.*`: `class="user-bar public-topnav"`) | Top-Bar mit Theme-Toggle und User-Menue (Hide-on-Scroll Mobile/Tablet). Public zusätzlich: Pills mittig, Hamburger + Drawer klein Viewport; bei Login: Dropdown zuerst **Zur App**, dann Profil/Sicherheit/**Einstellungen** (`member.technical`). |
+| `.public-topnav__brand` | – | Cluster links: Logo + Hamburger-Button (`public-topnav__menu-btn`). |
+| `.public-topnav__nav--desktop` | – | Zentrierte Pill-Navigation nur ab 1024px (kein horizontales Scrollen). |
+| `.public-drawer` | mit `__panel`, `__header`, `__title`, `__close`, `__nav`, `__list`, `__link`; Schliessen-Controls mit `data-drawer-close` | Modal-Dialog-Drawer unter 1024px; JS: `static/js/v2/public-drawer.js`. |
+| `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: `__tab`, `__tab--active` (inaktiv ohne Border, aktiv Border wie Avatar/Theme-Track). Hitlist-Pill zeigt auf `public.restaurants` (`/restaurants`). |
+| `.landing-hitlist-cta` | – | Unter der Top-5-Tabelle auf der Landing (`public.landing`): Link zur vollstaendigen Hitlist. |
+| `.landing-section-title--page` | – | Pagetitle auf `public.restaurants` (`h1.landing-section-title`). |
 | `.user-menu` | – | mit `__summary`, `__panel`, `__list`, `__link`, `__link--danger`, `__sep`, `__badge` |
 | `.settings-nav` | – | mit `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron` |
 

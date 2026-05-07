@@ -11,6 +11,10 @@ from backend.services.monatsessen_stats import (
 
 bp = Blueprint('public', __name__)
 
+LANDING_HITLIST_TEASER = 5
+RESTAURANTS_PER_PAGE = 10
+
+
 @bp.route('/')
 def landing():
     """Landing page - redirects to dashboard if user is logged in (unless explicitly requested)"""
@@ -21,24 +25,13 @@ def landing():
         return redirect(url_for('dashboard.index'))
 
     try:
-        page_raw = request.args.get('page', '1')
-        try:
-            page = int(page_raw)
-        except (TypeError, ValueError):
-            page = 1
-        if page < 1:
-            page = 1
-
         now = datetime.utcnow()
         landing_extra = get_landing_extras(now)
-        table_query = (request.args.get('q') or '').strip()
-        table_rows, table_total, table_total_pages, table_page, hitlist_baseline_total = (
-            get_landing_restaurant_table(
-                now,
-                page=page,
-                per_page=10,
-                query=table_query or None,
-            )
+        teaser_rows, _, _, _, hitlist_baseline_total = get_landing_restaurant_table(
+            now,
+            page=1,
+            per_page=LANDING_HITLIST_TEASER,
+            query=None,
         )
 
         # Public stats
@@ -51,14 +44,9 @@ def landing():
             'public/landing.html',
             member_count=member_count,
             restaurant_count=restaurant_count,
-            last_restaurant=landing_extra['last_restaurant'],
             next_essen_date=landing_extra['next_essen_date'],
             next_essen_restaurant=landing_extra.get('next_essen_restaurant'),
-            table_rows=table_rows,
-            table_total=table_total,
-            table_page=table_page,
-            table_total_pages=table_total_pages,
-            table_query=table_query,
+            hitlist_teaser_rows=teaser_rows,
         )
     except Exception:
         # Fallback if database is not ready
@@ -66,14 +54,53 @@ def landing():
             'public/landing.html',
             member_count=0,
             restaurant_count=0,
-            last_restaurant=None,
             next_essen_date=None,
             next_essen_restaurant=None,
+            hitlist_teaser_rows=[],
+        )
+
+
+@bp.route('/restaurants')
+def restaurants():
+    """Öffentliche vollständige Gourmen-Hitlist mit Suche und Pagination."""
+    try:
+        page_raw = request.args.get('page', '1')
+        try:
+            page = int(page_raw)
+        except (TypeError, ValueError):
+            page = 1
+        if page < 1:
+            page = 1
+
+        now = datetime.utcnow()
+        table_query = (request.args.get('q') or '').strip()
+        table_rows, table_total, table_total_pages, table_page, hitlist_baseline_total = (
+            get_landing_restaurant_table(
+                now,
+                page=page,
+                per_page=RESTAURANTS_PER_PAGE,
+                query=table_query or None,
+            )
+        )
+
+        return render_template(
+            'public/restaurants.html',
+            table_rows=table_rows,
+            table_total=table_total,
+            table_page=table_page,
+            table_total_pages=table_total_pages,
+            table_query=table_query,
+            restaurant_count=hitlist_baseline_total,
+        )
+    except Exception:
+        return render_template(
+            'public/restaurants.html',
             table_rows=[],
             table_total=0,
             table_page=1,
             table_total_pages=1,
             table_query='',
+            restaurant_count=0,
         )
 
 @bp.route('/health')

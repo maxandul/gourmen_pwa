@@ -110,6 +110,199 @@
 }
 
 /* ============================================
+   PUBLIC TOPNAV (Start + Hitlist, Hamburger < 1024px)
+   ============================================ */
+
+.user-bar.public-topnav {
+  gap: var(--space-3);
+}
+
+.public-topnav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.public-topnav__menu-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(27, 35, 46, 0.9);
+  color: white;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.public-topnav__menu-btn:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(27, 35, 46, 1);
+}
+
+.public-topnav__menu-btn:focus-visible {
+  outline: 2px solid var(--brand-accent-400);
+  outline-offset: 2px;
+}
+
+.public-topnav__menu-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  pointer-events: none;
+}
+
+[data-theme="light"] .public-topnav__menu-btn {
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+  background: #ffffff;
+}
+
+[data-theme="light"] .public-topnav__menu-btn:hover {
+  border-color: var(--brand-primary-600);
+}
+
+@media (min-width: 1024px) {
+  .public-topnav__menu-btn {
+    display: none;
+  }
+}
+
+.public-topnav__nav--desktop {
+  flex: 1;
+  min-width: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .public-topnav__nav--desktop {
+    display: flex;
+  }
+}
+
+/* Drawer: seitliches Sheet, Modal-Dialog */
+
+.public-drawer {
+  margin: 0;
+  padding: 0;
+  border: none;
+  max-width: none;
+  max-height: none;
+  width: min(320px, 88vw);
+  height: 100vh;
+  height: 100dvh;
+  position: fixed;
+  inset: 0 auto 0 0;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.public-drawer::backdrop {
+  background: rgba(15, 20, 28, 0.45);
+}
+
+[data-theme="light"] .public-drawer::backdrop {
+  background: rgba(27, 35, 46, 0.35);
+}
+
+.public-drawer__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.public-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.public-drawer__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+
+.public-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.public-drawer__close:hover {
+  background: var(--color-surface-hover);
+}
+
+.public-drawer__close .icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.public-drawer__nav {
+  padding: var(--space-2) 0;
+}
+
+.public-drawer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.public-drawer__link {
+  display: block;
+  padding: var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: background var(--transition-fast);
+}
+
+.public-drawer__link:hover {
+  background: var(--color-surface-hover);
+}
+
+.public-drawer__link:focus-visible {
+  outline: 2px solid var(--brand-accent-400);
+  outline-offset: -2px;
+}
+
+@media (min-width: 1024px) {
+  .public-drawer {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-topnav__menu-btn,
+  .public-drawer__close,
+  .public-drawer__link {
+    transition: none;
+  }
+}
+
+/* ============================================
    BOTTOM NAVIGATION
    ============================================ */
 
@@ -276,6 +469,17 @@
     margin-left: 200px;
     padding-bottom: var(--space-4); /* Bottom Nav weg, kein Padding nötig */
     transition: margin-left var(--transition-normal);
+  }
+
+  /* Public-Shell: keine Sidebar im Markup – volle Content-Breite */
+  body[data-layout="public"] .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  body[data-layout="public"] .main-content {
+    padding-bottom: calc(var(--space-6) + var(--safe-area-bottom));
   }
 }
 
