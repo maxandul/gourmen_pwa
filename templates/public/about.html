@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.e90bcf5c.css') }}">
+{% endblock %}
+
+{% block title %}Über uns · Gourmen{% endblock %}
+
+{% block og_title %}Gourmen – Über uns{% endblock %}
+{% block og_description %}Kulinarischer Verein Zürich – Leitbild, Geschichte und Aktivitäten{% endblock %}
+{% block twitter_title %}Gourmen – Über uns{% endblock %}
+{% block twitter_description %}Kulinarischer Verein Zürich – Leitbild, Geschichte und Aktivitäten{% endblock %}
+
+{% block content %}
+<div class="container landing public-about">
+    <h1 class="landing-section-title landing-section-title--page">
+        {{ lucide_icon('users') }}
+        Über uns
+    </h1>
+
+    <section class="card" aria-labelledby="about-leitbild-heading">
+        <div class="card__header">
+            <h2 id="about-leitbild-heading" class="card__title">
+                {{ lucide_icon('heart') }}
+                Leitbild
+            </h2>
+        </div>
+        <div class="card__body">
+            <p>Unser Leitsatz lautet: «Meh isch meh!» Wir feiern gutes Essen, den gemeinsamen Tisch und die Freude am Entdecken.</p>
+        </div>
+    </section>
+
+    <section class="card" aria-labelledby="about-geschichte-heading">
+        <div class="card__header">
+            <h2 id="about-geschichte-heading" class="card__title">
+                {{ lucide_icon('book-open') }}
+                Vereinsgeschichte
+            </h2>
+        </div>
+        <div class="card__body">
+            <p>Die Gourmen sind seit 2021 als kulinarischer Verein in Zürich aktiv. Was als kleiner Kreis von Freunden begann,
+                hat sich zu einer festen Gruppe rund um Monatsessen, Ausflüge und interne Traditionen entwickelt.</p>
+        </div>
+    </section>
+
+    <section class="card" aria-labelledby="about-aktivitaeten-heading">
+        <div class="card__header">
+            <h2 id="about-aktivitaeten-heading" class="card__title">
+                {{ lucide_icon('calendar-days') }}
+                Aktivitäten
+            </h2>
+        </div>
+        <div class="card__body">
+            <p>Unser Programm verdichtet sich auf wenige wiederkehrende Formate:</p>
+            <ul>
+                <li><strong>Monatsessen:</strong> regelmässige Restaurantbesuche; nach dem Essen wird der Betrag über das hauseigene BillBro-Feature unserer Vereins-App verteilt.</li>
+                <li><strong>GGL (Gourmen Guessing League):</strong> Saisonaler Wettbewerb – je knapper der Rechnungsbetrag geschätzt, desto mehr Punkte.</li>
+                <li><strong>Ausflüge:</strong> jährliche Vereins-Reise.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="card" aria-labelledby="about-funktionen-heading">
+        <div class="card__header">
+            <h2 id="about-funktionen-heading" class="card__title">
+                {{ lucide_icon('shield') }}
+                Vereinsfunktionen
+            </h2>
+        </div>
+        <div class="card__body">
+            <p>Die folgenden Rollen sind bei uns besetzt:</p>
+            <ul>
+                <li><strong>Vereinspraesident:</strong> strategische Führung, Repräsentation und Zusammenführung auf Vorstandesebene.</li>
+                <li><strong>Kommissionspräsident:</strong> Koordination der Generalversammlung und Kommissaren.</li>
+                <li><strong>Schatzmeister:</strong> Buchhaltung, Budget und nachvollziehbare Finanzübersicht.</li>
+                <li><strong>Marketingchef:</strong> Aussenkommunikation und Merchandise.</li>
+                <li><strong>Reisekommissar:</strong> Organisation von Ausflügen und Reisen.</li>
+                <li><strong>Rechnungsprüfer:</strong> unabhaengige Prüfung der Buchführung.</li>
+                <li><strong>Mitglieder:</strong> aktive Teilnahme am Vereinsleben ohne zusätzliche Amtspflicht.</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <p class="landing-footer__label">Kontakt &amp; Social</p>
+        <div class="socials">
+            <a href="https://instagram.com/gourmen_zh" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Gourmen auf Instagram">
+                {{ lucide_icon('instagram') }}
+            </a>
+            <a href="mailto:fohvollenmaenllichen@gmail.com" class="social-link" aria-label="E-Mail an Gourmen">
+                {{ lucide_icon('mail') }}
+            </a>
+        </div>
+    </footer>
+</div>
+{% endblock %}

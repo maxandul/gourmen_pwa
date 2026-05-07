@@ -7,7 +7,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.7c57332e.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.e90bcf5c.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -64,6 +64,7 @@
         </div>
     </section>
 
+    <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
         <h2 id="landing-restaurants-heading" class="landing-section-title">
             {{ lucide_icon('star') }}
             Top 5 Hitlist
@@ -128,6 +129,29 @@
         </div>
         {% endif %}
         </div>
+    </section>
+
+    <section class="landing-event" aria-labelledby="landing-about-teaser-heading">
+        <article class="card">
+            <div class="card__header">
+                <h2 id="landing-about-teaser-heading" class="card__title">
+                    {{ lucide_icon('users') }}
+                    Verein und Idee
+                </h2>
+            </div>
+            <div class="card__body">
+                <p class="landing-event-teaser">
+                    Die Gourmen sind ein kulinarischer Verein in Zuerich – gemeinsam Restaurants entdecken, fair teilen und uns messen,
+                    ohne es verkrampft zu nehmen. Leitmotiv: Meh isch meh.
+                </p>
+                <div class="landing-hitlist-cta">
+                    <a href="{{ url_for('public.about') }}" class="btn btn--outline">
+                        {{ lucide_icon('chevron-right', 'icon') }}
+                        Zu Ueber uns
+                    </a>
+                </div>
+            </div>
+        </article>
     </section>
 
     <footer class="landing-footer">
