@@ -1,0 +1,12 @@
+{# Gemeinsame Formular-Makros: Pflichtfeld-Stern (WTForms flags.required), Feldfehler. #}
+{% macro required_mark(field) -%}
+{%- if field.flags.required -%}
+<span class="form-field__required" aria-hidden="true">*</span>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro field_errors(field) -%}
+{%- if field.errors -%}
+<span class="form-field__error">{{ field.errors[0] }}</span>
+{%- endif -%}
+{%- endmacro %}

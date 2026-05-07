@@ -8,12 +8,21 @@
 {% block title %}Mitglieder - Admin{% endblock %}
 
 {% block content %}
+{% set funktion_label = {
+  'MEMBER': 'Member',
+  'VEREINSPRAESIDENT': 'Vereinspräsident',
+  'KOMMISSIONSPRAESIDENT': 'Kommissionspräsident',
+  'SCHATZMEISTER': 'Schatzmeister',
+  'MARKETINGCHEF': 'Marketingchef',
+  'REISEKOMMISSAR': 'Reisekommissar',
+  'RECHNUNGSPRUEFER': 'Rechnungsprüfer',
+} %}
 <div class="container">
     <div class="page-header">
         <p class="page-back">
             <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Verein</span></a>
         </p>
-        <h1>
+        <h1 id="admin-members-heading">
             {{ lucide_icon('id-card') }}
             Mitglieder
         </h1>
@@ -24,152 +33,101 @@
             </a>
         </div>
     </div>
-    
-    <div class="page-content">
-        <div class="members-grid">
-            {% for member in members %}
-            <div class="card card--collapsible is-collapsed {% if not member.is_active %}member-card--inactive{% endif %}">
-                <div class="card__header">
-                    <div class="card__title-group">
-                        <h2 class="card__title">{{ member.display_name_with_spirit }}</h2>
-                    </div>
-                    <div class="card__actions card__actions--split-toggle">
-                        <div class="card__actions-chips">
-                            {% if member.role.value == 'ADMIN' %}<span class="chip chip--accent">Admin</span>{% endif %}
-                            {% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}
-                            {% if member.vorstandsmitglied %}<span class="chip chip--info">Vorstand</span>{% endif %}
-                        </div>
-                        <button class="card__toggle" type="button" aria-label="Mitglieddetails ein- oder ausklappen" aria-expanded="false">
-                            {{ lucide_icon('chevron-down') }}
-                        </button>
-                    </div>
-                </div>
 
-                <div class="card__collapsible-content">
-                <div class="card__body">
-                    <div class="card-section">
-                        <div class="card-section__header">
-                            <h3 class="card-section__title">Grunddaten</h3>
-                        </div>
-                        <div class="card-section__body">
-                            <div class="info-row"><span class="info-row__label">Name</span><span class="info-row__value">{{ member.vorname }} {{ member.nachname }}</span></div>
-                            {% if member.geburtsdatum %}<div class="info-row"><span class="info-row__label">Geboren</span><span class="info-row__value">{{ member.geburtsdatum.strftime('%d.%m.%Y') }}</span></div>{% endif %}
-                            {% if member.nationalitaet %}<div class="info-row"><span class="info-row__label">Nationalität</span><span class="info-row__value">{{ member.nationalitaet }}</span></div>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="card-section">
-                        <div class="card-section__header">
-                            <h3 class="card-section__title">Kontakt</h3>
-                        </div>
-                        <div class="card-section__body">
-                            <div class="info-row"><span class="info-row__label">E-Mail</span><span class="info-row__value">{{ member.email }}</span></div>
-                            {% if member.telefon %}<div class="info-row"><span class="info-row__label">Telefon</span><span class="info-row__value">{{ member.telefon }}</span></div>{% endif %}
-                            {% if member.strasse or member.plz or member.ort %}
-                            <div class="info-row">
-                                <span class="info-row__label">Adresse</span>
-                                <span class="info-row__value">
+    <div class="page-content page-content--admin-members-table">
+        <div class="data-table-scroll-outer">
+            <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="admin-members-heading">
+                <table class="data-table admin-members-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rufname</th>
+                            <th scope="col">Vorname</th>
+                            <th scope="col">Nachname</th>
+                            <th scope="col">Geboren</th>
+                            <th scope="col">Nationalität</th>
+                            <th scope="col">E-Mail</th>
+                            <th scope="col">Telefon</th>
+                            <th scope="col">Adresse</th>
+                            <th scope="col">Funktion</th>
+                            <th scope="col">Beitritt</th>
+                            <th scope="col">Grösse</th>
+                            <th scope="col">Gewicht</th>
+                            <th scope="col">Schuh</th>
+                            <th scope="col">Kleider</th>
+                            <th scope="col">Zimmerwunsch</th>
+                            <th scope="col">Spirit Animal</th>
+                            <th scope="col">Führerschein</th>
+                            <th scope="col" class="admin-members-table__col-status">Status</th>
+                            <th scope="col"><span class="sr-only">Aktionen</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr class="{% if not member.is_active %}admin-members-table__row--inactive{% endif %}">
+                            <td>{{ member.display_spirit_rufname }}</td>
+                            <td>{% if member.vorname %}{{ member.vorname }}{% else %}—{% endif %}</td>
+                            <td>{% if member.nachname %}{{ member.nachname }}{% else %}—{% endif %}</td>
+                            <td>{% if member.geburtsdatum %}{{ member.geburtsdatum.strftime('%d.%m.%Y') }}{% else %}—{% endif %}</td>
+                            <td>{% if member.nationalitaet_display %}{{ member.nationalitaet_display }}{% else %}—{% endif %}</td>
+                            <td class="admin-members-table__col-email" title="{{ member.email }}">{{ member.email }}</td>
+                            <td>{% if member.telefon %}{{ member.telefon }}{% else %}—{% endif %}</td>
+                            <td class="admin-members-table__col-adresse" title="{% if member.strasse or member.plz or member.ort %}{% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}{% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort or '' }}{% endif %}{% endif %}">
+                                {% if member.strasse or member.plz or member.ort %}
                                     {% if member.strasse %}{{ member.strasse }}{% if member.hausnummer %} {{ member.hausnummer }}{% endif %}{% endif %}
-                                    {% if member.plz or member.ort %}{% if member.strasse %}, {% endif %}{% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort }}{% endif %}
-                                </span>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    {% if member.funktion or member.beitritt %}
-                    <div class="card-section">
-                        <div class="card-section__header">
-                            <h3 class="card-section__title">Verein</h3>
-                        </div>
-                        <div class="card-section__body">
-                            {% if member.funktion %}<div class="info-row"><span class="info-row__label">Funktion</span><span class="info-row__value">{{ member.funktion.value }}</span></div>{% endif %}
-                            {% if member.beitritt %}<div class="info-row"><span class="info-row__label">Beitritt</span><span class="info-row__value">{{ member.beitritt.strftime('%m.%Y') }}</span></div>{% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if member.koerpergroesse or member.koerpergewicht or member.schuhgroesse or member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                    <div class="card-section">
-                        <div class="card-section__header">
-                            <h3 class="card-section__title">Körperlich</h3>
-                        </div>
-                        <div class="card-section__body">
-                            {% if member.koerpergroesse %}<div class="info-row"><span class="info-row__label">Größe</span><span class="info-row__value">{{ member.koerpergroesse }} cm</span></div>{% endif %}
-                            {% if member.koerpergewicht %}<div class="info-row"><span class="info-row__label">Gewicht</span><span class="info-row__value">{{ member.koerpergewicht }} kg</span></div>{% endif %}
-                            {% if member.schuhgroesse %}<div class="info-row"><span class="info-row__label">Schuhgröße</span><span class="info-row__value">{{ member.schuhgroesse }}</span></div>{% endif %}
-                            {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
-                            <div class="info-row">
-                                <span class="info-row__label">Kleidergrößen</span>
-                                <span class="info-row__value">
-                                    {% if member.kleider_oberteil %}Oberteil: {{ member.kleider_oberteil }}{% endif %}
-                                    {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}Hosen: {{ member.kleider_hosen }}{% endif %}
+                                    {% if member.plz or member.ort %}
+                                        {% if member.strasse %}, {% endif %}
+                                        {% if member.plz %}{{ member.plz }} {% endif %}{{ member.ort or '' }}
+                                    {% endif %}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{% if member.funktion %}{{ funktion_label.get(member.funktion.value, member.funktion.value) }}{% else %}—{% endif %}</td>
+                            <td>{% if member.beitritt %}{{ member.beitritt.strftime('%m.%Y') }}{% else %}—{% endif %}</td>
+                            <td>{% if member.koerpergroesse %}{{ member.koerpergroesse }}&nbsp;cm{% else %}—{% endif %}</td>
+                            <td>{% if member.koerpergewicht %}{{ member.koerpergewicht }}&nbsp;kg{% else %}—{% endif %}</td>
+                            <td>{% if member.schuhgroesse %}{{ member.schuhgroesse }}{% else %}—{% endif %}</td>
+                            <td class="admin-members-table__col-kleider" title="{% if member.kleider_oberteil %}O: {{ member.kleider_oberteil }}{% endif %}{% if member.kleider_hosen %}{% if member.kleider_oberteil %}; {% endif %}H: {{ member.kleider_hosen }}{% endif %}{% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}; {% endif %}Cap: {{ member.kleider_cap }}{% endif %}">
+                                {% if member.kleider_oberteil or member.kleider_hosen or member.kleider_cap %}
+                                    {% if member.kleider_oberteil %}O: {{ member.kleider_oberteil }}{% endif %}
+                                    {% if member.kleider_hosen %}{% if member.kleider_oberteil %}, {% endif %}H: {{ member.kleider_hosen }}{% endif %}
                                     {% if member.kleider_cap %}{% if member.kleider_oberteil or member.kleider_hosen %}, {% endif %}Cap: {{ member.kleider_cap }}{% endif %}
-                                </span>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if member.zimmerwunsch or member.spirit_animal or member.fuehrerschein %}
-                    <div class="card-section">
-                        <div class="card-section__header">
-                            <h3 class="card-section__title">Präferenzen</h3>
-                        </div>
-                        <div class="card-section__body">
-                            {% if member.zimmerwunsch %}<div class="info-row"><span class="info-row__label">Zimmerwunsch</span><span class="info-row__value">{{ member.zimmerwunsch }}</span></div>{% endif %}
-                            {% if member.spirit_animal %}<div class="info-row"><span class="info-row__label">Spirit Animal</span><span class="info-row__value">{{ member.spirit_animal }}</span></div>{% endif %}
-                            {% if member.fuehrerschein %}<div class="info-row"><span class="info-row__label">Führerschein</span><span class="info-row__value">{{ member.fuehrerschein }}</span></div>{% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="card__footer card__footer--wrap">
-                    <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline">
-                        {{ lucide_icon('pencil') }}
-                        Bearbeiten
-                    </a>
-                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn--outline">
-                        {{ lucide_icon('lock') }}
-                        Sensible Daten
-                    </a>
-                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn--outline">
-                        {{ lucide_icon('shield') }}
-                        Sicherheit
-                    </a>
-                </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <div class="card">
-            <div class="card__header"><h3 class="card__title">Kennzahlen</h3></div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">Gesamt</span>
-                    <span class="info-row__value">{{ members|length }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Aktiv</span>
-                    <span class="info-row__value">{{ members|selectattr('is_active')|list|length }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Admins</span>
-                    <span class="info-row__value">{{ members|selectattr('role.value', 'equalto', 'ADMIN')|list|length }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Vorstand</span>
-                    <span class="info-row__value">{{ members|selectattr('vorstandsmitglied')|list|length }}</span>
-                </div>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{% if member.zimmerwunsch_display %}{{ member.zimmerwunsch_display }}{% else %}—{% endif %}</td>
+                            <td>{% if member.spirit_animal %}{{ member.spirit_animal }}{% else %}—{% endif %}</td>
+                            <td class="admin-members-table__col-fuehrerschein" title="{{ member.fuehrerschein or '' }}">{% if member.fuehrerschein %}{{ member.fuehrerschein }}{% else %}—{% endif %}</td>
+                            <td class="admin-members-table__col-status">
+                                <div class="admin-members-table__status-chips">
+                                    {% if member.role.value == 'ADMIN' %}<span class="chip chip--accent">Admin</span>{% endif %}
+                                    {% if member.is_active %}<span class="chip chip--success">Aktiv</span>{% else %}<span class="chip chip--danger">Inaktiv</span>{% endif %}
+                                    {% if member.vorstandsmitglied %}<span class="chip chip--info">Vorstand</span>{% endif %}
+                                </div>
+                            </td>
+                            <td class="admin-members-table__actions">
+                                <div class="admin-members-table__actions-inner">
+                                    <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline btn--sm">
+                                        {{ lucide_icon('pencil') }}
+                                        Bearbeiten
+                                    </a>
+                                    <a href="{{ url_for('admin.member_sensitive', member_id=member.id) }}" class="btn btn--outline btn--sm">
+                                        {{ lucide_icon('lock') }}
+                                        Sensible Daten
+                                    </a>
+                                    <a href="{{ url_for('admin.member_security_overview', member_id=member.id) }}" class="btn btn--outline btn--sm">
+                                        {{ lucide_icon('shield') }}
+                                        Sicherheit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/v2/collapsible-card.js') }}" defer></script>
 {% endblock %}

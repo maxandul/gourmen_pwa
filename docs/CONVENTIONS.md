@@ -204,6 +204,7 @@ class MyForm(FlaskForm):
 - **Validators explizit**, niemals `optional()` ohne Begründung
 - **Choices als Tuple** `(value, label)`, value matcht Enum-Werten
 - **Submit-Button am Ende** als `SubmitField`
+- **Mitgliedsdaten Admin/Profil**: `nationalitaet` und `zimmerwunsch` nutzen dieselben Listen `NATIONALITAET_CHOICES` und `ZIMMERWUNSCH_CHOICES` aus `backend.models.member`. In `admin.edit_member` werden von der Liste abweichende gespeicherte Werte (Legacy-Freitext) temporär als Zusatz-Choice ergänzt (`_select_choices_with_legacy`), damit Speichern ohne Datenverlust möglich ist.
 
 ## Logging
 

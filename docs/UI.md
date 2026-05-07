@@ -13,7 +13,7 @@ Verbindliche UI-Konventionen für Gourmen PWA. Vor jeder Template-, CSS- oder JS
 | **Icons** | Lucide via SVG-Sprite (`static/icons/lucide-sprite.svg`); Font Awesome wird abgelöst |
 | **Breadcrumbs** | Keine. Nutzung von `.page-back` zum Elternziel |
 | **Page-Header** | Nur `h1`, kein zusätzliches Subtitle |
-| **Layout** | Mobile-first, Bottom-Nav (4 Bereiche) + Sidebar ab 1024px |
+| **Layout** | Mobile-first, Bottom-Nav (4 Bereiche) + Sidebar ab 1024px; **horizontales Dokument-Overflow**: `html { overflow-x: clip; }`, `main.main-content` und `.container` mit `width: 100%`, `min-width: 0` damit breite Tabellen nicht die Seite aufblasen |
 | **Templates** | `base.html` + Partials in `templates/partials/` |
 
 Eine **Abweichung** von einer Grundsatz-Entscheidung erfordert User-Auftrag und einen Eintrag im Entscheidungslog (siehe Sektion 8 unten).
@@ -192,6 +192,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.info-row` | – | Label/Value-Paar mit `__label`, `__value` |
 | `.data-table-wrap` | – | Wrapper um Tabellen (Scroll-Container) |
 | `.data-table` | – | Standard-Tabelle (BEM-aligned) |
+| `.admin-members-table` | `__row--inactive`, `__col-email`, `__col-adresse`, `__col-kleider`, `__col-fuehrerschein`, `__col-status`, `__status-chips`, `__actions`, `__actions-inner` | Admin Mitgliederliste (`admin/members.html`): alle Mitgliedsfelder als Spalten; `data-table-scroll-*`; erste Spalte (Rufname) sticky; inaktive Zeilen gedimmt |
+| `.page-content--admin-members-table` | – | Modifier: `min-width: 0` auf Flex-Spalte + Scroll-Hülle, damit horizontale Tabelle nicht die Seitenbreite aufbläht |
 | `.data-table__cell--event-type` | – | Spezial-Zelle für Event-Typ-Icons |
 | `.stat-tiles` | `--metrics-follow` | Container für Stat-Tiles |
 | `.stat-tile` | – | Einzelne Kennzahl-Kachel |
@@ -213,7 +215,9 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 |---|---|---|
 | `.form` | – | Formular-Container |
 | `.form-field` | – | Form-Feld (Label + Input + Error) |
+| `.form-field__required` | – | Pflichtfeld-Kennzeichnung (z.B. roter Stern direkt am Label; `aria-hidden` wenn ergänzend zu serverseitiger Validierung) |
 | `.form-actions` | – | Buttons-Container am Form-Ende |
+| `partials/_form_macros.html` | `required_mark(field)`, `field_errors(field)` | Wiederverwendbare Jinja-Makros für Pflicht-Stern (über `field.flags.required`) und erste Validierungsmeldung |
 
 ### 5.7 Tabs / Disclosure
 

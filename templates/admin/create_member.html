@@ -4,6 +4,7 @@
   <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
 </svg>
 {%- endmacro %}
+{% from 'partials/_form_macros.html' import required_mark, field_errors %}
 
 {% block title %}Neues Mitglied erstellen - Admin{% endblock %}
 
@@ -27,17 +28,17 @@
                 <div class="card__header"><h2 class="card__title">Persönliche Daten</h2></div>
                 <div class="card__body">
                     <div class="form-row">
-                        <div class="form-field">{{ form.vorname.label(class="form-field__label") }}{{ form.vorname(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.nachname.label(class="form-field__label") }}{{ form.nachname(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.vorname.label(class="form-field__label") }}{{ required_mark(form.vorname) }}{{ form.vorname(class="form-field__input") }}{{ field_errors(form.vorname) }}</div>
+                        <div class="form-field">{{ form.nachname.label(class="form-field__label") }}{{ required_mark(form.nachname) }}{{ form.nachname(class="form-field__input") }}{{ field_errors(form.nachname) }}</div>
                     </div>
-                    <div class="form-field">{{ form.rufname.label(class="form-field__label") }}{{ form.rufname(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.rufname.label(class="form-field__label") }}{{ form.rufname(class="form-field__input") }}{{ field_errors(form.rufname) }}</div>
                     <div class="form-row">
-                        <div class="form-field">{{ form.geburtsdatum.label(class="form-field__label") }}{{ form.geburtsdatum(class="form-field__input", type="date") }}</div>
-                        <div class="form-field">{{ form.nationalitaet.label(class="form-field__label") }}{{ form.nationalitaet(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.geburtsdatum.label(class="form-field__label") }}{{ form.geburtsdatum(class="form-field__input", type="date") }}{{ field_errors(form.geburtsdatum) }}</div>
+                        <div class="form-field">{{ form.nationalitaet.label(class="form-field__label") }}{{ form.nationalitaet(class="form-field__select") }}{{ field_errors(form.nationalitaet) }}</div>
                     </div>
                     <div class="form-row">
-                        <div class="form-field">{{ form.telefon.label(class="form-field__label") }}{{ form.telefon(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.email.label(class="form-field__label") }}{{ form.email(class="form-field__input", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}</div>
+                        <div class="form-field">{{ form.telefon.label(class="form-field__label") }}{{ form.telefon(class="form-field__input") }}{{ field_errors(form.telefon) }}</div>
+                        <div class="form-field">{{ form.email.label(class="form-field__label") }}{{ required_mark(form.email) }}{{ form.email(class="form-field__input", type="email", autocomplete="email", autocapitalize="none", autocorrect="off", spellcheck="false") }}{{ field_errors(form.email) }}</div>
                     </div>
                 </div>
             </div>
@@ -46,12 +47,12 @@
                 <div class="card__header"><h2 class="card__title">Adresse</h2></div>
                 <div class="card__body">
                     <div class="form-row">
-                        <div class="form-field">{{ form.strasse.label(class="form-field__label") }}{{ form.strasse(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.hausnummer.label(class="form-field__label") }}{{ form.hausnummer(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.strasse.label(class="form-field__label") }}{{ form.strasse(class="form-field__input") }}{{ field_errors(form.strasse) }}</div>
+                        <div class="form-field">{{ form.hausnummer.label(class="form-field__label") }}{{ form.hausnummer(class="form-field__input") }}{{ field_errors(form.hausnummer) }}</div>
                     </div>
                     <div class="form-row">
-                        <div class="form-field">{{ form.plz.label(class="form-field__label") }}{{ form.plz(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.ort.label(class="form-field__label") }}{{ form.ort(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.plz.label(class="form-field__label") }}{{ form.plz(class="form-field__input") }}{{ field_errors(form.plz) }}</div>
+                        <div class="form-field">{{ form.ort.label(class="form-field__label") }}{{ form.ort(class="form-field__input") }}{{ field_errors(form.ort) }}</div>
                     </div>
                 </div>
             </div>
@@ -60,9 +61,9 @@
                 <div class="card__header"><h2 class="card__title">Körperliche Daten</h2></div>
                 <div class="card__body">
                     <div class="form-row">
-                        <div class="form-field">{{ form.koerpergroesse.label(class="form-field__label") }}{{ form.koerpergroesse(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.koerpergewicht.label(class="form-field__label") }}{{ form.koerpergewicht(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.schuhgroesse.label(class="form-field__label") }}{{ form.schuhgroesse(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.koerpergroesse.label(class="form-field__label") }}{{ form.koerpergroesse(class="form-field__input") }}{{ field_errors(form.koerpergroesse) }}</div>
+                        <div class="form-field">{{ form.koerpergewicht.label(class="form-field__label") }}{{ form.koerpergewicht(class="form-field__input") }}{{ field_errors(form.koerpergewicht) }}</div>
+                        <div class="form-field">{{ form.schuhgroesse.label(class="form-field__label") }}{{ form.schuhgroesse(class="form-field__input") }}{{ field_errors(form.schuhgroesse) }}</div>
                     </div>
                 </div>
             </div>
@@ -71,9 +72,9 @@
                 <div class="card__header"><h2 class="card__title">Kleidergrössen</h2></div>
                 <div class="card__body">
                     <div class="form-row">
-                        <div class="form-field">{{ form.kleider_oberteil.label(class="form-field__label") }}{{ form.kleider_oberteil(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.kleider_hosen.label(class="form-field__label") }}{{ form.kleider_hosen(class="form-field__input") }}</div>
-                        <div class="form-field">{{ form.kleider_cap.label(class="form-field__label") }}{{ form.kleider_cap(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.kleider_oberteil.label(class="form-field__label") }}{{ form.kleider_oberteil(class="form-field__input") }}{{ field_errors(form.kleider_oberteil) }}</div>
+                        <div class="form-field">{{ form.kleider_hosen.label(class="form-field__label") }}{{ form.kleider_hosen(class="form-field__input") }}{{ field_errors(form.kleider_hosen) }}</div>
+                        <div class="form-field">{{ form.kleider_cap.label(class="form-field__label") }}{{ form.kleider_cap(class="form-field__input") }}{{ field_errors(form.kleider_cap) }}</div>
                     </div>
                 </div>
             </div>
@@ -81,9 +82,15 @@
             <div class="card">
                 <div class="card__header"><h2 class="card__title">Präferenzen</h2></div>
                 <div class="card__body">
-                    <div class="form-field">{{ form.zimmerwunsch.label(class="form-field__label") }}{{ form.zimmerwunsch(class="form-field__input") }}</div>
-                    <div class="form-field">{{ form.spirit_animal.label(class="form-field__label") }}{{ form.spirit_animal(class="form-field__input") }}</div>
-                    <div class="form-field">{{ form.fuehrerschein.label(class="form-field__label") }}{{ form.fuehrerschein(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.zimmerwunsch.label(class="form-field__label") }}{{ form.zimmerwunsch(class="form-field__select") }}{{ field_errors(form.zimmerwunsch) }}</div>
+                    <div class="form-field">{{ form.spirit_animal.label(class="form-field__label") }}{{ form.spirit_animal(class="form-field__input") }}{{ field_errors(form.spirit_animal) }}</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card__header"><h2 class="card__title">Sonstiges</h2></div>
+                <div class="card__body">
+                    <div class="form-field">{{ form.fuehrerschein.label(class="form-field__label") }}{{ form.fuehrerschein(class="form-field__input") }}{{ field_errors(form.fuehrerschein) }}</div>
                 </div>
             </div>
 
@@ -91,21 +98,24 @@
                 <div class="card__header"><h2 class="card__title">Verein & System</h2></div>
                 <div class="card__body">
                     <div class="form-row">
-                        <div class="form-field">{{ form.funktion.label(class="form-field__label") }}{{ form.funktion(class="form-field__select") }}</div>
-                        <div class="form-field">{{ form.beitritt.label(class="form-field__label") }}{{ form.beitritt(class="form-field__input") }}</div>
+                        <div class="form-field">{{ form.funktion.label(class="form-field__label") }}{{ form.funktion(class="form-field__select") }}{{ field_errors(form.funktion) }}</div>
+                        <div class="form-field">{{ form.beitritt.label(class="form-field__label") }}{{ form.beitritt(class="form-field__input") }}{{ field_errors(form.beitritt) }}</div>
                     </div>
                     <div class="form-row">
                         <div class="form-field">
                             <label class="form-field__label">Vorstandsmitglied</label>
                             {{ form.vorstandsmitglied() }}
+                            {{ field_errors(form.vorstandsmitglied) }}
                         </div>
                         <div class="form-field">
-                            {{ form.role.label(class="form-field__label") }}
+                            {{ form.role.label(class="form-field__label") }}{{ required_mark(form.role) }}
                             {{ form.role(class="form-field__select") }}
+                            {{ field_errors(form.role) }}
                         </div>
                         <div class="form-field">
                             <label class="form-field__label">Aktiv</label>
                             {{ form.is_active() }}
+                            {{ field_errors(form.is_active) }}
                         </div>
                     </div>
                 </div>
@@ -114,7 +124,7 @@
             <div class="card">
                 <div class="card__header"><h2 class="card__title">Sicherheit</h2></div>
                 <div class="card__body">
-                    <div class="form-field">{{ form.password.label(class="form-field__label") }}{{ form.password(class="form-field__input") }}</div>
+                    <div class="form-field">{{ form.password.label(class="form-field__label") }}{{ required_mark(form.password) }}{{ form.password(class="form-field__input") }}{{ field_errors(form.password) }}</div>
                 </div>
             </div>
 

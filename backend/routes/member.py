@@ -12,10 +12,22 @@ bp = Blueprint('member', __name__, url_prefix='/member')
 
 class ProfileForm(FlaskForm):
     # Personal data
-    vorname = StringField('Vorname/n (wie im Pass/ID)', validators=[DataRequired()])
-    nachname = StringField('Nachname/n (wie im Pass/ID)', validators=[DataRequired()])
+    vorname = StringField(
+        'Vorname/n (wie im Pass/ID)',
+        validators=[DataRequired()],
+        render_kw={'aria-required': 'true'},
+    )
+    nachname = StringField(
+        'Nachname/n (wie im Pass/ID)',
+        validators=[DataRequired()],
+        render_kw={'aria-required': 'true'},
+    )
     rufname = StringField('Rufname')
-    email = StringField('E-Mail', validators=[DataRequired(), Email()])
+    email = StringField(
+        'E-Mail',
+        validators=[DataRequired(), Email()],
+        render_kw={'aria-required': 'true'},
+    )
     telefon = StringField('Telefon')
     geburtsdatum = DateField('Geburtsdatum', validators=[Optional()])
     nationalitaet = SelectField('Nationalität', choices=NATIONALITAET_CHOICES, validators=[Optional()])

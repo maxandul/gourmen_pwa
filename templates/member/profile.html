@@ -4,6 +4,7 @@
   <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
 </svg>
 {%- endmacro %}
+{% from 'partials/_form_macros.html' import required_mark %}
 
 {% block title %}Profil - Gourmen{% endblock %}
 
@@ -59,7 +60,7 @@
                             <div class="card__body">
                                 <div class="form-row">
                                     <div class="form-field">
-                                        {{ form.vorname.label(class="form-field__label") }}
+                                        {{ form.vorname.label(class="form-field__label") }}{{ required_mark(form.vorname) }}
                                         {{ form.vorname(class="form-field__input") }}
                                         {% if form.vorname.errors %}
                                         <span class="form-field__error">{{ form.vorname.errors[0] }}</span>
@@ -67,7 +68,7 @@
                                     </div>
                                     
                                     <div class="form-field">
-                                        {{ form.nachname.label(class="form-field__label") }}
+                                        {{ form.nachname.label(class="form-field__label") }}{{ required_mark(form.nachname) }}
                                         {{ form.nachname(class="form-field__input") }}
                                         {% if form.nachname.errors %}
                                         <span class="form-field__error">{{ form.nachname.errors[0] }}</span>
@@ -85,7 +86,7 @@
                                     </div>
                                     
                                     <div class="form-field">
-                                        {{ form.email.label(class="form-field__label") }}
+                                        {{ form.email.label(class="form-field__label") }}{{ required_mark(form.email) }}
                                         {{ form.email(class="form-field__input") }}
                                         {% if form.email.errors %}
                                         <span class="form-field__error">{{ form.email.errors[0] }}</span>
@@ -116,14 +117,6 @@
                                     {{ form.nationalitaet(class="form-field__select") }}
                                     {% if form.nationalitaet.errors %}
                                     <span class="form-field__error">{{ form.nationalitaet.errors[0] }}</span>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-field">
-                                    {{ form.zimmerwunsch.label(class="form-field__label") }}
-                                    {{ form.zimmerwunsch(class="form-field__select") }}
-                                    {% if form.zimmerwunsch.errors %}
-                                    <span class="form-field__error">{{ form.zimmerwunsch.errors[0] }}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -260,13 +253,31 @@
                             </div>
                             <div class="card__body">
                                 <div class="form-field">
+                                    {{ form.zimmerwunsch.label(class="form-field__label") }}
+                                    {{ form.zimmerwunsch(class="form-field__select") }}
+                                    {% if form.zimmerwunsch.errors %}
+                                    <span class="form-field__error">{{ form.zimmerwunsch.errors[0] }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="form-field">
                                     {{ form.spirit_animal.label(class="form-field__label") }}
                                     {{ form.spirit_animal(class="form-field__input") }}
                                     {% if form.spirit_animal.errors %}
                                     <span class="form-field__error">{{ form.spirit_animal.errors[0] }}</span>
                                     {% endif %}
                                 </div>
-                                
+                            </div>
+                        </div>
+                        
+                        <!-- Sonstiges (Führerschein) -->
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    {{ lucide_icon('car') }}
+                                    Sonstiges
+                                </h2>
+                            </div>
+                            <div class="card__body">
                                 <div class="form-field">
                                     {{ form.fuehrerschein.label(class="form-field__label") }}
                                     {{ form.fuehrerschein(class="form-field__input") }}

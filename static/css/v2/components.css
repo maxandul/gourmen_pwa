@@ -995,6 +995,105 @@ a.btn:active {
   background: rgba(115, 200, 168, 0.08);
 }
 
+/* Flex-Parent (.page-content): Kind darf schrumpfen, sonst wächst die Seite mit der Tabellenbreite */
+.page-content--admin-members-table {
+  min-width: 0;
+}
+
+.page-content--admin-members-table > .data-table-scroll-outer {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.page-content--admin-members-table > .data-table-scroll-outer > .data-table-scroll-inner {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overscroll-behavior-x: contain;
+}
+
+/* Mitgliederliste Admin: horizontale Tabelle, erste Spalte (Rufname) sticky bei schmalem Viewport */
+.admin-members-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.admin-members-table th:first-child,
+.admin-members-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-shadow: 1px 0 0 var(--color-border-subtle);
+  white-space: nowrap;
+  min-width: max(11rem, max-content);
+}
+
+.admin-members-table thead th:first-child {
+  z-index: 3;
+  background: var(--color-surface-secondary);
+}
+
+[data-theme="light"] .admin-members-table thead th:first-child {
+  background: var(--brand-primary-200);
+}
+
+.admin-members-table tbody td:first-child {
+  background: var(--card-bg);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.admin-members-table tbody tr.admin-members-table__row--inactive {
+  opacity: 0.72;
+}
+
+.admin-members-table tbody tr.admin-members-table__row--inactive td:first-child {
+  background: var(--card-bg);
+}
+
+.admin-members-table .admin-members-table__col-email {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-members-table .admin-members-table__col-adresse,
+.admin-members-table .admin-members-table__col-kleider,
+.admin-members-table .admin-members-table__col-fuehrerschein {
+  max-width: 12rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-members-table .admin-members-table__col-status {
+  text-align: left;
+  white-space: normal;
+  vertical-align: middle;
+}
+
+.admin-members-table .admin-members-table__status-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-start;
+}
+
+.admin-members-table .admin-members-table__actions {
+  text-align: right;
+  vertical-align: middle;
+}
+
+.admin-members-table .admin-members-table__actions-inner {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
 /* Event-Detail: Teilnehmerliste (wie data-table + GGL-Spaltenlogik) */
 .events-participants-table .events-participants-table__col-member {
   color: var(--color-text-primary);

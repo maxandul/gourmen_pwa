@@ -3,7 +3,7 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.10.1';
+const PWA_VERSION = '3.10.7';
 
 /** Wie lange nach manuellem Schliessen (X) bis Install-Banner erneut erscheint. */
 const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -26,6 +26,19 @@ class PWA {
     /** Oeffentlicher Marketing-Bereich (`public.*`): keine Install-/Push-Hinweise. */
     isPublicLayout() {
         return document.body.getAttribute('data-layout') === 'public';
+    }
+
+    /**
+     * Auf localhost/127.0.0.1 keine automatischen Install-Banner: Chrome DevTools
+     * (Responsive + iPhone-UA) wuerde sonst den iOS-Hinweis ausloesen, obwohl kein iOS.
+     * Erzwingen fuer Tests: localStorage PWA_FORCE_INSTALL_BANNERS = '1'
+     */
+    shouldSuppressInstallInfoBanners() {
+        if (this.isPublicLayout()) return true;
+        const host = window.location.hostname || '';
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1';
+        if (!isLocal) return false;
+        return localStorage.getItem('PWA_FORCE_INSTALL_BANNERS') !== '1';
     }
 
     /**
@@ -123,7 +136,7 @@ class PWA {
             this.deferredPrompt = e;
             this.showInstallButton();
             // Zeige Android-Install-/Push-Hinweis als Banner
-            if (this.isAndroid() && !this.isInstalled) {
+            if (this.isAndroid() && !this.isInstalled && !this.shouldSuppressInstallInfoBanners()) {
                 this.showAndroidInstallPrompt();
             }
         });
@@ -429,7 +442,7 @@ class PWA {
             console.log('🚀 App nicht installiert, Install-Prompt möglich');
             
             // iOS-User informieren (da kein beforeinstallprompt auf iOS), nur Memberbereich/App-Shell
-            if (this.isIOS() && !this.isInstalled && !this.isPublicLayout()) {
+            if (this.isIOS() && !this.isInstalled && !this.shouldSuppressInstallInfoBanners()) {
                 this.showIOSInstallPrompt();
             }
         }
@@ -445,14 +458,14 @@ class PWA {
     }
 
     showIOSInstallPrompt() {
-        if (this.isPublicLayout()) return;
+        if (this.shouldSuppressInstallInfoBanners()) return;
         if (!this.shouldShowInstallInfoBanner(LS_IOS_INSTALL_DISMISSED_AT, LS_IOS_INSTALL_LEGACY)) {
             return;
         }
 
         // Warte 3 Sekunden nach Seitenload
         setTimeout(() => {
-            if (this.isPublicLayout()) return;
+            if (this.shouldSuppressInstallInfoBanners()) return;
             const existing = document.querySelector('.alert.install-ios-alert');
             if (existing) return;
 
@@ -490,13 +503,13 @@ class PWA {
     }
 
     showAndroidInstallPrompt() {
-        if (this.isPublicLayout()) return;
+        if (this.shouldSuppressInstallInfoBanners()) return;
         if (!this.shouldShowInstallInfoBanner(LS_ANDROID_INSTALL_DISMISSED_AT, LS_ANDROID_INSTALL_LEGACY)) {
             return;
         }
 
         setTimeout(() => {
-            if (this.isPublicLayout()) return;
+            if (this.shouldSuppressInstallInfoBanners()) return;
             const existing = document.querySelector('.alert.install-android-alert');
             if (existing) return;
 

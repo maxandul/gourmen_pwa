@@ -8,9 +8,9 @@ from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
 
 from wtforms import StringField, SelectField, BooleanField, DateField, SubmitField, PasswordField, FieldList
-from wtforms.validators import DataRequired, Email, Length
+from wtforms.validators import DataRequired, Email, Length, Optional
 from backend.extensions import db
-from backend.models.member import Member, Role, Funktion
+from backend.models.member import Member, Role, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.event import Event, EventType
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
@@ -27,6 +27,15 @@ def normalize_to_month_start(value):
     if not value:
         return None
     return value.replace(day=1)
+
+
+def _select_choices_with_legacy(base_choices, stored_value):
+    """Erweitert Select-Choices um einen gespeicherten Wert, der nicht in der Standardliste steht (Legacy-Freitext)."""
+    choices = list(base_choices)
+    keys = {c[0] for c in choices}
+    if stored_value and stored_value not in keys:
+        choices.append((stored_value, stored_value))
+    return choices
 
 def admin_required(f):
     """Decorator to require admin access"""
@@ -143,15 +152,31 @@ def mail_test():
 
 class MemberForm(FlaskForm):
     # Basic info
-    vorname = StringField('Vorname', validators=[DataRequired()])
-    nachname = StringField('Nachname', validators=[DataRequired()])
+    vorname = StringField(
+        'Vorname',
+        validators=[DataRequired()],
+        render_kw={'aria-required': 'true'},
+    )
+    nachname = StringField(
+        'Nachname',
+        validators=[DataRequired()],
+        render_kw={'aria-required': 'true'},
+    )
     rufname = StringField('Rufname')
-    email = StringField('E-Mail', validators=[DataRequired(), Email()])
+    email = StringField(
+        'E-Mail',
+        validators=[DataRequired(), Email()],
+        render_kw={'aria-required': 'true'},
+    )
     telefon = StringField('Telefon')
     
     # Personal data
     geburtsdatum = DateField('Geburtsdatum')
-    nationalitaet = StringField('Nationalität')
+    nationalitaet = SelectField(
+        'Nationalität',
+        choices=NATIONALITAET_CHOICES,
+        validators=[Optional()],
+    )
     
     # Address
     strasse = StringField('Strasse')
@@ -183,20 +208,33 @@ class MemberForm(FlaskForm):
     kleider_cap = StringField('Kleider Cap')
     
     # Preferences
-    zimmerwunsch = StringField('Zimmerwunsch')
+    zimmerwunsch = SelectField(
+        'Zimmerwunsch',
+        choices=ZIMMERWUNSCH_CHOICES,
+        validators=[Optional()],
+    )
     spirit_animal = StringField('Spirit Animal')
     fuehrerschein = StringField('Führerschein-Kategorien (z.B. A, B, C)')
     
     # System
-    role = SelectField('Rolle', choices=[
-        (Role.MEMBER.value, 'Mitglied'),
-        (Role.ADMIN.value, 'Admin')
-    ], validators=[DataRequired()])
+    role = SelectField(
+        'Rolle',
+        choices=[
+            (Role.MEMBER.value, 'Mitglied'),
+            (Role.ADMIN.value, 'Admin'),
+        ],
+        validators=[DataRequired()],
+        render_kw={'aria-required': 'true'},
+    )
     is_active = BooleanField('Aktiv')
     submit = SubmitField('Speichern')
 
 class MemberCreateForm(MemberForm):
-    password = PasswordField('Passwort', validators=[DataRequired(), Length(min=12)])
+    password = PasswordField(
+        'Passwort',
+        validators=[DataRequired(), Length(min=12)],
+        render_kw={'aria-required': 'true', 'autocomplete': 'new-password'},
+    )
 
 class EventForm(FlaskForm):
     datum = DateField('Datum', validators=[DataRequired()])
@@ -382,6 +420,19 @@ def edit_member(member_id):
     """Edit member"""
     member = Member.query.get_or_404(member_id)
     form = MemberForm()
+
+    if request.method == 'POST':
+        zw_for_choices = request.form.get('zimmerwunsch')
+        if zw_for_choices is None:
+            zw_for_choices = member.zimmerwunsch
+        nat_for_choices = request.form.get('nationalitaet')
+        if nat_for_choices is None:
+            nat_for_choices = member.nationalitaet
+    else:
+        zw_for_choices = member.zimmerwunsch
+        nat_for_choices = member.nationalitaet
+    form.zimmerwunsch.choices = _select_choices_with_legacy(ZIMMERWUNSCH_CHOICES, zw_for_choices)
+    form.nationalitaet.choices = _select_choices_with_legacy(NATIONALITAET_CHOICES, nat_for_choices)
     
     # Populate form with existing data
     if request.method == 'GET':
