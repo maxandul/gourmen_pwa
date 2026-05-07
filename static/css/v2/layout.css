@@ -381,6 +381,58 @@
   right: 0;
   z-index: calc(var(--z-fixed) + 1);
   padding: var(--space-2) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  box-sizing: border-box;
+}
+
+/* PWA-Hinweise (nur App-Shell, JS: pwa.js) – oben unter der Bar, Designsystem-Buttons */
+.app-shell-promos {
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .app-shell-promos {
+    justify-content: flex-end;
+  }
+}
+
+.app-shell-promos:empty {
+  display: none;
+}
+
+.top-notifications > .alert.install-ios-alert,
+.top-notifications > .alert.install-android-alert {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.app-shell-install-banner__steps {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style-position: outside;
+}
+
+.app-shell-install-banner__steps li {
+  padding-left: var(--space-1);
 }
 
 /* ============================================

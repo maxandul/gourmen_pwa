@@ -148,6 +148,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
 | `.public-about` | – | Zusaetzlicher Wrapper auf `public.about` (mit `landing`): Typo/Abstaende fuer Fliesstext und Listen in `.card__body`. |
+| `.app-shell-promos` | – | In `#top-notifications` eingehängter Flex-Strip (App-Shell, nicht `data-layout="public"`): Platz für `.btn`-Hinweise aus `static/js/pwa.js` (Installieren, Push); `:empty` blendet aus. |
+| `.app-shell-install-banner__steps` | mit `__body` (`.stack-vertical`), `__actions` | Struktur für iOS/Android-PWA-Alerts in `pwa.js`; sitzt in `#top-notifications`. |
 | `.user-menu` | – | mit `__summary`, `__panel`, `__list`, `__link`, `__link--danger`, `__sep`, `__badge` |
 | `.settings-nav` | – | mit `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron` |
 
