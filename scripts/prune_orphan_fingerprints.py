@@ -1,6 +1,6 @@
 """Entfernt alte Hash-Kopien aus static/, die nicht der aktuellen asset-manifest-Zuordnung entsprechen.
 
-Nach mehreren `fingerprint_assets.py`-Lauefen sammeln sich alte main-v2.* / components.* / pwa.* / offline.*-Dateien.
+Nach mehreren `fingerprint_assets.py`-Lauefen sammeln sich alte main-v2.* / components.* / app.* / pwa.* / offline.*-Dateien.
 Aufruf: python scripts/prune_orphan_fingerprints.py
 """
 from __future__ import annotations
@@ -29,6 +29,10 @@ def main() -> None:
             p.unlink(missing_ok=True)
             removed.append(p)
     for p in (static / "css" / "v2").glob("components.*.css"):
+        if p.name not in keep_names:
+            p.unlink(missing_ok=True)
+            removed.append(p)
+    for p in (static / "js").glob("app.*.js"):
         if p.name not in keep_names:
             p.unlink(missing_ok=True)
             removed.append(p)
