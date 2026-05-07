@@ -117,16 +117,17 @@
         <!-- Tab: Tabelle -->
         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'tabelle' else '' }}" role="tabpanel">
           {% if season_ranking %}
-          <div class="table-responsive data-table-wrap">
+          <div class="data-table-scroll-outer">
+          <div class="table-responsive data-table-wrap data-table-scroll-inner">
             <table class="data-table ggl-ranking-table">
               <thead>
                 <tr>
                   <th scope="col" class="ggl-ranking-table__col-rank">#</th>
-                  <th scope="col" class="ggl-ranking-table__col-name">Teilnehmer</th>
+                  <th scope="col" class="ggl-ranking-table__col-name">Member</th>
                   <th scope="col" class="ggl-ranking-table__col-num">Punkte</th>
                   <th scope="col" class="ggl-ranking-table__col-num">Events</th>
-                  <th scope="col" class="ggl-ranking-table__col-num">⊘Pkt</th>
-                  <th scope="col" class="ggl-ranking-table__col-num">⊘Diff</th>
+                  <th scope="col" class="ggl-ranking-table__col-num">durchschn.&nbsp;Punkte</th>
+                  <th scope="col" class="ggl-ranking-table__col-num">durchschn.&nbsp;Differenz</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,6 +143,7 @@
                 {% endfor %}
               </tbody>
             </table>
+          </div>
           </div>
           {% else %}
           <div class="alert alert--info" role="status">

@@ -53,6 +53,7 @@ docs/initiatives/<slug>/
 | Slug | Datum | Beschreibung |
 |---|---|---|
 | `2025_redesign` | 2025–2026 | UX-Redesign mit BEM + Tokens, abgeschlossen vor `modules-and-hosting` |
+| `2026-05_public-area` | 2026-05 | Oeffentliche Shell (Landing, Ueber uns, Hitlist), Login-Pfad, Partial-Topnav; Ordner `docs/initiatives/_archive/2026-05_public-area/` |
 
 ## Cursor-Rule
 

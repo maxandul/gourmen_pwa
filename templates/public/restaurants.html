@@ -10,33 +10,68 @@
 {%- if table_query -%}
 {%- set _ = params.update({'q': table_query}) -%}
 {%- endif -%}
+{%- if hitlist_sort and hitlist_sort != 'rating' -%}
+{%- set _ = params.update({'sort': hitlist_sort}) -%}
+{%- endif -%}
 {{ url_for('public.restaurants', **params) }}
 {%- endmacro %}
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.d320f710.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.b273baad.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen-Hitlist{% endblock %}
 
 {% block content %}
 <div class="container landing">
-    <section class="landing-restaurants" aria-labelledby="restaurants-hitlist-heading">
+    <section class="landing-restaurants landing-restaurants--page" aria-labelledby="restaurants-hitlist-heading">
         <h1 id="restaurants-hitlist-heading" class="landing-section-title landing-section-title--page">
             {{ lucide_icon('star') }}
             Gourmen-Hitlist
         </h1>
-        <div class="landing-hitlist-toolbar">
+        <p class="landing-hitlist-intro">
+            Alle besuchten Restaurants im Überblick.
+        </p>
+        {% if hitlist_sort != 'rating' %}
+          {% set hitlist_clear_search_url = url_for('public.restaurants', sort=hitlist_sort) %}
+        {% else %}
+          {% set hitlist_clear_search_url = url_for('public.restaurants') %}
+        {% endif %}
+        <div class="landing-hitlist-toolbar landing-hitlist-toolbar--split">
             <form class="landing-hitlist-filter" role="search" aria-label="Restaurant, Küche oder Adresse in der Gourmen-Hitlist suchen">
-                <p class="landing-hitlist-filter__hint">Suche nach Restaurants, Küchen oder Adressen:</p>
-                <div class="landing-hitlist-filter__field">
-                    <label class="sr-only" for="hitlist-search">Restaurant suchen</label>
-                    <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query|e }}" placeholder="Suche..." autocomplete="off">
+                <div class="landing-hitlist-controls">
+                    <label class="landing-hitlist-controls__label" for="hitlist-search">Suche</label>
+                    <div class="landing-hitlist-filter__field landing-hitlist-filter__field--row landing-hitlist-filter__field--grow">
+                        <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query|e }}" placeholder="Suche…" autocomplete="off">
+                        {% if table_query %}
+                        <a href="{{ hitlist_clear_search_url }}" class="btn btn--outline btn--sm landing-hitlist-filter__clear">Zurücksetzen</a>
+                        {% endif %}
+                    </div>
                 </div>
             </form>
+            <div class="landing-hitlist-controls">
+                <label class="landing-hitlist-controls__label" for="hitlist-sort">Sortierung</label>
+                <select id="hitlist-sort" class="form-field__input landing-hitlist-controls__select" autocomplete="off">
+                    <option value="rating" {% if hitlist_sort == 'rating' %}selected{% endif %}>Höchstes Rating zuerst</option>
+                    <option value="recent" {% if hitlist_sort == 'recent' %}selected{% endif %}>Zuletzt besucht zuerst</option>
+                    <option value="name" {% if hitlist_sort == 'name' %}selected{% endif %}>Name A–Z</option>
+                </select>
+            </div>
         </div>
-        <div class="landing-hitlist-block">
+        <div id="landing-hitlist-block" class="landing-hitlist-block">
+        <p id="landing-hitlist-meta" class="landing-hitlist-meta" role="status" aria-live="polite">
+            {% if table_query %}
+                {% if table_total == 1 %}1 Treffer{% else %}{{ table_total }} Treffer{% endif %}
+                <span class="landing-hitlist-meta__sep" aria-hidden="true"> · </span>
+                {{ restaurant_count }}
+                {% if restaurant_count == 1 %}Restaurant gesamt{% else %}Restaurants gesamt{% endif %}
+            {% elif table_total == 1 %}
+                1 Restaurant
+            {% else %}
+                {{ table_total }} Restaurants
+            {% endif %}
+        </p>
         {% if table_total == 0 %}
         <div class="empty-state" role="status">
             {% if table_query %}
@@ -46,11 +81,13 @@
             {% endif %}
         </div>
         {% else %}
-        <div class="table-responsive data-table-wrap" role="region" aria-labelledby="restaurants-hitlist-heading">
+        <div class="data-table-scroll-outer">
+        <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="restaurants-hitlist-heading">
             <table class="data-table landing-restaurants-table">
                 <thead>
                     <tr>
                         <th scope="col">Restaurant</th>
+                        <th scope="col" class="landing-restaurants-table__col-kueche">Küche</th>
                         <th scope="col" class="landing-restaurants-table__col-ort">Ort</th>
                         <th scope="col">Gourmen-Rating (★/5)</th>
                         <th scope="col" class="landing-restaurants-table__col-home">Homepage</th>
@@ -61,6 +98,7 @@
                     {% for row in table_rows %}
                     <tr>
                         <td>{{ row.restaurant }}</td>
+                        <td class="landing-restaurants-table__col-kueche">{% if row.kueche %}{{ row.kueche }}{% else %}<span class="text-secondary">—</span>{% endif %}</td>
                         <td class="landing-restaurants-table__col-ort">{% if row.ort %}{{ row.ort }}{% else %}<span class="text-secondary">—</span>{% endif %}</td>
                         <td>
                             {% if row.overall_avg is not none %}
@@ -92,6 +130,7 @@
                 </tbody>
             </table>
         </div>
+        </div>
         {% if table_total_pages > 1 %}
         <nav class="landing-pagination" aria-label="Seiten der Restaurant-Tabelle">
             {% if table_page > 1 %}
@@ -106,6 +145,18 @@
         {% endif %}
         </div>
     </section>
+
+    <footer class="landing-footer">
+        <p class="landing-footer__label">Kontakt &amp; Social</p>
+        <div class="socials">
+            <a href="https://instagram.com/gourmen_zh" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Gourmen auf Instagram">
+                {{ lucide_icon('instagram') }}
+            </a>
+            <a href="mailto:fohvollenmaenllichen@gmail.com" class="social-link" aria-label="E-Mail an Gourmen">
+                {{ lucide_icon('mail') }}
+            </a>
+        </div>
+    </footer>
 </div>
 {% endblock %}
 
@@ -115,8 +166,10 @@
 (() => {
   const form = document.querySelector('.landing-hitlist-filter');
   const input = document.getElementById('hitlist-search');
-  const block = document.querySelector('.landing-hitlist-block');
-  if (!form || !input || !block) return;
+  const sortSel = document.getElementById('hitlist-sort');
+  const block = document.getElementById('landing-hitlist-block');
+  const section = document.querySelector('.landing-restaurants--page');
+  if (!form || !input || !block || !section) return;
 
   const buildHitlistUrl = (pageNum) => {
     const u = new URL(window.location.href);
@@ -125,6 +178,11 @@
     const q = input.value.trim();
     if (q) u.searchParams.set('q', q);
     else u.searchParams.delete('q');
+    if (sortSel) {
+      const sv = sortSel.value || 'rating';
+      if (sv !== 'rating') u.searchParams.set('sort', sv);
+      else u.searchParams.delete('sort');
+    }
     return u.pathname + u.search;
   };
 
@@ -149,15 +207,37 @@
       }
       const html = await response.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      const nextBlock = doc.querySelector('.landing-hitlist-block');
+      const nextBlock = doc.getElementById('landing-hitlist-block');
       if (!nextBlock) {
         window.location.href = url;
         return;
       }
       await keepScrollPosition(async () => {
+        if (typeof window.gourmenTeardownRestaurantsTableScroll === 'function') {
+          window.gourmenTeardownRestaurantsTableScroll(block);
+        }
         block.innerHTML = nextBlock.innerHTML;
       });
+      const docInput = doc.getElementById('hitlist-search');
+      if (docInput && input) {
+        input.value = docInput.value;
+      }
+      const fieldRow = document.querySelector('.landing-hitlist-filter__field');
+      const docRow = doc.querySelector('.landing-hitlist-filter__field');
+      if (fieldRow && docRow) {
+        fieldRow.querySelectorAll('.landing-hitlist-filter__clear').forEach((el) => el.remove());
+        const nextClear = docRow.querySelector('.landing-hitlist-filter__clear');
+        if (nextClear) fieldRow.appendChild(nextClear.cloneNode(true));
+      }
       window.history.replaceState({}, '', url);
+      if (sortSel) {
+        const u = new URL(url, window.location.origin);
+        const s = u.searchParams.get('sort');
+        sortSel.value = s && ['rating', 'recent', 'name'].includes(s) ? s : 'rating';
+      }
+      if (typeof window.gourmenInitRestaurantsTableScroll === 'function') {
+        window.gourmenInitRestaurantsTableScroll(block);
+      }
     } catch (error) {
       window.location.href = url;
     }
@@ -174,11 +254,24 @@
       loadTablePage(buildHitlistUrl(1));
     }, 300);
   });
-  block.addEventListener('click', (event) => {
-    const link = event.target.closest('.landing-pagination a[href]');
-    if (!link) return;
-    event.preventDefault();
-    loadTablePage(link.href);
+  if (sortSel) {
+    sortSel.addEventListener('change', () => {
+      clearTimeout(searchDebounce);
+      loadTablePage(buildHitlistUrl(1));
+    });
+  }
+  section.addEventListener('click', (event) => {
+    const paginationLink = event.target.closest('.landing-pagination a[href]');
+    if (paginationLink) {
+      event.preventDefault();
+      loadTablePage(paginationLink.href);
+      return;
+    }
+    const resetLink = event.target.closest('.landing-hitlist-filter__clear[href]');
+    if (resetLink) {
+      event.preventDefault();
+      loadTablePage(resetLink.href);
+    }
   });
 })();
 </script>

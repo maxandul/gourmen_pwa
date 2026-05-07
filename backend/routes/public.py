@@ -80,12 +80,16 @@ def restaurants():
 
         now = datetime.utcnow()
         table_query = (request.args.get('q') or '').strip()
+        hitlist_sort = (request.args.get('sort') or 'rating').strip().lower()
+        if hitlist_sort not in ('rating', 'recent', 'name'):
+            hitlist_sort = 'rating'
         table_rows, table_total, table_total_pages, table_page, hitlist_baseline_total = (
             get_landing_restaurant_table(
                 now,
                 page=page,
                 per_page=RESTAURANTS_PER_PAGE,
                 query=table_query or None,
+                sort=hitlist_sort,
             )
         )
 
@@ -97,6 +101,7 @@ def restaurants():
             table_total_pages=table_total_pages,
             table_query=table_query,
             restaurant_count=hitlist_baseline_total,
+            hitlist_sort=hitlist_sort,
         )
     except Exception:
         return render_template(
@@ -107,6 +112,7 @@ def restaurants():
             table_total_pages=1,
             table_query='',
             restaurant_count=0,
+            hitlist_sort='rating',
         )
 
 @bp.route('/health')

@@ -7,7 +7,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.d320f710.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.b273baad.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -84,7 +84,8 @@
             <p class="empty-state__message">Noch keine Einträge in der Gourmen-Hitlist.</p>
         </div>
         {% else %}
-        <div class="table-responsive data-table-wrap" role="region" aria-labelledby="landing-restaurants-heading">
+        <div class="data-table-scroll-outer">
+        <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="landing-restaurants-heading">
             <table class="data-table landing-restaurants-table">
                 <thead>
                     <tr>
@@ -129,6 +130,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
         </div>
         <div class="landing-hitlist-cta">
             <a href="{{ url_for('public.restaurants') }}" class="btn btn--outline">

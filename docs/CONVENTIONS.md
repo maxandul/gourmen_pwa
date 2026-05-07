@@ -110,6 +110,7 @@ def webhook():
 - **CSRF**: standardmässig an. `@csrf.exempt` nur für externe Webhooks **mit** Signature-Check
 - **Rate-Limit**: für Login, Reset, Upload, sensitive Endpoints
 - **Form-Handling**: WTForms (`FlaskForm`), `validate_on_submit()`-Pattern
+- **Öffentliche Hitlist** (`GET /restaurants`): Query `page`, `q` (Textsuche), `sort` mit `rating` (Standard), `recent` oder `name`; Verarbeitung über `get_landing_restaurant_table`.
 - **Flash-Nachrichten** auf Deutsch
 - **Redirect nach POST** (PRG-Pattern)
 - **Step-Up bei sensiblen Aktionen**: `SecurityService.check_step_up_access()` + ggf. `require_step_up`-Decorator

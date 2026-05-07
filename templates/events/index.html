@@ -143,8 +143,9 @@
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'kommend' else '' }}"
                  role="tabpanel">
                 {% if events %}
-                <div class="table-responsive data-table-wrap" role="region" aria-label="Kommende Events">
-                    <table class="data-table">
+                <div class="data-table-scroll-outer">
+                <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Kommende Events">
+                    <table class="data-table events-index-table">
                         <thead>
                             <tr>
                                 <th scope="col">Datum</th>
@@ -185,6 +186,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
                 </div>
                 {% else %}
                     {% if events_filters_active %}
@@ -236,8 +238,9 @@
                     </form>
                 </div>
                 {% if archiv_events.total > 0 %}
-                <div class="table-responsive data-table-wrap" role="region" aria-label="Archiv vergangener Events">
-                    <table class="data-table">
+                <div class="data-table-scroll-outer">
+                <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Archiv vergangener Events">
+                    <table class="data-table events-index-table">
                         <thead>
                             <tr>
                                 <th scope="col">Datum</th>
@@ -292,6 +295,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
                 </div>
                 
                 {% if archiv_events.pages > 1 %}

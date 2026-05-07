@@ -144,7 +144,19 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.public-topnav__brand` | – | Cluster links: Logo + Hamburger-Button (`public-topnav__menu-btn`). |
 | `.public-topnav__nav--desktop` | – | Zentrierte Pill-Navigation nur ab 1024px (kein horizontales Scrollen). |
 | `.public-drawer` | mit `__panel`, `__header`, `__title`, `__close`, `__nav`, `__list`, `__link`; Schliessen-Controls mit `data-drawer-close` | Modal-Dialog-Drawer unter 1024px; JS: `static/js/v2/public-drawer.js`. |
+| (Data-Table Scroll-Hinweis) | `.data-table-scroll-outer` / `.data-table-scroll-inner` | JS: `static/js/v2/restaurants-table-scroll.js` — rechter Edge-Fade; `gourmenInitDataTableScroll` / `gourmenTeardownDataTableScroll` (Alias: `gourmenInitRestaurantsTableScroll` fuer AJAX auf `/restaurants`). GGL: Breite der # Spalte messen, `--ggl-rank-col-outer` fuer zweite Sticky-Spalte. |
 | `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: Start → `public.landing`, Über uns → `public.about` (`/ueber-uns`), Hitlist → `public.restaurants` (`/restaurants`); `__tab`, `__tab--active`. |
+| `.landing-hitlist-intro` | – | Einleitung unter dem Seitentitel auf `public.restaurants` (Kontext zur Voll-Hitlist). |
+| `.landing-hitlist-meta` | mit `landing-hitlist-meta__sep` | Treffer- bzw. Gesamtzahl-Zeile über der Tabelle auf `public.restaurants` (`aria-live`). |
+| `.landing-hitlist-toolbar--split` | – | Toolbar auf `public.restaurants`: Suche und Sortierung nebeneinander (unter 768px gestapelt). |
+| `.landing-hitlist-controls` | mit `landing-hitlist-controls__label`, `landing-hitlist-controls__select` | Spalte in der Hitlist-Toolbar: Label oben, Sucheingabe bzw. Sortier-Dropdown darunter (`flex-direction: column`). |
+| `.landing-hitlist-filter__field--row` | – | Suchfeld und «Zurücksetzen» in einer flexiblen Zeile. |
+| `.landing-hitlist-filter__field--grow` | – | Flexible Breite des Suchfeldblocks neben dem Label «Suche» (Toolbar). |
+| `.landing-restaurants--page` | – | Zusaetzlicher Abschnitts-Modifier auf `public.restaurants` fuer Layout-Feintuning. |
+| `.landing-restaurants-table__col-kueche` | – | Kuechen-Spalte in der Hitlist-Tabelle (≤768px ausgeblendet). |
+| `.data-table-scroll-outer` | `--fade-right` | Huellte um scrollbare `data-table-wrap` (Hitlist, `events.index` Kommend/Archiv, `ggl.index` Tabelle). Edge-Fade in `public.css` + `components.css`. |
+| `.data-table-scroll-inner` | – | Scrollport (`table-responsive data-table-wrap`). |
+| `.events-index-table` | – | Events-Index Tabellen: erste Spalte Datum sticky, Platz fuer TT.MM.JJJJ (`11ch`, `nowrap`); `components.css`. |
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
 | `.landing-stat-strip` | mit `landing-stat-strip__pitch`, `landing-stat-strip__cta` | Zweite Marketing-Card auf `public.landing`: Kurzportrait-Text, KPIs (`metrics-spotlight`), Link **Über uns**. |
@@ -283,7 +295,7 @@ Verhalten:
 
 | Klasse | Zweck |
 |---|---|
-| `.ggl-ranking-table` | GGL-Ranking-Tabelle mit Spalten/Zeilen-Modifikatoren |
+| `.ggl-ranking-table` | GGL-Rangliste: # Spalte inhaltsbreit (`width:1%`, `nowrap`); `--ggl-rank-col-outer` (Fallback `3ch`) setzt JS nach Messung der Rang-Zellen; zweite Spalte `left: calc(var(...) - 1px)` + `padding-left` +1px gegen durchscheinende Luecke; Trennlinie `#` / Member: `border-right` auf Rang. |
 
 #### BillBro
 

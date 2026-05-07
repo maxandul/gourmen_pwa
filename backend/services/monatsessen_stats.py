@@ -113,11 +113,15 @@ def get_landing_extras(now: datetime) -> dict[str, Any]:
     }
 
 
+_HITLIST_SORT_KEYS = frozenset({'rating', 'recent', 'name'})
+
+
 def get_landing_restaurant_table(
     now: datetime,
     page: int = 1,
     per_page: int = 10,
     query: str | None = None,
+    sort: str | None = None,
 ) -> tuple[list[dict[str, Any]], int, int, int, int]:
     """
     Öffentliche Landing-Hitlist: alle Monatsessen-Restaurants bis einschliesslich heute,
@@ -125,6 +129,8 @@ def get_landing_restaurant_table(
 
     Rückgabe: (page_rows, filtered_total, total_pages, page, baseline_total)
     baseline_total = Anzahl Einträge vor Textsuche (für Hero „Restaurant-Count“).
+
+    ``sort``: ``rating`` (Standard, Ø absteigend), ``recent`` (zuletzt besucht zuerst), ``name`` (A-Z).
     """
     today = now.date()
     past_ms: list[Event] = (
@@ -180,11 +186,12 @@ def get_landing_restaurant_table(
                 '_latest_datum': latest_ev.datum,
             }
         )
-    rows_full.sort(key=_landing_hitlist_sort_key)
-    for r in rows_full:
-        r.pop('_latest_datum', None)
 
     baseline_total = len(rows_full)
+
+    sort_key = (sort or 'rating').strip().lower()
+    if sort_key not in _HITLIST_SORT_KEYS:
+        sort_key = 'rating'
 
     qn = (query or "").strip().lower()
     if qn:
@@ -200,6 +207,21 @@ def get_landing_restaurant_table(
             return qn in hay
 
         rows_full = [r for r in rows_full if _row_matches(r)]
+
+    if sort_key == 'recent':
+        rows_full.sort(
+            key=lambda r: (
+                -float(r['_latest_datum'].timestamp()),
+                (r.get('restaurant') or '').lower(),
+            )
+        )
+    elif sort_key == 'name':
+        rows_full.sort(key=lambda r: (r.get('restaurant') or '').lower())
+    else:
+        rows_full.sort(key=_landing_hitlist_sort_key)
+
+    for r in rows_full:
+        r.pop('_latest_datum', None)
 
     total = len(rows_full)
     total_pages = max(1, (total + per_page - 1) // per_page) if total > 0 else 1
