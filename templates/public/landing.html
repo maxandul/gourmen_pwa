@@ -7,7 +7,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.d1654ab4.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.d320f710.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -19,54 +19,53 @@
 
 {% block content %}
 <div class="container landing">
-    <section class="landing-hero landing-hero--integrated card" aria-labelledby="landing-hero-heading">
-        <div class="landing-hero__grid">
-            <div class="landing-hero__text">
-                <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
-                <h1 id="landing-hero-heading">Gourmen</h1>
-                <p class="lead landing-lead-quote">«Meh isch meh!»</p>
-            </div>
-            <div class="landing-hero__visual">
-                <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
-            </div>
+    <section class="landing-hero card" aria-labelledby="landing-hero-heading">
+        <div class="landing-hero__text">
+            <p class="eyebrow">Kulinarischer Verein · Zürich · seit 2021</p>
+            <h1 id="landing-hero-heading">Gourmen</h1>
+            <p class="lead landing-lead-quote">«Meh isch meh!»</p>
         </div>
-        <p class="landing-hero__pitch">
-            Die Gourmen sind ein kulinarischer Verein aus Zürich: Gemeinsam Restaurants entdecken, Freundschaft pflegen und das Leben geniessen.
+        <div class="landing-hero__visual">
+            <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
+        </div>
+    </section>
+
+    <section class="landing-stat-strip card" aria-labelledby="landing-stats-heading">
+        <h2 id="landing-stats-heading" class="sr-only">Kennzahlen und Kurzportrait</h2>
+        <p class="landing-stat-strip__pitch">
+            Wir sind ein kulinarischer Verein aus Zürich: Gemeinsam Restaurants entdecken, Freundschaft pflegen und das Leben geniessen.
         </p>
-        <div class="landing-hero__stats" aria-labelledby="landing-stats-heading">
-            <h2 id="landing-stats-heading" class="sr-only">Kennzahlen</h2>
-            <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
-                <div class="metrics-spotlight__hero">
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">Mitglieder</span>
-                        <span class="metrics-spotlight__metric-value">{{ member_count }}</span>
-                    </div>
-                    <div class="metrics-spotlight__metric">
-                        <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
-                        <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
-                    </div>
-                    <div class="metrics-spotlight__metric metrics-spotlight__metric--next-essen">
-                        <span class="metrics-spotlight__metric-label">nächstes Essen</span>
-                        <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">
-                            {% if next_essen_date and next_essen_restaurant %}
-                            <span class="landing-next-essen__date">{{ next_essen_date }}</span>
-                            <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
-                            <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
-                            {% elif next_essen_date %}
-                            <span class="landing-next-essen__date">{{ next_essen_date }}</span>
-                            <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
-                            <span class="landing-next-essen__restaurant">TBD</span>
-                            {% elif next_essen_restaurant %}
-                            <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
-                            {% else %}
-                            TBD
-                            {% endif %}
-                        </span>
-                    </div>
+        <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
+            <div class="metrics-spotlight__hero">
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Mitglieder</span>
+                    <span class="metrics-spotlight__metric-value">{{ member_count }}</span>
+                </div>
+                <div class="metrics-spotlight__metric">
+                    <span class="metrics-spotlight__metric-label">Restaurant-Count</span>
+                    <span class="metrics-spotlight__metric-value">{{ restaurant_count }}</span>
+                </div>
+                <div class="metrics-spotlight__metric metrics-spotlight__metric--next-essen">
+                    <span class="metrics-spotlight__metric-label">nächstes Essen</span>
+                    <span class="metrics-spotlight__metric-value metrics-spotlight__metric-value--landing-text">
+                        {% if next_essen_date and next_essen_restaurant %}
+                        <span class="landing-next-essen__date">{{ next_essen_date }}</span>
+                        <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
+                        <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
+                        {% elif next_essen_date %}
+                        <span class="landing-next-essen__date">{{ next_essen_date }}</span>
+                        <span class="landing-next-essen__dot" aria-hidden="true">&middot;</span>
+                        <span class="landing-next-essen__restaurant">TBD</span>
+                        {% elif next_essen_restaurant %}
+                        <span class="landing-next-essen__restaurant">{{ next_essen_restaurant }}</span>
+                        {% else %}
+                        TBD
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>
-        <div class="landing-hero__about-cta">
+        <div class="landing-stat-strip__cta">
             <a href="{{ url_for('public.about') }}" class="btn btn--outline btn--sm">
                 {{ lucide_icon('chevron-right', 'icon') }}
                 Über uns

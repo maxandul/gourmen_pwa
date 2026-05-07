@@ -3,7 +3,7 @@
  * Verbesserte Offline-FunktionalitÃ¤t und Update-Management
  */
 
-const VERSION = '3.8.1';
+const VERSION = '3.8.3';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
@@ -15,7 +15,7 @@ const ACTIVE_CACHES = new Set([STATIC_CACHE, DYNAMIC_CACHE, CACHE_NAME]);
 const STATIC_ASSETS = [
     '/static/manifest.json',
     '/static/css/main-v2.aba5227e.css',
-    '/static/css/public.d1654ab4.css',
+    '/static/css/public.d320f710.css',
     '/static/favicon.6d319de4.ico',
     '/static/favicon.0c03bb1d.svg',
     '/static/img/pwa/icon-16.498c3d3b.png',

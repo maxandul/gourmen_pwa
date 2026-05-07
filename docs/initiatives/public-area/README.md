@@ -41,7 +41,7 @@ Stand 2026-05 nicht Teil dieser Initiative:
 
 | Route | Zweck |
 |---|---|
-| `/` | Landing: Hero (inkl. Pitch, KPI-Band, Link Ueber uns) · Hitlist-Teaser (Top 5) |
+| `/` | Landing: Hero (Marke) · zweite Card (Pitch + Stats + Link Ueber uns) · Hitlist-Teaser (Top 5) |
 | `/ueber-uns` | Verein, Leitbild, Geschichte, Aktivitaeten-Sektion, Funktionen aus `Funktion`-Enum (nur abstrakte Texte) |
 | `/restaurants` | Vollansicht Gourmen-Hitlist mit Suche + Pagination |
 
