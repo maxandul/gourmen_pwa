@@ -89,7 +89,10 @@ class Config:
     # In production this must be set; development may run without token.
     CRON_AUTH_TOKEN = os.environ.get('CRON_AUTH_TOKEN')
 
-    # Mail / SMTP (Infomaniak)
+    # Mail: optional Resend (HTTPS, empfohlen auf Railway Hobby) oder SMTP
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+    MAIL_HTTP_TIMEOUT_SECONDS = int(os.environ.get('MAIL_HTTP_TIMEOUT_SECONDS', '15'))
+
     MAIL_FROM_ADDRESS = os.environ.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
     MAIL_REPLY_TO = os.environ.get('MAIL_REPLY_TO', MAIL_FROM_ADDRESS)
     MAIL_SMTP_HOST = os.environ.get('MAIL_SMTP_HOST', 'mail.infomaniak.com')

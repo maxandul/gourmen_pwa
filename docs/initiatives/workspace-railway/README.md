@@ -27,7 +27,7 @@ Siehe `PHASE_00_BASELINE.md`: implementierter Code (MailService, Token-Reset-Flo
 | **Dateien: bestehender Google Shared Drive** | alle sehen alles; App: Upload, Liste, Download, Loeschen; Bearbeitung in Google (Docs/Sheets) |
 | **Mitglieder-Mail** | nicht in der PWA; gewohnte Mail-Apps; ggf. externe Collaborators am Shared Drive |
 | **Kalender** | weiterhin iCal-Feed aus der App zum Abonnieren; keine Pflicht-Kalender-UI in der PWA |
-| **System-Mails aus der App** | eigener technischer Versandweg nach Workspace-Cutover (SMTP-Relay/SMTP mit Workspace), Konfiguration in Railway |
+| **System-Mails aus der App** | Resend (HTTPS) in Production (Railway Hobby blockiert SMTP); SMTP bleibt optional fuer Lokal-Dev und Pro; Konfiguration in Railway |
 | **TWINT / WhatsApp** | unveraendert RaiseNow bzw. Meta Cloud API (spaetere Phasen) |
 
 ## Architektur-Bild
@@ -38,7 +38,7 @@ Siehe `PHASE_00_BASELINE.md`: implementierter Code (MailService, Token-Reset-Flo
 │  Web + Cron + Postgres + Redis                  │
 │  System-Mails, API-Integrationen                │
 └────────┬────────────────────┬───────────────────┘
-         │ SMTP (System)       │ Google APIs (Drive)
+         │ Resend/SMTP (App)   │ Google APIs (Drive)
          ▼                     ▼
 ┌──────────────────┐   ┌──────────────────────────┐
 │  Google Workspace │   │  Infomaniak               │
@@ -77,8 +77,8 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | Phase | Status | Branch | Datum | Notizen |
 |---|---|---|---|---|
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
-| 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM ok, Mailtests ok; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
-| 2 | blocked | – | 2026-05-01 | Railway Hobby: SMTP TCP-Timeout (verifiziert). Stakeholder: kein Resend. Entscheid: Pro+SMTP vs Hobby+HTTPS-API — `AGENT_HANDOFF.md`; optional Resend nur auf Branch `phase/02-workspace-system-mail` (nicht master) |
+| 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM/MX stabil; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
+| 2 | in_progress | phase/02-workspace-system-mail | 2026-05-07 | Resend/HTTPS: Code nach Rebase auf master; Infra/Railway laut User erledigt; offen: PR-merge + Prod-Smoke (`PHASE_02_APP_SYSTEM_MAIL.md`) |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | Inhaltlich analog `modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive |
 | 5 | pending | – | – | siehe `modules-and-hosting/PHASE_05_CALENDAR.md` |
