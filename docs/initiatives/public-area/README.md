@@ -51,8 +51,8 @@ Alle Routes leben im bestehenden `public`-Blueprint.
 
 | # | Phase | Inhalt | Status |
 |---|---|---|---|
-| 1 | Shell-Split + Login-Reposition | Public-Top-Nav + Public-Footer-Partial; Hero ohne Login-Button; Login-Pfad ueber den `.user-menu`-Avatar (immer sichtbar – im anonymen Zustand enthaelt das Dropdown nur "Anmelden"); Pill-Tabs auf allen Viewports; Hitlist auf Landing zum Top-5-Teaser; Route `/restaurants` | **done** 2026-05 (visuell verifiziert; PWA v3.7.8) |
-| 2 | Ueber-uns-Seite | Route `/ueber-uns` (`public.about`), Template `public/about.html`; Topnav-Pill + Drawer; Teaser-Card auf `/`; Sektionen Leitbild, Geschichte, Aktivitaeten, Funktionen (anonymisiert) | **done** 2026-05 (PWA v3.7.8) |
+| 1 | Shell-Split + Login-Reposition | Public-Top-Nav + Public-Footer-Partial; Hero ohne Login-Button; Login-Pfad ueber den `.user-menu`-Avatar (immer sichtbar – im anonymen Zustand enthaelt das Dropdown nur "Anmelden"); Pill-Tabs auf allen Viewports; Hitlist auf Landing zum Top-5-Teaser; Route `/restaurants` | **done** 2026-05 (visuell verifiziert; PWA v3.7.9) |
+| 2 | Ueber-uns-Seite | Route `/ueber-uns` (`public.about`), Template `public/about.html`; Topnav-Pill + Drawer; Teaser-Card auf `/`; Sektionen Leitbild, Geschichte, Aktivitaeten, Funktionen (anonymisiert) | **done** 2026-05 (PWA v3.7.9) |
 | 3 | Hitlist-Vollansicht polieren | `/restaurants` ueber den 1:1-Stand aus Phase 1 hinaus aufwerten (z.B. Sortier-Optionen, klarere Hierarchie) | pending |
 
 Phase 1 ist der eigentliche Strukturschritt. Phase 2 und 3 sind Content- bzw. Polishing-Arbeit auf der etablierten Shell.

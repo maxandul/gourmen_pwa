@@ -144,7 +144,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.public-topnav__brand` | – | Cluster links: Logo + Hamburger-Button (`public-topnav__menu-btn`). |
 | `.public-topnav__nav--desktop` | – | Zentrierte Pill-Navigation nur ab 1024px (kein horizontales Scrollen). |
 | `.public-drawer` | mit `__panel`, `__header`, `__title`, `__close`, `__nav`, `__list`, `__link`; Schliessen-Controls mit `data-drawer-close` | Modal-Dialog-Drawer unter 1024px; JS: `static/js/v2/public-drawer.js`. |
-| `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: Start → `public.landing`, Ueber uns → `public.about` (`/ueber-uns`), Hitlist → `public.restaurants` (`/restaurants`); `__tab`, `__tab--active`. |
+| `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: Start → `public.landing`, Über uns → `public.about` (`/ueber-uns`), Hitlist → `public.restaurants` (`/restaurants`); `__tab`, `__tab--active`. |
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
 | `.public-about` | – | Zusaetzlicher Wrapper auf `public.about` (mit `landing`): Typo/Abstaende fuer Fliesstext und Listen in `.card__body`. |
