@@ -284,8 +284,7 @@
    ============================================
    - JS (static/js/v2/topbar-scroll.js) togglet body[data-topbar-hidden].
    - Auf Desktop (>= 1024px) ist die Logik per JS-MediaQuery deaktiviert,
-     daher hier keine Desktop-Regeln noetig.
-   - Sticky-Tabs reagieren auf --topbar-offset (siehe components.css). */
+     daher hier keine Desktop-Regeln noetig. */
 @media (max-width: 1023px) {
   .user-bar {
     transition: transform var(--transition-normal);
@@ -295,15 +294,10 @@
   body[data-topbar-hidden="true"] .user-bar {
     transform: translateY(-100%);
   }
-
-  body[data-topbar-hidden="true"] {
-    --topbar-offset: 0px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .user-bar,
-  .tabs--sticky .tabs__nav {
+  .user-bar {
     transition: none;
   }
 }

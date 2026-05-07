@@ -5,8 +5,7 @@
  * holt sie beim Hochscrollen oder ganz oben wieder zurueck. Auf Desktop
  * (>= 1024px) bleibt die Topbar starr fixed.
  *
- * Toggelt body[data-topbar-hidden="true"]. Sticky-Tabs reagieren via
- * CSS-Variable --topbar-offset und ruecken automatisch nach oben.
+ * Toggelt body[data-topbar-hidden="true"] fuer das Slide-out der Topbar.
  *
  * Pausiert (laesst Topbar sichtbar), solange ein modales Element offen
  * ist - sonst springt der Header beim Bedienen eines Dialogs wild.

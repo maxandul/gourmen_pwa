@@ -97,8 +97,7 @@
             </div>
         </div>
         {% endif %}
-        <div class="tabs tabs--panel tabs--sticky" aria-label="Event-Detail">
-            <div class="tabs__nav-sticky">
+        <div class="tabs tabs--panel" aria-label="Event-Detail">
             <nav class="tabs__nav" role="tablist">
                 <a href="{{ url_for('events.detail', event_id=event.id, tab='info') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'info' else '' }}"
@@ -124,7 +123,6 @@
                 </a>
                 {% endif %}
             </nav>
-            </div>
 
             <div class="tabs__content">
                 <!-- Tab: Infos -->

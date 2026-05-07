@@ -195,28 +195,9 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
-| `.tabs` | `--panel`, `--sticky` | Tab-Container (mit `--panel` für Bereichs-Tabs, `--sticky` damit die Tab-Leiste beim Scrollen unter der User-Bar klebt) |
-| `.tabs__nav-sticky` | – | Sticky-Wrapper um `.tabs__nav` (nur in Verbindung mit `.tabs--sticky` einbauen) |
+| `.tabs` | `--panel` | Tab-Container (mit `--panel` für Bereichs-Tabs wie Events/GGL) |
 | `.tabs__nav` / `.tabs__tab` | – | Tab-Navigation |
 | `.disclosure` | – | Aufklappbares Element (für Tool-Strip) |
-
-**`.tabs--sticky`-Hinweise**:
-- Opt-in pro Seite. Nur an Seiten mit langem, tab-getriebenem Inhalt (aktuell Events-Index, Event-Detail, GGL).
-- **Pflicht-HTML-Struktur** (sonst klebt nichts):
-  ```html
-  <div class="tabs tabs--panel tabs--sticky">
-    <div class="tabs__nav-sticky">
-      <nav class="tabs__nav">…</nav>
-    </div>
-    <div class="tabs__content">…</div>
-  </div>
-  ```
-  Der Wrapper `.tabs__nav-sticky` ist das tatsächliche Sticky-Element. `.tabs__nav` selbst hat `overflow-x: auto` (für horizontalen Scroll der Tabs auf engen Mobile-Viewports) – `overflow` auf einem Sticky-Element ist ein bekannter Browser-Killer für `position: sticky`. Daher sticky am overflow-freien Wrapper.
-- Klebt bei `top: calc(var(--topbar-offset, 60px) + var(--safe-area-top))` mit `z-index: var(--z-sticky)` (200) – User-Bar (`--z-fixed` 300) bleibt darüber.
-- Hintergrund deckend (`--color-bg-base`, in `.tabs--panel`-Variante zusätzlich `--tabs-panel-fade-edge`), damit darunter scrollender Content nicht durchscheint.
-- Setzt `overflow: visible` auf `.tabs` und `.tabs.tabs--panel` (sonst klebte sticky innerhalb der Box statt am Viewport).
-- Beißt sich bewusst nicht mit `position: fixed`-Layern (User-Bar oben, Bottom-Nav unten).
-- Bei aktivem Topbar-Auto-Hide (siehe unten) rückt die Tab-Leiste über `--topbar-offset` automatisch nach oben, wenn die User-Bar versteckt ist.
 
 ### 5.7.1 Topbar Auto-Hide (Mobile + Tablet)
 
@@ -225,7 +206,6 @@ Auf Bildschirmen `< 1024px` versteckt sich die `.user-bar` beim Runterscrollen, 
 | Bestandteil | Datei | Zweck |
 |---|---|---|
 | Body-Modifier | `body[data-topbar-hidden="true"]` | wird per JS gesetzt, triggert CSS |
-| CSS-Variable | `--topbar-offset` | Default 60px, im Hide-Zustand 0px – Sticky-Tabs reagieren |
 | CSS | `static/css/v2/layout.css` | `.user-bar` `transform: translateY(-100%)` + `transition` |
 | JS | `static/js/v2/topbar-scroll.js` | Scroll-Listener mit Schwellwert + Modal-Pause |
 
