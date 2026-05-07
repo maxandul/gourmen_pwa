@@ -1,10 +1,31 @@
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flash-messages">
+                <div class="flash-messages" role="region" aria-label="Hinweise">
                     {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                        {% set raw = (category or 'message')|lower %}
+                        {% if raw == 'danger' %}
+                            {% set flash_mod = 'error' %}
+                        {% elif raw == 'message' %}
+                            {% set flash_mod = 'info' %}
+                        {% else %}
+                            {% set flash_mod = raw %}
+                        {% endif %}
+                        {% if flash_mod == 'error' %}
+                            {% set flash_icon = 'circle-x' %}
+                        {% elif flash_mod == 'warning' %}
+                            {% set flash_icon = 'triangle-alert' %}
+                        {% elif flash_mod == 'success' %}
+                            {% set flash_icon = 'circle-check' %}
+                        {% else %}
+                            {% set flash_icon = 'info' %}
+                        {% endif %}
+                        <div class="flash-message flash-{{ flash_mod }}">
+                            <div class="flash-message__body">
+                                {{ lucide_icon(flash_icon, 'icon flash-message__icon') }}
+                                <div class="flash-message__text">{{ message }}</div>
+                            </div>
+                            <button type="button" class="flash-close" aria-label="Schließen">&times;</button>
                         </div>
                     {% endfor %}
                 </div>

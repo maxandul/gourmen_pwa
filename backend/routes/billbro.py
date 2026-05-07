@@ -99,7 +99,7 @@ def index():
     is_organizer = event.organisator_id == current_user.id
     
     if not participation and not is_organizer:
-        flash('Sie nehmen nicht an diesem Event teil', 'error')
+        flash('Du nimmst nicht an diesem Event teil.', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
     # For organizer view, get all active members for attendance check
@@ -153,7 +153,7 @@ def compute(event_id):
     
     # Validate esstyp selection
     if not form.esstyp.data or form.esstyp.data == '':
-        return jsonify({'error': 'Bitte wählen Sie einen Ess-Typ'}), 400
+            return jsonify({'error': 'Bitte wähle einen Ess-Typ.'}), 400
     
     # Update participation
     participation.esstyp = Esstyp(form.esstyp.data)
@@ -605,7 +605,7 @@ def update_guess(event_id):
     ).first()
     
     if not participation or not participation.teilnahme:
-        flash('Sie nehmen nicht an diesem Event teil', 'error')
+        flash('Du nimmst nicht an diesem Event teil.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Clear existing guess to allow new one

@@ -3,7 +3,7 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.9.8';
+const PWA_VERSION = '3.10.1';
 
 /** Wie lange nach manuellem Schliessen (X) bis Install-Banner erneut erscheint. */
 const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -132,20 +132,20 @@ class PWA {
         window.addEventListener('appinstalled', () => {
             this.isInstalled = true;
             this.hideInstallButton();
-            this.showToast('App erfolgreich installiert! 🎉', 'success');
+            this.showToast('App erfolgreich installiert.', 'success');
             console.log('🚀 App wurde erfolgreich installiert');
         });
 
         // Online/Offline Status
         window.addEventListener('online', () => {
             this.isOnline = true;
-            this.showToast('🌐 Verbindung wiederhergestellt', 'success');
+            this.showToast('Verbindung wiederhergestellt', 'success');
             this.updateNetworkStatus();
         });
 
         window.addEventListener('offline', () => {
             this.isOnline = false;
-            this.showToast('📡 Keine Internetverbindung - Offline-Modus aktiv', 'warning', 8000);
+            this.showToast('Keine Internetverbindung – Offline-Modus aktiv', 'warning', 8000);
             this.updateNetworkStatus();
         });
 
@@ -747,12 +747,12 @@ class PWA {
                 console.error('❌ Update check failed:', error);
                 // Nur bei Fehler Toast anzeigen
                 if (error.message !== 'Keine Service Worker Registrierung gefunden') {
-                    this.showToast('❌ Update-Check fehlgeschlagen', 'error');
+                    this.showToast('Update-Check fehlgeschlagen', 'error');
                 }
             });
         } else {
             console.error('❌ Service Worker nicht unterstützt');
-            this.showToast('❌ Service Worker nicht unterstützt', 'error');
+            this.showToast('Service Worker nicht unterstützt', 'error');
         }
     }
 
@@ -1231,7 +1231,7 @@ class PWA {
         console.log('Service Worker installed:', data);
         
         // Zeige Toast-Benachrichtigung
-        this.showToast('🔄 App wurde aktualisiert!', 'success');
+        this.showToast('App wurde aktualisiert.', 'success');
         
         // Update App-Info
         this.updateAppInfo();
@@ -1244,57 +1244,18 @@ class PWA {
     }
 
     showToast(message, type = 'info', duration = 5000) {
-        // Erstelle oder hole Toast Container
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            container.className = 'toast-container';
-            document.body.appendChild(container);
+        const allowed = ['success', 'error', 'warning', 'info'];
+        const normalized = allowed.includes(type) ? type : 'info';
+        if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+            Toast.show(normalized, message, null, { duration });
+            return null;
         }
-
-        // Erstelle Toast Element
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        // Toast Content
-        const content = document.createElement('div');
-        content.className = 'toast-content';
-        content.textContent = message;
-        
-        // Close Button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'toast-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => {
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 300);
-        };
-        
-        // Zusammenbauen
-        toast.appendChild(content);
-        toast.appendChild(closeBtn);
-        container.appendChild(toast);
-
-        // Auto-remove nach Dauer
-        if (duration > 0) {
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.style.animation = 'slideOutRight 0.3s ease';
-                    setTimeout(() => {
-                        if (toast.parentNode) {
-                            toast.remove();
-                        }
-                    }, 300);
-                }
-            }, duration);
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, normalized, { timeout: duration });
+            return null;
         }
-
-        return toast;
+        console.warn('[PWA] Toast nicht verfügbar:', message);
+        return null;
     }
 
     async sendNotification(title, body, options = {}) {
@@ -1479,7 +1440,7 @@ class PWA {
         try {
             // Prüfe ob Service Worker unterstützt wird
             if (!('serviceWorker' in navigator)) {
-                this.showToast('❌ Service Worker nicht unterstützt', 'error');
+                this.showToast('Service Worker nicht unterstützt', 'error');
                 return;
             }
 
@@ -1487,7 +1448,7 @@ class PWA {
             const existingRegistration = await navigator.serviceWorker.getRegistration();
             if (existingRegistration) {
                 console.log('✅ Service Worker bereits registriert:', existingRegistration);
-                this.showToast('✅ Service Worker ist bereits registriert', 'success');
+                this.showToast('Service Worker ist bereits registriert', 'success');
                 this.updateDebugServiceWorkerStatus();
                 return;
             }
@@ -1496,7 +1457,7 @@ class PWA {
             console.log('🔄 Versuche Service Worker Registrierung...');
             const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             console.log('✅ Service Worker erfolgreich registriert:', registration);
-            this.showToast('✅ Service Worker erfolgreich registriert', 'success');
+            this.showToast('Service Worker erfolgreich registriert', 'success');
             
             // Speichere Registration
             this.serviceWorkerRegistration = registration;
@@ -1551,14 +1512,14 @@ class PWA {
             console.log('✅ Service Worker erfolgreich registriert:', registration);
             
             this.serviceWorkerRegistration = registration;
-            this.showToast('✅ Service Worker erfolgreich neu registriert', 'success');
+            this.showToast('Service Worker erfolgreich neu registriert', 'success');
             
             // Debug-Status aktualisieren
             this.updateDebugServiceWorkerStatus();
             
         } catch (error) {
             console.error('❌ Force Registration fehlgeschlagen:', error);
-            this.showToast('❌ Force Registration fehlgeschlagen: ' + error.message, 'error');
+            this.showToast('Neuregistrierung fehlgeschlagen: ' + error.message, 'error');
         }
     }
 
@@ -1585,14 +1546,14 @@ class PWA {
             }
             
             this.serviceWorkerRegistration = null;
-            this.showToast('✅ Alle Service Worker und Caches bereinigt', 'success');
+            this.showToast('Alle Service Worker und Caches bereinigt', 'success');
             
             // Debug-Status aktualisieren
             this.updateDebugServiceWorkerStatus();
             
         } catch (error) {
             console.error('❌ Cleanup fehlgeschlagen:', error);
-            this.showToast('❌ Cleanup fehlgeschlagen: ' + error.message, 'error');
+            this.showToast('Cleanup fehlgeschlagen: ' + error.message, 'error');
         }
     }
 
@@ -1704,7 +1665,7 @@ class PWA {
         } catch (error) {
             console.error('❌ Diagnose fehlgeschlagen:', error);
             console.error('❌ Error Stack:', error.stack);
-            this.showToast('❌ Diagnose fehlgeschlagen: ' + error.message, 'error');
+            this.showToast('Diagnose fehlgeschlagen: ' + error.message, 'error');
         }
     }
 
@@ -1713,7 +1674,7 @@ class PWA {
         
         try {
             // Erstelle detaillierte Diagnose-Nachricht
-            let message = '🔍 Service Worker Diagnose:\n\n';
+            let message = 'Service Worker Diagnose:\n\n';
             message += `URL: ${diagnosis.url}\n`;
             message += `Protocol: ${diagnosis.protocol}\n`;
             message += `Service Worker Support: ${diagnosis.serviceWorkerSupported ? 'JA' : 'NEIN'}\n\n`;
@@ -1769,30 +1730,30 @@ class PWA {
             
         } catch (error) {
             console.error('❌ Fehler beim Anzeigen der Diagnose:', error);
-            this.showToast('❌ Fehler beim Anzeigen der Diagnose: ' + error.message, 'error');
+            this.showToast('Fehler beim Anzeigen der Diagnose: ' + error.message, 'error');
         }
     }
 
     simpleTest() {
         console.log('🧪 Einfacher Test gestartet...');
-        this.showToast('🧪 Test funktioniert!', 'success');
+        this.showToast('Test funktioniert.', 'success');
         
         // Teste Service Worker Unterstützung
         if ('serviceWorker' in navigator) {
             console.log('✅ Service Worker wird unterstützt');
-            this.showToast('✅ Service Worker wird unterstützt', 'success');
+            this.showToast('Service Worker wird unterstützt', 'success');
         } else {
             console.log('❌ Service Worker wird nicht unterstützt');
-            this.showToast('❌ Service Worker wird nicht unterstützt', 'error');
+            this.showToast('Service Worker wird nicht unterstützt', 'error');
         }
         
         // Teste einfache Service Worker Abfrage
         navigator.serviceWorker.getRegistrations().then(registrations => {
             console.log('📋 Service Worker Registrierungen:', registrations.length);
-            this.showToast(`📋 ${registrations.length} Service Worker gefunden`, 'info');
+            this.showToast(`${registrations.length} Service Worker gefunden`, 'info');
         }).catch(error => {
             console.error('❌ Fehler beim Abrufen der Registrierungen:', error);
-            this.showToast('❌ Fehler beim Abrufen der Registrierungen: ' + error.message, 'error');
+            this.showToast('Fehler beim Abrufen der Registrierungen: ' + error.message, 'error');
         });
     }
 
@@ -1801,7 +1762,7 @@ class PWA {
         
         try {
             if (!('serviceWorker' in navigator)) {
-                this.showToast('❌ Service Worker nicht unterstützt', 'error');
+                this.showToast('Service Worker nicht unterstützt', 'error');
                 return;
             }
             
@@ -1809,7 +1770,7 @@ class PWA {
             const existingRegistrations = await navigator.serviceWorker.getRegistrations();
             if (existingRegistrations.length > 0) {
                 console.log('✅ Service Worker bereits registriert:', existingRegistrations[0]);
-                this.showToast('✅ Service Worker bereits registriert', 'success');
+                this.showToast('Service Worker bereits registriert', 'success');
                 this.serviceWorkerRegistration = existingRegistrations[0];
                 return;
             }
@@ -1821,14 +1782,14 @@ class PWA {
             
             this.serviceWorkerRegistration = registration;
             this.setupServiceWorkerEvents(registration);
-            this.showToast('✅ Service Worker erfolgreich registriert', 'success');
+            this.showToast('Service Worker erfolgreich registriert', 'success');
             
             // Aktualisiere Debug-Status
             this.updateDebugServiceWorkerStatus();
             
         } catch (error) {
             console.error('❌ Service Worker Registrierung fehlgeschlagen:', error);
-            this.showToast('❌ Service Worker Registrierung fehlgeschlagen: ' + error.message, 'error');
+            this.showToast('Service Worker Registrierung fehlgeschlagen: ' + error.message, 'error');
         }
     }
 
@@ -1836,13 +1797,13 @@ class PWA {
         if (this.debugUpdateInterval) {
             clearInterval(this.debugUpdateInterval);
             this.debugUpdateInterval = null;
-            this.showToast('✅ Automatische Aktualisierung gestoppt', 'success');
+            this.showToast('Automatische Aktualisierung gestoppt', 'success');
             console.log('🛑 Automatische Debug-Status-Aktualisierung gestoppt');
         } else {
             this.debugUpdateInterval = setInterval(() => {
                 this.updateDebugServiceWorkerStatus();
             }, 5000);
-            this.showToast('✅ Automatische Aktualisierung gestartet (alle 5s)', 'success');
+            this.showToast('Automatische Aktualisierung gestartet (alle 5 s)', 'success');
             console.log('▶️ Automatische Debug-Status-Aktualisierung gestartet');
         }
     }
@@ -1864,7 +1825,7 @@ class PWA {
             console.log('🛑 Auto-Update-Interval gestoppt');
         }
         
-        this.showToast('🛑 Alle automatischen Updates gestoppt', 'success');
+        this.showToast('Alle automatischen Updates gestoppt', 'success');
         console.log('✅ Alle automatischen Updates gestoppt');
     }
 

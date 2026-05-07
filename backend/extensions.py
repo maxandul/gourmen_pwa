@@ -12,7 +12,7 @@ migrate = Migrate()
 # Authentication
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
-login_manager.login_message = 'Bitte melden Sie sich an, um diese Seite zu sehen.'
+login_manager.login_message = 'Bitte melde dich an, um diese Seite zu sehen.'
 login_manager.login_message_category = 'info'
 
 # Security

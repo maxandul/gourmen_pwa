@@ -62,7 +62,7 @@ Registrierung in `backend/app.py`:
 | `ggl` | `/ggl` | Gourmen Guessing League Ranking |
 | `member` | `/member` | Member-Profile, Settings |
 | `admin` | `/admin` | Admin-Bereich (Members, Events) |
-| `notifications` | `/notifications` | In-App Notifications |
+| `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
 | `cron` | (root) | Cron-Trigger-Endpoints (auth via Token) |

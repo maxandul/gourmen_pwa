@@ -127,7 +127,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.btn` | `--primary`, `--success`, `--danger`, `--outline`, `--billbro` | Buttons, einzige zugelassene Button-Klasse |
 | `.icon` | `--sm`, `--md`, `--lg` | SVG-Icon (aus Lucide-Sprite) |
 | `.chip` | `--small`, `--accent` | Tag/Label-Pille |
-| `.alert` | `--success`, `--warning`, `--error`, `--info` | Inline-Hinweis (im Content), nicht für Flash |
+| `.alert` | `--success`, `--warning`, `--error`, `--info` | Inline-Hinweis (im Content); nicht für Flask-Flash (siehe `.flash-message`) |
+| `.flash-message` | `__body`, `__icon`, `__text`; Kategorien `flash-success` / `flash-error`/`flash-danger` / `flash-warning` / `flash-info` | Server-Hinweise nach Redirect; Lucide wie Toast; Partial `templates/partials/_flash_messages.html` |
 | `.empty-state` | `--filtered` | Leerstand-Anzeige in Listen, mit `__icon`, `__message` |
 
 ### 5.2 Layout / Navigation

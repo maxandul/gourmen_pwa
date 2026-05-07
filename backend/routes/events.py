@@ -946,11 +946,11 @@ def send_rsvp_reminder(event_id):
         sent_count = result.get('sent_count', 0)
         members_count = result.get('members_count', 0)
         if sent_count > 0:
-            flash(f'✅ Push-Benachrichtigung an {sent_count} Geräte von {members_count} Mitgliedern gesendet!', 'success')
+            flash(f'Push-Benachrichtigung an {sent_count} Geräte von {members_count} Mitgliedern gesendet.', 'success')
         else:
-            flash(f'ℹ️ {members_count} Mitglied(er) haben noch nicht geantwortet, aber keine Push-Subscriptions.', 'info')
+            flash(f'{members_count} Mitglied(er) haben noch nicht geantwortet, aber keine Push-Subscriptions.', 'info')
     else:
-        flash(f'⚠️ Fehler: {result.get("message", "Unbekannter Fehler")}', 'warning')
+        flash(f'Fehler: {result.get("message", "Unbekannter Fehler")}', 'warning')
     
     return redirect(url_for('events.detail', event_id=event_id))
 

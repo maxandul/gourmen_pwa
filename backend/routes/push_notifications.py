@@ -40,7 +40,7 @@ def get_vapid_public_key():
         })
     except Exception as e:
         logger.error(f"Error getting VAPID public key: {e}")
-        return jsonify({'error': 'VAPID key not available'}), 500
+        return jsonify({'error': 'Öffentlicher VAPID-Schlüssel nicht verfügbar'}), 500
 
 @bp.route('/api/push/subscribe', methods=['POST'])
 @login_required
@@ -50,7 +50,7 @@ def subscribe_to_push():
         data = request.get_json()
         
         if not data or 'subscription' not in data:
-            return jsonify({'error': 'Subscription data required'}), 400
+            return jsonify({'error': 'Subscription-Daten fehlen'}), 400
         
         subscription_data = data['subscription']
         user_agent = request.headers.get('User-Agent')
@@ -58,11 +58,11 @@ def subscribe_to_push():
         # Validiere Subscription-Daten
         required_keys = ['endpoint', 'keys']
         if not all(key in subscription_data for key in required_keys):
-            return jsonify({'error': 'Invalid subscription data'}), 400
+            return jsonify({'error': 'Ungültige Subscription-Daten'}), 400
         
         required_key_keys = ['p256dh', 'auth']
         if not all(key in subscription_data['keys'] for key in required_key_keys):
-            return jsonify({'error': 'Invalid subscription keys'}), 400
+            return jsonify({'error': 'Ungültige Subscription-Keys'}), 400
         
         # Registriere Subscription
         success = PushNotificationService.subscribe_member_to_push(
@@ -74,10 +74,10 @@ def subscribe_to_push():
         if success:
             return jsonify({
                 'success': True,
-                'message': 'Successfully subscribed to push notifications'
+                'message': 'Push-Benachrichtigungen sind aktiviert.'
             })
         else:
-            return jsonify({'error': 'Failed to subscribe'}), 500
+            return jsonify({'error': 'Registrierung der Push-Subscription fehlgeschlagen'}), 500
             
     except Exception as e:
         logger.error(f"Error subscribing to push notifications: {e}")
@@ -99,10 +99,10 @@ def unsubscribe_from_push():
         if success:
             return jsonify({
                 'success': True,
-                'message': 'Successfully unsubscribed from push notifications'
+                'message': 'Push-Benachrichtigungen abgemeldet.'
             })
         else:
-            return jsonify({'error': 'No subscription found to unsubscribe'}), 404
+            return jsonify({'error': 'Keine passende Subscription gefunden'}), 404
             
     except Exception as e:
         logger.error(f"Error unsubscribing from push notifications: {e}")
@@ -149,7 +149,7 @@ def test_push_notification():
         ).all()
         
         if not subscriptions:
-            return jsonify({'error': 'No active subscriptions found'}), 400
+            return jsonify({'error': 'Keine aktive Subscription gefunden'}), 400
         
         # Test-Payload
         payload = {
@@ -187,7 +187,7 @@ def test_push_notification():
         
         return jsonify({
             'success': True,
-            'message': f'Test notification sent to {sent_count}/{len(subscriptions)} devices',
+            'message': f'Test-Benachrichtigung an {sent_count} von {len(subscriptions)} Geräten gesendet',
             'sent_count': sent_count,
             'total_subscriptions': len(subscriptions),
             'deactivated': deactivated

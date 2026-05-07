@@ -616,7 +616,7 @@ def reset_member_password(member_id):
     if request.method == 'POST':
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
-            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+            flash('Bitte gib "RESET" ein, um zu bestätigen.', 'error')
             return render_template('admin/reset_member_password.html', member=member)
         
         # Generate new password
@@ -653,7 +653,7 @@ def reset_member_2fa(member_id):
     if request.method == 'POST':
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
-            flash('Bitte geben Sie "RESET" ein, um zu bestätigen.', 'error')
+            flash('Bitte gib "RESET" ein, um zu bestätigen.', 'error')
             return render_template('admin/reset_member_2fa.html', member=member)
         
         # Get MFA data
@@ -1101,11 +1101,11 @@ def create_merch_article():
             sizes = request.form.getlist('sizes')
             
             if not colors:
-                flash('Bitte wählen Sie mindestens eine Farbe aus!', 'error')
+                flash('Bitte wähle mindestens eine Farbe aus.', 'error')
                 return render_template('admin/merch/article_form.html', article=None)
             
             if not sizes:
-                flash('Bitte wählen Sie mindestens eine Größe aus!', 'error')
+                flash('Bitte wähle mindestens eine Größe aus.', 'error')
                 return render_template('admin/merch/article_form.html', article=None)
             
             # Create article
@@ -1164,12 +1164,12 @@ def edit_merch_article(article_id):
             sizes = request.form.getlist('sizes')
             
             if not colors:
-                flash('Bitte wählen Sie mindestens eine Farbe aus!', 'error')
+                flash('Bitte wähle mindestens eine Farbe aus.', 'error')
                 return render_template('admin/merch/article_form.html', article=article, 
                                      existing_colors=[], existing_sizes=[])
             
             if not sizes:
-                flash('Bitte wählen Sie mindestens eine Größe aus!', 'error')
+                flash('Bitte wähle mindestens eine Größe aus.', 'error')
                 return render_template('admin/merch/article_form.html', article=article,
                                      existing_colors=colors, existing_sizes=[])
             

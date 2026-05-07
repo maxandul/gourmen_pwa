@@ -39,92 +39,56 @@ function lucideInlineIcon(symbolId, extraIconClasses) {
     return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="${base}#${symbolId}"></use></svg>`;
 }
 
-// Top-Banner Notification System
+/**
+ * Kurz-Hinweise (AJAX, Push): einheitlich über V2 Toast (`static/js/v2/toast.js`).
+ * Läuft erst nach vollem Seitenaufbau; Toast ist dann global verfügbar.
+ */
 function showToast(message, type = 'info', options = {}) {
     const {
         timeout = 5000,
-        icon = getDefaultIcon(type),
-        persistent = false
+        persistent = false,
     } = options;
+    const duration = persistent ? 0 : timeout;
+    const allowed = ['success', 'error', 'warning', 'info'];
+    const normalized = allowed.includes(type) ? type : 'info';
 
-    const container = document.getElementById('top-notifications');
-    if (!container) {
-        console.error('Top notifications container not found');
-        return;
+    if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+        Toast.show(normalized, String(message ?? ''), null, { duration });
+        return null;
     }
 
-    const notification = document.createElement('div');
-    notification.className = `top-notification ${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">${icon}</span>
-            <span class="notification-message">${message}</span>
-        </div>
-        <button class="notification-close" onclick="removeTopNotification(this.parentElement.parentElement)">×</button>
-    `;
-
-    // Füge die Notification zum Container hinzu
-    container.appendChild(notification);
-
-    // Aktualisiere die Position der Flash-Messages
-    updateFlashMessagesPosition();
-
-    // Auto-remove nach timeout (außer bei persistent)
-    if (!persistent && timeout > 0) {
-        setTimeout(() => {
-            removeTopNotification(notification);
-        }, timeout);
-    }
-
-    return notification;
+    console.warn('[app] Toast nicht verfügbar:', message);
+    return null;
 }
 
-// Hilfsfunktion für Standard-Icons
-function getDefaultIcon(type) {
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    return icons[type] || icons.info;
-}
-
-// Entfernt eine Top-Notification mit Animation
+/** Legacy-Hook: früher `.top-notification`; nur noch für Fremd-HTML relevant. */
 function removeTopNotification(notification) {
     if (!notification || !notification.parentNode) return;
-
-    // Animation für das Ausblenden
     notification.style.animation = 'slideOutUp 0.3s ease forwards';
-    
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
-            // Aktualisiere die Position der Flash-Messages nach dem Entfernen
             updateFlashMessagesPosition();
         }
     }, 300);
 }
 
-// Aktualisiert die Position der Flash-Messages basierend auf der Anzahl der Top-Banner
+/**
+ * Falls Flash-Bereich `position: fixed` nutzt (Legacy-CSS): unter `#top-notifications` ausrichten.
+ * Im V2-Layout sind Flash-Meldungen im normalen Dokumentfluss — dann ist diese Funktion wirkungslos.
+ */
 function updateFlashMessagesPosition() {
     const container = document.getElementById('top-notifications');
-    const flashMessages = document.querySelector('.flash-messages');
-    
-    if (!container || !flashMessages) return;
+    const flashRoot = document.querySelector('.flash-messages');
+    if (!container || !flashRoot) return;
+    const pos = window.getComputedStyle(flashRoot).position;
+    if (pos !== 'fixed') return;
 
-    const notifications = container.querySelectorAll('.top-notification');
-    const totalHeight = Array.from(notifications).reduce((height, notification) => {
-        return height + notification.offsetHeight;
-    }, 0);
-
-    // Setze den Top-Offset für Flash-Messages
-    flashMessages.style.top = `${70 + totalHeight}px`;
+    flashRoot.style.top = `${70 + container.offsetHeight}px`;
 }
 
-// Legacy Toast Support - leitet an Top-Banner weiter
 function showLegacyToast(message, type = 'info') {
-    console.warn('showLegacyToast is deprecated, use showToast instead');
+    console.warn('showLegacyToast ist veraltet, bitte showToast verwenden.');
     return showToast(message, type);
 }
 
@@ -148,13 +112,11 @@ function initializeFlashMessages() {
             message.style.opacity = '0';
             setTimeout(() => {
                 message.remove();
-                // Aktualisiere die Position der Flash-Messages nach dem Entfernen
                 updateFlashMessagesPosition();
             }, 300);
         }, 5000);
     });
-    
-    // Initiale Position der Flash-Messages setzen
+
     updateFlashMessagesPosition();
 }
 
@@ -322,16 +284,16 @@ async function getVAPIDPublicKey() {
     try {
         const response = await fetch('/api/vapid-public-key');
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Server hat geantwortet mit HTTP ${response.status}.`);
         }
         const data = await response.json();
         if (!data.public_key) {
-            throw new Error('No public key in response');
+            throw new Error('Kein öffentlicher Schlüssel in der Antwort.');
         }
         return data.public_key;
     } catch (error) {
         console.error('Error getting VAPID public key:', error);
-        throw new Error('Failed to get VAPID public key. Push notifications cannot be enabled.');
+        throw new Error('Öffentlicher VAPID-Schlüssel konnte nicht geladen werden. Push ist derzeit nicht möglich.');
     }
 }
 
@@ -354,7 +316,7 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
     try {
         // Validiere VAPID Key
         if (!vapidPublicKey || vapidPublicKey.length < 80) {
-            throw new Error('Invalid VAPID public key received from server');
+            throw new Error('Der Server hat einen ungültigen VAPID-Schlüssel geliefert.');
         }
         
         // iOS Version Check
@@ -363,14 +325,14 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
             const iOSVersionMatch = navigator.userAgent.match(/OS (\d+)_/);
             const iOSVersion = iOSVersionMatch ? parseFloat(iOSVersionMatch[1]) : 0;
             if (iOSVersion > 0 && iOSVersion < 16.4) {
-                throw new Error('Push notifications require iOS 16.4 or later. Please update your device.');
+                throw new Error('Push benötigt iOS 16.4 oder neuer. Bitte aktualisiere dein Gerät.');
             }
         }
         
         // Request permission
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-            throw new Error('Push notification permission denied');
+            throw new Error('Zugriff auf Benachrichtigungen wurde verweigert.');
         }
         
         // Subscribe to push notifications
@@ -382,7 +344,7 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
             });
         } catch (subError) {
             console.error('Push subscription error:', subError);
-            throw new Error(`Failed to create push subscription: ${subError.message}`);
+            throw new Error(`Push-Subscription fehlgeschlagen: ${subError.message}`);
         }
         
         // Send subscription to server
@@ -405,7 +367,7 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
                 const err = await response.json();
                 details = err?.error || JSON.stringify(err);
             } catch (_) {}
-            throw new Error(`Failed to register subscription: HTTP ${response.status} ${response.statusText} ${details}`);
+            throw new Error(`Registrierung der Subscription fehlgeschlagen (HTTP ${response.status} ${response.statusText}) ${details}`);
         }
         
         const result = await response.json();
@@ -417,7 +379,7 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
             button.remove();
         }
         
-        showToast('Push-Benachrichtigungen aktiviert! 🔔', 'success');
+        showToast('Push-Benachrichtigungen aktiviert.', 'success');
         return true;
         
     } catch (error) {
@@ -475,7 +437,7 @@ async function testPushNotification() {
         if (result.success) {
             showToast(result.message, 'success');
         } else {
-            throw new Error(result.error || 'Test failed');
+            throw new Error(result.error || 'Test fehlgeschlagen');
         }
         
     } catch (error) {
@@ -593,14 +555,14 @@ async function sendParticipationReminders(eventId) {
         const result = await response.json();
         
         if (result.success) {
-            showToast(`✅ ${result.message}`, 'success');
+            showToast(result.message, 'success');
         } else {
             throw new Error(result.message || 'Unbekannter Fehler');
         }
         
     } catch (error) {
         console.error('Error sending reminders:', error);
-        showToast(`❌ Fehler beim Senden der Push-Erinnerungen: ${error.message}`, 'error');
+        showToast(`Fehler beim Senden der Push-Erinnerungen: ${error.message}`, 'error');
     } finally {
         const reminderBtn = document.getElementById('send-reminders-btn');
         setLoadingState(reminderBtn, false);

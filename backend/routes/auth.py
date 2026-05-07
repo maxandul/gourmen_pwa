@@ -129,7 +129,7 @@ def login():
                         if not next_page or not next_page.startswith('/'):
                             # Check if user needs to change password
                             if user.needs_password_change:
-                                flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+                                flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
                                 next_page = url_for('auth.change_password')
                             else:
                                 next_page = url_for('dashboard.index')
@@ -152,7 +152,7 @@ def login():
             if not next_page or not next_page.startswith('/'):
                 # Check if user needs to change password
                 if user.needs_password_change:
-                    flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+                    flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
                     next_page = url_for('auth.change_password')
                 else:
                     next_page = url_for('dashboard.index')
@@ -167,7 +167,7 @@ def login():
 def logout():
     """Logout user"""
     logout_user()
-    flash('Sie wurden erfolgreich abgemeldet', 'success')
+    flash('Du wurdest erfolgreich abgemeldet', 'success')
     return redirect(url_for('public.landing'))
 
 @bp.route('/2fa/verify', methods=['GET', 'POST'])
@@ -188,7 +188,7 @@ def verify_2fa():
         login_user(user)
         # Check if user needs to change password
         if user.needs_password_change:
-            flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+            flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
             return redirect(url_for('auth.change_password'))
         return redirect(url_for('dashboard.index'))
     
@@ -226,7 +226,7 @@ def verify_2fa():
             if not next_page or not next_page.startswith('/'):
                 # Check if user needs to change password
                 if user.needs_password_change:
-                    flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+                    flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
                     next_page = url_for('auth.change_password')
                 else:
                     next_page = url_for('dashboard.index')
@@ -258,7 +258,7 @@ def verify_2fa():
             
             # Check if user needs to change password
             if user.needs_password_change:
-                flash('Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung.', 'info')
+                flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
                 return redirect(url_for('auth.change_password'))
             
             next_page = request.args.get('next')
@@ -317,7 +317,7 @@ def enroll_2fa():
             flash('2FA erfolgreich aktiviert!', 'success')
             return redirect(url_for('auth.backup_codes'))
         else:
-            flash('Ungültiger Code. Bitte versuchen Sie es erneut.', 'error')
+            flash('Ungültiger Code. Bitte versuche es erneut.', 'error')
     
     return render_template('auth/enroll_2fa_simple.html', 
                          secret=secret, 
@@ -574,7 +574,7 @@ def reset_password(token):
             actor_id=user.id,
         )
         
-        flash('Passwort erfolgreich zurücksetzt. Sie können sich jetzt anmelden.', 'success')
+        flash('Passwort erfolgreich zurückgesetzt. Du kannst dich jetzt anmelden.', 'success')
         return redirect(url_for('auth.login'))
     
     return render_template('auth/reset_password.html', form=form, token=token)
@@ -682,7 +682,7 @@ def reset_2fa(token):
         actor_id=user.id,
     )
     
-    flash('2FA erfolgreich zurückgesetzt. Sie können sich jetzt anmelden und 2FA neu einrichten.', 'success')
+    flash('2FA erfolgreich zurückgesetzt. Du kannst dich jetzt anmelden und 2FA neu einrichten.', 'success')
     return redirect(url_for('auth.login'))
 
 
@@ -773,5 +773,5 @@ def backup_codes():
         return render_template('auth/backup_codes.html', backup_codes=codes)
     
     # If backup codes already exist, show a message
-    flash('Backup-Codes wurden bereits generiert. Falls Sie sie verloren haben, können Sie 2FA deaktivieren und neu einrichten.', 'info')
+    flash('Backup-Codes wurden bereits generiert. Falls du sie verloren hast, kannst du 2FA deaktivieren und neu einrichten.', 'info')
     return redirect(url_for('member.profile')) 

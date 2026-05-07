@@ -79,45 +79,64 @@ class ToastManager {
     toast.setAttribute('role', 'alert');
     toast.setAttribute('data-toast-id', id);
 
-    const iconSvg = this.getIcon(type);
+    const iconHost = document.createElement('div');
+    iconHost.innerHTML = this.getIcon(type).trim();
+    const iconEl = iconHost.firstElementChild;
+    if (iconEl) {
+      toast.appendChild(iconEl);
+    }
 
-    let html = `
-      ${iconSvg}
-      <div class="toast__content">
-        <div class="toast__title">${title}</div>
-        ${message ? `<p class="toast__message">${message}</p>` : ''}
-        ${action ? `
-          <div class="toast__action">
-            <button class="btn btn--sm btn--ghost" data-toast-action="${id}">
-              ${action}
-            </button>
-          </div>
-        ` : ''}
-      </div>
-      ${closeable ? `
-        <button class="toast__close" aria-label="Schließen" data-toast-close="${id}">
-          ×
-        </button>
-      ` : ''}
-    `;
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'toast__content';
 
-    toast.innerHTML = html;
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'toast__title';
+    titleDiv.textContent = title != null ? String(title) : '';
+    contentDiv.appendChild(titleDiv);
 
-    // Event listeners
-    if (closeable) {
-      const closeBtn = toast.querySelector(`[data-toast-close="${id}"]`);
-      closeBtn.addEventListener('click', () => this.dismiss(id));
+    if (message) {
+      const msgP = document.createElement('p');
+      msgP.className = 'toast__message';
+      msgP.textContent = String(message);
+      contentDiv.appendChild(msgP);
     }
 
     if (action) {
-      const actionBtn = toast.querySelector(`[data-toast-action="${id}"]`);
-      actionBtn.addEventListener('click', () => {
-        const toastData = this.toasts.get(id);
-        if (toastData && toastData.onAction) {
-          toastData.onAction();
-        }
-        this.dismiss(id);
-      });
+      const actionWrap = document.createElement('div');
+      actionWrap.className = 'toast__action';
+      const actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
+      actionBtn.className = 'btn btn--sm btn--ghost';
+      actionBtn.setAttribute('data-toast-action', id);
+      actionBtn.textContent = String(action);
+      actionWrap.appendChild(actionBtn);
+      contentDiv.appendChild(actionWrap);
+    }
+
+    toast.appendChild(contentDiv);
+
+    if (closeable) {
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'toast__close';
+      closeBtn.setAttribute('aria-label', 'Schließen');
+      closeBtn.setAttribute('data-toast-close', id);
+      closeBtn.textContent = '×';
+      closeBtn.addEventListener('click', () => this.dismiss(id));
+      toast.appendChild(closeBtn);
+    }
+
+    if (action) {
+      const actionBtnEl = toast.querySelector(`[data-toast-action="${id}"]`);
+      if (actionBtnEl) {
+        actionBtnEl.addEventListener('click', () => {
+          const toastData = this.toasts.get(id);
+          if (toastData && toastData.onAction) {
+            toastData.onAction();
+          }
+          this.dismiss(id);
+        });
+      }
     }
 
     return toast;

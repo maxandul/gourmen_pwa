@@ -447,6 +447,27 @@
   justify-content: space-between;
   gap: var(--space-3);
   box-shadow: var(--shadow-sm);
+  transition: opacity var(--transition-normal);
+}
+
+.flash-message__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.flash-message__icon {
+  flex-shrink: 0;
+  width: var(--text-xl);
+  height: var(--text-xl);
+  margin-top: 2px;
+}
+
+.flash-message__text {
+  flex: 1;
+  min-width: 0;
 }
 
 .flash-message-success,
