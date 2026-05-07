@@ -64,7 +64,7 @@ Registrierung in `backend/app.py`:
 | `admin` | `/admin` | Admin-Bereich (Members, Events) |
 | `notifications` | `/notifications` | In-App Notifications |
 | `ratings` | `/ratings` | Event-Ratings |
-| `push_notifications` | (root) | API für Web-Push-Subscriptions |
+| `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
 | `cron` | (root) | Cron-Trigger-Endpoints (auth via Token) |
 
 ## Models (Auswahl)
@@ -142,17 +142,21 @@ RESET / ONBOARDING TOKENS
 
 ## PWA-Aspekte
 
-- **Service Worker** wird vom Origin-Root unter `/sw.js` ausgeliefert (siehe `app.py` Route)
+- **Service Worker** wird vom Origin-Root unter `/sw.js` ausgeliefert (ausschliesslich Route in der App-Factory `create_app()` in `backend/app.py`, nicht im Public-Blueprint)
   - `Content-Type: application/javascript`
   - `Service-Worker-Allowed: /`
   - `Cache-Control: no-cache` (Updates müssen schnell wirken)
 - **Cache-Buster** bei jedem UI-Deploy: siehe `docs/UI.md` Sektion „Cache-Buster"
 - **Push-Notifications** via VAPID (`VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`); Subscriptions in DB
-- **Asset-Manifest** mit Cache-Bust-Hashes (`scripts/fingerprint_assets.py`)
+- **Client-Registrierung** in `static/js/pwa.js`: `navigator.serviceWorker.register('/sw.js', { scope: '/' })` (nicht `/static/`); legacies Scope `/static/` wird beim erfolgreichen Register entfernt
+- **`member.technical`** (`templates/member/technical.html`): Einstellungs-Hub für **Push**, **Homescreen/PWA**, **Technik/Offline**; Verweis auf **`member.security`** (Passwort, 2FA). Auf **localhost** Hinweis/Toast wenn kein Service Worker (`?pwa_sw=1`), damit Push-Init nicht an `serviceWorker.ready` hängt (`static/js/app.js`).
+- **Install-Hinweise** (iOS/Android, nur App-Shell): Schliessen (X) setzt einen **7-Tage**-Cooldown (`localStorage`-Timestamps, siehe `pwa.js`); Aktionen «Installieren» / «Push» schliessen nur das Banner ohne Cooldown; dauerhafte Kurzanleitung: **Einstellungen** (`member/technical`) – Card «App auf dem Homescreen»
+- **Top-Leiste «Benachrichtigungen aktivieren»** (`pwa.js`): wird nur eingeblendet, wenn `/api/push/subscription-status` **keine** aktive Subscription meldet (und Berechtigung nicht `denied`); bei unklarem API-Resultat Fallback nur bei `Notification.permission === 'default'`; bei Tab-Fokus erneute Prüfung (throttled)
+- **Basis-Healthcheck** `GET /health` nur in der App-Factory (`backend/app.py`); **`GET /health/db`** (DB-Ping) bleibt am Public-Blueprint (`backend/routes/public.py`)
 
 ### Service-Worker Caching-Strategie
 
-Single Source of Truth für die Version: `const VERSION` in `static/sw.js` und `const PWA_VERSION` in `static/js/pwa.js` (beide werden von `scripts/update_pwa_version.py` synchron gehoben).
+- **Release-Version** (Cache-Buster): `const VERSION` in `static/sw.js` und `const PWA_VERSION` in `static/js/pwa.js` (siehe `scripts/update_pwa_version.py`)
 
 | Request-Typ | Strategie | Cache | Begründung |
 |---|---|---|---|

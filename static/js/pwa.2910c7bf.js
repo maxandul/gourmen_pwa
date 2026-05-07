@@ -3,7 +3,14 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.9.3';
+const PWA_VERSION = '3.9.8';
+
+/** Wie lange nach manuellem Schliessen (X) bis Install-Banner erneut erscheint. */
+const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+const LS_IOS_INSTALL_DISMISSED_AT = 'ios_install_banner_dismissed_at';
+const LS_ANDROID_INSTALL_DISMISSED_AT = 'android_install_banner_dismissed_at';
+const LS_IOS_INSTALL_LEGACY = 'ios-install-prompt-shown';
+const LS_ANDROID_INSTALL_LEGACY = 'android-install-prompt-shown';
 
 class PWA {
     constructor() {
@@ -19,6 +26,45 @@ class PWA {
     /** Oeffentlicher Marketing-Bereich (`public.*`): keine Install-/Push-Hinweise. */
     isPublicLayout() {
         return document.body.getAttribute('data-layout') === 'public';
+    }
+
+    /**
+     * Install-Banner wieder anzeigen, wenn kein Dismiss-Timestamp oder Cooldown abgelaufen.
+     * Legacy-Boolean `ios-install-prompt-shown` / `android-install-prompt-shown` wird entfernt,
+     * damit der Hinweis unter dem neuen Modell einmal wieder erscheinen darf.
+     */
+    shouldShowInstallInfoBanner(dismissKey, legacyBooleanKey) {
+        if (localStorage.getItem(legacyBooleanKey) === 'true') {
+            localStorage.removeItem(legacyBooleanKey);
+            return true;
+        }
+        const raw = localStorage.getItem(dismissKey);
+        if (!raw) return true;
+        const t = parseInt(raw, 10);
+        if (Number.isNaN(t)) return true;
+        return (Date.now() - t) > INSTALL_BANNER_DISMISS_MS;
+    }
+
+    recordInstallInfoBannerDismiss(dismissKey) {
+        localStorage.setItem(dismissKey, String(Date.now()));
+    }
+
+    unregisterLegacyStaticScopeWorkers() {
+        if (!navigator.serviceWorker?.getRegistrations) return;
+        navigator.serviceWorker.getRegistrations()
+            .then((regs) => {
+                regs.forEach((reg) => {
+                    try {
+                        const path = new URL(reg.scope).pathname || '';
+                        if (/\/static\/?$/.test(path)) {
+                            reg.unregister();
+                        }
+                    } catch (_) {
+                        /* ignore */
+                    }
+                });
+            })
+            .catch(() => {});
     }
 
     ensureAppShellPromosMount() {
@@ -151,9 +197,10 @@ class PWA {
         
         console.log('🔄 Starte Service Worker Registrierung...');
         
-        // Registriere Service Worker (oder hole bestehende Registration)
-        navigator.serviceWorker.register('/static/sw.js', { scope: '/static/' })
+        // Origin-Root laut ARCHITECTURE.md (`/sw.js` + `Service-Worker-Allowed: /`)
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
             .then(registration => {
+                this.unregisterLegacyStaticScopeWorkers();
                 console.log('✅ Service Worker registriert:', registration);
                 this.serviceWorkerRegistration = registration;
                 this.setupServiceWorkerEvents(registration);
@@ -220,12 +267,73 @@ class PWA {
     }
 
     setupNotifications() {
+        void this.syncNotificationPermissionPromo();
+        if (this._pushPromoFocusHandlerBound) {
+            return;
+        }
+        this._pushPromoFocusHandlerBound = true;
+        let lastPushPromoSyncAt = 0;
+        window.addEventListener('focus', () => {
+            if (this.isPublicLayout()) return;
+            if (!document.body.hasAttribute('data-authenticated')) return;
+            const now = Date.now();
+            if (now - lastPushPromoSyncAt < 1500) {
+                return;
+            }
+            lastPushPromoSyncAt = now;
+            void this.syncNotificationPermissionPromo();
+        });
+    }
+
+    /**
+     * Top-Leiste «Benachrichtigungen aktivieren» nur, wenn Server noch keine aktive Subscription hat.
+     * @returns {Promise<boolean|null>} true=subscribed, false=nicht subscribed, null=unbekannt (Netzwerk)
+     */
+    async fetchServerPushSubscribed() {
+        if (!document.body.hasAttribute('data-authenticated')) {
+            return null;
+        }
+        try {
+            const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
+            const response = await fetch('/api/push/subscription-status', {
+                headers: csrf ? { 'X-CSRFToken': csrf } : {},
+                credentials: 'same-origin',
+            });
+            if (!response.ok) {
+                return null;
+            }
+            const data = await response.json();
+            return data.subscribed === true;
+        } catch (e) {
+            console.warn('Push subscription status:', e);
+            return null;
+        }
+    }
+
+    async syncNotificationPermissionPromo() {
         if (this.isPublicLayout()) return;
-        // Prüfe Notification-Berechtigung
-        if ('Notification' in window) {
+        if (!('Notification' in window)) return;
+        if (!document.body.hasAttribute('data-authenticated')) return;
+
+        const serverSubscribed = await this.fetchServerPushSubscribed();
+        if (serverSubscribed === true) {
+            this.hideNotificationPermissionButton();
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            return;
+        }
+
+        if (serverSubscribed === null) {
             if (Notification.permission === 'default') {
                 this.showNotificationPermissionButton();
             }
+            return;
+        }
+
+        if (Notification.permission === 'default' || Notification.permission === 'granted') {
+            this.showNotificationPermissionButton();
         }
     }
 
@@ -338,8 +446,7 @@ class PWA {
 
     showIOSInstallPrompt() {
         if (this.isPublicLayout()) return;
-        // Nur einmal anzeigen (localStorage)
-        if (localStorage.getItem('ios-install-prompt-shown')) {
+        if (!this.shouldShowInstallInfoBanner(LS_IOS_INSTALL_DISMISSED_AT, LS_IOS_INSTALL_LEGACY)) {
             return;
         }
 
@@ -369,12 +476,12 @@ class PWA {
                 <button type="button" class="alert__close" aria-label="Schließen">×</button>
             `;
 
-            const close = () => {
+            const closeDismissed = () => {
                 banner.remove();
-                localStorage.setItem('ios-install-prompt-shown', 'true');
+                this.recordInstallInfoBannerDismiss(LS_IOS_INSTALL_DISMISSED_AT);
             };
 
-            banner.querySelector('.alert__close').addEventListener('click', close);
+            banner.querySelector('.alert__close').addEventListener('click', closeDismissed);
 
             host.prepend(banner);
 
@@ -384,8 +491,7 @@ class PWA {
 
     showAndroidInstallPrompt() {
         if (this.isPublicLayout()) return;
-        // Nur einmal anzeigen (localStorage)
-        if (localStorage.getItem('android-install-prompt-shown')) {
+        if (!this.shouldShowInstallInfoBanner(LS_ANDROID_INSTALL_DISMISSED_AT, LS_ANDROID_INSTALL_LEGACY)) {
             return;
         }
 
@@ -415,20 +521,20 @@ class PWA {
                 <button type="button" class="alert__close" aria-label="Schließen">×</button>
             `;
 
-            const close = () => {
+            const closeDismissed = () => {
                 banner.remove();
-                localStorage.setItem('android-install-prompt-shown', 'true');
+                this.recordInstallInfoBannerDismiss(LS_ANDROID_INSTALL_DISMISSED_AT);
             };
 
-            banner.querySelector('.alert__close').addEventListener('click', close);
+            banner.querySelector('.alert__close').addEventListener('click', closeDismissed);
 
             banner.querySelector('[data-action="install"]').addEventListener('click', () => {
+                banner.remove();
                 this.installApp();
-                close();
             });
-            banner.querySelector('[data-action="push"]').addEventListener('click', () => {
-                this.requestNotificationPermission();
-                close();
+            banner.querySelector('[data-action="push"]').addEventListener('click', async () => {
+                banner.remove();
+                await this.requestNotificationPermission();
             });
 
             host.prepend(banner);
@@ -519,26 +625,35 @@ class PWA {
     }
 
     async requestNotificationPermission() {
+        if (this.isPublicLayout()) return;
         if (!('Notification' in window)) {
             this.showToast('Benachrichtigungen nicht unterstützt', 'error');
             return;
         }
-
+        if (!('PushManager' in window)) {
+            this.showToast('Push-Benachrichtigungen werden auf diesem Geraet nicht unterstützt.', 'warning');
+            return;
+        }
+        if (!document.body.hasAttribute('data-authenticated')) {
+            this.showToast('Bitte anmelden, um Push zu aktivieren.', 'warning');
+            return;
+        }
+        const subFn = window.gourmenSubscribeToPushNotifications;
+        const vapidFn = window.gourmenGetVAPIDPublicKey;
+        if (typeof subFn !== 'function' || typeof vapidFn !== 'function') {
+            this.showToast('Push kann gerade nicht gestartet werden. Bitte Seite neu laden.', 'error');
+            return;
+        }
         try {
-            const permission = await Notification.requestPermission();
-            
-            if (permission === 'granted') {
-                this.showToast('Benachrichtigungen aktiviert!', 'success');
+            const registration = await navigator.serviceWorker.ready;
+            const vapidPublicKey = await vapidFn();
+            const ok = await subFn(registration, vapidPublicKey);
+            if (ok) {
                 this.hideNotificationPermissionButton();
-                
-                // Sende Test-Benachrichtigung
-                this.sendNotification('Gourmen App', 'Benachrichtigungen sind jetzt aktiv!');
-            } else {
-                this.showToast('Benachrichtigungen abgelehnt', 'warning');
             }
         } catch (error) {
-            console.error('Notification Permission Error:', error);
-            this.showToast('Fehler bei der Berechtigung', 'error');
+            console.error('Push aktivieren:', error);
+            this.showToast('Fehler bei der Push-Aktivierung', 'error');
         }
     }
 
@@ -1394,7 +1509,7 @@ class PWA {
             if (error.message.includes('Failed to register')) {
                 errorMessage += 'Service Worker Datei nicht gefunden oder ungültig';
             } else if (error.message.includes('network')) {
-                errorMessage += 'Netzwerkfehler - prüfe ob /static/sw.js erreichbar ist';
+                errorMessage += 'Netzwerkfehler - prüfe ob /sw.js erreichbar ist';
             } else if (error.message.includes('security')) {
                 errorMessage += 'Sicherheitsfehler - HTTPS oder localhost erforderlich';
             } else {
@@ -1408,7 +1523,7 @@ class PWA {
             console.log('- URL:', window.location.href);
             console.log('- Protocol:', window.location.protocol);
             console.log('- Hostname:', window.location.hostname);
-            console.log('- Service Worker Path:', '/static/sw.js');
+            console.log('- Service Worker Path:', '/sw.js');
             console.log('- Full Error:', error);
         }
         

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, current_app, send_from_directory, redirect, url_for, request
+from flask import Blueprint, render_template, jsonify, redirect, url_for, request
 from flask_login import current_user
 from backend.extensions import db
 from backend.models.member import Member
@@ -115,14 +115,6 @@ def restaurants():
             hitlist_sort='rating',
         )
 
-@bp.route('/health')
-def health():
-    """Basic health check - no DB access"""
-    try:
-        return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
-    except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 500
-
 @bp.route('/health/db')
 def health_db():
     """Database health check"""
@@ -134,21 +126,4 @@ def health_db():
     except Exception as e:
         return jsonify({'status': 'error', 'database': 'disconnected', 'error': str(e)}), 503
 
-# Offline-Route entfernt - wird jetzt über Toast-System und Service Worker gehandhabt 
-
-@bp.route('/sw.js')
-def service_worker():
-    """Serve the Service Worker from the root scope.
-
-    This ensures the Service Worker controls the entire app (scope '/').
-    """
-    try:
-        response = send_from_directory(current_app.static_folder, 'sw.js', mimetype='application/javascript')
-        # Allow root scope for the service worker
-        response.headers['Service-Worker-Allowed'] = '/'
-        # Avoid aggressive caching during development
-        response.headers['Cache-Control'] = 'no-cache'
-        return response
-    except Exception as e:
-        current_app.logger.error(f"Failed to serve service worker: {e}")
-        return jsonify({'error': 'Service Worker not found'}), 404
+# Service Worker: einzige Route `GET /sw.js` in `backend/app.py` (App-Factory), damit keine doppelte Registrierung entsteht.

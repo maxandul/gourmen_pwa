@@ -19,6 +19,26 @@ function getCSRFToken() {
 // und von anderen Skripten wie pwa.js referenziert werden kann.
 window.getCSRFToken = getCSRFToken;
 
+/** Lucide-Sprite wie in Templates (use href); Fallback = aktuell ausgelieferter Hash. */
+function getLucideSpriteBaseHref() {
+    const useEl = document.querySelector('use[href*=".svg#"]');
+    if (useEl) {
+        const href = useEl.getAttribute('href') || '';
+        const hash = href.indexOf('#');
+        if (hash > 0) {
+            return href.slice(0, hash);
+        }
+    }
+    return '/static/icons/lucide-sprite.7e463391.svg';
+}
+
+function lucideInlineIcon(symbolId, extraIconClasses) {
+    const base = getLucideSpriteBaseHref();
+    const extra = (extraIconClasses || '').trim().split(/\s+/).filter(Boolean);
+    const cls = ['icon'].concat(extra).join(' ');
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="${base}#${symbolId}"></use></svg>`;
+}
+
 // Top-Banner Notification System
 function showToast(message, type = 'info', options = {}) {
     const {
@@ -190,6 +210,31 @@ function initializeStarRatings() {
     });
 }
 
+function isLocalhostServiceWorkerDisabled() {
+    const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+    const forceEnableSw = (
+        new URLSearchParams(window.location.search).get('pwa_sw') === '1' ||
+        localStorage.getItem('PWA_SW_DEV') === '1'
+    );
+    return isLocalhost && !forceEnableSw;
+}
+
+/** Wenn auf localhost kein SW registriert ist (pwa.js Dev-Default), darf nicht auf `serviceWorker.ready` gewartet werden – das blockiert ohne Ende. */
+function wireTechnicalPushButtonWithoutServiceWorker() {
+    const enableBtn = document.getElementById('enable-push-btn');
+    if (!enableBtn) {
+        return;
+    }
+    enableBtn.addEventListener('click', () => {
+        const msg = 'Auf localhost ist der Service Worker standardmäßig aus. Für Push dieselbe Seite mit ?pwa_sw=1 aufrufen oder localStorage PWA_SW_DEV auf "1" setzen, dann neu laden.';
+        if (typeof Toast !== 'undefined') {
+            Toast.warning('Service Worker fehlt', msg, { duration: 14000 });
+        } else {
+            alert(msg);
+        }
+    });
+}
+
 // Push Notification Management
 async function initializePushNotifications() {
     console.log('🔔 Initializing push notifications...');
@@ -200,6 +245,15 @@ async function initializePushNotifications() {
     }
     
     try {
+        if (isLocalhostServiceWorkerDisabled()) {
+            const existingReg = await navigator.serviceWorker.getRegistration();
+            if (!existingReg) {
+                console.warn('Push: Kein Service Worker auf localhost (ohne ?pwa_sw=1) – Hinweis am Einstellungen-Button');
+                wireTechnicalPushButtonWithoutServiceWorker();
+                return;
+            }
+        }
+
         // Warte auf Service Worker (nutzt das native ready-Promise)
         const registration = await navigator.serviceWorker.ready;
         console.log('✅ Service Worker bereit für Push-Benachrichtigungen:', registration);
@@ -220,11 +274,11 @@ async function initializePushNotifications() {
             if (enableBtn) {
                 enableBtn.addEventListener('click', async () => {
                     enableBtn.disabled = true;
-                    enableBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Aktiviere...</span>';
+                    enableBtn.innerHTML = lucideInlineIcon('loader-circle', 'icon--spin') + '<span class="btn-text">Aktiviere...</span>';
                     const ok = await subscribeToPushNotifications(registration, vapidPublicKey);
                     if (!ok) {
                         enableBtn.disabled = false;
-                        enableBtn.innerHTML = '<span class="btn-icon">🔔</span><span class="btn-text">Benachrichtigungen aktivieren</span>';
+                        enableBtn.innerHTML = lucideInlineIcon('bell') + '<span class="btn-text">Benachrichtigungen aktivieren</span>';
                     } else {
                         // Erfolg: Button ausblenden
                         enableBtn.remove();
@@ -373,6 +427,10 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
     }
 }
 
+/** Fuer `pwa.js` (Top-Leiste): gleicher Subscribe-Flow wie Account/Dashboard. */
+window.gourmenSubscribeToPushNotifications = subscribeToPushNotifications;
+window.gourmenGetVAPIDPublicKey = getVAPIDPublicKey;
+
 function showPushNotificationButton(registration, vapidPublicKey) {
     // Prüfe ob Button bereits existiert
     if (document.getElementById('push-notification-btn')) return;
@@ -380,21 +438,18 @@ function showPushNotificationButton(registration, vapidPublicKey) {
     // Erstelle Button für Push-Benachrichtigungen
     const button = document.createElement('button');
     button.id = 'push-notification-btn';
-    button.className = 'btn btn-primary push-notification-btn';
-    button.innerHTML = `
-        <span class="btn-icon">🔔</span>
-        <span class="btn-text">Push-Benachrichtigungen aktivieren</span>
-    `;
+    button.className = 'btn btn--primary push-notification-btn';
+    button.innerHTML = lucideInlineIcon('bell') + '<span class="btn-text">Push-Benachrichtigungen aktivieren</span>';
     
     button.addEventListener('click', async () => {
         button.disabled = true;
-        button.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Aktiviere...</span>';
+        button.innerHTML = lucideInlineIcon('loader-circle', 'icon--spin') + '<span class="btn-text">Aktiviere...</span>';
         
         const success = await subscribeToPushNotifications(registration, vapidPublicKey);
         
         if (!success) {
             button.disabled = false;
-            button.innerHTML = '<span class="btn-icon">🔔</span><span class="btn-text">Push-Benachrichtigungen aktivieren</span>';
+            button.innerHTML = lucideInlineIcon('bell') + '<span class="btn-text">Push-Benachrichtigungen aktivieren</span>';
         }
     });
     

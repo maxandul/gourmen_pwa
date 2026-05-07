@@ -205,9 +205,20 @@
 </div>
 
 <script>
+(function() {
+    const settingsTechUrl = {{ url_for('member.technical')|tojson }};
+    function pushDashboardNotify(type, title, message, duration) {
+        const ms = duration != null ? duration : (type === 'warning' ? 12000 : 8000);
+        if (typeof Toast !== 'undefined') {
+            Toast[type](title, message, { duration: ms });
+        } else {
+            alert(title + (message ? '\n\n' + message : ''));
+        }
+    }
+
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        const response = await fetch('/notifications/push/status');
+        const response = await fetch('/api/push/subscription-status', { credentials: 'same-origin' });
         const data = await response.json();
 
         if (!data.subscribed) {
@@ -232,17 +243,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 const registration = await navigator.serviceWorker.ready;
 
-                const vapidResponse = await fetch('/notifications/push/vapid-public-key');
+                const vapidResponse = await fetch('/api/vapid-public-key', { credentials: 'same-origin' });
                 const vapidData = await vapidResponse.json();
 
-                if (!vapidData.publicKey) {
+                if (!vapidData.public_key) {
                     throw new Error('VAPID key nicht verfügbar');
                 }
 
                 const permission = await Notification.requestPermission();
 
                 if (permission !== 'granted') {
-                    alert('Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen.');
+                    pushDashboardNotify(
+                        'warning',
+                        'Benachrichtigungen nicht erlaubt',
+                        'Erlaube Benachrichtigungen in den Browser- oder Site-Einstellungen für diese Website. Hilfe: Gourmen-Einstellungen unter «App auf dem Homescreen» und Push – ' + settingsTechUrl
+                    );
                     enableBtn.disabled = false;
                     enableBtn.textContent = 'Jetzt aktivieren';
                     return;
@@ -250,15 +265,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(vapidData.publicKey)
+                    applicationServerKey: urlBase64ToUint8Array(vapidData.public_key)
                 });
 
-                const subscribeResponse = await fetch('/notifications/push/subscribe', {
+                const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
+                const subscribeResponse = await fetch('/api/push/subscribe', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...(csrf ? { 'X-CSRFToken': csrf } : {})
                     },
-                    body: JSON.stringify(subscription.toJSON())
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ subscription: subscription.toJSON() })
                 });
 
                 if (subscribeResponse.ok) {
@@ -267,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     if (typeof Toast !== 'undefined') {
                         Toast.success('Push-Benachrichtigungen aktiviert!', 'Du wirst ab jetzt über neue Events informiert.');
                     } else {
-                        alert('Push-Benachrichtigungen aktiviert! Du wirst ab jetzt über neue Events informiert.');
+                        pushDashboardNotify('success', 'Push-Benachrichtigungen aktiviert!', 'Du wirst ab jetzt über neue Events informiert.');
                     }
                 } else {
                     throw new Error('Subscription fehlgeschlagen');
@@ -275,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             } catch (error) {
                 console.error('Error enabling push:', error);
-                alert('Fehler beim Aktivieren der Push-Benachrichtigungen: ' + error.message);
+                pushDashboardNotify('error', 'Push aktivieren fehlgeschlagen', error.message);
                 enableBtn.disabled = false;
                 enableBtn.textContent = 'Jetzt aktivieren';
             }
@@ -326,5 +344,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         setInterval(tick, 60000);
     }
 });
+})();
 </script>
 {% endblock %}

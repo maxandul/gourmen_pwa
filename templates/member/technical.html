@@ -5,7 +5,7 @@
 </svg>
 {%- endmacro %}
 
-{% block title %}Einstellungen - Gourmen{% endblock %}
+{% block title %}Einstellungen – Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -18,60 +18,31 @@
             Einstellungen
         </h1>
     </div>
-    
+
     <div class="page-content">
-        <!-- Service Worker & Status Card -->
-        <div class="card">
-            <div class="card__header">
-                <h2 class="card__title">
-                    {{ lucide_icon('settings') }}
-                    Service Worker &amp; App-Status
-                </h2>
+        <p class="card-description">
+            Hier passt du <strong>App</strong>, <strong>Push</strong> und <strong>Offline</strong> an. Passwort und Zwei-Faktor-Authentifizierung findest du unter Sicherheit.
+        </p>
+
+        <nav class="settings-nav" aria-label="Verwandte Bereiche">
+            <div class="settings-nav__section">
+                <h2 class="settings-nav__section-title">Konto</h2>
+                <ul class="settings-nav__list" role="list">
+                    <li>
+                        <a href="{{ url_for('member.security') }}" class="settings-nav__row">
+                            <span class="settings-nav__icon" aria-hidden="true">{{ lucide_icon('shield') }}</span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">Sicherheit</span>
+                                <span class="settings-nav__description">Passwort ändern und 2FA verwalten</span>
+                            </span>
+                            {{ lucide_icon('chevron-right', 'icon settings-nav__chevron') }}
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="card__body">
-                <div class="info-row">
-                    <span class="info-row__label">App-Version</span>
-                    <span class="info-row__value" id="app-version">Prüfe...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Service Worker</span>
-                    <span class="info-row__value" id="sw-registration-status">Prüfe...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Scope</span>
-                    <span class="info-row__value" id="sw-scope">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Installiert</span>
-                    <span class="info-row__value" id="pwa-installed">Prüfe...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Offline-Modus</span>
-                    <span class="info-row__value" id="offline-status">Prüfe...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row__label">Cache-Status</span>
-                    <span class="info-row__value" id="cache-status">Prüfe...</span>
-                </div>
-            </div>
-            <div class="card__footer">
-                <button type="button" id="sw-diagnose-btn" class="btn btn--primary">
-                    {{ lucide_icon('info') }}
-                    Diagnose anzeigen
-                </button>
-                <button type="button" id="sw-cleanup-btn" class="btn btn--outline">
-                    {{ lucide_icon('trash-2') }}
-                    App zurücksetzen
-                </button>
-            </div>
-            <div class="card__body">
-                <div id="sw-status" class="update-status" hidden>
-                    <span class="status-text"></span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Push-Benachrichtigungen Card -->
+        </nav>
+
+        {# Push zuerst: häufigste Nutzerabsicht #}
         <div class="card">
             <div class="card__header">
                 <h2 class="card__title">
@@ -80,50 +51,59 @@
                 </h2>
             </div>
             <div class="card__body">
+                <p class="card-description">
+                    Erinnerungen zu Events, Zusagen und Ratings – nur wenn du sie erlaubst. Du kannst das jederzeit in den Browser-Einstellungen für diese Website anpassen.
+                </p>
+
+                <div id="push-dev-hint" class="alert alert--info" hidden>
+                    <div class="alert__content">
+                        <div class="alert__title">Entwicklungsmodus</div>
+                        <div class="alert__message">
+                            Lokal ist der Service Worker standardmäßig deaktiviert. Für Push dieselbe URL mit <strong>?pwa_sw=1</strong> aufrufen oder in der Konsole <code>localStorage.setItem('PWA_SW_DEV', '1')</code> ausführen und neu laden.
+                        </div>
+                    </div>
+                </div>
+
                 <div id="push-enabled-message" hidden>
                     <div class="alert alert--success">
                         <div class="alert__content">
-                            <div class="alert__title">Push-Benachrichtigungen sind aktiviert</div>
+                            <div class="alert__title">Push ist aktiv</div>
                             <div class="alert__message">
-                                Du erhältst Benachrichtigungen für:
+                                Du kannst u.a. erhalten:
                                 <ul>
-                                    <li>3-Wochen-Reminder vor Events (Organisatoren)</li>
+                                    <li>3-Wochen-Reminder (Organisatoren)</li>
                                     <li>Montag-Reminder für Teilnehmer</li>
-                                    <li>Rating-Erinnerungen nach Events</li>
-                                    <li>RSVP-Erinnerungen vom Organisator</li>
+                                    <li>Rating-Erinnerungen</li>
+                                    <li>RSVP-Erinnerungen</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="push-disabled-message" hidden>
                     <div class="alert alert--warning">
                         <div class="alert__content">
-                            <div class="alert__title">Push-Benachrichtigungen sind nicht aktiviert</div>
-                            <div class="alert__message">Du verpasst wichtige Event-Erinnerungen! Aktiviere jetzt Push-Benachrichtigungen.</div>
+                            <div class="alert__title">Push ist noch nicht aktiv</div>
+                            <div class="alert__message">Mit einem Tipp auf den Button unten erlaubst du Benachrichtigungen und meldest dieses Gerät bei Gourmen an.</div>
                         </div>
                     </div>
                 </div>
-                
-                <p class="card-description">
-                    Aktiviere Push-Benachrichtigungen, um über neue Events und wichtige Informationen informiert zu werden.
-                </p>
-                
+
                 <div class="info-row">
-                    <span class="info-row__label">Status</span>
-                    <span class="info-row__value" id="notification-status">Prüfe...</span>
+                    <span class="info-row__label">Web-Push auf diesem Gerät</span>
+                    <span class="info-row__value" id="push-status">Prüfe …</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row__label">Berechtigung</span>
-                    <span class="info-row__value" id="permission-status">Prüfe...</span>
+                    <span class="info-row__label">Browser-Berechtigung</span>
+                    <span class="info-row__value" id="permission-status">Prüfe …</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row__label">Push-Support</span>
-                    <span class="info-row__value" id="push-status">Prüfe...</span>
+                    <span class="info-row__label">Benachrichtigungen im Browser</span>
+                    <span class="info-row__value" id="notification-status">Prüfe …</span>
                 </div>
             </div>
-            <div class="card__footer">
+            <div class="card__footer card__footer--wrap">
                 <button type="button" id="enable-push-btn" class="btn btn--primary" hidden>
                     {{ lucide_icon('bell') }}
                     Benachrichtigungen aktivieren
@@ -134,6 +114,106 @@
                 </button>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    {{ lucide_icon('smartphone') }}
+                    App auf dem Homescreen
+                </h2>
+            </div>
+            <div class="card__body">
+                <p class="card-description">
+                    Installiere Gourmen wie eine normale App: schneller Zugriff und zuverlässigere Push-Zustellung als im reinen Browser-Tab.
+                </p>
+                <details class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down', 'icon') }}
+                        iPhone / iPad (Safari)
+                    </summary>
+                    <div class="disclosure__content">
+                        <ol class="app-shell-install-banner__steps">
+                            <li>Seite in <strong>Safari</strong> öffnen.</li>
+                            <li>Teilen-Symbol tippen.</li>
+                            <li>«Zum Home-Bildschirm» wählen, dann «Hinzufügen».</li>
+                            <li>App vom Homescreen starten; bei der ersten Nutzung Benachrichtigungen erlauben.</li>
+                        </ol>
+                    </div>
+                </details>
+                <details class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down', 'icon') }}
+                        Android (Chrome)
+                    </summary>
+                    <div class="disclosure__content">
+                        <p class="card-description">
+                            Über den Menüpunkt zur Installation (z.&nbsp;B. «App installieren» oder das Install-Symbol). Nach der Installation ggf. Benachrichtigungen für die App in den Systemeinstellungen prüfen.
+                        </p>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    {{ lucide_icon('cpu') }}
+                    Technik und Offline
+                </h2>
+            </div>
+            <div class="card__body">
+                <p class="card-description">
+                    Service Worker und Cache steuern Offline-Hilfen und Updates. Meist musst du hier nichts tun – nur bei hartnäckigen Anzeige-Problemen.
+                </p>
+                <details class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down', 'icon') }}
+                        Details und Werkzeuge
+                    </summary>
+                    <div class="disclosure__content">
+                        <div class="info-row">
+                            <span class="info-row__label">App-Version</span>
+                            <span class="info-row__value" id="app-version">Prüfe …</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Service Worker</span>
+                            <span class="info-row__value" id="sw-registration-status">Prüfe …</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Scope</span>
+                            <span class="info-row__value" id="sw-scope">–</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Als App installiert</span>
+                            <span class="info-row__value" id="pwa-installed">Prüfe …</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Netzwerk</span>
+                            <span class="info-row__value" id="offline-status">Prüfe …</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-row__label">Cache</span>
+                            <span class="info-row__value" id="cache-status">Prüfe …</span>
+                        </div>
+                        <div class="stack-vertical">
+                            <div class="tool-strip__actions tool-strip__actions--start">
+                                <button type="button" id="sw-diagnose-btn" class="btn btn--primary">
+                                    {{ lucide_icon('info') }}
+                                    Diagnose anzeigen
+                                </button>
+                                <button type="button" id="sw-cleanup-btn" class="btn btn--outline">
+                                    {{ lucide_icon('trash-2') }}
+                                    App zurücksetzen
+                                </button>
+                            </div>
+                            <div id="sw-status" class="update-status" hidden>
+                                <span class="status-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -142,78 +222,112 @@
 {{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('⚙️ App-Einstellungen initialisiert');
-    
-    const waitForPWA = setInterval(() => {
+    const waitForPWA = setInterval(function() {
         if (window.gourmenPWA) {
             clearInterval(waitForPWA);
             initializePage();
         }
     }, 100);
-    
+
     function initializePage() {
-        console.log('✅ PWA geladen');
-        
         updatePWAStatus();
         updatePushStatus();
         updateCacheStatus();
-        
-        setInterval(() => {
+        updatePushDevHint();
+
+        setInterval(function() {
             updatePWAStatus();
             updatePushStatus();
             updateCacheStatus();
+            updatePushDevHint();
         }, 5000);
-        
+
         window.addEventListener('online', updatePWAStatus);
         window.addEventListener('offline', updatePWAStatus);
     }
-    
-    function updatePWAStatus() {
-        const installedSpan = document.getElementById('pwa-installed');
-        if (installedSpan) {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                               window.navigator.standalone === true;
-            installedSpan.textContent = isStandalone ? 'Ja' : 'Nein';
-            installedSpan.className = isStandalone ? 'status-available' : 'status-browser';
+
+    function isLocalhostSwOff() {
+        var host = window.location.hostname;
+        var local = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+        var force = new URLSearchParams(window.location.search).get('pwa_sw') === '1' ||
+            localStorage.getItem('PWA_SW_DEV') === '1';
+        return local && !force;
+    }
+
+    async function updatePushDevHint() {
+        var hint = document.getElementById('push-dev-hint');
+        if (!hint) return;
+        try {
+            var reg = await navigator.serviceWorker.getRegistration();
+            hint.hidden = !(isLocalhostSwOff() && !reg);
+        } catch (e) {
+            hint.hidden = true;
         }
-        
-        const offlineSpan = document.getElementById('offline-status');
+    }
+
+    function updatePWAStatus() {
+        var installedSpan = document.getElementById('pwa-installed');
+        if (installedSpan) {
+            var standalone = window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+            installedSpan.textContent = standalone ? 'Ja' : 'Nein';
+            installedSpan.className = standalone ? 'status-available' : 'status-browser';
+        }
+
+        var offlineSpan = document.getElementById('offline-status');
         if (offlineSpan) {
-            offlineSpan.textContent = navigator.onLine ? 'Aktiviert' : 'Offline';
+            offlineSpan.textContent = navigator.onLine ? 'Verbunden' : 'Offline';
             offlineSpan.className = navigator.onLine ? 'status-available' : 'status-warning';
         }
     }
-    
+
     async function updatePushStatus() {
-        const notificationSpan = document.getElementById('notification-status');
-        const permissionSpan = document.getElementById('permission-status');
-        const enabledMessage = document.getElementById('push-enabled-message');
-        const disabledMessage = document.getElementById('push-disabled-message');
-        const enableBtn = document.getElementById('enable-push-btn');
-        
+        var notificationSpan = document.getElementById('notification-status');
+        var permissionSpan = document.getElementById('permission-status');
+        var pushSupportSpan = document.getElementById('push-status');
+        var enabledMessage = document.getElementById('push-enabled-message');
+        var disabledMessage = document.getElementById('push-disabled-message');
+        var enableBtn = document.getElementById('enable-push-btn');
+
+        if ('PushManager' in window) {
+            if (pushSupportSpan) {
+                pushSupportSpan.textContent = 'Unterstützt';
+                pushSupportSpan.className = 'status-available';
+            }
+        } else {
+            if (pushSupportSpan) {
+                pushSupportSpan.textContent = 'Nicht unterstützt';
+                pushSupportSpan.className = 'status-unavailable';
+            }
+        }
+
         if ('Notification' in window) {
             if (notificationSpan) {
                 notificationSpan.textContent = 'Verfügbar';
                 notificationSpan.className = 'status-available';
             }
             if (permissionSpan) {
-                const permission = Notification.permission;
-                permissionSpan.textContent = permission === 'granted' ? 'Erteilt' : 
-                                           permission === 'denied' ? 'Verweigert' : 'Nicht erteilt';
-                permissionSpan.className = permission === 'granted' ? 'status-available' : 
-                                          permission === 'denied' ? 'status-unavailable' : 'status-warning';
+                var permission = Notification.permission;
+                permissionSpan.textContent = permission === 'granted' ? 'Erteilt' :
+                    permission === 'denied' ? 'Verweigert' : 'Noch nicht angefragt';
+                permissionSpan.className = permission === 'granted' ? 'status-available' :
+                    permission === 'denied' ? 'status-unavailable' : 'status-warning';
             }
         } else {
             if (notificationSpan) {
                 notificationSpan.textContent = 'Nicht unterstützt';
                 notificationSpan.className = 'status-unavailable';
             }
+            if (permissionSpan) {
+                permissionSpan.textContent = '–';
+                permissionSpan.className = 'status-unavailable';
+            }
         }
-        
+
         try {
-            const response = await fetch('/notifications/push/status');
-            const data = await response.json();
-            
+            var response = await fetch('/api/push/subscription-status', { credentials: 'same-origin' });
+            var data = await response.json();
+
             if (data.subscribed) {
                 if (enabledMessage) enabledMessage.hidden = false;
                 if (disabledMessage) disabledMessage.hidden = true;
@@ -227,14 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error checking push status:', error);
         }
     }
-    
+
     async function updateCacheStatus() {
-        const cacheSpan = document.getElementById('cache-status');
+        var cacheSpan = document.getElementById('cache-status');
         if (!cacheSpan) return;
-        
+
         try {
-            const cacheNames = await caches.keys();
-            cacheSpan.textContent = cacheNames.length > 0 ? `${cacheNames.length} aktiv` : 'Keine';
+            var cacheNames = await caches.keys();
+            cacheSpan.textContent = cacheNames.length > 0 ? cacheNames.length + ' aktiv' : 'Keine';
             cacheSpan.className = cacheNames.length > 0 ? 'status-available' : 'status-browser';
         } catch (error) {
             cacheSpan.textContent = 'Fehler';
