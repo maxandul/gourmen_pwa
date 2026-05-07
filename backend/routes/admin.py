@@ -50,9 +50,27 @@ def admin_required(f):
     
     return decorated_function
 
+
+def verein_member_required(f):
+    """
+    Lesender Zugriff auf ausgewaehlte Admin-Oberflaechen fuer alle aktiven Mitglieder.
+    Schreibende/sensitive Routen bleiben mit admin_required geschuetzt.
+    """
+    from functools import wraps
+    from flask import abort
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_active:
+            abort(403)
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @bp.route('/')
 @login_required
-@admin_required
+@verein_member_required
 def index():
     """Admin dashboard overview"""
     from backend.models.event import Event
@@ -271,7 +289,7 @@ class EventForm(FlaskForm):
 
 @bp.route('/members')
 @login_required
-@admin_required
+@verein_member_required
 def members():
     """Admin members list"""
     members = Member.query.order_by(Member.nachname, Member.vorname).all()
@@ -788,7 +806,7 @@ def show_temp_password():
 # Admin Merch Routes
 @bp.route('/merch')
 @login_required
-@admin_required
+@verein_member_required
 def merch():
     """Admin Merch Übersicht mit Tabs (Bestellungen, Lieferanten, Artikel)"""
     from backend.models.merch_article import MerchArticle
@@ -1033,14 +1051,14 @@ def merch():
 
 @bp.route('/merch/orders')
 @login_required
-@admin_required
+@verein_member_required
 def merch_orders():
     """Admin merch orders management (redirect to new tabbed view)."""
     return redirect(url_for('admin.merch', tab='orders'))
 
 @bp.route('/merch/orders/<int:order_id>')
 @login_required
-@admin_required
+@verein_member_required
 def merch_order_detail(order_id):
     """Admin order detail"""
     from backend.models.merch_order import MerchOrder
@@ -1126,7 +1144,7 @@ def update_order_status_alt(order_id):
 
 @bp.route('/merch/articles/<int:article_id>')
 @login_required
-@admin_required
+@verein_member_required
 def merch_article_detail(article_id):
     """Admin article detail"""
     from backend.models.merch_article import MerchArticle

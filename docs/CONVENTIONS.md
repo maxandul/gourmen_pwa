@@ -106,7 +106,7 @@ def webhook():
 
 ### Regeln
 
-- **Permissions explizit**: `@login_required`, `current_user.is_admin()`-Check, oder `@admin_required`-Decorator wo verwendet
+- **Permissions explizit**: `@login_required`, `current_user.is_admin()`, `@admin_required` (nur `Role.ADMIN`), oder `@verein_member_required` für **Lesenden** Zugriff ausgewählter Admin-Oberflächen durch alle aktiven Mitglieder (siehe `backend/routes/admin.py`; schreibende/sensitive Routen bleiben `@admin_required`)
 - **CSRF**: standardmässig an. `@csrf.exempt` nur für externe Webhooks **mit** Signature-Check
 - **Rate-Limit**: für Login, Reset, Upload, sensitive Endpoints
 - **Form-Handling**: WTForms (`FlaskForm`), `validate_on_submit()`-Pattern

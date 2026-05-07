@@ -14,8 +14,8 @@ Aktueller Status: nicht im Handelsregister eingetragen – das ist für einen ei
 
 | Wert | Bedeutung |
 |---|---|
-| `MEMBER` | Standard-Mitglied, kann Events sehen/teilnehmen |
-| `ADMIN` | Vollzugriff (Events erstellen, Members verwalten) |
+| `MEMBER` | Standard-Mitglied; Vereinsbereich inkl. **Lesen** von Admin-Übersicht, Mitgliederliste und Merch-Übersicht (Organisation, Kontakte) |
+| `ADMIN` | Zusätzlich: Mitglieder bearbeiten/anlegen, sensible/verschlüsselte Daten, Sicherheit (Passwort/2FA), Events erfassen, Merch pflegen, Mail-Test |
 
 ### `Funktion` (Vereinsfunktion, ehrenamtlich)
 

@@ -12,6 +12,10 @@
     </h1>
   </div>
 
+  {% if not current_user.is_admin() %}
+  <p class="text-secondary" style="margin-bottom: var(--space-4);">Hinweis: Bearbeiten, sensible Daten und sicherheitsrelevante Aktionen sind nur für Admins.</p>
+  {% endif %}
+
   <div class="page-content hub-grid">
     <div class="card hub-card">
       <div class="card__header">
@@ -41,7 +45,7 @@
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <use href="/static/icons/lucide-sprite.svg#user-cog"></use>
           </svg>
-          Mitglieder verwalten
+          {% if current_user.is_admin() %}Mitglieder verwalten{% else %}Mitgliederliste{% endif %}
         </a>
       </div>
     </div>
@@ -74,7 +78,7 @@
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <use href="/static/icons/lucide-sprite.svg#shopping-cart"></use>
           </svg>
-          Merch verwalten
+          {% if current_user.is_admin() %}Merch verwalten{% else %}Merch ansehen{% endif %}
         </a>
       </div>
     </div>

@@ -122,6 +122,7 @@
                             <div class="card__header">
                                 <h2 class="card__title">{{ order.member.display_name_with_spirit }}</h2>
                                 <div class="card__actions">
+                                    {% if current_user.is_admin() %}
                                     <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="next" value="{{ next_url }}">
@@ -133,6 +134,17 @@
                                             </select>
                                         </span>
                                     </form>
+                                    {% else %}
+                                        {% if order.status.value == 'BESTELLT' %}
+                                            <span class="chip chip--danger">{{ order.status_display }}</span>
+                                        {% elif order.status.value == 'WIRD_GELIEFERT' %}
+                                            <span class="chip chip--warning">{{ order.status_display }}</span>
+                                        {% elif order.status.value == 'GELIEFERT' %}
+                                            <span class="chip chip--success">{{ order.status_display }}</span>
+                                        {% else %}
+                                            <span class="chip">{{ order.status_display }}</span>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="card__body">
@@ -317,12 +329,14 @@
 
                 <!-- Artikel -->
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'articles' else '' }}" role="tabpanel">
+                    {% if current_user.is_admin() %}
                     <div class="page-actions">
                         <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#plus"></use></svg>
                             Neuer Artikel
                         </a>
                     </div>
+                    {% endif %}
 
                     {% if articles %}
                         {% for article in articles %}
@@ -372,6 +386,7 @@
                                     </div>
                                 </div>
                             <div class="card__footer">
+                                {% if current_user.is_admin() %}
                                 <a href="{{ url_for('admin.edit_merch_article', article_id=article.id) }}" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -379,6 +394,12 @@
                                     </svg>
                                     Bearbeiten
                                 </a>
+                                {% else %}
+                                <a href="{{ url_for('admin.merch_article_detail', article_id=article.id) }}" class="btn btn--outline">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#search"></use></svg>
+                                    Details anzeigen
+                                </a>
+                                {% endif %}
                             </div>
                             </div>
                         </div>
@@ -392,10 +413,12 @@
                                 <p class="text-secondary">Es wurden noch keine Merch-Artikel erstellt.</p>
                             </div>
                             <div class="card__footer">
+                                {% if current_user.is_admin() %}
                                 <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#plus"></use></svg>
                                     Neuen Artikel erstellen
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     {% endif %}

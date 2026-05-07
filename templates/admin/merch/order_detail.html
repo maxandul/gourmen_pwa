@@ -21,6 +21,7 @@
     
     <div class="page-content">
         <!-- Status-Änderung (eingeklappt) -->
+        {% if current_user.is_admin() %}
         <div class="card card--filter tool-surface">
             <div class="card__body">
                 <details class="disclosure">
@@ -56,6 +57,7 @@
                 </details>
             </div>
         </div>
+        {% endif %}
 
         <!-- Bestellübersicht & Zusammenfassung kombiniert -->
         <div class="card">
