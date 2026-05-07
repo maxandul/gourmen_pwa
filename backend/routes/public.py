@@ -60,6 +60,12 @@ def landing():
         )
 
 
+@bp.route('/ueber-uns')
+def about():
+    """Oeffentliche Infoseite Verein / Leitbild / Aktivitaeten."""
+    return render_template('public/about.html')
+
+
 @bp.route('/restaurants')
 def restaurants():
     """Öffentliche vollständige Gourmen-Hitlist mit Suche und Pagination."""

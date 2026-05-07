@@ -3,6 +3,7 @@
     {% if show_user_bar %}
     {% if is_public %}
     {% set landing_href = url_for('public.landing', show='1') if current_user.is_authenticated else url_for('public.landing') %}
+    {% set about_href = url_for('public.about') %}
     {% set hitlist_href = url_for('public.restaurants') %}
     {% endif %}
     <header class="user-bar{% if is_public %} public-topnav{% endif %}" role="banner">
@@ -33,6 +34,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ about_href }}"
+                       class="pill-tabs__tab {% if request.endpoint == 'public.about' %}pill-tabs__tab--active{% endif %}">
+                        Ueber uns
+                    </a>
+                </li>
+                <li>
                     <a href="{{ hitlist_href }}"
                        class="pill-tabs__tab {% if request.endpoint == 'public.restaurants' %}pill-tabs__tab--active{% endif %}">
                         Hitlist
@@ -55,6 +62,9 @@
                     <ul class="public-drawer__list" role="list">
                         <li>
                             <a href="{{ landing_href }}" class="public-drawer__link">Start</a>
+                        </li>
+                        <li>
+                            <a href="{{ about_href }}" class="public-drawer__link">Ueber uns</a>
                         </li>
                         <li>
                             <a href="{{ hitlist_href }}" class="public-drawer__link">Hitlist</a>
