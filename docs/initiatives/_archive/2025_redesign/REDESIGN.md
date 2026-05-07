@@ -2,6 +2,8 @@
 
 Operatives Handbuch für Agents und Menschen. **Vor jeder Redesign-Änderung** die für die Aufgabe relevanten Abschnitte lesen. **Neue Agents:** Chat-Verläufe sind nicht verfügbar — verbindliche Regeln und Entscheidungen stehen **hier** und im **Entscheidungslog** (Abschnitt 12); Handoff-Regeln in **Abschnitt 6.1**.
 
+> **Historischer Hinweis (2026-05):** In Produktion ist `templates/admin/index.html` nicht mehr das KPI-**`hub-card`**-Layout aus diesem Dokument, sondern **`.admin-hub`** (Hero-Kacheln; Registry `docs/UI.md`). Unter **Verein** gibt es zudem **Übersicht** → `admin.index` für alle Mitglieder. Für die aktuelle IA und Permissions: **`docs/ARCHITECTURE.md`**, **`docs/DOMAIN.md`**, **`docs/CONVENTIONS.md`**. Dieses Archiv beschreibt den Redesign-Stand bis ca. April 2026.
+
 ---
 
 ## 1. Überblick
