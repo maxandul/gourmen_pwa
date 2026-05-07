@@ -8,7 +8,7 @@
 
 Mitglieder verwalten Vereinsdateien in der PWA: **hochladen, anzeigen, herunterladen, soft-loeschen**. Speicherort ist der **bestehende Google Shared Drive** (alle sehen alles). **Bearbeiten** von Office-Dokumenten: Nutzer oeffnen in Google Docs/Sheets (neuer Tab oder In-App-Browser akzeptiert).
 
-Ersetzt die fruehere Planung „Infomaniak Object Storage“ aus `modules-and-hosting/PHASE_03_FILES.md`.
+Ersetzt die fruehere Planung „Infomaniak Object Storage“ aus `_archive/2026-04_modules-and-hosting/PHASE_03_FILES.md`.
 
 ## Pre-Conditions
 
@@ -44,7 +44,7 @@ Ersetzt die fruehere Planung „Infomaniak Object Storage“ aus `modules-and-ho
 
 ```
 Branch: phase/03-workspace-drive-files
-Lies PHASE_00_BASELINE.md und alte modules-and-hosting/PHASE_03_FILES.md nur fuer UX/Validierungsideen, nicht fuer Storage-Backend.
+Lies PHASE_00_BASELINE.md und archivierte _archive/2026-04_modules-and-hosting/PHASE_03_FILES.md nur fuer UX/Validierungsideen, nicht fuer Storage-Backend.
 Implementiere Google Drive API sauber im Service-Layer; keine Secrets im Repo.
 Migration separater Commit.
 ```

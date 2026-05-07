@@ -204,7 +204,7 @@ Drei Reminder-Typen:
 | **RaiseNow / Stripe** (geplant) | TWINT-Zahlungen | geplant Phase 6 |
 | **Meta Cloud API** (geplant) | WhatsApp Business | geplant Phase 7 |
 
-Aktive Initiative: `docs/initiatives/workspace-railway/` (ältere Detailphasen: `modules-and-hosting/`).
+Aktive Initiative: `docs/initiatives/workspace-railway/` (aeltere Detailphasen: `modules-and-hosting/`). Strategischer Rahmen: `docs/STRATEGY_2026.md`.
 
 ## Datenfluss-Beispiele
 

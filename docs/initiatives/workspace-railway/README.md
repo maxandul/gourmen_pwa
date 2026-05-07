@@ -10,7 +10,7 @@
 
 Neuer Master-Plan fuer Agenten nach strategischem Pivot: **Domain/DNS bleibt bei Infomaniak**, zentrale Vereinsarbeit (Mail, Shared Drive, Docs) laeuft **langfristig ueber Google Workspace**. Die **Gourmen-PWA bleibt auf Railway** (Web, Cron, Postgres, Redis).
 
-Die fruehere Initiative `modules-and-hosting` ist damit **inhaltlich abgeloest**; dort verbleiben Detail-Docs und historische Phase-Dateien als Referenz. **Massgebend fuer neue Arbeit ist dieser Ordner.**
+Die fruehere Initiative liegt im Archiv unter `docs/initiatives/_archive/2026-04_modules-and-hosting/`; sie enthaelt Detail-Docs und historische Phase-Dateien als Referenz. **Massgebend fuer neue Arbeit ist dieser Ordner** plus der strategische Rahmen `docs/STRATEGY_2026.md`.
 
 ## Was bereits als Baseline gilt (nicht neu bauen)
 
@@ -18,33 +18,39 @@ Siehe `PHASE_00_BASELINE.md`: implementierter Code (MailService, Token-Reset-Flo
 
 ## Strategische Entscheidungen (aktuell)
 
+> **Strategischer Rahmen**: `docs/STRATEGY_2026.md` — dort steht die vollstaendige Source-of-Truth-Karte und das Decision Log.
+
 | Entscheidung | Begruendung |
 |---|---|
-| **App-Hosting: Railway** | unveraendert |
+| **App-Hosting: Railway Hobby** | unveraendert; Pro-Upgrade nicht noetig dank Resend |
 | **Domain/DNS: Infomaniak** | Registrar und DNS-Verwaltung |
-| **Vereins-Mail: Google Workspace** | eine bezahlte Mailbox (Business Starter oder Nonprofit falls qualifiziert); weitere Adressen als **Alias** auf dieselbe Lizenz |
-| **Owner: Vereinskonto** | z. B. primaerer User `kontakt@gourmen.ch`, optional Alias `admin@gourmen.ch` |
-| **Dateien: bestehender Google Shared Drive** | alle sehen alles; App: Upload, Liste, Download, Loeschen; Bearbeitung in Google (Docs/Sheets) |
-| **Mitglieder-Mail** | nicht in der PWA; gewohnte Mail-Apps; ggf. externe Collaborators am Shared Drive |
+| **Vereins-Mail: Google Workspace Starter** | eine bezahlte Mailbox `kontakt@gourmen.ch`; weitere Adressen als **Alias** auf derselben Lizenz |
+| **Dateien: bestehender Google Shared Drive** | alle sehen alles; App: Upload, Liste, Download, Loeschen; Bearbeitung in Google (Docs/Sheets); auch Belege fuer Buchhaltung gehen ins Drive |
+| **System-Mails aus der App: Resend (free)** | Entscheid 2026-05-07 — Railway Hobby blockt outbound SMTP, Pro nicht gewuenscht. Resend HTTPS-API, DKIM via Resend |
+| **Object Storage: keiner** | Merch-Bilder im Repo, Public-Bilder via Insta-Embeds, Belege via Drive — kein eigener Bucket noetig |
+| **Mitglieder-Mail (Personenpost)** | nicht in der PWA; gewohnte Mail-Apps; ggf. externe Collaborators am Shared Drive |
 | **Kalender** | weiterhin iCal-Feed aus der App zum Abonnieren; keine Pflicht-Kalender-UI in der PWA |
-| **System-Mails aus der App** | Resend (HTTPS) in Production (Railway Hobby blockiert SMTP); SMTP bleibt optional fuer Lokal-Dev und Pro; Konfiguration in Railway |
-| **TWINT / WhatsApp** | unveraendert RaiseNow bzw. Meta Cloud API (spaetere Phasen) |
+| **Auth (heute)** | Flask-Login + 2FA + Fernet bleibt; Supabase-Migration als Future Consideration in `STRATEGY_2026.md` |
+| **TWINT / WhatsApp** | spaetere Phasen; Anbieter-Entscheide und Integrationsweg in `STRATEGY_2026.md` |
 
 ## Architektur-Bild
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Railway                                         │
-│  Web + Cron + Postgres + Redis                  │
-│  System-Mails, API-Integrationen                │
-└────────┬────────────────────┬───────────────────┘
-         │ Resend/SMTP (App)   │ Google APIs (Drive)
-         ▼                     ▼
-┌──────────────────┐   ┌──────────────────────────┐
-│  Google Workspace │   │  Infomaniak               │
-│  Mail + Drive     │   │  Domain/DNS (MX, TXT, …)  │
-└──────────────────┘   └──────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  Railway Hobby                                   │
+│  Web + Cron + Postgres + Redis                   │
+└──────┬─────────────┬────────────┬────────────────┘
+       │ HTTPS       │ Google API │ DNS-Lookups
+       │ (Resend)    │ (Drive)    │
+       ▼             ▼            ▼
+┌────────────┐ ┌──────────────┐ ┌─────────────────┐
+│  Resend    │ │ Google       │ │  Infomaniak     │
+│  System-   │ │ Workspace    │ │  Domain/DNS     │
+│  Mails     │ │ Mail + Drive │ │  (MX/SPF/DKIM)  │
+└────────────┘ └──────────────┘ └─────────────────┘
 ```
+
+DKIM-Signaturen kommen aus Workspace (Personenpost) und Resend (System-Mails) parallel; SPF in DNS deckt beide ab.
 
 ## Phasen (neu nummeriert)
 
@@ -78,12 +84,12 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 |---|---|---|---|---|
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
 | 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM/MX stabil; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
-| 2 | in_progress | phase/02-workspace-system-mail | 2026-05-07 | Resend/HTTPS: Code nach Rebase auf master; Infra/Railway laut User erledigt; offen: PR-merge + Prod-Smoke (`PHASE_02_APP_SYSTEM_MAIL.md`) |
+| 2 | in_progress | master | 2026-05-07 | PR #11 gemerged (`phase/02-workspace-system-mail`); nach Railway-Deploy: `/admin/mail/test` + Forgot-Password E2E — `PHASE_02_APP_SYSTEM_MAIL.md` |
 | 3 | pending | – | – | – |
-| 4 | pending | – | – | Inhaltlich analog `modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive |
-| 5 | pending | – | – | siehe `modules-and-hosting/PHASE_05_CALENDAR.md` |
-| 6 | pending | – | – | siehe `modules-and-hosting/PHASE_06_PAYMENTS.md` |
-| 7 | pending | – | – | siehe `modules-and-hosting/PHASE_07_WHATSAPP.md` |
+| 4 | pending | – | – | Inhaltlich analog `_archive/2026-04_modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive; n8n-Pfad als offene Architektur-Frage (siehe STRATEGY_2026.md) |
+| 5 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_05_CALENDAR.md` |
+| 6 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_06_PAYMENTS.md` |
+| 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |
 | 8 | pending | – | – | `PHASE_08_INFOMANIAK_DECOMMISSION.md`; nur abbauen wenn nichts mehr referenziert |
 
 Status-Werte: `pending` / `in_progress` / `done` / `blocked`
@@ -96,4 +102,4 @@ Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 
 ## Verweis alte Initiative
 
-`docs/initiatives/modules-and-hosting/` – **historisch / Detail-Referenz**. Bei Widerspruch gewinnt **workspace-railway**.
+`docs/initiatives/_archive/2026-04_modules-and-hosting/` – **historisch / Detail-Referenz**. Bei Widerspruch gewinnt **workspace-railway** + `docs/STRATEGY_2026.md`.

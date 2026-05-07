@@ -38,7 +38,7 @@ Offen fuer formellen Phase-1-Abschluss:
 
 ### Folge
 
-- **Infomaniak-SMTP und Google-SMTP sind gleich betroffen** (gleiche Ports/Policy). Fruehere „ging mal“-Erfahrung kann Dev-Umgebung, fruehere Railway-Inkonsistenz oder teilweise Prod-Probleme sein (siehe historisch `modules-and-hosting/PHASE_08_MAIL_PROD_FOLLOWUP.md`).
+- **Infomaniak-SMTP und Google-SMTP sind gleich betroffen** (gleiche Ports/Policy). Fruehere „ging mal“-Erfahrung kann Dev-Umgebung, fruehere Railway-Inkonsistenz oder teilweise Prod-Probleme sein (siehe historisch `_archive/2026-04_modules-and-hosting/PHASE_08_MAIL_PROD_FOLLOWUP.md`).
 
 ### Produktentscheid (Stakeholder)
 

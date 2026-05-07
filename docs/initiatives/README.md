@@ -45,15 +45,17 @@ docs/initiatives/<slug>/
 
 | Slug | Status | Beschreibung | Start | Ende |
 |---|---|---|---|---|
-| `workspace-railway` | aktiv | Google Workspace (Mail + Shared Drive) + Railway-PWA; Domain/DNS Infomaniak; neue Phasen ab 0 | 2026-05 | – |
-| `modules-and-hosting` | Referenz / abgeloest | Historischer Phasenplan und Detail-Docs; nicht mehr massgeblich fuer neue Arbeit | 2026-04 | 2026-05 |
+| `workspace-railway` | aktiv | Google Workspace (Mail + Shared Drive) + Railway-PWA; Domain/DNS Infomaniak; System-Mail via Resend | 2026-05 | – |
+
+Strategischer Rahmen für alle aktiven Initiativen: **`docs/STRATEGY_2026.md`**.
 
 ## Archiv
 
 | Slug | Datum | Beschreibung |
 |---|---|---|
-| `2025_redesign` | 2025–2026 | UX-Redesign mit BEM + Tokens, abgeschlossen vor `modules-and-hosting` |
-| `2026-05_public-area` | 2026-05 | Oeffentliche Shell (Landing, Ueber uns, Hitlist), Login-Pfad, Partial-Topnav; Ordner `docs/initiatives/_archive/2026-05_public-area/` |
+| `2025_redesign` | 2025–2026 | UX-Redesign mit BEM + Tokens, abgeschlossen vor `2026-04_modules-and-hosting` |
+| `2026-04_modules-and-hosting` | 2026-04 bis 2026-05 | Erster Modul-Phasenplan (Infomaniak Mail/Object Storage, R2-Pfade); inhaltlich abgeloest durch `workspace-railway` |
+| `2026-05_public-area` | 2026-05 | Oeffentliche Shell (Landing, Ueber uns, Hitlist), Login-Pfad, Partial-Topnav |
 
 ## Cursor-Rule
 

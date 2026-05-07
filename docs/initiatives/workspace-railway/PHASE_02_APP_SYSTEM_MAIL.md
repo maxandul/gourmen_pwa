@@ -84,7 +84,7 @@ Für diese Capability **nicht relevant**. System-Mails sind statische Templates 
 
 - [ ] Branch `phase/02-workspace-system-mail` rebasen auf aktuellen `master`
 - [ ] `MailService` so anpassen, dass bei vorhandenem `RESEND_API_KEY` Resend genutzt wird, sonst SMTP (Code liegt auf Branch)
-- [ ] `requirements.txt`: Resend-SDK (`resend>=2.0`) ergänzen oder direkt mit `requests`/`httpx` arbeiten — Code-Author entscheidet, beides ok
+- [x] `requirements.txt`: Resend-SDK (`resend>=2.0`) ergänzen oder direkt mit `requests`/`httpx` arbeiten — umgesetzt mit `requests` (bereits Dependency)
 - [ ] Logging: Bei Resend-Versand `message_id` aus Response loggen (kein Mail-Inhalt!)
 - [ ] Error-Handling: Resend-API-Fehler werden als `{'success': False, 'error': '...'}` zurückgegeben, App-Logik darf nicht crashen wenn Versand fehlschlägt
 - [ ] Templates müssen weiter funktionieren — keine Änderungen am `templates/mail/`-Output erwartet

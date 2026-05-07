@@ -5,7 +5,7 @@
 
 ## Code und Features (Stand laut Vorgaenger-Initiative)
 
-Aus `modules-and-hosting` umgesetzt bzw. in `master` erwartbar:
+Aus archivierter Initiative `_archive/2026-04_modules-and-hosting` umgesetzt bzw. in `master` erwartbar:
 
 - **Mail**: `backend/services/mail.py` – SMTP, IPv4-Fallback, Timeouts, optional SSL, `send` / `send_async`
 - **Auth-Flows**: Token in DB (`AuthToken`), Forgot-Password, 2FA-Reset, Onboarding mit Mail-Templates

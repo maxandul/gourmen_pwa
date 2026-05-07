@@ -18,7 +18,8 @@ Diese drei stabilen Anchor-Docs sind Pflicht-Lektüre, je nach Aufgabe:
 Bei aktiver Initiative zusätzlich deren `docs/initiatives/<name>/README.md` und das relevante `PHASE_NN_*.md`.
 
 **Aktuelle Initiative (Stand):** `docs/initiatives/workspace-railway/` (Google Workspace + Shared Drive; Domain/DNS Infomaniak).  
-Der Ordner `docs/initiatives/modules-and-hosting/` ist nur noch **historische Referenz**.
+Strategischer Rahmen: **`docs/STRATEGY_2026.md`** (Source-of-Truth-Karte: Mail/Storage/Auth-Entscheidungen).  
+Die fruehere Initiative liegt im Archiv unter `docs/initiatives/_archive/2026-04_modules-and-hosting/` – nur historische Referenz.
 
 ## Cursor-Rules
 
