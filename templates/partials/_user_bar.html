@@ -1,9 +1,74 @@
-    {% set show_user_bar = current_user.is_authenticated or request.endpoint == 'public.landing' %}
+    {% set is_public = request.endpoint and request.endpoint.startswith('public.') %}
+    {% set show_user_bar = current_user.is_authenticated or is_public %}
     {% if show_user_bar %}
-    <div class="user-bar">
-        <a href="{{ url_for('public.landing', show='1') }}" class="logo-link">
+    {% if is_public %}
+    {% set landing_href = url_for('public.landing', show='1') if current_user.is_authenticated else url_for('public.landing') %}
+    {% set hitlist_href = url_for('public.restaurants') %}
+    {% endif %}
+    <header class="user-bar{% if is_public %} public-topnav{% endif %}" role="banner">
+        {% if is_public %}
+        <div class="public-topnav__brand">
+            <a href="{{ landing_href }}" class="logo-link" aria-label="Gourmen Startseite">
+                <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="Gourmen Logo" class="user-bar-logo" />
+            </a>
+            <button type="button"
+                    id="public-nav-menu-btn"
+                    class="public-topnav__menu-btn"
+                    aria-expanded="false"
+                    aria-controls="public-nav-drawer"
+                    aria-haspopup="dialog"
+                    aria-label="Navigation oeffnen">
+                <svg class="icon public-topnav__menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#menu"></use>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="public-topnav__nav public-topnav__nav--desktop" aria-label="Oeffentliche Navigation">
+            <ul class="pill-tabs pill-tabs--row" role="list">
+                <li>
+                    <a href="{{ landing_href }}"
+                       class="pill-tabs__tab {% if request.endpoint == 'public.landing' %}pill-tabs__tab--active{% endif %}">
+                        Start
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ hitlist_href }}"
+                       class="pill-tabs__tab {% if request.endpoint == 'public.restaurants' %}pill-tabs__tab--active{% endif %}">
+                        Hitlist
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <dialog id="public-nav-drawer" class="public-drawer" aria-labelledby="public-drawer-title">
+            <div class="public-drawer__panel">
+                <div class="public-drawer__header">
+                    <h2 id="public-drawer-title" class="public-drawer__title">Navigation</h2>
+                    <button type="button" class="public-drawer__close" data-drawer-close aria-label="Navigation schliessen">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#x"></use>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="public-drawer__nav" aria-label="Oeffentliche Navigation">
+                    <ul class="public-drawer__list" role="list">
+                        <li>
+                            <a href="{{ landing_href }}" class="public-drawer__link">Start</a>
+                        </li>
+                        <li>
+                            <a href="{{ hitlist_href }}" class="public-drawer__link">Hitlist</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </dialog>
+        {% else %}
+        <a href="{{ url_for('public.landing', show='1') }}" class="logo-link" aria-label="Gourmen Startseite">
             <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="Gourmen Logo" class="user-bar-logo" />
         </a>
+        {% endif %}
+
         <div class="user-section">
             <div class="user-actions">
                 <button id="theme-toggle" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Zu Dark Mode wechseln">
@@ -32,11 +97,15 @@
                                 <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#user"></use>
                             </svg>
                         </span>
-                        <span class="user-menu__chevron" aria-hidden="true">▾</span>
                     </summary>
                     <div class="user-menu__panel">
                         <ul class="user-menu__list" role="list">
                             {% if current_user.is_authenticated %}
+                            {% if is_public %}
+                            <li>
+                                <a href="{{ url_for('dashboard.index') }}" class="user-menu__link">Zur App</a>
+                            </li>
+                            {% endif %}
                             <li>
                                 <a href="{{ url_for('member.profile') }}" class="user-menu__link">Profil</a>
                             </li>
@@ -49,7 +118,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('member.technical') }}" class="user-menu__link">App &amp; Benachrichtigungen</a>
+                                <a href="{{ url_for('member.technical') }}" class="user-menu__link">Einstellungen</a>
                             </li>
                             {% else %}
                             <li>
@@ -65,5 +134,5 @@
                 </details>
             </div>
         </div>
-    </div>
+    </header>
     {% endif %}
