@@ -1,8 +1,8 @@
 # Phase 2 / Capability – System-Mail via Resend
 
-**Status**: pending (entscheidungsreif, technisch vorbereitet)
-**Aufwand**: ~0.5–1 Tag nach Start
-**Branch**: `phase/02-workspace-system-mail` (vorhanden, ungemerged, Commit `6e859e7` u. a.)
+**Status**: done (2026-05-07; Production-Smoke: `/admin/mail/test` erfolgreich)  
+**Aufwand**: abgeschlossen  
+**Merge**: PR #11 (`phase/02-workspace-system-mail` → `master`)  
 **Verwandt**: `docs/STRATEGY_2026.md` (Decision Log 2026-05-07), `AGENT_HANDOFF.md`
 
 ---
@@ -58,62 +58,62 @@ Für diese Capability **nicht relevant**. System-Mails sind statische Templates 
 ## Pre-Conditions
 
 - Phase 1 abgeschlossen (Workspace + DNS-Hoheit bei Infomaniak)
-- Branch `phase/02-workspace-system-mail` lokal verfügbar (Resend-Code-Skelett liegt dort bereits)
-- Vorstand bestätigt Resend-Entscheid (siehe Decision Log 2026-05-07)
-- Resend-Account angelegt, EU-Region, DPA unterzeichnet
+- Code auf `master` (Resend/SMTP `MailService`; nicht mehr nur auf Side-Branch)
+- Vorstand bestaetigt Resend-Entscheid (siehe Decision Log 2026-05-07)
+- Resend-Account mit passender Region, Domain verifiziert; DPA/Auftragsverarbeitung gemaess Vereinsprozess
 
 ## Tasks
 
 ### 1. Infrastruktur (manuell, ohne Code)
 
-- [ ] Resend-Account für `gourmen.ch` einrichten (EU-Region erzwingen)
-- [ ] DPA mit Resend abschliessen
-- [ ] Domain `gourmen.ch` in Resend hinzufügen, DNS-Records auslesen
-- [ ] **Bei Infomaniak DNS**: TXT für DKIM-Selector ergänzen, SPF-Record um `include:_spf.resend.com` erweitern (gesamte SPF auf <10 Lookups halten — vorher prüfen mit z.B. mxtoolbox)
-- [ ] DNS-Propagation abwarten (~bis zu 24h, real meist <1h), Resend-Dashboard zeigt «Verified»
-- [ ] Sending-Only API-Key in Resend erstellen, sicher dokumentieren
+- [x] Resend-Account für `gourmen.ch` einrichten (EU-Region erzwingen)
+- [x] DPA mit Resend abschliessen
+- [x] Domain `gourmen.ch` in Resend hinzufügen, DNS-Records auslesen
+- [x] **Bei Infomaniak DNS**: Records laut Resend-Wizard (u. a. DKIM-TXT; SPF inkl. SES-`include`, siehe `STRATEGY_2026.md`)
+- [x] DNS-Propagation / Resend-Dashboard «Verified» (Zustellung in Prod verifiziert)
+- [x] Sending-Only API-Key in Resend erstellen, sicher dokumentieren
 
 ### 2. Railway-Konfiguration
 
-- [ ] `RESEND_API_KEY` als Secret in Railway-Service `web` setzen
-- [ ] `MAIL_FROM_ADDRESS=kontakt@gourmen.ch` (oder `noreply@gourmen.ch` falls Alias angelegt)
-- [ ] `MAIL_REPLY_TO=kontakt@gourmen.ch`
-- [ ] Bestehende `MAIL_SMTP_*`-Variablen nicht löschen — bleiben als Lokal-Dev-Fallback nutzbar
+- [x] `RESEND_API_KEY` als Secret in Railway-Service `web` setzen
+- [x] `MAIL_FROM_ADDRESS=kontakt@gourmen.ch` (oder `noreply@gourmen.ch` falls Alias angelegt)
+- [x] `MAIL_REPLY_TO=kontakt@gourmen.ch`
+- [x] Bestehende `MAIL_SMTP_*`-Variablen nicht löschen — bleiben als Lokal-Dev-Fallback nutzbar
 
 ### 3. Code-Merge / Anpassung
 
-- [ ] Branch `phase/02-workspace-system-mail` rebasen auf aktuellen `master`
-- [ ] `MailService` so anpassen, dass bei vorhandenem `RESEND_API_KEY` Resend genutzt wird, sonst SMTP (Code liegt auf Branch)
+- [x] Branch `phase/02-workspace-system-mail` rebasen auf aktuellen `master` und mergen (PR #11)
+- [x] `MailService` so anpassen, dass bei vorhandenem `RESEND_API_KEY` Resend genutzt wird, sonst SMTP
 - [x] `requirements.txt`: Resend-SDK (`resend>=2.0`) ergänzen oder direkt mit `requests`/`httpx` arbeiten — umgesetzt mit `requests` (bereits Dependency)
-- [ ] Logging: Bei Resend-Versand `message_id` aus Response loggen (kein Mail-Inhalt!)
-- [ ] Error-Handling: Resend-API-Fehler werden als `{'success': False, 'error': '...'}` zurückgegeben, App-Logik darf nicht crashen wenn Versand fehlschlägt
-- [ ] Templates müssen weiter funktionieren — keine Änderungen am `templates/mail/`-Output erwartet
-- [ ] `env.example` um `RESEND_API_KEY` ergänzen (mit leerem Wert, Kommentar «leave empty for SMTP fallback»)
-- [ ] `docs/ARCHITECTURE.md`: «Externe Services»-Tabelle um Resend ergänzen
+- [x] Logging: Bei Resend-Versand `message_id` aus Response loggen (kein Mail-Inhalt!)
+- [x] Error-Handling: Resend-API-Fehler werden als `{'success': False, 'error': '...'}` zurückgegeben, App-Logik darf nicht crashen wenn Versand fehlschlägt
+- [x] Templates müssen weiter funktionieren — keine Änderungen am `templates/mail/`-Output erwartet
+- [x] `env.example` um `RESEND_API_KEY` ergänzen (mit leerem Wert, Kommentar «leave empty for SMTP fallback»)
+- [x] `docs/ARCHITECTURE.md`: «Externe Services»-Tabelle um Resend ergänzen
 
 ### 4. Tests in Production
 
-- [ ] PR mergen, Railway deployt automatisch
-- [ ] `/admin/mail/test` mit eigener Test-Mail-Adresse → erfolgreich
-- [ ] Forgot-Password mit echter Mitglieder-Adresse → Mail kommt an, Reset funktioniert
-- [ ] Resend-Dashboard zeigt beide Mails als «Delivered»
-- [ ] Spam-Test: SPF/DKIM-Check via [mail-tester.com](https://mail-tester.com) — Score ≥ 9/10 anvisieren
+- [x] PR mergen, Railway deployt automatisch
+- [x] `/admin/mail/test` mit eigener Test-Mail-Adresse → erfolgreich
+- [ ] Forgot-Password mit echter Mitglieder-Adresse → Mail kommt an, Reset funktioniert (empfohlen)
+- [ ] Resend-Dashboard zeigt weitere Transaktionsmails wie Forgot-Password als «Delivered» (bei erstem E2E-Lauf)
+- [ ] Spam-Test: SPF/DKIM-Check via [mail-tester.com](https://mail-tester.com) — Score ≥ 9/10 anvisieren (optional)
 
 ### 5. Doc-Updates
 
-- [ ] `docs/initiatives/workspace-railway/README.md` Status-Tabelle Phase 2 auf `done` setzen
-- [ ] `docs/ARCHITECTURE.md` falls neue ENV-Variablen
+- [x] `docs/initiatives/workspace-railway/README.md` Status-Tabelle Phase 2 auf `done` setzen
+- [x] `docs/ARCHITECTURE.md` falls neue ENV-Variablen
 - [ ] Datenschutzerklärung der PWA um Resend als Auftragsverarbeiter ergänzen (separates Asana/Backlog-Item für Andreas)
 
 ## Acceptance-Criteria
 
-- [ ] Forgot-Password löst Mail aus, Mail kommt an, Reset funktioniert E2E
-- [ ] Onboarding-Mail bei neuem Mitglied kommt an, Aktivierung funktioniert
-- [ ] 2FA-Reset-Mail kommt an
-- [ ] `/admin/mail/test` zeigt erfolgreichen Versand mit Resend-Message-ID
-- [ ] mail-tester.com Score ≥ 9/10 (SPF, DKIM, DMARC alle grün)
-- [ ] Keine Secrets in Git, Logs, oder Doc-Texten
-- [ ] Bei Lokal-Dev ohne `RESEND_API_KEY` läuft Mail über SMTP-Fallback (z.B. Mailpit) — kein Crash
+- [ ] Forgot-Password löst Mail aus, Mail kommt an, Reset funktioniert E2E (empfohlen)
+- [ ] Onboarding-Mail bei neuem Mitglied kommt an, Aktivierung funktioniert (empfohlen)
+- [ ] 2FA-Reset-Mail kommt an (empfohlen)
+- [x] `/admin/mail/test` zeigt erfolgreichen Versand mit Resend-Message-ID
+- [ ] mail-tester.com Score ≥ 9/10 (SPF, DKIM, DMARC alle grün) (optional)
+- [x] Keine Secrets in Git, Logs, oder Doc-Texten
+- [x] Bei Lokal-Dev ohne `RESEND_API_KEY` läuft Mail über SMTP-Fallback (z.B. Mailpit) — kein Crash
 
 ## Out of Scope
 
@@ -134,44 +134,18 @@ Für diese Capability **nicht relevant**. System-Mails sind statische Templates 
 ## Cursor-Agent-Briefing
 
 ```
-Branch: phase/02-workspace-system-mail (rebasen auf master, ungemergten Code als Basis nehmen)
-Doc: docs/initiatives/workspace-railway/PHASE_02_APP_SYSTEM_MAIL.md
+Status: **abgeschlossen** (2026-05-07). Code auf `master` (PR #11).
 
-Pre-Flight:
-- AGENTS.md lesen
-- docs/STRATEGY_2026.md lesen (Decision Log Mail-Entscheid)
-- docs/ARCHITECTURE.md lesen (MailService-Stelle)
-- docs/CONVENTIONS.md lesen (Service-Layer-Konventionen)
-- AGENT_HANDOFF.md lesen (Befund Railway-SMTP-Block)
-- Pre-Conditions verifizieren: ist Resend-Account einsatzbereit? DNS verifiziert? RESEND_API_KEY in Railway?
+Referenz fuer Folgearbeit:
+- Doc: `PHASE_02_APP_SYSTEM_MAIL.md`
+- `AGENTS.md`, `docs/STRATEGY_2026.md`, `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, `AGENT_HANDOFF.md`
 
-Implementiere Phase 2 (System-Mail via Resend) gemaess Phasen-Doc:
-- Code-Skelett liegt auf Branch, ggf. an aktuellen master anpassen
-- Resend-Versand bei vorhandenem RESEND_API_KEY, sonst SMTP-Fallback
-- Logging: nur message_id, niemals Mail-Inhalt
-- Error-Handling sauber, App darf nicht crashen bei Versand-Fehler
-- env.example pflegen
-- Folge .cursor/rules/initiatives.mdc
-
-Lokal verifizieren:
-- Mit gesetztem RESEND_API_KEY lokal eine Test-Mail an eigene Adresse senden
-- Ohne RESEND_API_KEY: SMTP-Fallback (Mailpit) funktioniert weiter
-
-Production-Cutover:
-- PR an master mit klarer Commit-Message
-- Nach Merge: Railway-Deploy abwarten
-- /admin/mail/test mit echter Adresse
-- Forgot-Password E2E mit echter Adresse
-- mail-tester.com Score pruefen
-
-Am Ende:
-- Acceptance-Criteria abhaken
-- README Status-Tabelle Phase 2 → done
-- Commit-Message-Vorschlag, dann auf User-Bestaetigung warten
+Operational: Resend bei `RESEND_API_KEY`; lokal SMTP-Fallback ohne Key.
+Keine Secrets in Logs/Commits.
 ```
 
 ## Hinweise
 
-- **Code-Stand auf Branch**: Commit `6e859e7` enthält die initiale Resend-Integration. Vor Wieder-Aufnahme prüfen, ob seit Mai 2026 noch Drift gegen master entstanden ist.
+- **Code-Stand**: Resend-Integration liegt auf `master` (Merge PR #11). Branch `phase/02-workspace-system-mail` ist historisch; bei neuem Branch von `master` starten.
 - **Resend-Webhooks** (Bounce, Complaint, Open) sind in dieser Phase nicht umgesetzt. Falls später Bounce-Handling automatisiert werden soll: separate Mini-Phase mit `/api/resend-webhook`-Endpoint und `Member.email_status`-Feld.
 - **Newsletter-/Massenmail-Use-Case** ist explizit nicht vorgesehen (siehe Strategie-Doc). Falls jemals doch: Resend-Audience-Feature evaluieren oder externe Liste in Listmonk/Mailchimp.

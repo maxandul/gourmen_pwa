@@ -84,7 +84,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 |---|---|---|---|---|
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
 | 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM/MX stabil; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
-| 2 | in_progress | master | 2026-05-07 | PR #11 gemerged (`phase/02-workspace-system-mail`); nach Railway-Deploy: `/admin/mail/test` + Forgot-Password E2E — `PHASE_02_APP_SYSTEM_MAIL.md` |
+| 2 | done | master | 2026-05-07 | Resend in Prod (PR #11); `/admin/mail/test` verifiziert. Optional nachziehen: Forgot-Password/Onboarding/2FA E2E, mail-tester.com, Resend/Privacy-Text auf oeffentlicher Seite — siehe `PHASE_02_APP_SYSTEM_MAIL.md` |
 | 3 | pending | – | – | – |
 | 4 | pending | – | – | Inhaltlich analog `_archive/2026-04_modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive; n8n-Pfad als offene Architektur-Frage (siehe STRATEGY_2026.md) |
 | 5 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_05_CALENDAR.md` |

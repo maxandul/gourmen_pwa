@@ -30,7 +30,7 @@
 | Systemmails (Reset, Onboarding, 2FA) | `noreply@gourmen.ch` (oder `kontakt@`) | Mitglied | **Resend HTTPS-API** | DKIM via Resend, SPF erweitert um Resend |
 | Massenmails an Mitglieder | — | — | **nicht vorgesehen** | Vereins-Kommunikation läuft über andere Kanäle (PWA, App-Push, WhatsApp-Gruppe) |
 
-**DNS-Konsequenz**: SPF-Record bekommt einen weiteren `include:` für Resend; DKIM-Selector von Resend (`resend._domainkey...`) wird zusätzlich zu Workspace-DKIM eingetragen. DMARC bleibt `p=none` während Mail-Setup, später auf `p=quarantine` schärfen.
+**DNS-Konsequenz**: Resend nutzt AWS SES unter der Haube — SPF-Record wird um `include:amazonses.com` erweitert (nicht `_spf.resend.com`), MX-Record auf `feedback-smtp.eu-west-1.amazonses.com` für Bounce-Handling auf der von Resend vorgegebenen Subdomain, DKIM-Selector als TXT zusätzlich zu Workspace-DKIM. **Autoritativ ist immer die Anzeige im Resend-Verifikations-Screen** — Werte 1:1 bei Infomaniak übernehmen, nichts erfinden. DMARC bleibt vorerst `p=none`, später auf `p=quarantine`.
 
 ## Externe Dienste (Stand 2026-05)
 
@@ -127,6 +127,15 @@ Aus den Fernzielen sind das die «müssen Q3/Q4 2026 funktionieren»-Capabilitie
 3. **iCal-Feed pro Mitglied** — Token-basierter Calendar-Feed zum Abonnieren in Apple/Google/Outlook-Kalender.
 4. **Merch von Grund auf neu denken** — nicht «alte Models polieren», sondern den **gesamten Prozess** durchdenken: Sortiment-Pflege, Bestell-Annahme, Bezahlung (TWINT?), Produktion/Beschaffung, Auslieferung an Mitglied, Lagerbestand, Statistik. Capability-Doc soll erst Prozess beschreiben, dann technische Umsetzung ableiten. AI-Optionen explizit prüfen (Bestell-Triage, Lager-Forecast).
 
+## Begleit-Verbesserungen (parallel zu MVP, kleinere Capabilities)
+
+Nicht auf demselben Level wie die vier MVP-Capabilities, aber wichtig genug, um nicht im Backlog zu verschwinden:
+
+- **Install-Banner-Fix** — aktuell klebt der «Auf Homescreen installieren»-Hinweis am oberen Bildschirmrand und kann nicht weggeklickt werden. UX-Bug, kleiner Cursor-Auftrag. Bestehende Logik ist in `static/js/pwa.js` (siehe `docs/ARCHITECTURE.md`, Sektion PWA-Aspekte).
+- **Cronjob-Audit** — die drei bestehenden Reminder-Cronjobs (3-Wochen, Wochen, Rating) auf korrekte Auslösung in Production prüfen. Ist eher Tech-Debt-Audit als Feature: laufen sie, kommen Push-Reminder an, ist die Logik noch korrekt? Eigene kleine Phase mit Production-Logs-Review.
+- **Changelog / What's-New für Mitglieder** — wenn ein neues Feature live geht, sollen Mitglieder das in der App sehen. Kleines Modal/Card beim Login mit «Neu seit letzter Anmeldung», dismissible. AI-Optionen prüfen: Auto-Generierung aus Git-Commits seit letzter Sichtbarkeit pro Mitglied.
+- **Dashboard-Personalisierung** — Mitglieder sollen wählen können, welche Karten/Widgets sie auf ihrem Dashboard sehen (z.B. nächstes Event hervorgehoben, GGL-Stand, BillBro-Pending, Merch-Bestellungen). Eigene Capability mittlerer Grösse — eigenes Capability-Doc fällig.
+
 ## Hauptbrocken danach (Q4 2026 / Q1 2027)
 
 5. **Buchhaltung** — nach Entscheid n8n vs. Flask-Modul. Belege via Drive, Buchungssätze in Postgres.
@@ -155,6 +164,7 @@ Aus den Fernzielen sind das die «müssen Q3/Q4 2026 funktionieren»-Capabilitie
 | **2026-05-07** | **Massenmails / Newsletter nicht vorgesehen** | Vereins-Kommunikation läuft über PWA, Push, WhatsApp-Gruppe. Damit Mail-Strategie auf zwei Wege reduziert (Personenpost + System-Mail). |
 | **2026-05-07** | **GV-Admin als Hauptbrocken-Capability** | Eigener Workflow mit hohem AI-Hebel (Traktanden, Protokoll, Einladung). |
 | **2026-05-07** | **Merch wird Prozess-Redesign, nicht nur Tech-Politur** | Capability-Doc beginnt mit Prozess-Beschreibung, Technik folgt. |
+| **2026-05-07** | **Begleit-Verbesserungen aufgenommen**: Install-Banner-Fix, Cronjob-Audit, Changelog-Konzept, Dashboard-Personalisierung | Punkte parallel zum MVP, eigene kleine bis mittlere Capabilities. |
 
 ---
 
