@@ -307,18 +307,8 @@ class PlacesAutocomplete {
     savePlaceDetails() {
         if (!this.selectedPlace) return;
         
-        // Auto-populate some fields
-        const kuecheInput = document.getElementById('kueche');
+        // Auto-populate some fields (Küche bleibt Freitext; Google liefert keine verlässliche Küchenbezeichnung)
         const websiteInput = document.getElementById('website');
-        
-        if (kuecheInput && this.selectedPlace.types) {
-            const types = this.selectedPlace.types.filter(type => 
-                !['establishment', 'point_of_interest'].includes(type)
-            );
-            if (types.length > 0) {
-                kuecheInput.value = types.join(', ');
-            }
-        }
         
         if (websiteInput && this.selectedPlace.website) {
             websiteInput.value = this.selectedPlace.website;

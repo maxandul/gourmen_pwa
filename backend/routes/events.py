@@ -704,6 +704,7 @@ def edit(event_id):
         return redirect(url_for('events.detail', event_id=event_id))
     
     form = EventForm(obj=event)
+    kuechen_suggestions = Event.suggested_kueche_labels()
     
     # Load organizer choices
     active_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
@@ -820,9 +821,19 @@ def edit(event_id):
             db.session.rollback()
             current_app.logger.error(f'Error updating event {event_id}: {str(e)}')
             flash(f'Fehler beim Speichern des Events: {str(e)}', 'error')
-            return render_template('events/edit.html', form=form, event=event)
+            return render_template(
+                'events/edit.html',
+                form=form,
+                event=event,
+                kuechen_suggestions=kuechen_suggestions,
+            )
     
-    return render_template('events/edit.html', form=form, event=event)
+    return render_template(
+        'events/edit.html',
+        form=form,
+        event=event,
+        kuechen_suggestions=kuechen_suggestions,
+    )
 
 @bp.route('/<int:event_id>/delete', methods=['POST'])
 @login_required

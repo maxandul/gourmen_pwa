@@ -72,7 +72,7 @@ Registrierung in `backend/app.py`:
 - **`Member`** – Vereinsmitglied, UserMixin, Rollen `MEMBER`/`ADMIN`, mit `Funktion`-Enum
 - **`MemberSensitive`** – verschlüsselte sensible Felder (Fernet via `CRYPTO_KEY`)
 - **`MemberMFA`** + **`MFABackupCode`** – 2FA-Konfiguration
-- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung) mit Google-Places-Daten und BillBro-Kalkulationsfeldern
+- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung) mit Google-Places-Daten und BillBro-Kalkulationsfeldern; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
 - **`Document`** – Vereinsdokumente (aktuell als Links, Felder für File-Upload vorbereitet)
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)
@@ -196,7 +196,7 @@ Drei Reminder-Typen:
 | Service | Zweck | Status |
 |---|---|---|
 | **Railway** | App-Hosting (Web + Cron + Postgres + Redis-Plugin) | aktiv |
-| **Google Places API** | Restaurant-Daten beim Event-Anlegen | aktiv |
+| **Google Places API** | Place-Suche und -Details beim Event (Autocomplete: `establishment`, nicht nur `restaurant`) | aktiv |
 | **Google Maps API** | Karten-Anzeige im Frontend | aktiv |
 | **Infomaniak** | Domain/DNS, Object Storage | aktiv |
 | **Resend (HTTPS)** | Transaktionale E-Mails aus der App (Production, empfohlen) | aktiv (Phase 2) |

@@ -606,6 +606,7 @@ def member_sensitive(member_id):
 def create_event():
     """Create new event"""
     form = EventForm()
+    kuechen_suggestions = Event.suggested_kueche_labels()
     
     # Populate organisator choices
     form.organisator_id.choices = [(m.id, m.display_name) for m in Member.query.filter_by(is_active=True).all()]
@@ -673,7 +674,11 @@ def create_event():
         flash('Event erfolgreich erstellt! Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
-    return render_template('admin/create_event.html', form=form) 
+    return render_template(
+        'admin/create_event.html',
+        form=form,
+        kuechen_suggestions=kuechen_suggestions,
+    )
 
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required

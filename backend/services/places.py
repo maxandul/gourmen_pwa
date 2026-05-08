@@ -4,14 +4,14 @@ from typing import Dict, List, Optional
 from flask import current_app
 
 class PlacesService:
-    """Google Places API service for restaurant autocomplete and details"""
+    """Google Places API service for establishment autocomplete and place details"""
     
     BASE_URL = "https://maps.googleapis.com/maps/api/place"
     
     @classmethod
     def autocomplete(cls, query: str, session_token: str = None) -> List[Dict]:
         """
-        Get autocomplete suggestions for restaurants
+        Get autocomplete suggestions for establishments (business POIs)
         
         Args:
             query: Search query
@@ -34,7 +34,10 @@ class PlacesService:
         
         params = {
             'input': query,
-            'types': 'restaurant|food',
+            # Nicht nur restaurant|food: Google nutzt einen primaeren Typ pro Ort; Kettenfilialen,
+            # Bars oder gemischte Betriebe koennen sonst ZERO_RESULTS liefern. establishment bleibt
+            # auf Geschaefts-POIs begrenzt (kein reiner Geocoder auf Strassen/Stadtteile).
+            'types': 'establishment',
             'key': api_key,
             'language': 'de',
             # Schweiz + typische Auslandsreise-Ziele (Google Places erlaubt max. 5 Laender)

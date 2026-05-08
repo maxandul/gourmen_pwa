@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from sqlalchemy import func
 from backend.extensions import db
 
 class EventType(Enum):
@@ -77,6 +78,29 @@ class Event(db.Model):
     # Relationships
     participations = db.relationship('Participation', backref='event', cascade='all, delete-orphan')
     documents = db.relationship('Document', backref='event')
+    
+    @classmethod
+    def suggested_kueche_labels(cls, limit=100):
+        """
+        Distinct non-empty kueche values from past events, by frequency then A–Z.
+        Used for HTML datalist suggestions (not validation).
+        """
+        rows = (
+            db.session.query(cls.kueche, func.count(cls.id))
+            .filter(cls.kueche.isnot(None), cls.kueche != '')
+            .group_by(cls.kueche)
+            .order_by(func.count(cls.id).desc(), cls.kueche.asc())
+            .limit(limit)
+            .all()
+        )
+        seen = set()
+        out = []
+        for raw, _ in rows:
+            s = (raw or '').strip()
+            if s and s not in seen:
+                seen.add(s)
+                out.append(s)
+        return out
     
     def __repr__(self):
         event_type = self.event_typ.value if hasattr(self.event_typ, 'value') else str(self.event_typ)

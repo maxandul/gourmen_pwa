@@ -298,55 +298,8 @@ class PlacesAutocomplete {
             websiteField.value = placeDetails.website;
         }
         
-        // Update kueche field based on place types
-        const kuecheField = document.querySelector('input[name="kueche"]');
-        if (kuecheField && placeDetails.types) {
-            const cuisineTypes = this.mapPlaceTypesToCuisine(placeDetails.types);
-            if (cuisineTypes.length > 0) {
-                kuecheField.value = cuisineTypes.join(', ');
-            }
-        }
-        
         // Show success message
         this.showSuccessMessage('Restaurant-Details erfolgreich übernommen!');
-    }
-    
-    mapPlaceTypesToCuisine(types) {
-        const cuisineMap = {
-            'restaurant': 'Restaurant',
-            'italian_restaurant': 'Italienisch',
-            'chinese_restaurant': 'Chinesisch',
-            'japanese_restaurant': 'Japanisch',
-            'thai_restaurant': 'Thai',
-            'indian_restaurant': 'Indisch',
-            'mexican_restaurant': 'Mexikanisch',
-            'greek_restaurant': 'Griechisch',
-            'turkish_restaurant': 'Türkisch',
-            'spanish_restaurant': 'Spanisch',
-            'french_restaurant': 'Französisch',
-            'german_restaurant': 'Deutsch',
-            'swiss_restaurant': 'Schweizer',
-            'pizza_restaurant': 'Pizza',
-            'burger_restaurant': 'Burger',
-            'steakhouse': 'Steakhouse',
-            'seafood_restaurant': 'Meeresfrüchte',
-            'vegetarian_restaurant': 'Vegetarisch',
-            'vegan_restaurant': 'Vegan',
-            'fast_food_restaurant': 'Fast Food',
-            'cafe': 'Café',
-            'bar': 'Bar',
-            'pub': 'Pub',
-            'bistro': 'Bistro'
-        };
-        
-        const cuisines = [];
-        types.forEach(type => {
-            if (cuisineMap[type]) {
-                cuisines.push(cuisineMap[type]);
-            }
-        });
-        
-        return cuisines;
     }
     
     showSuccessMessage(message) {
@@ -465,13 +418,24 @@ class PlacesAutocomplete {
                         <small class="form-field__help">Tippe mindestens 2 Zeichen für Restaurant-Vorschläge</small>
                     </div>
                     
+                    <datalist id="event-kuechen-suggestions">
+                        {% for k in kuechen_suggestions %}
+                        <option value="{{ k }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    
                     <div class="form-row">
                         <div class="form-field">
                             {{ form.kueche.label(class="form-field__label") }}
-                            {{ form.kueche(class="form-field__input", placeholder="z.B. Italienisch, Asiatisch") }}
+                            {{ form.kueche(
+                                class="form-field__input",
+                                placeholder="z.B. Italienisch, Asiatisch",
+                                list="event-kuechen-suggestions",
+                                autocomplete="off") }}
                             {% if form.kueche.errors %}
                             <span class="form-field__error">{{ form.kueche.errors[0] }}</span>
                             {% endif %}
+                            <small class="form-field__help">Freitext; Liste zeigt Küchen aus früheren Events</small>
                         </div>
                         
                         <div class="form-field">
