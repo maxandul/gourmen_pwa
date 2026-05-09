@@ -280,7 +280,10 @@ Verhalten:
 | Klasse | Zweck |
 |---|---|
 | `.dashboard-intent` | Container mit `__heading`, `__grid` |
+| `.dashboard-intent__heading` | Kleine Grossbuchstaben-Zeile; Modifier `--section-gap` erhoeht `margin-top` (weil die Basis `margin`-Shorthand sonst Utilities wie `mt-*` ueberschreibt) |
 | `.dashboard-intent-tile` | Kachel mit `__icon`, `__body`, `__title`, `__meta`, `__chev`, `--static` |
+| `.dashboard-info-grid` | 2-Spalten-Raster fuer Event-Uebersichts-Kacheln (`--full` = eine Zeile volle Breite) |
+| `.dashboard-info-tile` | Kachel mit `__content`, `__label`, `__value`, `__line`, `__line--multiline`; Modifier `--static`, `--full` (volle Rasterbreite unter `dashboard-info-grid`) |
 | `.dashboard-trip-hero` | Hero-Card fuer zeitlich begrenzte Sondereinsaetze (z.B. Vereinsreisen). Markup: `__link`, `__logo`, `__body`, `__eyebrow`, `__title`, `__meta`, `__countdown`, `__dot`, `__cta`, `__cta-label`, `__chev`. **Server-side abgeschaltet** nach Cutoff – nicht via CSS verstecken. |
 
 #### Events / Ratings

@@ -1949,6 +1949,10 @@ a.btn:active {
   margin-top: var(--space-6);
 }
 
+.mt-8 {
+  margin-top: var(--space-8);
+}
+
 /* Form field spacing helper */
 .form-field--no-margin {
   margin: 0;
@@ -2549,7 +2553,8 @@ a.btn:active {
   box-shadow: none;
 }
 
-.tabs.tabs--panel .tabs__panel--active > .data-table-wrap {
+/* Nur wenn die Tabelle direkt unter der Tab-Leiste beginnt (nicht nach Uebersichtskacheln etc.) */
+.tabs.tabs--panel .tabs__panel--active > .data-table-wrap:first-child {
   border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -4433,6 +4438,11 @@ a.card-link:active {
   color: var(--color-text-tertiary);
 }
 
+/* Zweite+ Ueberschrift gleichen Stils unter dem Hero (mt-8 wuerde durch obige margin-Shorthand verloren gehen) */
+.dashboard-intent__heading.dashboard-intent__heading--section-gap {
+  margin-top: var(--space-8);
+}
+
 .dashboard-intent__stack {
   display: flex;
   flex-direction: column;
@@ -4449,6 +4459,28 @@ a.card-link:active {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+}
+
+.dashboard-info-grid .dashboard-info-tile--full {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  justify-content: stretch;
+}
+
+.dashboard-info-tile--full .dashboard-info-tile__content {
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.dashboard-info-tile--full .dashboard-info-tile__value {
+  align-items: flex-start;
+  font-weight: var(--font-normal);
+}
+
+.dashboard-info-tile__line--multiline {
+  white-space: pre-wrap;
+  max-width: 100%;
 }
 
 @media (min-width: 480px) {

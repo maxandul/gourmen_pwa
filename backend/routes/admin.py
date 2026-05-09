@@ -631,8 +631,8 @@ def create_event():
             event.kueche = form.kueche.data
         if form.website.data:
             event.website = form.website.data
-        if form.notizen.data:
-            event.notizen = form.notizen.data
+        _notizen = (form.notizen.data or '').strip()
+        event.notizen = _notizen if _notizen else None
         
         # Set Google Places data if available
         if form.place_id.data or form.place_name.data or form.place_address.data:

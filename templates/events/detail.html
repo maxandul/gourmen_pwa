@@ -128,7 +128,7 @@
                 <!-- Tab: Infos -->
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'info' else '' }}" id="tab-info" role="tabpanel">
                     <div class="dashboard-intent" aria-label="Event-Kerninfos">
-                        <h2 class="dashboard-intent__heading">Uebersicht</h2>
+                        <h2 class="dashboard-intent__heading">Übersicht</h2>
                         <div class="dashboard-info-grid">
                             {% set beitritt_ok = (not current_user.beitritt) or (event.datum.date() >= current_user.beitritt) %}
                             {% if beitritt_ok %}
@@ -190,10 +190,24 @@
                                     </span>
                                 </span>
                             </div>
+
+                            {% set notizen_text = (event.notizen or '')|trim %}
+                            <div class="dashboard-info-tile dashboard-info-tile--static dashboard-info-tile--full" role="region" aria-label="Notizen">
+                                <span class="dashboard-info-tile__content">
+                                    <span class="dashboard-info-tile__label">Notizen</span>
+                                    <span class="dashboard-info-tile__value">
+                                        {% if notizen_text %}
+                                        <span class="dashboard-info-tile__line dashboard-info-tile__line--multiline">{{ event.notizen }}</span>
+                                        {% else %}
+                                        <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">keine Notizen</span>
+                                        {% endif %}
+                                    </span>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {% set has_event_details = event.place_maps_url or event.kueche or event.place_types or event.website or event.place_website or event.notizen %}
+                    {% set has_event_details = event.place_maps_url or event.kueche or event.place_types or event.website or event.place_website %}
                     {% if has_event_details %}
                     <div class="card mt-6">
                         <div class="card__header">
@@ -240,19 +254,14 @@
                                 </span>
                             </div>
                             {% endif %}
-                            {% if event.notizen %}
-                            <div class="info-row">
-                                <span class="info-row__label">Notizen:</span>
-                                <span class="info-row__value">{{ event.notizen }}</span>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
 
                     {# RSVP: erste Zeile „Deine Teilnahme“ in der Summary-Card #}
 
-                    <div class="table-responsive data-table-wrap {{ 'mt-6' if not has_event_details else '' }}" role="region" aria-label="Teilnehmer-Übersicht">
+                    <h2 class="dashboard-intent__heading dashboard-intent__heading--section-gap" id="event-teilnehmerliste-heading">Teilnehmerliste</h2>
+                    <div class="table-responsive data-table-wrap" role="region" aria-labelledby="event-teilnehmerliste-heading">
                         <table class="data-table events-participants-table">
                             <thead>
                                 <tr>
