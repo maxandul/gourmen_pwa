@@ -157,7 +157,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.landing-restaurants-table__col-kueche` | – | Kuechen-Spalte in der Hitlist-Tabelle (≤768px ausgeblendet). |
 | `.data-table-scroll-outer` | `--fade-right` | Huellte um scrollbare `data-table-wrap` (Hitlist, `events.index` Kommend/Archiv, `ggl.index` Tabelle). Edge-Fade in `public.css` + `components.css`. |
 | `.data-table-scroll-inner` | – | Scrollport (`table-responsive data-table-wrap`). |
-| `.events-index-table` | – | Events-Index Tabellen: erste Spalte Datum sticky, Platz fuer TT.MM.JJJJ (`11ch`, `nowrap`); `components.css`. |
+| `.events-index-table` | – | Events-Index Tabellen: erste Spalte ("Event": Typ-Icon + Datum + Chevron) sticky und klickbar zum Event-Detail (`__event-link`); Restaurant-Spalte verlinkt auf `event.place_website` falls vorhanden (`__restaurant-link`); Spalten-Constraints `__col-restaurant`/`__col-status`/`__col-organisator`; `components.css`. |
+| `.events-today-hero` | `--stacked` (zweiter+ Hero, falls mehrere Events am selben Tag); `__title`, `__title-icon`, `__title-date`, `__actions` | Hero im Tab "Heutiges Event" (`events.index?tab=heute`): nutzt `.dashboard-intent` als Container + `.dashboard-info-grid` mit den Kacheln Teilnahme/Restaurant/(optional) Notizen + Schnellzugriff-Buttons (BillBro / Bewerten) ueber `.page-actions` (Mobile column, Desktop row). Tab + Default-Auswahl wird in `events.index` serverseitig gesetzt, wenn `today_events` existieren. |
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
 | `.landing-stat-strip` | mit `landing-stat-strip__pitch`, `landing-stat-strip__cta` | Zweite Marketing-Card auf `public.landing`: Kurzportrait-Text, KPIs (`metrics-spotlight`), Link **Über uns**. |
@@ -194,7 +195,9 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.data-table` | – | Standard-Tabelle (BEM-aligned) |
 | `.admin-members-table` | `__row--inactive`, `__col-email`, `__col-adresse`, `__col-kleider`, `__col-fuehrerschein`, `__col-status`, `__status-chips`, `__actions`, `__actions-inner` | Admin Mitgliederliste (`admin/members.html`): alle Mitgliedsfelder als Spalten; `data-table-scroll-*`; erste Spalte (Rufname) sticky; inaktive Zeilen gedimmt |
 | `.page-content--admin-members-table` | – | Modifier: `min-width: 0` auf Flex-Spalte + Scroll-Hülle, damit horizontale Tabelle nicht die Seitenbreite aufbläht |
-| `.data-table__cell--event-type` | – | Spezial-Zelle für Event-Typ-Icons |
+| `.events-index-table__event-link` | mit `__event-icon`, `__event-date`, `__event-chev` | Erste Spalte ("Event") in `events.index` Kommend/Archiv: Typ-Icon + Datum + Chevron als ein klickbares Element zum Event-Detail; nowrap, sticky-Spalte schrumpft auf Inhalt |
+| `.events-index-table__restaurant-link` | mit `__restaurant-name`, `__restaurant-icon` | Restaurant-Spalte in `events.index`: optionaler externer Link auf `event.place_website` (`target="_blank"` + Lucide `external-link`); Name mit Ellipsis bei `--col-restaurant` Max-Width |
+| `.events-index-table__col-restaurant` / `__col-status` / `__col-organisator` | – | Spalten-Constraints fuer `events-index-table`: Restaurant/Organisator gedeckelt mit Ellipsis (sinnvolles Maximum), Status (Teilnahme/Bewertung) `width: 1%` + `nowrap` |
 | `.stat-tiles` | `--metrics-follow` | Container für Stat-Tiles |
 | `.stat-tile` | – | Einzelne Kennzahl-Kachel |
 | `.metrics-spotlight` | – | Hero-Kennzahlen mit `__context`, `__hero`, `__metric*` |

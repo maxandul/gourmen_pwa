@@ -205,8 +205,8 @@ def create_monthly_events(year):
 @login_required
 def index():
     """Events main page with tabs"""
-    tab = request.args.get('tab', 'kommend')
-    if tab == 'overview':
+    tab_explicit = request.args.get('tab')
+    if tab_explicit == 'overview':
         # Alter Tab entfernt — gleiche Infos wie Dashboard; Bookmarks weiterleiten
         params = request.args.to_dict(flat=True)
         params['tab'] = 'kommend'
@@ -215,9 +215,33 @@ def index():
     now = datetime.utcnow()
     archiv_search_q = ''
 
+    # Heute-Snapshot: alle veroeffentlichten Events, die am heutigen Kalendertag stattfinden.
+    # Bewusst ohne Filter (Jahr/Organisator), weil "Heute" der tagesaktuelle Eventslot ist
+    # und nicht von der Filterleiste abhaengen soll.
+    today_start = datetime.combine(now.date(), datetime.min.time())
+    today_end = today_start + timedelta(days=1)
+    today_events = (
+        Event.query
+        .filter(
+            Event.published == True,
+            Event.datum >= today_start,
+            Event.datum < today_end,
+        )
+        .order_by(Event.datum.asc())
+        .all()
+    )
+
+    # Default-Tab: am Event-Tag automatisch auf "heute" springen, sonst "kommend".
+    # Expliziter ?tab=... in der URL hat immer Vorrang.
+    if tab_explicit:
+        tab = tab_explicit
+    else:
+        tab = 'heute' if today_events else 'kommend'
+
     context = {
         'active_tab': tab,
         'archiv_events': None,
+        'today_events': today_events,
     }
 
     # Globale Filter (Jahr / Organisator) — alle Tabs, URL-Parameter identisch wie bisher
@@ -259,6 +283,9 @@ def index():
             'events_filters_active': events_filters_active,
             'selected_organizer_label': selected_organizer_label,
             'events_tab_urls': {
+                'heute': url_for(
+                    'events.index', tab='heute', **events_filter_args, _anchor='gourmen-tabs'
+                ),
                 'kommend': url_for(
                     'events.index', tab='kommend', **events_filter_args, _anchor='gourmen-tabs'
                 ),
@@ -309,11 +336,9 @@ def index():
                     func.lower(func.coalesce(Member.vorname, '')).like(needle, escape='\\'),
                     func.lower(func.coalesce(Member.nachname, '')).like(needle, escape='\\'),
                     func.lower(
-                        func.concat(
-                            func.coalesce(Member.vorname, ''),
-                            ' ',
-                            func.coalesce(Member.nachname, ''),
-                        )
+                        func.coalesce(Member.vorname, '')
+                        + ' '
+                        + func.coalesce(Member.nachname, '')
                     ).like(needle, escape='\\'),
                     func.lower(cast(Event.datum, String)).like(needle, escape='\\'),
                     func.lower(cast(Event.event_typ, String)).like(needle, escape='\\'),

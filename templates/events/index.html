@@ -112,6 +112,16 @@
 
         <div class="tabs tabs--panel" id="gourmen-tabs" aria-label="Events-Ansichten">
         <nav class="tabs__nav" role="tablist">
+            {% if today_events %}
+            <a href="{{ events_tab_urls.heute }}"
+               data-force-navigation="true"
+               class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'heute' else '' }}"
+               role="tab"
+               aria-selected="{{ 'true' if tab_param == 'heute' else 'false' }}">
+                {{ lucide_icon('calendar-clock') }}
+                Heutiges Event
+            </a>
+            {% endif %}
             <a href="{{ events_tab_urls.kommend }}"
                data-force-navigation="true"
                class="tabs__tab {{ 'tabs__tab--active' if tab_param == 'kommend' else '' }}"
@@ -139,6 +149,90 @@
         </nav>
         
         <div class="tabs__content">
+            {% if today_events %}
+            <!-- Tab: Heutiges Event -->
+            <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'heute' else '' }}"
+                 role="tabpanel"
+                 aria-label="Heutiges Event">
+                {% for today_event in today_events %}
+                {% set my_today_participation = today_event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
+                {% set today_notizen = (today_event.notizen or '')|trim %}
+                {% set today_beitritt_ok = (not current_user.beitritt) or (today_event.datum.date() >= current_user.beitritt) %}
+                <section class="dashboard-intent events-today-hero{% if not loop.first %} events-today-hero--stacked{% endif %}" aria-label="Heutiges Event - Schnellzugriff">
+                    <h2 class="events-today-hero__title">
+                        <span class="events-today-hero__title-icon" aria-hidden="true">{{ event_type_icon(today_event.event_typ) }}</span>
+                        <span class="sr-only">{{ today_event.event_typ.value }} - </span>
+                        <span class="events-today-hero__title-date">{{ today_event.display_date }}</span>
+                    </h2>
+                    <div class="dashboard-info-grid">
+                        {% if today_beitritt_ok %}
+                        <div class="dashboard-info-tile">
+                            <span class="dashboard-info-tile__content">
+                                <span class="dashboard-info-tile__label">Teilnahme</span>
+                                <span class="dashboard-info-tile__value">
+                                    <form method="POST" action="{{ url_for('events.rsvp', event_id=today_event.id) }}" class="status-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <span class="chip-select-wrap">
+                                            <select name="teilnahme" class="chip-select {% if my_today_participation %}{% if my_today_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer heutiges Event">
+                                                <option value="" disabled {% if not my_today_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                                <option value="true" {% if my_today_participation and my_today_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
+                                                <option value="false" {% if my_today_participation and not my_today_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                            </select>
+                                        </span>
+                                    </form>
+                                </span>
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                            <span class="dashboard-info-tile__content">
+                                <span class="dashboard-info-tile__label">Teilnahme</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Nicht verfuegbar</span>
+                                </span>
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                            <span class="dashboard-info-tile__content">
+                                <span class="dashboard-info-tile__label">Restaurant</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line">
+                                        {% if today_event.restaurant %}{{ today_event.restaurant }}{% elif today_event.place_name %}{{ today_event.place_name }}{% else %}TBD{% endif %}
+                                    </span>
+                                </span>
+                            </span>
+                        </div>
+
+                        {% if today_notizen %}
+                        <div class="dashboard-info-tile dashboard-info-tile--static dashboard-info-tile--full" role="region" aria-label="Notizen">
+                            <span class="dashboard-info-tile__content">
+                                <span class="dashboard-info-tile__label">Notizen</span>
+                                <span class="dashboard-info-tile__value">
+                                    <span class="dashboard-info-tile__line dashboard-info-tile__line--multiline">{{ today_event.notizen }}</span>
+                                </span>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="page-actions events-today-hero__actions">
+                        <a href="{{ url_for('events.detail', event_id=today_event.id, tab='billbro') }}" class="btn btn--billbro">
+                            {{ lucide_icon('receipt') }}
+                            BillBro
+                        </a>
+                        {% if today_event.allow_ratings %}
+                        <a href="{{ url_for('events.detail', event_id=today_event.id, tab='ratings') }}" class="btn btn--primary">
+                            {{ lucide_icon('star') }}
+                            Bewerten
+                        </a>
+                        {% endif %}
+                    </div>
+                </section>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <!-- Tab: Kommend -->
             <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'kommend' else '' }}"
                  role="tabpanel">
@@ -148,26 +242,43 @@
                     <table class="data-table events-index-table">
                         <thead>
                             <tr>
-                                <th scope="col">Datum</th>
-                                <th scope="col">Typ</th>
-                                <th scope="col">Organisator</th>
-                                <th scope="col">Restaurant</th>
-                                <th scope="col">Teilnahme</th>
-                                <th scope="col"><span class="sr-only">Aktion</span></th>
+                                <th scope="col">Event</th>
+                                <th scope="col" class="events-index-table__col-restaurant">Restaurant</th>
+                                <th scope="col" class="events-index-table__col-status">Teilnahme</th>
+                                <th scope="col" class="events-index-table__col-organisator">Organisator</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for event in events %}
                             {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first %}
                             <tr>
-                                <td>{{ event.display_date }}</td>
-                                <td class="data-table__cell--event-type">
-                                    <span class="sr-only">{{ event.event_typ.value }}</span>
-                                    {{ event_type_icon(event.event_typ) }}
-                                </td>
-                                <td>{{ event.organisator.display_name_with_spirit }}</td>
-                                <td>{% if event.restaurant %}{{ event.restaurant }}{% else %}—{% endif %}</td>
                                 <td>
+                                    <a href="{{ url_for('events.detail', event_id=event.id) }}"
+                                       class="events-index-table__event-link"
+                                       aria-label="Details zu {{ event.event_typ.value }} am {{ event.display_date }}">
+                                        <span class="events-index-table__event-icon" aria-hidden="true">{{ event_type_icon(event.event_typ) }}</span>
+                                        <span class="sr-only">{{ event.event_typ.value }}</span>
+                                        <span class="events-index-table__event-date">{{ event.display_date }}</span>
+                                        {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
+                                    </a>
+                                </td>
+                                <td class="events-index-table__col-restaurant">
+                                    {% if event.restaurant %}
+                                        {% if event.place_website %}
+                                        <a href="{{ event.place_website }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="events-index-table__restaurant-link"
+                                           title="{{ event.restaurant }} - Website oeffnen">
+                                            <span class="events-index-table__restaurant-name">{{ event.restaurant }}</span>
+                                            {{ lucide_icon('external-link', 'icon events-index-table__restaurant-icon') }}
+                                        </a>
+                                        {% else %}
+                                        <span class="events-index-table__restaurant-name" title="{{ event.restaurant }}">{{ event.restaurant }}</span>
+                                        {% endif %}
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td class="events-index-table__col-status">
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <span class="chip-select-wrap">
@@ -179,8 +290,8 @@
                                         </span>
                                     </form>
                                 </td>
-                                <td>
-                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn--outline btn--sm">Details</a>
+                                <td class="events-index-table__col-organisator">
+                                    <span title="{{ event.organisator.display_name_with_spirit }}">{{ event.organisator.display_name_with_spirit }}</span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -243,12 +354,10 @@
                     <table class="data-table events-index-table">
                         <thead>
                             <tr>
-                                <th scope="col">Datum</th>
-                                <th scope="col">Typ</th>
-                                <th scope="col">Restaurant</th>
-                                <th scope="col">Organisator</th>
-                                <th scope="col">Bewertung</th>
-                                <th scope="col"><span class="sr-only">Aktion</span></th>
+                                <th scope="col">Event</th>
+                                <th scope="col" class="events-index-table__col-restaurant">Restaurant</th>
+                                <th scope="col" class="events-index-table__col-status">Bewertung</th>
+                                <th scope="col" class="events-index-table__col-organisator">Organisator</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -264,14 +373,33 @@
                             {% if rating_value > 5 %}{% set rating_value = 5 %}{% endif %}
                             {% set rating_hue = ((rating_value - 1) / 4 * 120) %}
                             <tr>
-                                <td>{{ event.display_date }}</td>
-                                <td class="data-table__cell--event-type">
-                                    <span class="sr-only">{{ event.event_typ.value }}</span>
-                                    {{ event_type_icon(event.event_typ) }}
-                                </td>
-                                <td>{% if event.restaurant %}{{ event.restaurant }}{% else %}—{% endif %}</td>
-                                <td>{{ event.organisator.display_name_with_spirit }}</td>
                                 <td>
+                                    <a href="{{ url_for('events.detail', event_id=event.id) }}"
+                                       class="events-index-table__event-link"
+                                       aria-label="Details zu {{ event.event_typ.value }} am {{ event.display_date }}">
+                                        <span class="events-index-table__event-icon" aria-hidden="true">{{ event_type_icon(event.event_typ) }}</span>
+                                        <span class="sr-only">{{ event.event_typ.value }}</span>
+                                        <span class="events-index-table__event-date">{{ event.display_date }}</span>
+                                        {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
+                                    </a>
+                                </td>
+                                <td class="events-index-table__col-restaurant">
+                                    {% if event.restaurant %}
+                                        {% if event.place_website %}
+                                        <a href="{{ event.place_website }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="events-index-table__restaurant-link"
+                                           title="{{ event.restaurant }} - Website oeffnen">
+                                            <span class="events-index-table__restaurant-name">{{ event.restaurant }}</span>
+                                            {{ lucide_icon('external-link', 'icon events-index-table__restaurant-icon') }}
+                                        </a>
+                                        {% else %}
+                                        <span class="events-index-table__restaurant-name" title="{{ event.restaurant }}">{{ event.restaurant }}</span>
+                                        {% endif %}
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td class="events-index-table__col-status">
                                     {% if event.allow_ratings and can_rate and not rating_done %}
                                     <a class="chip chip--accent"
                                        href="{{ url_for('events.detail', event_id=event.id, tab='ratings', edit_rating='1') }}">
@@ -288,8 +416,8 @@
                                     —
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn--outline btn--sm">Details</a>
+                                <td class="events-index-table__col-organisator">
+                                    <span title="{{ event.organisator.display_name_with_spirit }}">{{ event.organisator.display_name_with_spirit }}</span>
                                 </td>
                             </tr>
                             {% endfor %}

@@ -11,7 +11,7 @@
 @import url('v2/tokens.css?v=20260506i');      /* Design Tokens & Theme Variables */
 @import url('v2/base.css?v=20260507r');        /* Reset, Typography, Base Elements (+ html overflow-x clip, container min-width) */
 @import url('v2/layout.css?v=20260507r');      /* Base Layout (+ main-content width/min-width clip) */
-@import url('v2/components.css?v=20260508c');  /* Components (+ Admin-Hub Hero) */
+@import url('v2/components.css?v=20260509c');  /* Components (+ Admin-Hub Hero) */
 
 /* ================================================================
    DEMO PAGE SPECIFIC STYLES

@@ -1111,19 +1111,11 @@ a.btn:active {
   text-align: right;
 }
 
-/* Events-Übersicht: Event-Typ nur als Icon (Text sr-only) */
-.data-table__cell--event-type {
-  width: 3rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.data-table__cell--event-type .icon {
-  display: block;
-  margin-inline: auto;
-}
-
-/* Events-Index Kommend/Archiv: erste Spalte (Datum) sticky; mind. Breite fuer TT.MM.JJJJ ohne Umbruch */
+/*
+ * Events-Index Kommend/Archiv:
+ * Erste Spalte ("Event") = Typ-Icon + Datum + Chevron, klickbar -> Event-Detail.
+ * Sticky, nowrap, min-width passend fuer Icon + TT.MM.JJJJ + Chevron ohne Umbruch.
+ */
 .events-index-table th:first-child,
 .events-index-table td:first-child {
   position: sticky;
@@ -1131,7 +1123,7 @@ a.btn:active {
   z-index: 1;
   box-shadow: 1px 0 0 var(--color-border-subtle);
   white-space: nowrap;
-  min-width: 11ch;
+  width: 1%;
 }
 
 .events-index-table thead th:first-child {
@@ -1145,6 +1137,158 @@ a.btn:active {
 
 .events-index-table tbody td:first-child {
   background: var(--card-bg);
+  padding-block: var(--space-2);
+}
+
+/* Spalte "Event": klickbarer Link mit Typ-Icon + Datum + Chevron */
+.events-index-table__event-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+  padding-block: var(--space-1);
+}
+
+.events-index-table__event-link:hover,
+.events-index-table__event-link:focus-visible {
+  color: var(--color-interactive-primary);
+}
+
+.events-index-table__event-link:hover .events-index-table__event-date,
+.events-index-table__event-link:focus-visible .events-index-table__event-date {
+  text-decoration: underline;
+}
+
+.events-index-table__event-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+}
+
+.events-index-table__event-icon .icon {
+  display: block;
+}
+
+.events-index-table__event-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.events-index-table__event-chev {
+  color: var(--color-text-tertiary);
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Spalte "Restaurant": optionaler externer Link auf place_website */
+.events-index-table__col-restaurant {
+  max-width: 28ch;
+}
+
+.events-index-table__restaurant-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  max-width: 100%;
+}
+
+.events-index-table__restaurant-link:hover .events-index-table__restaurant-name,
+.events-index-table__restaurant-link:focus-visible .events-index-table__restaurant-name {
+  text-decoration: underline;
+}
+
+.events-index-table__restaurant-link:hover,
+.events-index-table__restaurant-link:focus-visible {
+  color: var(--color-interactive-primary);
+}
+
+.events-index-table__restaurant-name {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.events-index-table__restaurant-icon {
+  flex: 0 0 auto;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Spalte "Teilnahme"/"Bewertung": kompakt, kein Umbruch */
+.events-index-table__col-status {
+  width: 1%;
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* Spalte "Organisator": gedeckelt mit Ellipsis, damit lange Namen die Tabelle nicht spreizen */
+.events-index-table__col-organisator {
+  max-width: 22ch;
+}
+
+.events-index-table__col-organisator > span {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/*
+ * Globales `.data-table td:last-child { text-align: right }` ueberschreiben:
+ * In events-index-table ist die letzte Spalte "Organisator" und soll linksbuendig bleiben,
+ * damit die Lesbarkeit konsistent mit den uebrigen Spalten ist.
+ */
+.data-table.events-index-table td:last-child,
+.data-table.events-index-table th:last-child {
+  text-align: left;
+}
+
+/*
+ * Events-Index Tab "Heutiges Event" — Hero-Block (basierend auf .dashboard-intent).
+ * Groesserer Titel + Schnellzugriff-Buttons. Gap kommt vom .dashboard-intent.
+ * Buttons via .page-actions: Mobile column (full width), Desktop row.
+ */
+.events-today-hero--stacked {
+  margin-top: var(--space-6);
+}
+
+.events-today-hero__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  color: var(--color-text-primary);
+}
+
+.events-today-hero__title-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-interactive-primary);
+}
+
+.events-today-hero__title-icon .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.events-today-hero__title-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.events-today-hero__actions {
+  margin-top: var(--space-2);
 }
 
 /* GGL: Spalten- und Zeilen-Modifier (Tabelle zusätzlich mit .data-table) */
