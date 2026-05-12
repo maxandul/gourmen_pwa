@@ -56,6 +56,12 @@ class Member(db.Model, UserMixin):
     telefon = db.Column(db.String(50))
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     passwort_hash = db.Column(db.String(255), nullable=False)
+
+    # Google-Login-Adresse fuer Drive-Mitgliedschaft (Capability: drive.md, Sektion 4)
+    # Kein UNIQUE: derselbe Google-Account darf theoretisch mehrfach hinterlegt sein.
+    google_email = db.Column(db.String(255), index=True)
+    google_email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    google_email_verified_at = db.Column(db.DateTime)
     
     # Association data
     funktion = db.Column(db.Enum(Funktion), default=Funktion.MEMBER)
