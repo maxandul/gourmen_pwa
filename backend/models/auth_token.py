@@ -9,6 +9,7 @@ class AuthTokenPurpose(Enum):
     MFA_RESET = "MFA_RESET"
     ONBOARDING = "ONBOARDING"
     MAGIC_LINK = "MAGIC_LINK"
+    GOOGLE_EMAIL_VERIFY = "GOOGLE_EMAIL_VERIFY"
 
 
 class AuthToken(db.Model):

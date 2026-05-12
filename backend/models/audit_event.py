@@ -43,6 +43,21 @@ class AuditAction(Enum):
     SEND_ONBOARDING_MAIL = 'SEND_ONBOARDING_MAIL'
     ADMIN_RESET_PASSWORD = 'ADMIN_RESET_PASSWORD'
     ADMIN_RESET_2FA = 'ADMIN_RESET_2FA'
+    # Drive-Capability (Phase 03)
+    DOCUMENT_UPLOADED = 'DOCUMENT_UPLOADED'
+    DOCUMENT_RENAMED = 'DOCUMENT_RENAMED'
+    DOCUMENT_MOVED = 'DOCUMENT_MOVED'
+    DOCUMENT_ARCHIVED = 'DOCUMENT_ARCHIVED'
+    DOCUMENT_RESTORED = 'DOCUMENT_RESTORED'
+    DOCUMENT_PERMANENTLY_DELETED = 'DOCUMENT_PERMANENTLY_DELETED'
+    DOCUMENT_AUTO_SYNCED = 'DOCUMENT_AUTO_SYNCED'
+    DRIVE_MEMBERSHIP_ADDED = 'DRIVE_MEMBERSHIP_ADDED'
+    DRIVE_MEMBERSHIP_REMOVED = 'DRIVE_MEMBERSHIP_REMOVED'
+    DRIVE_MEMBERSHIP_FAILED = 'DRIVE_MEMBERSHIP_FAILED'
+    DRIVE_QUOTA_EXCEEDED = 'DRIVE_QUOTA_EXCEEDED'
+    DRIVE_RESYNC_RAN = 'DRIVE_RESYNC_RAN'
+    GOOGLE_EMAIL_VERIFY_REQUESTED = 'GOOGLE_EMAIL_VERIFY_REQUESTED'
+    GOOGLE_EMAIL_VERIFIED = 'GOOGLE_EMAIL_VERIFIED'
 
 class AuditEvent(db.Model):
     """Audit event model for security logging"""
@@ -109,7 +124,21 @@ class AuditEvent(db.Model):
             AuditAction.USE_ONBOARDING_TOKEN: 'Onboarding-Link verwendet',
             AuditAction.SEND_ONBOARDING_MAIL: 'Onboarding-Mail versendet',
             AuditAction.ADMIN_RESET_PASSWORD: 'Passwort zurückgesetzt (Admin)',
-            AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)'
+            AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)',
+            AuditAction.DOCUMENT_UPLOADED: 'Dokument hochgeladen',
+            AuditAction.DOCUMENT_RENAMED: 'Dokument umbenannt',
+            AuditAction.DOCUMENT_MOVED: 'Dokument verschoben',
+            AuditAction.DOCUMENT_ARCHIVED: 'Dokument archiviert',
+            AuditAction.DOCUMENT_RESTORED: 'Dokument wiederhergestellt',
+            AuditAction.DOCUMENT_PERMANENTLY_DELETED: 'Dokument endgültig gelöscht',
+            AuditAction.DOCUMENT_AUTO_SYNCED: 'Dokument Auto-Sync',
+            AuditAction.DRIVE_MEMBERSHIP_ADDED: 'Drive-Mitgliedschaft hinzugefügt',
+            AuditAction.DRIVE_MEMBERSHIP_REMOVED: 'Drive-Mitgliedschaft entfernt',
+            AuditAction.DRIVE_MEMBERSHIP_FAILED: 'Drive-Einladung fehlgeschlagen',
+            AuditAction.DRIVE_QUOTA_EXCEEDED: 'Drive-Speicher voll',
+            AuditAction.DRIVE_RESYNC_RAN: 'Drive-Re-Sync durchgeführt',
+            AuditAction.GOOGLE_EMAIL_VERIFY_REQUESTED: 'Google-Mail-Verifikation angefordert',
+            AuditAction.GOOGLE_EMAIL_VERIFIED: 'Google-Mail verifiziert',
         }
         action_value = self.action.value if hasattr(self.action, 'value') else str(self.action)
         return action_names.get(self.action, action_value)
