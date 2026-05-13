@@ -1,8 +1,8 @@
 # Phase 3 – App: Dateien auf Google Shared Drive
 
-**Status**: in progress (Implementation 2026-05-12; Cutover/Drive-Setup steht aus)
+**Status**: Implementation **abgeschlossen** und auf **Production** deployed (2026-05-13). Offen: MVP-weiter **Cutover** (`DRIVE_FEATURE_ENABLED=true` + Mitglieder-Kommunikation), siehe unten.
 **Aufwand**: ~3–5 Tage
-**Branch**: `phase/03-workspace-drive-files`
+**Branch**: Inhalt in **`master`** gemerged (Ursprungs-Branch `phase/03-workspace-drive-files`; PR #12, Squash-Merge `6cab330`). Anschliessender Hotfix nur Migrationsreihenfolge: `4377231`.
 
 ## Ziel
 
@@ -50,7 +50,7 @@ Kurzfassung (Implementation-Stand):
 - [x] AuditEvents für alle Lifecycle-Aktionen
 - [x] Setup-Script ist idempotent
 - [x] Migration-Downgrades sind explizit nicht implementiert
-- [ ] Live-Test gegen das produktive Shared Drive (steht aus – braucht Service-Account-Key + Drive-ID)
+- [x] Live-Test gegen das produktive Shared Drive (Service-Account in Railway, Drive-ID gesetzt, SA als Content-Manager eingeladen, Setup-Script: acht Folders angelegt, idempotenter Re-Run verifiziert)
 
 ## Out of Scope
 

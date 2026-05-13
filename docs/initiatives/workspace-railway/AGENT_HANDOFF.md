@@ -1,7 +1,17 @@
 # Agent-Handoff – workspace-railway (Status quo)
 
-**Stand**: 2026-05-01  
-**Massgebend mit**: `README.md` in diesem Ordner, `AGENTS.md`, Anchor-Docs bei Code-Aenderungen.
+**Stand**: 2026-05-01 (Kern unten); **Phase 3 Ergaenzung**: 2026-05-13 — siehe Abschnitt *Phase 3 – Drive (kurz)*.  
+**Massgebend mit**: `README.md` in diesem Ordner (Status-Tabelle), `AGENTS.md`, Anchor-Docs bei Code-Aenderungen.
+
+## Phase 3 – Drive (kurz, Stand 2026-05-13)
+
+- **Spec**: `docs/capabilities/drive.md` (autoritativ), Setup: `docs/capabilities/drive_setup.md`.
+- **Code**: `master` inkl. Squash PR #12 (`6cab330`) + **Hotfix-Migration** `4377231` (PostgreSQL: vor `DROP TYPE documentcategory` zuerst Spalte `documents.category` droppen; sonst `DependentObjectsStillExist`).
+- **Prod**: Alembic-Head `e3c5f9a6b423`; Railway-Vars `GOOGLE_SERVICE_ACCOUNT_KEY`, `GOOGLE_DRIVE_ID` auf `web` und `cron-reminders`; GCP-Projekt **ID** tatsaechlich `gourmen-pwa-prod` (nicht `gourmen-pwa`).
+- **Feature-Flag**: `DRIVE_FEATURE_ENABLED=false` bis Cutover — UI `/docs` unsichtbar, Profil-Google-Mail-Flow kann trotzdem genutzt werden.
+- **Naechster Agent**: Bei Migrations-Doku: Datei `migrations/versions/d2b4e8f5a312_document_drive_redesign.py` enthält die korrigierte Reihenfolge; lokale Alembic-Historie darf von einem fehlgeschlagenen ersten Upgrade-Versuch auf Prod keine Spur haben (Transaktions-Rollback).
+
+> Die uebrigen Abschnitte dieses Handoff-Docs (Phase 1/2, Git-Stand 2026-05-01) sind **nicht** automatisch mit `README.md` synchron — fuer Phasen-Status zuerst **`README.md` Status-Tracker** lesen.
 
 ## Kurz: Wo weiter?
 
