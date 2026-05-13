@@ -1,0 +1,31 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;">Hallo {{ display_name }}</p>
+<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;">
+  Bitte bestaetige deine Google-Login-Adresse <strong>{{ google_email }}</strong> fuer den
+  Zugang zum Vereins-Drive (Statuten, Protokolle, Belege, Fotos).
+</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;">
+  <tr>
+    <td style="background:#dc693c;border-radius:6px;">
+      <a href="{{ verify_url }}" style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">
+        Adresse bestaetigen
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 10px 0;font-size:14px;line-height:1.6;color:#334155;">
+  Der Link ist 7 Tage gueltig.
+</p>
+<p style="margin:0 0 14px 0;font-size:14px;line-height:1.6;color:#334155;">
+  Mit der Bestaetigung wirst du als Content Manager ins Vereins-Drive eingeladen
+  – ohne separate Drive-Notification von Google.
+</p>
+<p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;word-break:break-all;">
+  Link nicht klickbar? Dann kopiere ihn in deinen Browser:<br>
+  <a href="{{ verify_url }}" style="color:#c35428;text-decoration:underline;">{{ verify_url }}</a>
+</p>
+{% endblock %}
