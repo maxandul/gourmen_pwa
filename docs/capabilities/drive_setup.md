@@ -77,7 +77,10 @@ Falls die Option schon richtig steht, kein Eingriff nötig.
 Du hast jetzt zwei Werte, die Cursor braucht:
 
 - **`GOOGLE_DRIVE_ID`**: aus Schritt A.2.7 (z.B. `0AKxlangeIdVKQ`)
-- **`GCP_PROJECT_ID`**: aus Schritt A.3.6 (z.B. `gourmen-pwa` oder `gourmen-pwa-2026`)
+- **`GCP_PROJECT_ID`**: aus Schritt A.3.6 (z.B. `gourmen-pwa-prod`).
+  Hinweis: Die Projekt-ID muss global einzigartig in ganz Google Cloud sein – `gourmen-pwa` war bereits vergeben, deshalb haben wir hier `gourmen-pwa-prod` genommen. Der Name am Projekt selbst (anzeigename) ist davon unabhaengig.
+
+Die `GCP_PROJECT_ID` wird **nur lokal** fuer `gcloud`-Befehle gebraucht, **nicht** als Railway-Variable. In Railway laeuft die App ohne Wissen ueber das GCP-Projekt – sie kennt nur den Service-Account-Key und die Drive-ID.
 
 Gib Cursor diese beiden Werte beim Phase-3-Auftrag mit.
 
@@ -116,7 +119,11 @@ Cursor unterbricht für einen manuellen Schritt von dir – Phase C.1.
 
 ### C.1 Service Account zum Shared Drive einladen (~2 Min)
 
-**Wann**: Cursor fragt dich, sobald der Service Account angelegt ist und die E-Mail-Adresse bekannt. Format: `gourmen-drive-sa@<projekt-id>.iam.gserviceaccount.com`, z.B. `gourmen-drive-sa@gourmen-pwa.iam.gserviceaccount.com`.
+**Wann**: Cursor fragt dich, sobald der Service Account angelegt ist und die E-Mail-Adresse bekannt. Format: `gourmen-drive-sa@<projekt-id>.iam.gserviceaccount.com`, in unserem Fall:
+
+```
+gourmen-drive-sa@gourmen-pwa-prod.iam.gserviceaccount.com
+```
 
 **Warum**: Der Service Account muss explizit Mitglied des Shared Drives sein, damit er die Drive-API darauf nutzen kann. Das geht nicht automatisch – du musst ihn einmalig manuell einladen.
 
@@ -228,3 +235,23 @@ Phase C (nach Cursor-Implementation, in der Reihenfolge):
 **Setup-Script schlägt fehl mit «Permission denied»**: Service Account hat noch keine Content-Manager-Rolle im Drive. Zurück zu C.1.
 
 **`drive_id` enthält Sonderzeichen, die nicht in eine Railway-Variable passen**: Drive-IDs sind alphanumerisch (Buchstaben, Zahlen, Bindestrich, Underscore), das sollte sauber gehen. Falls doch Probleme: Drive-ID sicherheitshalber in Anführungszeichen setzen beim `railway variables set`.
+
+**`gcloud iam service-accounts keys create` schlaegt fehl mit `constraints/iam.disableServiceAccountKeyCreation`**: Die Google-Workspace-Organisation hat eine Standard-Policy, die Service-Account-Keys verbietet. Loesung:
+
+1. Sich selbst die Rolle `roles/orgpolicy.policyAdmin` auf die Organisation geben:
+   ```bash
+   gcloud organizations add-iam-policy-binding <ORG_ID> \
+     --member="user:kontakt@gourmen.ch" \
+     --role="roles/orgpolicy.policyAdmin"
+   ```
+2. Eine Projekt-Level-Override-Policy setzen, die fuer das eine Projekt `enforce: false` hat:
+   ```bash
+   cat > /tmp/disable-sa-key.yaml <<EOF
+   name: projects/<PROJECT_ID>/policies/iam.disableServiceAccountKeyCreation
+   spec:
+     rules:
+     - enforce: false
+   EOF
+   gcloud org-policies set-policy /tmp/disable-sa-key.yaml
+   ```
+3. **1-2 Minuten warten** bis die Policy propagiert ist, dann `keys create` erneut.

@@ -55,6 +55,8 @@ class <Name>Service:
 - **Errors loggen, nicht crashen** außer bei wirklich kritischen Fehlern (z.B. `CRYPTO_KEY` fehlt)
 - **Konfiguration aus `current_app.config`** lesen, nicht direkt aus `os.environ`
 - **Transaktionale E-Mails** nur über `MailService` (`RESEND_API_KEY` gesetzt → Resend/HTTPS, sonst SMTP)
+- **Externe Storage-/API-Services** (Beispiel: `DriveStorageService`) muessen idempotente Schreib-Operationen anbieten und bei API-Fehlern explizite Service-Errors werfen (z.B. `DriveError`, `DriveValidationError`). Routes catchen die Service-Errors, mappen sie auf Flash-Meldungen und committen DB-Aenderungen erst nach erfolgreichem externen Call (Drive zuerst, DB danach – siehe `docs/capabilities/drive.md` Sektion 7.2).
+- **Feature-Flags**: neue, schaltbare Capabilities laufen hinter einem Boolean-Flag in `Config` (Beispiel: `DRIVE_FEATURE_ENABLED`). Routes / UI pruefen das Flag explizit; ohne Flag liefern Routes 404, UI rendert eine «Bald verfuegbar»-Card.
 
 ## Routes / Blueprints
 
@@ -249,12 +251,14 @@ Sensible Felder werden via `SecurityService.encrypt_json()` / `decrypt_json()` v
 
 ## Tests
 
-Aktuell kein automatisches Test-Setup. Wenn neue Initiative Tests braucht:
-
-- **pytest** als Framework
-- Tests in `tests/` parallel zur `backend/`-Struktur
-- Fixtures für DB, App-Context, Test-User
-- Mindestens: Service-Layer-Tests + kritische Routes (Login, Webhooks)
+- **pytest** als Framework (`pytest.ini` im Repo-Root, `tests/`-Verzeichnis parallel zu `backend/`)
+- Tests in `tests/services/`, `tests/routes/`, `tests/models/` parallel zur `backend/`-Struktur
+- Fixtures fuer DB, App-Context, Test-User (bei Bedarf in `tests/conftest.py`)
+- **Mindestens** fuer neue Services: Unit-Tests fuer Sanitization-/Validierungs-Funktionen
+  und kritische Edge-Cases. Beispiel: `tests/services/test_drive_storage.py`
+  testet `sanitize_drive_filename` und `sanitize_svg_bytes` (Pflicht, da Marketing-Use-Case
+  SVGs aus dem Web zulaesst).
+- Bei externen API-Calls: Mocking, kein Live-Hit gegen Drittsystem in Unit-Tests.
 
 ## Imports
 

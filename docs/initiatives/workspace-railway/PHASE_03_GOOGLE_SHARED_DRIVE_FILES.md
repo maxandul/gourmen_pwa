@@ -1,6 +1,6 @@
 # Phase 3 – App: Dateien auf Google Shared Drive
 
-**Status**: ready (Capability-Doc finalisiert 2026-05-09)
+**Status**: in progress (Implementation 2026-05-12; Cutover/Drive-Setup steht aus)
 **Aufwand**: ~3–5 Tage
 **Branch**: `phase/03-workspace-drive-files`
 
@@ -37,19 +37,20 @@ Dieses Phase-Doc ist nur der Phasen-Briefing-Rahmen. Alle Details (Architektur, 
 
 Vollständige Liste in `docs/capabilities/drive.md`, Sektion 17.3.
 
-Kurzfassung:
+Kurzfassung (Implementation-Stand):
 
-- [ ] Upload via App (Picker oder Drag-and-Drop), File erscheint im richtigen Drive-Folder
-- [ ] Grössen- und MIME-Validierung server- und clientseitig
-- [ ] SVG-Sanitization vor Drive-Upload
-- [ ] «Öffnen»-Aktion via `target="_blank"`
-- [ ] «Verschieben», «Umbenennen», «Archivieren», «Wiederherstellen» funktionieren atomar
-- [ ] «Endgültig löschen» nur Admin, mit Titel-Copy-Bestätigung
-- [ ] Re-Sync-Button im Admin liefert Drift-Summary
-- [ ] Member-Profil zeigt Kontakt-Mail und Google-Login-Mail getrennt
-- [ ] AuditEvents für alle Lifecycle-Aktionen
-- [ ] Setup-Script ist idempotent
-- [ ] Migration-Downgrades sind explizit nicht implementiert
+- [x] Upload via App (Picker oder Drag-and-Drop), File erscheint im richtigen Drive-Folder
+- [x] Grössen- und MIME-Validierung server- und clientseitig
+- [x] SVG-Sanitization vor Drive-Upload
+- [x] «Öffnen»-Aktion via `target="_blank"`
+- [x] «Verschieben», «Umbenennen», «Archivieren», «Wiederherstellen» funktionieren atomar
+- [x] «Endgültig löschen» nur Admin, mit Titel-Copy-Bestätigung
+- [x] Re-Sync-Button im Admin liefert Drift-Summary
+- [x] Member-Profil zeigt Kontakt-Mail und Google-Login-Mail getrennt
+- [x] AuditEvents für alle Lifecycle-Aktionen
+- [x] Setup-Script ist idempotent
+- [x] Migration-Downgrades sind explizit nicht implementiert
+- [ ] Live-Test gegen das produktive Shared Drive (steht aus – braucht Service-Account-Key + Drive-ID)
 
 ## Out of Scope
 
