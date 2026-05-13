@@ -3,6 +3,17 @@
 **Stand**: 2026-05-01 (Kern unten); **Phase 3 Ergaenzung**: 2026-05-13 — siehe Abschnitt *Phase 3 – Drive (kurz)*.  
 **Massgebend mit**: `README.md` in diesem Ordner (Status-Tabelle), `AGENTS.md`, Anchor-Docs bei Code-Aenderungen.
 
+## Einstieg (Doc-Reihenfolge)
+
+Fuer Arbeit in dieser Initiative in dieser Reihenfolge lesen:
+
+1. [`AGENTS.md`](../../../AGENTS.md) (Repo-Root) — Eingangstor, Tabu-Zonen, Tooling
+2. [`README.md`](./README.md) — Master-Plan und **Status-Tabelle** (Phasen-Tracker)
+3. **Diese Datei** (`AGENT_HANDOFF.md`) — kontextlastiger Status-Quo (Phasen-Details, Befunde)
+4. Bei Themen Vereinsdokumente / Shared Drive: [`docs/capabilities/drive.md`](../../capabilities/drive.md)
+
+**Phasen-Tracker vs. Initiativen-Uebersicht**: Die Status-Tabelle im **workspace-railway-`README.md`** ist massgeblich. [`docs/initiatives/README.md`](../README.md) muss dafuer **nicht** zwingend mitgepflegt werden — eine Aktualisierung nur der zentralen Initiative-README reicht fuer den Phasen-Tracker.
+
 ## Phase 3 – Drive (kurz, Stand 2026-05-13)
 
 - **Spec**: `docs/capabilities/drive.md` (autoritativ), Setup: `docs/capabilities/drive_setup.md`.
@@ -74,7 +85,7 @@ Offen fuer formellen Phase-1-Abschluss:
 
 ## Sofort-Pflicht fuer neuen Agenten
 
-1. `AGENTS.md` + `docs/initiatives/workspace-railway/README.md` + **diese Datei** lesen  
+1. Doc-Reihenfolge wie in **Einstieg (Doc-Reihenfolge)** oben  
 2. `PHASE_01_WORKSPACE_AND_DNS.md` und `PHASE_02_APP_SYSTEM_MAIL.md` lesen  
 3. Mit Vorstand klaeren: **Railway Pro + SMTP** vs **Hobby + API-Mail**  
 4. Danach Phase-2-Tasks in README/Phase-2-Dokument konkretisieren und umsetzen  

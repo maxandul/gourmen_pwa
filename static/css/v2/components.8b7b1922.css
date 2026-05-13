@@ -5588,3 +5588,369 @@ a.card--dash-tile__hit {
     color: var(--color-text-tertiary);
   }
 }
+
+/* ============================================
+   Drive-Capability (Phase 03)
+   - Documents-Index: Toolbar, Tabs, Tabelle
+   - Upload-Modal, Action-Modals
+   - Detail-View
+   ============================================ */
+
+.docs-index__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.docs-index__search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-end;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.docs-index__search-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  width: 100%;
+}
+
+.docs-index__search-input {
+  flex: 1 1 200px;
+  min-width: 160px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.docs-index__upload-btn {
+  flex-shrink: 0;
+}
+
+.docs-index__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.docs-index__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.docs-index__tab:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+
+.docs-index__tab--active {
+  background: var(--color-interactive-primary);
+  color: var(--color-text-on-primary, #fff);
+  border-color: var(--color-interactive-primary);
+}
+
+.docs-index__tab-count {
+  opacity: 0.75;
+}
+
+.docs-index-table__row:hover {
+  background: var(--color-bg-subtle);
+}
+
+.docs-index-table__title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+}
+
+.docs-index-table__title-link:hover {
+  color: var(--color-interactive-primary);
+}
+
+.docs-index-table__file-icon {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+}
+
+.docs-index-table__uploader-system {
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+.docs-index-table__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* Upload-Modal (HTML <dialog>) */
+
+.docs-upload-modal,
+.docs-action-modal {
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  padding: 0;
+  max-width: 560px;
+  width: calc(100vw - 2 * var(--space-4));
+  box-shadow: var(--shadow-xl);
+}
+
+.docs-upload-modal::backdrop,
+.docs-action-modal::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.docs-upload-modal__form,
+.docs-action-modal__form {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2 * var(--space-4));
+}
+
+.docs-upload-modal__header,
+.docs-action-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.docs-upload-modal__title,
+.docs-action-modal__title {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.docs-upload-modal__close,
+.docs-action-modal__close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-1);
+}
+
+.docs-upload-modal__body,
+.docs-action-modal__body {
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.docs-upload-modal__footer,
+.docs-action-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.docs-upload-modal__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  text-align: center;
+}
+
+.docs-upload-modal__dropzone--active {
+  border-color: var(--color-interactive-primary);
+  background: var(--color-bg-muted);
+}
+
+.docs-upload-modal__dropzone-hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.docs-upload-modal__file-input {
+  /* visually hidden, gepaart mit sichtbarem Label-Button */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.docs-upload-modal__filename {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  word-break: break-all;
+}
+
+.docs-upload-modal__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Detail-View */
+
+.docs-detail__meta {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.docs-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+  align-items: center;
+}
+
+.docs-detail__inline-form {
+  display: inline-flex;
+  margin: 0;
+}
+
+.docs-detail__history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.docs-detail__history-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.docs-detail__history-item:last-child {
+  border-bottom: none;
+}
+
+.docs-detail__history-action {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.docs-detail__history-meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Hard-Delete-Modal: Titel-Box mit Copy-Button */
+
+.docs-action-modal__title-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.docs-action-modal__title-code {
+  font-family: var(--font-mono, monospace);
+  word-break: break-all;
+  color: var(--color-text-primary);
+}
+
+/* Drive-Re-Sync-Karte im Admin-Hub */
+
+.admin-hub__drive-resync {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.admin-hub__drive-resync-meta {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.admin-hub__drive-resync-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+}
+
+.admin-hub__drive-resync-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Member-Profil: Google-Konto-Sektion */
+
+.profile-google-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.profile-google-section__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.profile-google-section__status--verified {
+  color: var(--color-success);
+}
+
+.profile-google-section__status--pending {
+  color: var(--color-warning);
+}
+

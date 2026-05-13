@@ -378,12 +378,11 @@
    ============================================ */
 
 .top-notifications {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  z-index: calc(var(--z-fixed) + 1);
-  padding: var(--space-2) var(--space-4);
+  position: static;
+  width: 100%;
+  max-width: 100%;
+  z-index: auto;
+  padding: 0 0 var(--space-3);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -391,34 +390,38 @@
   box-sizing: border-box;
 }
 
-/* PWA-Hinweise (nur App-Shell, JS: pwa.js) – oben unter der Bar, Designsystem-Buttons */
-.app-shell-promos {
-  pointer-events: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  justify-content: center;
-  align-items: center;
+.app-shell-banner__settings-hint {
+  margin-top: var(--space-3);
+  margin-bottom: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-normal);
 }
 
-@media (min-width: 768px) {
-  .app-shell-promos {
-    justify-content: flex-end;
-  }
+.app-shell-banner__settings-hint a.app-shell-banner__settings-link {
+  color: var(--color-interactive-primary);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
 }
 
-.app-shell-promos:empty {
-  display: none;
+.app-shell-banner__settings-hint a.app-shell-banner__settings-link:hover {
+  color: var(--color-interactive-primary-hover);
 }
 
+/* PWA-Alerts: kein fixer Screen-Rand; gleiche Breite wie Inhalt (siehe Container) */
 .top-notifications > .alert.install-ios-alert,
-.top-notifications > .alert.install-android-alert {
+.top-notifications > .alert.install-android-alert,
+.top-notifications > .alert.install-desktop-alert,
+.top-notifications > .alert.pwa-push-standalone-alert {
   pointer-events: auto;
   width: 100%;
   max-width: 42rem;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 0;
 }
+
+/* Entfernt: permanenter Button-Strip unter der User-Bar (Historie `app-shell-promos`) */
 
 .app-shell-install-banner__steps {
   margin: 0;

@@ -372,8 +372,9 @@ async function subscribeToPushNotifications(registration, vapidPublicKey) {
         
         const result = await response.json();
         console.log('Successfully subscribed to push notifications:', result);
-        
-        // Verstecke Button falls vorhanden
+
+        document.querySelectorAll('.pwa-push-standalone-alert').forEach((el) => el.remove());
+
         const button = document.getElementById('push-notification-btn');
         if (button) {
             button.remove();

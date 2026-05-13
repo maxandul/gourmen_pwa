@@ -163,8 +163,9 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
 | `.landing-stat-strip` | mit `landing-stat-strip__pitch`, `landing-stat-strip__cta` | Zweite Marketing-Card auf `public.landing`: Kurzportrait-Text, KPIs (`metrics-spotlight`), Link **Über uns**. |
 | `.public-about` | – | Zusaetzlicher Wrapper auf `public.about` (mit `landing`): Typo/Abstaende fuer Fliesstext und Listen in `.card__body`. |
-| `.app-shell-promos` | – | In `#top-notifications` eingehängter Flex-Strip (App-Shell, nicht `data-layout="public"`): Platz für `.btn`-Hinweise aus `static/js/pwa.js` (Installieren, Push); `:empty` blendet aus. |
-| `.app-shell-install-banner__steps` | mit `__body` (`.stack-vertical`), `__actions` | Struktur für iOS/Android-PWA-Alerts in `pwa.js`; sitzt in `#top-notifications`. |
+| `#top-notifications` | – | Am Anfang von `main.main-content`; **nicht** `position: fixed` — dort erscheinen nur **temporäre** PWA-Alerts aus `static/js/pwa.js` (Installieren im Browser / Push in **Standalone**). |
+| `.app-shell-banner__settings-hint`, `.app-shell-banner__settings-link` | – | Fusstext in PWA-Alerts mit Verweis auf **Einstellungen → Technik** (`member.technical`). |
+| `.app-shell-install-banner__steps` | mit `__body` (`.stack-vertical`), `__actions` | Struktur für Install-/Push-Alerts in `pwa.js`. |
 | `.user-menu` | – | mit `__summary`, `__panel`, `__list`, `__link`, `__link--danger`, `__sep`, `__badge` |
 | `.settings-nav` | – | mit `__section`, `__section-title`, `__list`, `__row`, `__icon`, `__meta`, `__label`, `__description`, `__badge`, `__chevron` |
 

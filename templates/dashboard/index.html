@@ -52,20 +52,6 @@
         </h1>
     </div>
 
-    <div id="push-notification-banner" class="alert alert--info" style="display: none;" role="region" aria-label="Push-Benachrichtigungen">
-        {{ lucide_icon('bell', 'icon alert__icon') }}
-        <div class="alert__content">
-            <div class="alert__title">Verpasse keine Events mehr!</div>
-            <div class="alert__message">
-                Aktiviere Push-Benachrichtigungen und bleib immer auf dem Laufenden.
-            </div>
-        </div>
-        <div class="alert__actions">
-            <button type="button" id="enable-push-banner-btn" class="btn btn--primary btn--sm">Jetzt aktivieren</button>
-            <button type="button" id="dismiss-push-banner-btn" class="btn btn--outline btn--sm">Später</button>
-        </div>
-    </div>
-
     <div class="page-content">
 
         {% if hamburg2026_visible %}
@@ -206,120 +192,8 @@
 
 <script>
 (function() {
-    const settingsTechUrl = {{ url_for('member.technical')|tojson }};
-    function pushDashboardNotify(type, title, message, duration) {
-        const ms = duration != null ? duration : (type === 'warning' ? 12000 : 8000);
-        if (typeof Toast !== 'undefined') {
-            Toast[type](title, message, { duration: ms });
-        } else {
-            alert(title + (message ? '\n\n' + message : ''));
-        }
-    }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        const response = await fetch('/api/push/subscription-status', { credentials: 'same-origin' });
-        const data = await response.json();
-
-        if (!data.subscribed) {
-            const dismissedAt = localStorage.getItem('push_banner_dismissed_at');
-            const now = Date.now();
-            const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
-            if (!dismissedAt || (now - parseInt(dismissedAt)) > sevenDays) {
-                document.getElementById('push-notification-banner').style.display = 'flex';
-            }
-        }
-    } catch (error) {
-        console.error('Error checking push status:', error);
-    }
-
-    const enableBtn = document.getElementById('enable-push-banner-btn');
-    if (enableBtn) {
-        enableBtn.addEventListener('click', async function() {
-            enableBtn.disabled = true;
-            enableBtn.textContent = 'Aktiviere...';
-
-            try {
-                const registration = await navigator.serviceWorker.ready;
-
-                const vapidResponse = await fetch('/api/vapid-public-key', { credentials: 'same-origin' });
-                const vapidData = await vapidResponse.json();
-
-                if (!vapidData.public_key) {
-                    throw new Error('VAPID key nicht verfügbar');
-                }
-
-                const permission = await Notification.requestPermission();
-
-                if (permission !== 'granted') {
-                    pushDashboardNotify(
-                        'warning',
-                        'Benachrichtigungen nicht erlaubt',
-                        'Erlaube Benachrichtigungen in den Browser- oder Site-Einstellungen für diese Website. Hilfe: Gourmen-Einstellungen unter «App auf dem Homescreen» und Push – ' + settingsTechUrl
-                    );
-                    enableBtn.disabled = false;
-                    enableBtn.textContent = 'Jetzt aktivieren';
-                    return;
-                }
-
-                const subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(vapidData.public_key)
-                });
-
-                const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
-                const subscribeResponse = await fetch('/api/push/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(csrf ? { 'X-CSRFToken': csrf } : {})
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ subscription: subscription.toJSON() })
-                });
-
-                if (subscribeResponse.ok) {
-                    document.getElementById('push-notification-banner').style.display = 'none';
-
-                    if (typeof Toast !== 'undefined') {
-                        Toast.success('Push-Benachrichtigungen aktiviert!', 'Du wirst ab jetzt über neue Events informiert.');
-                    } else {
-                        pushDashboardNotify('success', 'Push-Benachrichtigungen aktiviert!', 'Du wirst ab jetzt über neue Events informiert.');
-                    }
-                } else {
-                    throw new Error('Subscription fehlgeschlagen');
-                }
-
-            } catch (error) {
-                console.error('Error enabling push:', error);
-                pushDashboardNotify('error', 'Push aktivieren fehlgeschlagen', error.message);
-                enableBtn.disabled = false;
-                enableBtn.textContent = 'Jetzt aktivieren';
-            }
-        });
-    }
-
-    const dismissBtn = document.getElementById('dismiss-push-banner-btn');
-    if (dismissBtn) {
-        dismissBtn.addEventListener('click', function() {
-            localStorage.setItem('push_banner_dismissed_at', Date.now().toString());
-            document.getElementById('push-notification-banner').style.display = 'none';
-        });
-    }
-
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
+document.addEventListener('DOMContentLoaded', function() {
 
     // Hamburg-2026-Countdown im Trip-Hero (rerendered jede Minute)
     const tripCountdownEl = document.querySelector('[data-trip-countdown]');

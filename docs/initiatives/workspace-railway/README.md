@@ -4,7 +4,7 @@
 **Start**: 2026-05  
 **Branch-Prefix**: `phase/NN-workspace-<kurzname>`
 
-**Agent-Wechsel / Einstieg**: zuerst [`AGENT_HANDOFF.md`](AGENT_HANDOFF.md) lesen (Status quo 2026-05-01, Phase 1/2, Git, Railway-SMTP-Befund).
+**Agent-Wechsel / Einstieg**: [`AGENTS.md`](../../../AGENTS.md) → diese README (**Status-Tabelle**) → [`AGENT_HANDOFF.md`](AGENT_HANDOFF.md) (Abschnitt *Einstieg (Doc-Reihenfolge)* + Status-Quo) → bei Drive-Themen [`docs/capabilities/drive.md`](../../capabilities/drive.md).
 
 ## Zweck dieser Initiative
 

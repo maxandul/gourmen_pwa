@@ -3,12 +3,14 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.11.1';
+const PWA_VERSION = '3.11.3';
 
-/** Wie lange nach manuellem Schliessen (X) bis Install-Banner erneut erscheint. */
+/** Wie lange nach manuellem Schliessen (X) bis Install-/Push-Banner erneut erscheinen. */
 const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 const LS_IOS_INSTALL_DISMISSED_AT = 'ios_install_banner_dismissed_at';
 const LS_ANDROID_INSTALL_DISMISSED_AT = 'android_install_banner_dismissed_at';
+const LS_DESKTOP_INSTALL_DISMISSED_AT = 'pwa_install_desktop_banner_dismissed_at';
+const LS_PUSH_STANDALONE_DISMISSED_AT = 'pwa_push_standalone_banner_dismissed_at';
 const LS_IOS_INSTALL_LEGACY = 'ios-install-prompt-shown';
 const LS_ANDROID_INSTALL_LEGACY = 'android-install-prompt-shown';
 
@@ -47,10 +49,11 @@ class PWA {
      * damit der Hinweis unter dem neuen Modell einmal wieder erscheinen darf.
      */
     shouldShowInstallInfoBanner(dismissKey, legacyBooleanKey) {
-        if (localStorage.getItem(legacyBooleanKey) === 'true') {
+        if (legacyBooleanKey && localStorage.getItem(legacyBooleanKey) === 'true') {
             localStorage.removeItem(legacyBooleanKey);
             return true;
         }
+        if (!dismissKey) return true;
         const raw = localStorage.getItem(dismissKey);
         if (!raw) return true;
         const t = parseInt(raw, 10);
@@ -80,27 +83,30 @@ class PWA {
             .catch(() => {});
     }
 
-    ensureAppShellPromosMount() {
-        if (this.isPublicLayout()) return null;
-        const host = document.getElementById('top-notifications');
-        if (!host) return null;
-        let wrap = document.getElementById('app-shell-promos');
-        if (!wrap) {
-            wrap = document.createElement('div');
-            wrap.id = 'app-shell-promos';
-            wrap.className = 'app-shell-promos';
-            wrap.setAttribute('role', 'region');
-            wrap.setAttribute('aria-label', 'App installieren und Benachrichtigungen');
-            host.appendChild(wrap);
-        }
-        return wrap;
+    getNotificationsHost() {
+        return document.getElementById('top-notifications');
     }
 
-    trimAppShellPromosMount() {
-        const wrap = document.getElementById('app-shell-promos');
-        if (wrap && wrap.childElementCount === 0) {
-            wrap.remove();
+    /** Eingeloggte Member (`data-authenticated`); keine Hinweise vor Login oder im Public-Bereich. */
+    isAuthenticatedMemberShell() {
+        return document.body.hasAttribute('data-authenticated');
+    }
+
+    /** Nach Dismiss zeigen wir den Weg unter Einstellungen → Technik. */
+    buildSettingsReminderHtml() {
+        const href = document.body.getAttribute('data-member-settings-href');
+        if (href && href.startsWith('/') && href.length < 2048) {
+            return `<p class="app-shell-banner__settings-hint">Nach dem Schließen: <a href="${href}" class="app-shell-banner__settings-link">Einstellungen → Technik</a> für Installation und Push.</p>`;
         }
+        return '<p class="app-shell-banner__settings-hint">Nach dem Schließen: Einstellungen → Technik für Installation und Push.</p>';
+    }
+
+    dismissChromeInstallAlerts() {
+        document.querySelectorAll('.install-desktop-alert, .install-android-alert').forEach((n) => n.remove());
+    }
+
+    removeStandalonePushBannerDom() {
+        document.querySelectorAll('.pwa-push-standalone-alert').forEach((n) => n.remove());
     }
 
     init() {
@@ -128,23 +134,25 @@ class PWA {
     }
 
     setupEventListeners() {
-        // Install-Prompt Event
+        // Install-Prompt Event (Chromium/Android/Desktop; iOS nie)
         window.addEventListener('beforeinstallprompt', (e) => {
             if (this.isPublicLayout()) return;
+            if (!this.isAuthenticatedMemberShell()) return;
             console.log('🚀 beforeinstallprompt Event gefangen');
             e.preventDefault();
             this.deferredPrompt = e;
-            this.showInstallButton();
-            // Zeige Android-Install-/Push-Hinweis als Banner
-            if (this.isAndroid() && !this.isInstalled && !this.shouldSuppressInstallInfoBanners()) {
+            if (this.isInstalled || this.shouldSuppressInstallInfoBanners()) return;
+            if (this.isAndroid()) {
                 this.showAndroidInstallPrompt();
+            } else if (!this.isIOS()) {
+                this.showDesktopInstallBanner();
             }
         });
 
         // App installiert Event
         window.addEventListener('appinstalled', () => {
             this.isInstalled = true;
-            this.hideInstallButton();
+            this.dismissChromeInstallAlerts();
             this.showToast('App erfolgreich installiert.', 'success');
             console.log('🚀 App wurde erfolgreich installiert');
         });
@@ -325,29 +333,27 @@ class PWA {
 
     async syncNotificationPermissionPromo() {
         if (this.isPublicLayout()) return;
-        if (!('Notification' in window)) return;
         if (!document.body.hasAttribute('data-authenticated')) return;
+        if (!('Notification' in window)) return;
+        if (!this.isStandalone()) {
+            this.removeStandalonePushBannerDom();
+            return;
+        }
 
         const serverSubscribed = await this.fetchServerPushSubscribed();
         if (serverSubscribed === true) {
-            this.hideNotificationPermissionButton();
+            this.removeStandalonePushBannerDom();
             return;
         }
-
         if (Notification.permission === 'denied') {
+            this.removeStandalonePushBannerDom();
             return;
         }
+        if (serverSubscribed === null) return;
+        if (!('PushManager' in window)) return;
+        if (!this.shouldShowInstallInfoBanner(LS_PUSH_STANDALONE_DISMISSED_AT, null)) return;
 
-        if (serverSubscribed === null) {
-            if (Notification.permission === 'default') {
-                this.showNotificationPermissionButton();
-            }
-            return;
-        }
-
-        if (Notification.permission === 'default' || Notification.permission === 'granted') {
-            this.showNotificationPermissionButton();
-        }
+        this.showStandalonePushBanner();
     }
 
     setupUpdateDetection() {
@@ -436,13 +442,12 @@ class PWA {
         
         if (isStandalone) {
             this.isInstalled = true;
-            this.hideInstallButton();
             console.log('🚀 App bereits installiert');
         } else {
             console.log('🚀 App nicht installiert, Install-Prompt möglich');
             
-            // iOS-User informieren (da kein beforeinstallprompt auf iOS), nur Memberbereich/App-Shell
-            if (this.isIOS() && !this.isInstalled && !this.shouldSuppressInstallInfoBanners()) {
+            // iOS: kein beforeinstallprompt — Einmalbanner nur fuer eingeloggte Member
+            if (this.isIOS() && !this.isInstalled && !this.shouldSuppressInstallInfoBanners() && this.isAuthenticatedMemberShell()) {
                 this.showIOSInstallPrompt();
             }
         }
@@ -458,6 +463,7 @@ class PWA {
     }
 
     showIOSInstallPrompt() {
+        if (!this.isAuthenticatedMemberShell()) return;
         if (this.shouldSuppressInstallInfoBanners()) return;
         if (!this.shouldShowInstallInfoBanner(LS_IOS_INSTALL_DISMISSED_AT, LS_IOS_INSTALL_LEGACY)) {
             return;
@@ -469,21 +475,21 @@ class PWA {
             const existing = document.querySelector('.alert.install-ios-alert');
             if (existing) return;
 
-            const host = document.getElementById('top-notifications');
+            const host = this.getNotificationsHost();
             if (!host) return;
 
             const banner = document.createElement('div');
             banner.className = 'alert alert--info install-ios-alert';
             banner.innerHTML = `
                 <div class="alert__content">
-                    <div class="alert__title">iOS: App installieren &amp; Push aktivieren</div>
+                    <div class="alert__title">Web-App auf den Home-Bildschirm</div>
                     <div class="alert__message">
                         <ol class="app-shell-install-banner__steps">
-                            <li>In Safari öffnen.</li>
-                            <li>Teilen-Symbol tippen.</li>
-                            <li>«Zum Home-Bildschirm» wählen, dann «Hinzufügen».</li>
-                            <li>App vom Homescreen starten und Push erlauben.</li>
+                            <li>In Safari.</li>
+                            <li>Teilen, dann «Zum Home-Bildschirm».</li>
+                            <li>App über das Icon öffnen – Push kommt dort ins Spiel.</li>
                         </ol>
+                        ${this.buildSettingsReminderHtml()}
                     </div>
                 </div>
                 <button type="button" class="alert__close" aria-label="Schließen">×</button>
@@ -503,6 +509,7 @@ class PWA {
     }
 
     showAndroidInstallPrompt() {
+        if (!this.deferredPrompt) return;
         if (this.shouldSuppressInstallInfoBanners()) return;
         if (!this.shouldShowInstallInfoBanner(LS_ANDROID_INSTALL_DISMISSED_AT, LS_ANDROID_INSTALL_LEGACY)) {
             return;
@@ -510,23 +517,24 @@ class PWA {
 
         setTimeout(() => {
             if (this.shouldSuppressInstallInfoBanners()) return;
+            if (!this.deferredPrompt) return;
             const existing = document.querySelector('.alert.install-android-alert');
             if (existing) return;
 
-            const host = document.getElementById('top-notifications');
+            const host = this.getNotificationsHost();
             if (!host) return;
 
             const banner = document.createElement('div');
             banner.className = 'alert alert--info install-android-alert';
             banner.innerHTML = `
                 <div class="alert__content">
-                    <div class="alert__title">Android: App installieren &amp; Push aktivieren</div>
+                    <div class="alert__title">Gourmen als App installieren</div>
                     <div class="alert__message">
                         <div class="stack-vertical app-shell-install-banner__body">
-                            <span>Installiere die PWA und aktiviere Benachrichtigungen für Updates.</span>
+                            <span>Für den Schnellzugriff installieren. Push funktioniert zuverlässig in der installierten App.</span>
+                            ${this.buildSettingsReminderHtml()}
                             <div class="app-shell-install-banner__actions">
                                 <button class="btn btn--primary btn--sm" type="button" data-action="install">Installieren</button>
-                                <button class="btn btn--outline btn--sm" type="button" data-action="push">Push aktivieren</button>
                             </div>
                         </div>
                     </div>
@@ -545,52 +553,111 @@ class PWA {
                 banner.remove();
                 this.installApp();
             });
-            banner.querySelector('[data-action="push"]').addEventListener('click', async () => {
+
+            host.prepend(banner);
+            console.log('📱 Android-Installhinweis angezeigt');
+        }, 2000);
+    }
+
+    showDesktopInstallBanner() {
+        if (!this.deferredPrompt) return;
+        if (this.shouldSuppressInstallInfoBanners()) return;
+        if (!this.shouldShowInstallInfoBanner(LS_DESKTOP_INSTALL_DISMISSED_AT, null)) {
+            return;
+        }
+
+        setTimeout(() => {
+            if (this.shouldSuppressInstallInfoBanners()) return;
+            if (!this.deferredPrompt) return;
+            const existing = document.querySelector('.install-desktop-alert');
+            if (existing) return;
+
+            const host = this.getNotificationsHost();
+            if (!host) return;
+
+            const banner = document.createElement('div');
+            banner.className = 'alert alert--info install-desktop-alert';
+            banner.innerHTML = `
+                <div class="alert__content">
+                    <div class="alert__title">Gourmen als App installieren</div>
+                    <div class="alert__message">
+                        <div class="stack-vertical app-shell-install-banner__body">
+                            <span>Schnellzugriff über Taskleiste oder Startmenü – oder als App-Fenster ohne Browser-Rand.</span>
+                            ${this.buildSettingsReminderHtml()}
+                            <div class="app-shell-install-banner__actions">
+                                <button class="btn btn--primary btn--sm" type="button" data-action="install">Installieren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="alert__close" aria-label="Schließen">×</button>
+            `;
+
+            const closeDismissed = () => {
                 banner.remove();
+                this.recordInstallInfoBannerDismiss(LS_DESKTOP_INSTALL_DISMISSED_AT);
+            };
+
+            banner.querySelector('.alert__close').addEventListener('click', closeDismissed);
+            banner.querySelector('[data-action="install"]').addEventListener('click', () => {
+                banner.remove();
+                this.installApp();
+            });
+
+            host.prepend(banner);
+            console.log('💻 Desktop-Installhinweis angezeigt');
+        }, 2000);
+    }
+
+    /** Nur in installierter PWA (Standalone): Push-Hinweis mit Cooldown (localStorage). */
+    showStandalonePushBanner() {
+        if (this.isPublicLayout()) return;
+        if (!this.isStandalone()) return;
+        if (document.querySelector('.pwa-push-standalone-alert')) return;
+        if (this._standalonePushBannerScheduled) return;
+        this._standalonePushBannerScheduled = true;
+
+        setTimeout(() => {
+            this._standalonePushBannerScheduled = false;
+            if (!this.isStandalone()) return;
+            if (document.querySelector('.pwa-push-standalone-alert')) return;
+
+            const host = this.getNotificationsHost();
+            if (!host) return;
+
+            const banner = document.createElement('div');
+            banner.className = 'alert alert--info pwa-push-standalone-alert';
+            banner.setAttribute('role', 'region');
+            banner.setAttribute('aria-label', 'Push-Benachrichtigungen');
+            banner.innerHTML = `
+                <div class="alert__content">
+                    <div class="alert__title">Push für Event-Hinweise?</div>
+                    <div class="alert__message">
+                        <div class="stack-vertical app-shell-install-banner__body">
+                            <span>Benachrichtigungen erlauben – oder später über die Einstellungen.</span>
+                            ${this.buildSettingsReminderHtml()}
+                            <div class="app-shell-install-banner__actions">
+                                <button class="btn btn--primary btn--sm" type="button" data-action="push">Benachrichtigungen aktivieren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="alert__close" aria-label="Schließen">×</button>
+            `;
+
+            const closeDismissed = () => {
+                banner.remove();
+                this.recordInstallInfoBannerDismiss(LS_PUSH_STANDALONE_DISMISSED_AT);
+            };
+
+            banner.querySelector('.alert__close').addEventListener('click', closeDismissed);
+            banner.querySelector('[data-action="push"]').addEventListener('click', async () => {
                 await this.requestNotificationPermission();
             });
 
             host.prepend(banner);
-            console.log('📱 Android-Install-/Push-Hinweis angezeigt');
-        }, 2000);
-    }
-
-    showInstallButton() {
-        if (this.isPublicLayout()) return;
-        console.log('🚀 Zeige Install-Button an');
-
-        if (this.isInstalled) {
-            console.log('🚀 App bereits installiert, Button nicht anzeigen');
-            return;
-        }
-
-        const existingBtn = document.getElementById('pwa-install-btn');
-        if (existingBtn) {
-            console.log('🚀 Install-Button bereits vorhanden');
-            return;
-        }
-
-        const mount = this.ensureAppShellPromosMount();
-        if (!mount) return;
-
-        const installBtn = document.createElement('button');
-        installBtn.id = 'pwa-install-btn';
-        installBtn.type = 'button';
-        installBtn.className = 'btn btn--outline btn--sm';
-        installBtn.textContent = 'App installieren';
-
-        installBtn.addEventListener('click', () => this.installApp());
-        mount.appendChild(installBtn);
-
-        console.log('🚀 Install-Button hinzugefügt');
-    }
-
-    hideInstallButton() {
-        const installBtn = document.getElementById('pwa-install-btn');
-        if (installBtn) {
-            installBtn.remove();
-        }
-        this.trimAppShellPromosMount();
+            console.log('🔔 Push-Standalone-Hinweis angezeigt');
+        }, 1800);
     }
 
     async installApp() {
@@ -606,35 +673,16 @@ class PWA {
             
             if (outcome === 'accepted') {
                 this.showToast('Installation läuft...', 'info');
-                // Warte auf das appinstalled Event für die finale Bestätigung
             } else {
                 this.showToast('Installation abgebrochen', 'warning');
             }
             
             this.deferredPrompt = null;
-            this.hideInstallButton();
+            this.dismissChromeInstallAlerts();
         } catch (error) {
             console.error('Installation fehlgeschlagen:', error);
             this.showToast('Installation fehlgeschlagen', 'error');
         }
-    }
-
-    showNotificationPermissionButton() {
-        if (this.isPublicLayout()) return;
-        const existingBtn = document.getElementById('notification-permission-btn');
-        if (existingBtn) return;
-
-        const mount = this.ensureAppShellPromosMount();
-        if (!mount) return;
-
-        const permissionBtn = document.createElement('button');
-        permissionBtn.id = 'notification-permission-btn';
-        permissionBtn.type = 'button';
-        permissionBtn.className = 'btn btn--primary btn--sm';
-        permissionBtn.textContent = 'Benachrichtigungen aktivieren';
-
-        permissionBtn.addEventListener('click', () => this.requestNotificationPermission());
-        mount.appendChild(permissionBtn);
     }
 
     async requestNotificationPermission() {
@@ -662,20 +710,12 @@ class PWA {
             const vapidPublicKey = await vapidFn();
             const ok = await subFn(registration, vapidPublicKey);
             if (ok) {
-                this.hideNotificationPermissionButton();
+                this.removeStandalonePushBannerDom();
             }
         } catch (error) {
             console.error('Push aktivieren:', error);
             this.showToast('Fehler bei der Push-Aktivierung', 'error');
         }
-    }
-
-    hideNotificationPermissionButton() {
-        const permissionBtn = document.getElementById('notification-permission-btn');
-        if (permissionBtn) {
-            permissionBtn.remove();
-        }
-        this.trimAppShellPromosMount();
     }
 
     showUpdateButton() {
