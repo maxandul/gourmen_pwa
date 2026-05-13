@@ -111,6 +111,31 @@
         </div>
       </a>
     </div>
+
+    {% if config.get('DRIVE_FEATURE_ENABLED') and current_user.is_admin() %}
+    <section class="admin-hub__drive-resync" aria-labelledby="drive-resync-title">
+      <div class="admin-hub__drive-resync-head">
+        <h2 id="drive-resync-title" class="admin-hub__drive-resync-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <use href="{{ _sprite }}#refresh-cw"></use>
+          </svg>
+          Drive-Re-Sync
+        </h2>
+        <p class="admin-hub__drive-resync-lede">
+          Gleicht das Vereins-Shared-Drive mit der DB ab: importiert manuell hochgeladene Dateien,
+          erkennt verschobene oder geloeschte Dokumente und bereinigt verwaiste DB-Eintraege.
+          Nur ausfuehren, wenn jemand ausserhalb der App im Drive gearbeitet hat.
+        </p>
+      </div>
+      <form method="POST" action="{{ url_for('docs.admin_resync') }}"
+            onsubmit="return confirm('Drive-Re-Sync starten? Dies kann je nach Drive-Inhalt einige Minuten dauern.');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button type="submit" class="btn btn--secondary">
+          Re-Sync jetzt starten
+        </button>
+      </form>
+    </section>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

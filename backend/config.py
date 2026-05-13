@@ -109,6 +109,14 @@ class Config:
     # Lokal: generiere mit `python scripts/generate_vapid_keys.py`
     VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY')
     VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY')
+
+    # Google Shared Drive (Drive-Capability, Phase 03)
+    # Service-Account-Key als Base64-encoded JSON; nie ins Repo, nur als Secret.
+    GOOGLE_SERVICE_ACCOUNT_KEY = os.environ.get('GOOGLE_SERVICE_ACCOUNT_KEY')
+    GOOGLE_DRIVE_ID = os.environ.get('GOOGLE_DRIVE_ID')
+    # Feature-Flag fuer schrittweise Aktivierung (Phase 3 implementiert,
+    # Cutover erst mit MVP-Update-Mail – bis dahin nur intern aktiv).
+    DRIVE_FEATURE_ENABLED = os.environ.get('DRIVE_FEATURE_ENABLED', 'false').lower() in ('1', 'true', 'yes')
     
     # Warnung wenn Keys nicht gesetzt sind
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:

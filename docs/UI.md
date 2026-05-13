@@ -329,6 +329,17 @@ Verhalten:
 | `.error-page` | HTTP-Fehlerseite mit `__code`, `__actions` |
 | `.offline-shell` | PWA-Offline-Shell mit `__inner`, `__lead` |
 
+#### Dokumente / Drive (Phase 03)
+
+| Klasse | Modifikatoren | Zweck |
+|---|---|---|
+| `.docs-index` | mit `__toolbar`, `__search`, `__tabs`, `__table`, `__row`, `__row--archived` | Dokumenten-Liste (`docs/index.html`): Suche + Kategorien-Tabs + Tabelle. Archiv-Zeilen visuell gedimmt. |
+| `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, Action-Buttons (Oeffnen/Download/Rename/Move/Archive/Restore/Hard-Delete), Audit-Historie. |
+| `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`, `__progress` | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
+| `.docs-action-modal` | – | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
+| `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |
+| `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
+
 ### 5.10 Deprecated / Legacy
 
 Folgende Klassen existieren historisch und sollen **nicht in neuen Komponenten** verwendet werden. Bei Refactoring wenn möglich entfernen:

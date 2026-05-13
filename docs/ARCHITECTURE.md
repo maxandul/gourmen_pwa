@@ -60,8 +60,9 @@ Registrierung in `backend/app.py`:
 | `events` | `/events` | Event-Liste, -Detail, Teilnahme |
 | `billbro` | `/billbro` | Bill-Splitting-Berechnung |
 | `ggl` | `/ggl` | Gourmen Guessing League Ranking |
-| `member` | `/member` | Member-Profile, Settings |
+| `member` | `/member` | Member-Profile, Settings, Google-Login-Adresse fuer Drive |
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
+| `docs` | `/docs` | **Phase 03:** Vereinsdokumente im Google Shared Drive – Index, Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -74,7 +75,7 @@ Registrierung in `backend/app.py`:
 - **`MemberMFA`** + **`MFABackupCode`** – 2FA-Konfiguration
 - **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung) mit Google-Places-Daten und BillBro-Kalkulationsfeldern; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
-- **`Document`** – Vereinsdokumente (aktuell als Links, Felder für File-Upload vorbereitet)
+- **`Document`** – Vereinsdokumente im Google Shared Drive. Spiegelt Drive-Files (`drive_file_id`, `drive_web_view_link`, `mime_type`, `size_bytes`, `checksum`) inkl. Lifecycle (`DocumentStatus.ACTIVE/ARCHIVED`, `archived_at`, `archived_by_id`, `last_synced_at`). Kategorien (`DocumentCategory`) bilden die Drive-Folder-Struktur ab. Authoritatives Spec: `docs/capabilities/drive.md`.
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)
 - **`MerchArticle/Variant/Order/OrderItem`** – Vereins-Merchandise-Shop
 - **`PushSubscription`** – Web-Push-Subscriptions pro Member+Gerät
@@ -108,6 +109,7 @@ Aktuelle Services:
 | `MonatsessenStatsService` | Statistiken über Monatsessen |
 | `RatingPromptService` | Logik wann Rating angezeigt wird |
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
+| `DriveStorageService` | **Phase 03:** Google Shared Drive – Folder-Init, Upload, Rename, Move, Archive/Restore, Hard-Delete, Auto-Sync per Document, Admin-Full-Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Authoritatives Spec: `docs/capabilities/drive.md`. |
 
 ## Auth-Flow
 
@@ -138,7 +140,8 @@ RESET / ONBOARDING TOKENS
   ├─ Tabelle auth_tokens (Hash statt Klartext, purpose + expires_at + used_at)
   ├─ Password-Reset via Mail (1h gueltig)
   ├─ 2FA-Reset via Mail (1h gueltig)
-  └─ Onboarding-Aktivierung via Mail (7 Tage gueltig)
+  ├─ Onboarding-Aktivierung via Mail (7 Tage gueltig)
+  └─ Google-Login-Adresse-Verify via Mail (7 Tage gueltig, Phase 03)
 ```
 
 ## PWA-Aspekte
@@ -201,6 +204,8 @@ Drei Reminder-Typen:
 | **Infomaniak** | Domain/DNS, Object Storage | aktiv |
 | **Resend (HTTPS)** | Transaktionale E-Mails aus der App (Production, empfohlen) | aktiv (Phase 2) |
 | **SMTP (Infomaniak / sonst)** | Transaktionale E-Mails lokal oder mit SMTP-faehigem Hosting | optional |
+| **Google Workspace** | Vereins-Mail-Domain (`@gourmen.ch`), Shared Drive fuer Dokumente | aktiv (Phase 02/03) |
+| **Google Drive API v3** | File-Storage fuer Vereinsdokumente (Service-Account, Shared Drive `GOOGLE_DRIVE_ID`) | aktiv (Phase 03) |
 | **RaiseNow / Stripe** (geplant) | TWINT-Zahlungen | geplant Phase 6 |
 | **Meta Cloud API** (geplant) | WhatsApp Business | geplant Phase 7 |
 

@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from datetime import datetime, timedelta
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
@@ -6,7 +8,9 @@ from wtforms.validators import DataRequired, Email, Optional
 from backend.extensions import db
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
+from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, AuditAction, require_step_up
+from backend.services.mail import MailService
 
 bp = Blueprint('member', __name__, url_prefix='/member')
 
@@ -519,5 +523,178 @@ def merch_order_edit(order_id):
     
     return render_template('member/merch/order_edit.html', articles=articles, order=order)
 
+
+# ---------------------------------------------------------------------------
+# Drive-Capability (Phase 03): Google-Login-Adresse fuer Drive-Mitgliedschaft
+# ---------------------------------------------------------------------------
+
+
+class GoogleEmailForm(FlaskForm):
+    """Setzt die `Member.google_email` und triggert eine Verifikations-Mail."""
+
+    google_email = StringField(
+        'Google-Login-Adresse',
+        validators=[DataRequired(), Email()],
+    )
+    submit = SubmitField('Speichern und verifizieren')
+
+
+@bp.route('/google-email/save', methods=['POST'])
+@login_required
+def google_email_save():
+    """Setze google_email; bei Aenderung Verifikations-Mail an die Adresse."""
+    form = GoogleEmailForm()
+    if not form.validate_on_submit():
+        flash('Bitte gib eine gueltige E-Mail-Adresse ein.', 'error')
+        return redirect(url_for('member.profile', tab='profile'))
+
+    new_email = (form.google_email.data or '').strip().lower()
+    if not new_email:
+        flash('Bitte gib eine gueltige E-Mail-Adresse ein.', 'error')
+        return redirect(url_for('member.profile', tab='profile'))
+
+    changed = (current_user.google_email or '').lower() != new_email
+    current_user.google_email = new_email
+    if changed:
+        current_user.google_email_verified = False
+        current_user.google_email_verified_at = None
+    db.session.commit()
+
+    if not changed and current_user.google_email_verified:
+        flash('Die Google-Login-Adresse ist bereits verifiziert.', 'info')
+        return redirect(url_for('member.profile', tab='profile'))
+
+    _send_google_email_verification(current_user)
+    flash(
+        'Wir haben eine Verifikationsmail an «' + new_email + '» geschickt. '
+        'Klicke den Link in der Mail, um die Adresse zu bestaetigen.',
+        'success',
+    )
+    return redirect(url_for('member.profile', tab='profile'))
+
+
+@bp.route('/google-email/resend', methods=['POST'])
+@login_required
+def google_email_resend():
+    if not current_user.google_email:
+        flash('Bitte trage zuerst eine Google-Login-Adresse ein.', 'error')
+        return redirect(url_for('member.profile', tab='profile'))
+    if current_user.google_email_verified:
+        flash('Die Adresse ist bereits verifiziert.', 'info')
+        return redirect(url_for('member.profile', tab='profile'))
+
+    _send_google_email_verification(current_user)
+    flash('Verifikationsmail wurde erneut gesendet.', 'success')
+    return redirect(url_for('member.profile', tab='profile'))
+
+
+@bp.route('/google-email/verify/<token>')
+def google_email_verify(token):
+    """Bestaetige die Google-Login-Adresse und richte Drive-Mitgliedschaft ein."""
+    from backend.routes.auth import _resolve_auth_token
+
+    auth_token, error = _resolve_auth_token(
+        token, AuthTokenPurpose.GOOGLE_EMAIL_VERIFY
+    )
+    if error == 'missing':
+        flash('Ungueltiger oder abgelaufener Verifikations-Link.', 'error')
+        return redirect(url_for('auth.login'))
+    if error == 'used':
+        flash('Dieser Verifikations-Link wurde bereits verwendet.', 'error')
+        return redirect(url_for('auth.login'))
+    if error == 'expired':
+        flash('Verifikations-Link ist abgelaufen.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(auth_token.member_id)
+    if not user or not user.is_active or not user.google_email:
+        flash('Ungueltiger Verifikations-Link.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user.google_email_verified = True
+    user.google_email_verified_at = datetime.utcnow()
+    auth_token.used_at = datetime.utcnow()
+    db.session.commit()
+
+    SecurityService.log_audit_event(
+        AuditAction.GOOGLE_EMAIL_VERIFIED,
+        entity='member',
+        entity_id=user.id,
+        actor_id=user.id,
+        extra_data={'google_email': user.google_email},
+    )
+
+    # Drive-Invite ausloesen, sofern Feature-Flag aktiv ist und der Service
+    # konfiguriert ist. Bei nicht-konfiguriertem Feature-Flag ist der Klick
+    # weiterhin nuetzlich (die Verifikation merkt sich, der Invite passiert
+    # spaeter beim Cutover).
+    invited_message = ''
+    if current_app.config.get('DRIVE_FEATURE_ENABLED'):
+        try:
+            from backend.services.drive_storage import (
+                DriveStorageService,
+                DriveError,
+            )
+            DriveStorageService.invite_member_to_drive(user)
+            invited_message = ' Du hast jetzt Zugriff auf das Vereins-Drive.'
+        except DriveError as exc:  # pragma: no cover – Live-API
+            current_app.logger.warning(
+                'Drive-Invite nach Verify fehlgeschlagen fuer member %s: %s',
+                user.id, exc,
+            )
+            invited_message = ' Drive-Mitgliedschaft konnte gerade nicht angelegt werden – wir holen das nach.'
+
+    flash(
+        'Deine Google-Login-Adresse wurde verifiziert.' + invited_message,
+        'success',
+    )
+    return redirect(url_for('member.profile', tab='profile'))
+
+
+def _send_google_email_verification(user: Member) -> None:
+    """Erzeuge Token und versende Verifikations-Mail an `user.google_email`."""
+    from backend.routes.auth import _issue_auth_token
+
+    token = _issue_auth_token(
+        member_id=user.id,
+        purpose=AuthTokenPurpose.GOOGLE_EMAIL_VERIFY,
+        expires_in=timedelta(days=7),
+        request_ip=request.remote_addr,
+    )
+    db.session.commit()
+    verify_url = url_for(
+        'member.google_email_verify', token=token, _external=True
+    )
+
+    html = render_template(
+        'emails/google_email_verify.html',
+        display_name=user.display_name,
+        google_email=user.google_email,
+        verify_url=verify_url,
+    )
+    text = (
+        f"Hallo {user.display_name}\n\n"
+        f"Bitte bestaetige deine Google-Login-Adresse «{user.google_email}» fuer den Zugang "
+        "zum Vereins-Drive.\n\n"
+        f"Verifikations-Link: {verify_url}\n\n"
+        "Der Link ist 7 Tage gueltig."
+    )
+    MailService.send_async(
+        to=user.google_email,
+        subject='Gourmen: Google-Login-Adresse bestaetigen',
+        html=html,
+        text=text,
+        tags={'type': 'google_email_verify', 'member_id': str(user.id)},
+    )
+
+    SecurityService.log_audit_event(
+        AuditAction.GOOGLE_EMAIL_VERIFY_REQUESTED,
+        entity='member',
+        entity_id=user.id,
+        actor_id=user.id,
+        extra_data={'google_email': user.google_email},
+    )
+
+
 # Import here to avoid circular imports
-from datetime import datetime
+from datetime import datetime  # noqa: E402, F811 – legacy import, vom Profile-Block weiterhin benoetigt

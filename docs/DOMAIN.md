@@ -149,6 +149,27 @@ Komma-separierte Liste der Führerscheinklassen (z.B. `"B,A1"`). Praktisch für 
 
 In `MemberSensitive` werden potentiell sensitive Felder verschlüsselt abgelegt (z.B. AHV-Nr., IBAN falls erfasst). Lese-Zugriff erfordert **Step-Up-Auth** (frische Passwort-Bestätigung).
 
+## Vereins-Drive (Phase 03)
+
+Der Verein nutzt ein **Google Shared Drive** als zentralen Dokumentenspeicher fuer Statuten, Protokolle, Belege, Fotos und Marketing-Material. Authoritatives Spec: `docs/capabilities/drive.md`.
+
+### Begriffe
+
+- **Vereins-Drive** – das eine Shared Drive `gourmen.ch` (`GOOGLE_DRIVE_ID`). Jedes verifizierte Mitglied wird als `content_manager` eingeladen.
+- **Google-Login-Adresse** (`Member.google_email`) – die E-Mail-Adresse, mit der ein Mitglied sich bei Google einloggt. Muss nicht zwingend Gmail sein. Wird im Profil getrennt von der Kontakt-Mail (`Member.email`) gepflegt und per Token-Mail (`AuthTokenPurpose.GOOGLE_EMAIL_VERIFY`, 7 Tage gueltig) verifiziert.
+- **Service-Account** – eigener Google-Account fuer die App-Backend-Zugriffe (kein Mensch). Authentifiziert via Base64-encoded JSON-Key in `GOOGLE_SERVICE_ACCOUNT_KEY`.
+- **`DocumentCategory`** – Top-Level-Folder im Shared Drive: `STATUTEN`, `PROTOKOLLE`, `JAHRESBERICHTE`, `BUCHHALTUNG`, `BELEGE`, `VERTRAEGE`, `MARKETING`, `SONSTIGES`. Folder-Namen siehe `CATEGORY_FOLDER_NAMES`.
+- **`DocumentStatus`** – `ACTIVE` (im Kategorie-Folder) oder `ARCHIVED` (im `99_Archiv`-Folder). Hard-Delete loescht nur via expliziten Admin-Klick.
+- **Auto-Sync** – pro Detail-Aufruf: prueft, ob die DB-Metadaten noch zu Drive passen (Title, Folder, Existenz). Drift wird selbstheilend korrigiert.
+- **Admin-Re-Sync** – Voll-Abgleich Drive vs. DB durch einen Admin (Importiert manuelle Drive-Uploads, archiviert/restored DB-Records bei Folder-Changes, bereinigt verwaiste Eintraege).
+
+### Audit-Aktionen (zusaetzlich zu Sektion «Audit-Aktionen»)
+
+- `GOOGLE_EMAIL_VERIFY_REQUESTED`, `GOOGLE_EMAIL_VERIFIED`
+- `DOCUMENT_UPLOADED`, `DOCUMENT_RENAMED`, `DOCUMENT_MOVED`, `DOCUMENT_ARCHIVED`, `DOCUMENT_RESTORED`, `DOCUMENT_HARD_DELETED`, `DOCUMENT_DOWNLOADED`
+- `DRIVE_MEMBER_INVITED`, `DRIVE_MEMBER_REMOVED`
+- `DRIVE_RESYNC_TRIGGERED`, `DRIVE_AUTO_SYNC_DRIFT_FIXED`, `DRIVE_HARD_DELETE_CONFIRMED`
+
 ## Audit-Aktionen
 
 Im `AuditAction`-Enum definiert. Beispiele:

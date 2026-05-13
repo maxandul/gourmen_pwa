@@ -36,6 +36,22 @@
                         </a>
                     </li>
                     <li>
+                        {% if config.get('DRIVE_FEATURE_ENABLED') %}
+                        <a href="{{ url_for('docs.index') }}" class="settings-nav__row">
+                            <span class="settings-nav__icon" aria-hidden="true">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <use href="{{ _sprite }}#file"></use>
+                                </svg>
+                            </span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">Dokumente</span>
+                                <span class="settings-nav__description">Statuten, Protokolle, Belege, Fotos</span>
+                            </span>
+                            <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                                <use href="{{ _sprite }}#chevron-right"></use>
+                            </svg>
+                        </a>
+                        {% else %}
                         <div class="settings-nav__row settings-nav__row--soon" aria-disabled="true">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -43,10 +59,11 @@
                                 </svg>
                             </span>
                             <span class="settings-nav__meta">
-                                <span class="settings-nav__label">Docs</span>
-                                <span class="settings-nav__description">Coming soon</span>
+                                <span class="settings-nav__label">Dokumente</span>
+                                <span class="settings-nav__description">Bald verfuegbar</span>
                             </span>
                         </div>
+                        {% endif %}
                     </li>
                 </ul>
             </section>

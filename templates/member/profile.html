@@ -121,7 +121,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Address Card -->
                         <div class="card">
                             <div class="card__header">
@@ -293,8 +293,78 @@
                             {{ form.submit(class="btn btn--primary") }}
                         </div>
                     </form>
+
+                    <!-- Google-Login-Adresse fuer Vereins-Drive (eigener Form-POST) -->
+                    <form method="POST" action="{{ url_for('member.google_email_save') }}" class="form profile-google-section">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    {{ lucide_icon('cloud') }}
+                                    Google-Konto fuers Vereins-Drive
+                                </h2>
+                            </div>
+                            <div class="card__body">
+                                <p class="form-field__help">
+                                    Trage die E-Mail-Adresse ein, mit der du dich bei Google anmeldest –
+                                    es muss nicht zwingend eine Gmail sein. Diese Adresse wird ins
+                                    Vereins-Drive eingeladen und bleibt getrennt von deiner Kontakt-Mail.
+                                </p>
+
+                                <div class="profile-google-section__status-row">
+                                    <div class="info-row">
+                                        <span class="info-row__label">Kontakt-Mail (App-Login)</span>
+                                        <span class="info-row__value">{{ current_user.email }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-row__label">Status</span>
+                                        <span class="info-row__value">
+                                            {% if not current_user.google_email %}
+                                                <span class="profile-google-section__status profile-google-section__status--pending">
+                                                    {{ lucide_icon('alert-circle') }} noch nicht hinterlegt
+                                                </span>
+                                            {% elif current_user.google_email_verified %}
+                                                <span class="profile-google-section__status profile-google-section__status--verified">
+                                                    {{ lucide_icon('badge-check') }} verifiziert
+                                                </span>
+                                            {% else %}
+                                                <span class="profile-google-section__status profile-google-section__status--pending">
+                                                    {{ lucide_icon('clock') }} Bestaetigung ausstehend
+                                                </span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="form-field__label" for="google_email">Google-Login-Adresse</label>
+                                    <input class="form-field__input" type="email" id="google_email" name="google_email"
+                                           value="{{ current_user.google_email or '' }}" required
+                                           placeholder="z.B. vorname.nachname@gmail.com"/>
+                                </div>
+                            </div>
+                            <div class="card__footer form-actions">
+                                <button type="submit" class="btn btn--primary">
+                                    {% if current_user.google_email_verified %}Adresse aendern{% else %}Speichern und verifizieren{% endif %}
+                                </button>
+                                {% if current_user.google_email and not current_user.google_email_verified %}
+                                <a href="#"
+                                   onclick="document.getElementById('google-email-resend').submit(); return false;"
+                                   class="btn btn--ghost">
+                                    Verifikationsmail erneut senden
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                    {% if current_user.google_email and not current_user.google_email_verified %}
+                    <form id="google-email-resend" method="POST"
+                          action="{{ url_for('member.google_email_resend') }}" style="display:none;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    </form>
+                    {% endif %}
                 </div>
-                
+
                 <!-- Tab 2: Sensible Daten -->
                 <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'sensitive' else '' }}"
                      role="tabpanel">
