@@ -45,10 +45,18 @@ def upgrade():
     # 1. Alle bestehenden URL-only-Records loeschen.
     op.execute(sa.text("DELETE FROM documents"))
 
-    # 2. PostgreSQL: alte Enum-Typen droppen, damit sie neu angelegt werden
-    #    koennen. SQLite verwendet CHECK-Constraints und ist hier toleranter.
+    # 2. Erst die alten Spalten droppen, damit die alten Enum-Typen keine
+    #    Abhaengigkeiten mehr haben. Sonst scheitert `DROP TYPE` in
+    #    PostgreSQL mit `DependentObjectsStillExist`.
+    with op.batch_alter_table("documents", schema=None) as batch_op:
+        batch_op.drop_column("url")
+        batch_op.drop_column("visibility")
+        batch_op.drop_column("deleted_at")
+        batch_op.drop_column("category")
+
+    # 3. PostgreSQL: alte Enum-Typen droppen, neue anlegen.
+    #    SQLite verwendet CHECK-Constraints und ist hier toleranter.
     if dialect == "postgresql":
-        # Alte Enums weg, neue anlegen.
         op.execute("DROP TYPE IF EXISTS documentcategory")
         op.execute("DROP TYPE IF EXISTS documentvisibility")
         category_enum = sa.Enum(*NEW_CATEGORY_VALUES, name="documentcategory")
@@ -56,16 +64,8 @@ def upgrade():
         category_enum.create(bind, checkfirst=True)
         status_enum.create(bind, checkfirst=True)
 
-    # 3. Spalten-Umbau via batch (kompatibel mit SQLite).
+    # 4. Neue Spalten anlegen, FK + Indexe, uploader_id auf nullable umstellen.
     with op.batch_alter_table("documents", schema=None) as batch_op:
-        batch_op.drop_column("url")
-        batch_op.drop_column("visibility")
-        batch_op.drop_column("deleted_at")
-
-        # category-Spalte komplett ersetzen: alten Enum-Wert durch neuen ersetzen.
-        # Wir entfernen die Spalte und legen sie neu mit dem neuen Enum an,
-        # weil sich der Wertbereich nicht ueberlappt (alt: VEREIN/EVENT/...).
-        batch_op.drop_column("category")
         batch_op.add_column(
             sa.Column(
                 "category",
