@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+from sqlalchemy.pool import StaticPool
 
 load_dotenv()
 
@@ -154,6 +155,11 @@ class TestingConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # Ein Connection-Pool: sonst ist sqlite :memory: pro DB-Verbindung leer (GETs sehen keine create_all-Daten).
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'poolclass': StaticPool,
+        'connect_args': {'check_same_thread': False},
+    }
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False
 

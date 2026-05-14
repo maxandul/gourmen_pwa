@@ -3,7 +3,7 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.11.6';
+const PWA_VERSION = '3.11.5';
 
 /** Wie lange nach manuellem Schliessen (X) bis Install-/Push-Banner erneut erscheinen. */
 const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;

@@ -259,6 +259,10 @@ Sensible Felder werden via `SecurityService.encrypt_json()` / `decrypt_json()` v
   testet `sanitize_drive_filename` und `sanitize_svg_bytes` (Pflicht, da Marketing-Use-Case
   SVGs aus dem Web zulaesst).
 - Bei externen API-Calls: Mocking, kein Live-Hit gegen Drittsystem in Unit-Tests.
+- **Route-Smoke**: bei komplexen Jinja-Templates mindestens ein GET mit Test-DB-Daten,
+  wenn die Seite z. B. Relationen (`Event` im Upload-Modal auf `/docs/`) rendert –
+  sonst zerspringt die UI in Production/Dev erst zur Laufzeit (pytest-Beispiel:
+  `tests/routes/test_docs_smoke.py`).
 
 ## Imports
 

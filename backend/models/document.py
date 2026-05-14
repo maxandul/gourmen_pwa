@@ -33,9 +33,9 @@ class DocumentStatus(Enum):
 # Klartext-Labels fuer UI (Deutsch, Capability Sektion 5.1)
 CATEGORY_LABELS = {
     DocumentCategory.STATUTEN: "Statuten",
-    DocumentCategory.VEREINSFUEHRUNG: "Vereinsfuehrung",
+    DocumentCategory.VEREINSFUEHRUNG: "Vereinsführung",
     DocumentCategory.FINANZEN: "Finanzen",
-    DocumentCategory.VERTRAEGE: "Vertraege",
+    DocumentCategory.VERTRAEGE: "Verträge",
     DocumentCategory.REISEN_EVENTS: "Reisen und Events",
     DocumentCategory.MEDIEN: "Medien",
     DocumentCategory.SONSTIGES: "Sonstiges",

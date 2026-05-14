@@ -67,3 +67,4 @@ httplib2==0.22.0
 uritemplate==4.1.1
 tenacity==8.2.3
 defusedxml==0.7.1
+pytest==8.4.2

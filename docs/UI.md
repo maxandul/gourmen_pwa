@@ -334,10 +334,10 @@ Verhalten:
 
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
-| `.docs-index` | mit `__toolbar`, `__search`, `__tabs`, `__table`, `__row`, `__row--archived` | Dokumenten-Liste (`docs/index.html`): Suche + Kategorien-Tabs + Tabelle. Archiv-Zeilen visuell gedimmt. |
+| `.docs-index` | mit `__toolbar-card`, `disclosure`/`disclosure__summary` (orangener Titel «Suchen & Hochladen», Chevron), `__toolbar-layout`, `__search-form`, `__query-row`, `__query-buttons`, `__upload-slot`, `__tabs-wrap`, `__tab-count` | Dokumenten-Liste (`docs/index.html`): Toolbar klappbar wie Events-Filter; Ordner-Leiste `tabs tabs--panel`; Upload-Modal zentriert. |
 | `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, Action-Buttons (Oeffnen/Download/Rename/Move/Archive/Restore/Hard-Delete), Audit-Historie. |
-| `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`, `__progress` | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
-| `.docs-action-modal` | – | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
+| `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`; `dialog` viewport-zentriert (`inset:0`, `margin:auto`) | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
+| `.docs-action-modal` | –; `dialog` wie Upload-Modal zentriert | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
 | `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |
 | `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
 

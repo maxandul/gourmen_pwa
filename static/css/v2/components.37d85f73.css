@@ -5739,14 +5739,9 @@ a.card--dash-tile__hit {
   background: var(--color-surface);
   color: var(--color-text-primary);
   padding: 0;
-  width: min(560px, calc(100vw - 2 * var(--space-4)));
+  max-width: 560px;
+  width: calc(100vw - 2 * var(--space-4));
   box-shadow: var(--shadow-xl);
-  /* Zentriert im Viewport (showModal) */
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  height: fit-content;
-  max-height: min(92vh, 880px);
 }
 
 .docs-upload-modal::backdrop,
