@@ -1,6 +1,6 @@
 # Phase 5 – App: iCal-Feed pro Mitglied
 
-**Status**: done — umgesetzt 2026-05-14 (Branch `phase/05-workspace-ical-feed`, Branch-Tip `5ea5700`).
+**Status**: done — umgesetzt 2026-05-14 auf Branch `phase/05-workspace-ical-feed`.
 **Aufwand**: ~1–1.5 Tage
 **Branch**: `phase/05-workspace-ical-feed`
 
