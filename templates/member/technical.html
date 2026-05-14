@@ -42,6 +42,100 @@
             </div>
         </nav>
 
+        <div class="card calendar-subscribe-card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    {{ lucide_icon('calendar-days') }}
+                    {% if calendar_feed_active %}Vereinskalender{% else %}Vereinskalender abonnieren{% endif %}
+                </h2>
+            </div>
+            <div class="card__body">
+                {% if not calendar_feed_active %}
+                <p class="card-description">
+                    Behalte alle Vereinstermine in deinem persönlichen Kalender – synchron mit der App.
+                </p>
+                <p class="card-description">
+                    Funktioniert mit Apple Calendar, Google Calendar und Outlook.
+                </p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--primary" id="calendar-feed-enable-btn">
+                        Kalender-Abo aktivieren
+                    </button>
+                </div>
+                {% else %}
+                <p class="card-description">Dein persönlicher Link:</p>
+                <div class="calendar-subscribe__url-row">
+                    <input type="text" class="calendar-subscribe__url-input" id="calendar-feed-url" readonly value="{{ calendar_feed_url }}" aria-label="Kalender-Feed-URL">
+                    <button type="button" class="btn btn--outline calendar-subscribe__copy-btn" id="calendar-feed-copy-btn" title="Link kopieren">
+                        {{ lucide_icon('copy', 'icon icon--sm') }}
+                    </button>
+                </div>
+                {% if show_apple_calendar_button %}
+                <div class="form-actions">
+                    <a class="btn btn--primary" id="calendar-feed-webcal-link" href="{{ calendar_webcal_url|e }}">In Apple-Kalender öffnen</a>
+                </div>
+                {% endif %}
+                <details class="disclosure calendar-subscribe__howto">
+                    <summary class="disclosure__summary">Wie binde ich den Kalender ein?</summary>
+                    <div class="calendar-subscribe__platform">
+                        <h3 class="calendar-subscribe__platform-title">Apple Calendar (iPhone/iPad/Mac)</h3>
+                        <ol class="calendar-subscribe__steps">
+                            <li>Tippe oben auf <strong>In Apple-Kalender öffnen</strong> – der Kalender öffnet sich automatisch und fragt, ob du das Abo hinzufügen willst.</li>
+                            <li>Auf dem Mac: Kalender öffnen → Ablage → Neues Kalender-Abonnement → Link einfügen.</li>
+                            <li>Bestätige mit <strong>Abonnieren</strong>.</li>
+                        </ol>
+                    </div>
+                    <div class="calendar-subscribe__platform">
+                        <h3 class="calendar-subscribe__platform-title">Google Calendar</h3>
+                        <ol class="calendar-subscribe__steps">
+                            <li>Kopiere oben den Link.</li>
+                            <li>Öffne <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">calendar.google.com</a> am Computer (in der mobilen App geht es nicht).</li>
+                            <li>Links unter <strong>Weitere Kalender</strong> auf das <strong>+</strong> klicken → <strong>Per URL</strong> → Link einfügen → <strong>Kalender hinzufügen</strong>.</li>
+                            <li>Der Vereinskalender erscheint danach auch in der Google-Calendar-App auf deinem Smartphone.</li>
+                        </ol>
+                    </div>
+                    <div class="calendar-subscribe__platform">
+                        <h3 class="calendar-subscribe__platform-title">Outlook</h3>
+                        <ol class="calendar-subscribe__steps">
+                            <li>Kopiere oben den Link.</li>
+                            <li>In Outlook (Desktop oder Web) → <strong>Kalender hinzufügen</strong> → <strong>Aus dem Internet abonnieren</strong> → Link einfügen.</li>
+                            <li>Auf Outlook.com geht das unter <strong>Kalender hinzufügen → Aus dem Web abonnieren</strong>.</li>
+                        </ol>
+                    </div>
+                </details>
+                <p class="calendar-subscribe__hint">
+                    Hinweis: Änderungen erscheinen je nach Kalender-App nach einigen Minuten bis zu 24 Stunden. Erinnerungen zu Events kommen über die App-Push.
+                </p>
+                <p class="calendar-subscribe__secondary">
+                    <button type="button" class="btn btn--outline btn--sm" id="calendar-feed-regenerate-open">Link neu erzeugen</button>
+                    <span class="calendar-subscribe__sep" aria-hidden="true">·</span>
+                    <button type="button" class="btn btn--outline btn--sm" id="calendar-feed-disable-open">Kalender-Abo deaktivieren</button>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <dialog class="calendar-subscribe-dialog" id="calendar-feed-regenerate-dialog" aria-labelledby="cal-regen-title">
+            <div class="calendar-subscribe-dialog__panel">
+                <h2 class="calendar-subscribe-dialog__title" id="cal-regen-title">Link neu erzeugen?</h2>
+                <p class="card-description">Dein bisheriger Kalender-Link wird sofort ungültig. Wo immer du ihn schon eingebunden hast (Apple Calendar, Google Calendar, Outlook), musst du den neuen Link nochmal einfügen.</p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--outline" data-calendar-dialog-close>Abbrechen</button>
+                    <button type="button" class="btn btn--primary" id="calendar-feed-regenerate-confirm">Neu erzeugen</button>
+                </div>
+            </div>
+        </dialog>
+        <dialog class="calendar-subscribe-dialog" id="calendar-feed-disable-dialog" aria-labelledby="cal-dis-title">
+            <div class="calendar-subscribe-dialog__panel">
+                <h2 class="calendar-subscribe-dialog__title" id="cal-dis-title">Kalender-Abo deaktivieren?</h2>
+                <p class="card-description">Dein Link wird ungültig und Vereinstermine erscheinen nicht mehr in deinem Kalender. Du kannst das Abo jederzeit wieder aktivieren – du bekommst dann allerdings einen neuen Link.</p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--outline" data-calendar-dialog-close>Abbrechen</button>
+                    <button type="button" class="btn btn--danger" id="calendar-feed-disable-confirm">Deaktivieren</button>
+                </div>
+            </div>
+        </dialog>
+
         {# Push zuerst: häufigste Nutzerabsicht #}
         <div class="card">
             <div class="card__header">
@@ -356,5 +450,92 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+</script>
+<script>
+(function () {
+    function getCsrf() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? (meta.getAttribute('content') || '') : '';
+    }
+    function postJson(url) {
+        return fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': getCsrf(),
+                'Accept': 'application/json',
+            },
+        });
+    }
+    var enableBtn = document.getElementById('calendar-feed-enable-btn');
+    if (enableBtn) {
+        enableBtn.addEventListener('click', async function () {
+            enableBtn.disabled = true;
+            try {
+                var res = await postJson('{{ url_for("member.calendar_feed_enable") }}');
+                if (res.ok) {
+                    window.location.reload();
+                    return;
+                }
+            } catch (e) { console.error(e); }
+            enableBtn.disabled = false;
+        });
+    }
+    var copyBtn = document.getElementById('calendar-feed-copy-btn');
+    var urlInput = document.getElementById('calendar-feed-url');
+    if (copyBtn && urlInput) {
+        copyBtn.addEventListener('click', function () {
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(urlInput.value);
+            }
+        });
+    }
+    var regDialog = document.getElementById('calendar-feed-regenerate-dialog');
+    var disDialog = document.getElementById('calendar-feed-disable-dialog');
+    document.querySelectorAll('[data-calendar-dialog-close]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (regDialog && regDialog.open) regDialog.close();
+            if (disDialog && disDialog.open) disDialog.close();
+        });
+    });
+    var regOpen = document.getElementById('calendar-feed-regenerate-open');
+    if (regOpen && regDialog) {
+        regOpen.addEventListener('click', function () { regDialog.showModal(); });
+    }
+    var disOpen = document.getElementById('calendar-feed-disable-open');
+    if (disOpen && disDialog) {
+        disOpen.addEventListener('click', function () { disDialog.showModal(); });
+    }
+    var regConfirm = document.getElementById('calendar-feed-regenerate-confirm');
+    if (regConfirm) {
+        regConfirm.addEventListener('click', async function () {
+            regConfirm.disabled = true;
+            try {
+                var res = await postJson('{{ url_for("member.calendar_feed_regenerate") }}');
+                if (res.ok) {
+                    window.location.reload();
+                    return;
+                }
+            } catch (e) { console.error(e); }
+            regConfirm.disabled = false;
+        });
+    }
+    var disConfirm = document.getElementById('calendar-feed-disable-confirm');
+    if (disConfirm) {
+        disConfirm.addEventListener('click', async function () {
+            disConfirm.disabled = true;
+            try {
+                var res = await postJson('{{ url_for("member.calendar_feed_disable") }}');
+                if (res.status === 204) {
+                    window.location.reload();
+                    return;
+                }
+            } catch (e) { console.error(e); }
+            disConfirm.disabled = false;
+        });
+    }
+})();
 </script>
 {% endblock %}

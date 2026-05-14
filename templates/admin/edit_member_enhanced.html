@@ -126,6 +126,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Persönlicher Kalender-Feed</h2></div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Kalender-Abo</span>
+                    <span class="info-row__value">
+                        {% if member.ical_token %}
+                            aktiv seit {% if calendar_feed_active_since %}{{ calendar_feed_active_since.strftime('%d.%m.%Y') }}{% else %}—{% endif %}
+                        {% else %}
+                            nicht aktiv
+                        {% endif %}
+                    </span>
+                </div>
+                <p class="card-description">
+                    Token und Feed-Link sind nur für das Mitglied selbst sichtbar.
+                </p>
+            </div>
+        </div>
         
         <div class="form-actions">
             {{ form.submit(class="btn btn--primary") }}

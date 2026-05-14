@@ -535,8 +535,24 @@ def edit_member(member_id):
         
         flash('Mitglied erfolgreich bearbeitet', 'success')
         return redirect(url_for('admin.members'))
-    
-    return render_template('admin/edit_member_enhanced.html', form=form, member=member)
+
+    cal_audit = (
+        AuditEvent.query.filter_by(
+            entity='member',
+            entity_id=member.id,
+            action=AuditAction.CALENDAR_FEED_ENABLED,
+        )
+        .order_by(AuditEvent.at.desc())
+        .first()
+    )
+    calendar_feed_active_since = cal_audit.at.date() if cal_audit else None
+
+    return render_template(
+        'admin/edit_member_enhanced.html',
+        form=form,
+        member=member,
+        calendar_feed_active_since=calendar_feed_active_since,
+    )
 
 @bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST'])
 @login_required

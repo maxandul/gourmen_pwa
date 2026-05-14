@@ -271,7 +271,29 @@ def security():
 @login_required
 def technical():
     """Technical settings page"""
-    return render_template('member/technical.html')
+    ua = (request.headers.get('User-Agent') or '')
+    show_apple_calendar_button = any(
+        x in ua for x in ('iPhone', 'iPad', 'iPod', 'Macintosh')
+    )
+    from backend.services.calendar_feed import CalendarFeedService
+
+    cal_url = (
+        CalendarFeedService.feed_url_for_token(current_user.ical_token)
+        if current_user.ical_token
+        else None
+    )
+    webcal_url = (
+        CalendarFeedService.webcal_url_for_token(current_user.ical_token)
+        if current_user.ical_token
+        else None
+    )
+    return render_template(
+        'member/technical.html',
+        calendar_feed_url=cal_url,
+        calendar_webcal_url=webcal_url,
+        calendar_feed_active=bool(current_user.ical_token),
+        show_apple_calendar_button=show_apple_calendar_button,
+    )
 
 @bp.route('/merch')
 @login_required
@@ -694,6 +716,69 @@ def _send_google_email_verification(user: Member) -> None:
         actor_id=user.id,
         extra_data={'google_email': user.google_email},
     )
+
+
+@bp.route('/settings/calendar/enable', methods=['POST'])
+@login_required
+def calendar_feed_enable():
+    from backend.services.calendar_feed import CalendarFeedService
+
+    if current_user.ical_token:
+        return (
+            jsonify(
+                {
+                    'feed_url': CalendarFeedService.feed_url_for_token(
+                        current_user.ical_token
+                    )
+                }
+            ),
+            200,
+        )
+    url = CalendarFeedService.enable_feed_for_member(current_user)
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.CALENDAR_FEED_ENABLED,
+        'member',
+        current_user.id,
+        extra_data={'enabled': True},
+    )
+    return jsonify({'feed_url': url}), 201
+
+
+@bp.route('/settings/calendar/regenerate', methods=['POST'])
+@login_required
+def calendar_feed_regenerate():
+    from backend.services.calendar_feed import CalendarFeedService
+
+    if not current_user.ical_token:
+        return jsonify({'error': 'not_active'}), 400
+    url = CalendarFeedService.regenerate_token_for_member(current_user)
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.CALENDAR_FEED_REGENERATED,
+        'member',
+        current_user.id,
+        extra_data={'regenerated': True},
+    )
+    return jsonify({'feed_url': url}), 200
+
+
+@bp.route('/settings/calendar/disable', methods=['POST'])
+@login_required
+def calendar_feed_disable():
+    from backend.services.calendar_feed import CalendarFeedService
+
+    if not current_user.ical_token:
+        return jsonify({'error': 'not_active'}), 400
+    CalendarFeedService.disable_feed_for_member(current_user)
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.CALENDAR_FEED_DISABLED,
+        'member',
+        current_user.id,
+        extra_data={'disabled': True},
+    )
+    return ('', 204)
 
 
 # Import here to avoid circular imports

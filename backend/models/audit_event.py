@@ -58,6 +58,9 @@ class AuditAction(Enum):
     DRIVE_RESYNC_RAN = 'DRIVE_RESYNC_RAN'
     GOOGLE_EMAIL_VERIFY_REQUESTED = 'GOOGLE_EMAIL_VERIFY_REQUESTED'
     GOOGLE_EMAIL_VERIFIED = 'GOOGLE_EMAIL_VERIFIED'
+    CALENDAR_FEED_ENABLED = 'CALENDAR_FEED_ENABLED'
+    CALENDAR_FEED_REGENERATED = 'CALENDAR_FEED_REGENERATED'
+    CALENDAR_FEED_DISABLED = 'CALENDAR_FEED_DISABLED'
 
 class AuditEvent(db.Model):
     """Audit event model for security logging"""
@@ -139,6 +142,9 @@ class AuditEvent(db.Model):
             AuditAction.DRIVE_RESYNC_RAN: 'Drive-Re-Sync durchgeführt',
             AuditAction.GOOGLE_EMAIL_VERIFY_REQUESTED: 'Google-Mail-Verifikation angefordert',
             AuditAction.GOOGLE_EMAIL_VERIFIED: 'Google-Mail verifiziert',
+            AuditAction.CALENDAR_FEED_ENABLED: 'Kalender-Abo aktiviert',
+            AuditAction.CALENDAR_FEED_REGENERATED: 'Kalender-Link neu erzeugt',
+            AuditAction.CALENDAR_FEED_DISABLED: 'Kalender-Abo deaktiviert',
         }
         action_value = self.action.value if hasattr(self.action, 'value') else str(self.action)
         return action_names.get(self.action, action_value)
