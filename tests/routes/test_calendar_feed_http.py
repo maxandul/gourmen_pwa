@@ -99,3 +99,22 @@ def test_calendar_feed_unknown_token_404_no_body(client, app):
     r = client.get("/calendar/doesnotexistXXXX.ics")
     assert r.status_code == 404
     assert (r.get_data(as_text=True) or "") == ""
+
+
+def test_calendar_feed_apex_host_redirect_preserves_path(client, app):
+    """Ohne Pfad wuerde apex->www Kalender-Clients kaputt machen (siehe gourmen.ch/calendar/)."""
+    with app.app_context():
+        m = Member(
+            vorname="A",
+            nachname="P",
+            email="apex-cal@example.test",
+            passwort_hash=generate_password_hash("TestPasswortMind12"),
+            ical_token="testtoken_apex_redir",
+        )
+        db.session.add(m)
+        db.session.commit()
+        tok = m.ical_token
+    path = f"/calendar/{tok}.ics"
+    r = client.get(path, environ_overrides={"HTTP_HOST": "gourmen.ch"})
+    assert r.status_code == 301
+    assert r.headers.get("Location") == f"https://www.gourmen.ch{path}"

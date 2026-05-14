@@ -51,7 +51,7 @@ class CalendarFeedService:
     @classmethod
     def _public_base_url(cls) -> str:
         return (
-            current_app.config.get("PUBLIC_APP_BASE_URL", "https://gourmen.ch").rstrip(
+            current_app.config.get("PUBLIC_APP_BASE_URL", "https://www.gourmen.ch").rstrip(
                 "/"
             )
         )

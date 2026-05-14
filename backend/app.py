@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, request
 from flask import send_from_directory, make_response
 from backend.extensions import db
 from backend.config import config
@@ -24,6 +24,21 @@ def create_app(config_name=None):
         
         # Initialize extensions
         init_extensions(app)
+
+        @app.before_request
+        def redirect_apex_calendar_feed_to_www():
+            """Apex gourmen.ch leitet sonst ohne Pfad zu www um; ICS-URL muss den Pfad behalten."""
+            if request.method != "GET":
+                return None
+            host = (request.host or "").split(":")[0].lower()
+            if host != "gourmen.ch":
+                return None
+            path = request.path or ""
+            if not path.startswith("/calendar/") or not path.endswith(".ics"):
+                return None
+            qs = request.query_string.decode("utf-8")
+            suffix = f"?{qs}" if qs else ""
+            return redirect(f"https://www.gourmen.ch{path}{suffix}", code=301)
         
         # Test database connection
         try:
