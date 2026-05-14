@@ -76,41 +76,51 @@
                 </div>
                 {% endif %}
                 <details class="disclosure calendar-subscribe__howto">
-                    <summary class="disclosure__summary">Wie binde ich den Kalender ein?</summary>
-                    <div class="calendar-subscribe__platform">
-                        <h3 class="calendar-subscribe__platform-title">Apple Calendar (iPhone/iPad/Mac)</h3>
-                        <ol class="calendar-subscribe__steps">
-                            <li>Tippe oben auf <strong>In Apple-Kalender öffnen</strong> – der Kalender öffnet sich automatisch und fragt, ob du das Abo hinzufügen willst.</li>
-                            <li>Auf dem Mac: Kalender öffnen → Ablage → Neues Kalender-Abonnement → Link einfügen.</li>
-                            <li>Bestätige mit <strong>Abonnieren</strong>.</li>
-                        </ol>
-                    </div>
-                    <div class="calendar-subscribe__platform">
-                        <h3 class="calendar-subscribe__platform-title">Google Calendar</h3>
-                        <ol class="calendar-subscribe__steps">
-                            <li>Kopiere oben den Link.</li>
-                            <li>Öffne <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">calendar.google.com</a> am Computer (in der mobilen App geht es nicht).</li>
-                            <li>Links unter <strong>Weitere Kalender</strong> auf das <strong>+</strong> klicken → <strong>Per URL</strong> → Link einfügen → <strong>Kalender hinzufügen</strong>.</li>
-                            <li>Der Vereinskalender erscheint danach auch in der Google-Calendar-App auf deinem Smartphone.</li>
-                        </ol>
-                    </div>
-                    <div class="calendar-subscribe__platform">
-                        <h3 class="calendar-subscribe__platform-title">Outlook</h3>
-                        <ol class="calendar-subscribe__steps">
-                            <li>Kopiere oben den Link.</li>
-                            <li>In Outlook (Desktop oder Web) → <strong>Kalender hinzufügen</strong> → <strong>Aus dem Internet abonnieren</strong> → Link einfügen.</li>
-                            <li>Auf Outlook.com geht das unter <strong>Kalender hinzufügen → Aus dem Web abonnieren</strong>.</li>
-                        </ol>
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down', 'icon') }}
+                        Wie binde ich den Kalender ein?
+                    </summary>
+                    <div class="disclosure__content">
+                        <div class="calendar-subscribe__platform">
+                            <h3 class="calendar-subscribe__platform-title">Apple Calendar (iPhone/iPad/Mac)</h3>
+                            <ol class="calendar-subscribe__steps">
+                                <li>Tippe oben auf <strong>In Apple-Kalender öffnen</strong> – der Kalender öffnet sich automatisch und fragt, ob du das Abo hinzufügen willst.</li>
+                                <li>Auf dem Mac: Kalender öffnen → Ablage → Neues Kalender-Abonnement → Link einfügen.</li>
+                                <li>Bestätige mit <strong>Abonnieren</strong>.</li>
+                            </ol>
+                        </div>
+                        <div class="calendar-subscribe__platform">
+                            <h3 class="calendar-subscribe__platform-title">Google Calendar</h3>
+                            <ol class="calendar-subscribe__steps">
+                                <li>Kopiere oben den Link.</li>
+                                <li>Öffne <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer">calendar.google.com</a> am Computer (in der mobilen App geht es nicht).</li>
+                                <li>Links unter <strong>Weitere Kalender</strong> auf das <strong>+</strong> klicken → <strong>Per URL</strong> → Link einfügen → <strong>Kalender hinzufügen</strong>.</li>
+                                <li>Der Vereinskalender erscheint danach auch in der Google-Calendar-App auf deinem Smartphone.</li>
+                            </ol>
+                        </div>
+                        <div class="calendar-subscribe__platform">
+                            <h3 class="calendar-subscribe__platform-title">Outlook</h3>
+                            <ol class="calendar-subscribe__steps">
+                                <li>Kopiere oben den Link.</li>
+                                <li>In Outlook (Desktop oder Web) → <strong>Kalender hinzufügen</strong> → <strong>Aus dem Internet abonnieren</strong> → Link einfügen.</li>
+                                <li>Auf Outlook.com geht das unter <strong>Kalender hinzufügen → Aus dem Web abonnieren</strong>.</li>
+                            </ol>
+                        </div>
                     </div>
                 </details>
                 <p class="calendar-subscribe__hint">
                     Hinweis: Änderungen erscheinen je nach Kalender-App nach einigen Minuten bis zu 24 Stunden. Erinnerungen zu Events kommen über die App-Push.
                 </p>
-                <p class="calendar-subscribe__secondary">
-                    <button type="button" class="btn btn--outline btn--sm" id="calendar-feed-regenerate-open">Link neu erzeugen</button>
-                    <span class="calendar-subscribe__sep" aria-hidden="true">·</span>
-                    <button type="button" class="btn btn--outline btn--sm" id="calendar-feed-disable-open">Kalender-Abo deaktivieren</button>
-                </p>
+                <div class="calendar-subscribe__actions">
+                    <button type="button" class="btn btn--outline" id="calendar-feed-regenerate-open">
+                        {{ lucide_icon('refresh-cw') }}
+                        Link neu erzeugen
+                    </button>
+                    <button type="button" class="btn btn--outline" id="calendar-feed-disable-open">
+                        {{ lucide_icon('calendar-off') }}
+                        Kalender-Abo deaktivieren
+                    </button>
+                </div>
                 {% endif %}
             </div>
         </div>

@@ -342,9 +342,10 @@ Verhalten:
 | `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
 | `.calendar-subscribe-card` | – | iCal-Abo; nutzt äussere `.card` |
 | `.calendar-subscribe__url-row` | mit `__url-input`, `__copy-btn` | HTTPS-Feed-URL + Kopieren |
-| `.calendar-subscribe__howto` | innerhalb `.disclosure` | Accordion «Wie binde ich den Kalender ein?» |
+| `.calendar-subscribe__howto` | wie andere `disclosure` auf der Seite: Summary mit `chevron-down`, Inhalt in `disclosure__content` | Accordion «Wie binde ich den Kalender ein?» |
 | `.calendar-subscribe__platform` | mit `__platform-title`, `__steps` | Plattform-Block (Apple / Google / Outlook) |
-| `.calendar-subscribe__hint`, `__secondary`, `__sep` | – | Hinweis Polling/Push; sekundäre Links Regenerieren/Deaktivieren |
+| `.calendar-subscribe__hint` | – | Hinweis Polling/Push |
+| `.calendar-subscribe__actions` | – | Sekundäraktionen (Link neu / Abo aus); oben per Rand abgesetzt, unter 480px gestapelt |
 | `.calendar-subscribe-dialog` | mit `__panel`, `__title` | Bestätigungs-`<dialog>` für Link neu / Abo aus |
 
 ### 5.10 Deprecated / Legacy

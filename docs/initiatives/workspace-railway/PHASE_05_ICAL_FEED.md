@@ -1,8 +1,8 @@
 # Phase 5 – App: iCal-Feed pro Mitglied
 
-**Status**: done — umgesetzt 2026-05-14 auf Branch `phase/05-workspace-ical-feed`.
+**Status**: done — umgesetzt 2026-05-14; nach Review nach `master` gemerged.
 **Aufwand**: ~1–1.5 Tage
-**Branch**: `phase/05-workspace-ical-feed`
+**Branch**: `phase/05-workspace-ical-feed` (Feature-Branch; Merge-Ziel `master`)
 
 ## Ziel
 

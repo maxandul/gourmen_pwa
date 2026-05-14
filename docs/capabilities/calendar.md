@@ -402,21 +402,20 @@ Klick auf Button → POST `/member/settings/calendar/enable` → View springt in
 │                                                             │
 │  [  In Apple-Kalender öffnen  ]   ← nur iOS/macOS sichtbar │
 │                                                             │
-│  ▼ Wie binde ich den Kalender ein?                          │
-│     ▸ Apple Calendar (iPhone/iPad/Mac)                      │
-│     ▸ Google Calendar                                       │
-│     ▸ Outlook                                               │
+│  ▼ Wie binde ich den Kalender ein?  (Chevron wie Disclosure) │
+│     (Inhalt: Apple / Google / Outlook — klappbar)           │
 │                                                             │
 │  Hinweis: Änderungen erscheinen je nach Kalender-App nach   │
 │  einigen Minuten bis zu 24 Stunden.                         │
-│                                                             │
-│  Link neu erzeugen · Kalender-Abo deaktivieren              │
+│  ─────────────────────────────────────────────────────────  │
+│  [  Link neu erzeugen  ]  [  Kalender-Abo deaktivieren  ]  │
+│       (Outline-Buttons, Icons, mobil gestapelt)             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 Der Copy-Button kopiert die volle URL inklusive `https://`. Der «In Apple-Kalender öffnen»-Button rendert nur, wenn das User-Agent auf iOS oder macOS hindeutet — der Button verwendet ein `webcal://`-Schema, das macOS und iOS automatisch an Apple Calendar routen.
 
-«Link neu erzeugen» und «Kalender-Abo deaktivieren» sind sekundäre Aktionen als kleine Links unter dem Card-Block, jeweils mit Bestätigungs-Dialog.
+Die Anleitung nutzt dieselbe Disclosure-Komponente wie andere Einstellungs-Klappbereiche (`chevron-down` im Summary, Inhalt in `disclosure__content`). «Link neu erzeugen» und «Kalender-Abo deaktivieren» stehen in einer abgetrennten Aktionszeile (`.calendar-subscribe__actions`) als Outline-Buttons mit Icons; jeweils mit Bestätigungs-Dialog. Siehe `docs/UI.md` Component Registry.
 
 #### Regenerate-Dialog
 
