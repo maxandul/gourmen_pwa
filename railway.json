@@ -4,6 +4,11 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
+    "preDeployCommand": [
+      "bash",
+      "-lc",
+      "export FLASK_APP=backend.app:create_app && exec /opt/venv/bin/flask db upgrade"
+    ],
     "startCommand": "bash start.sh",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300
