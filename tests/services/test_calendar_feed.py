@@ -83,6 +83,8 @@ def test_feed_parses_and_has_vtimezone_and_vevent_properties(app_ctx):
     assert "Da Marco" in loc
     assert "8001" in loc
     desc = str(ve["DESCRIPTION"])
+    assert "Organisator:" in desc
+    assert "Andreas" in desc or "\U0001f43a" in desc
     assert "Details:" in desc
     assert f"/events/{eid}" in desc
     assert "Reservierung" in desc

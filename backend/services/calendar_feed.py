@@ -162,10 +162,13 @@ class CalendarFeedService:
     @classmethod
     def _format_description(cls, event: Event) -> str:
         detail = cls.event_detail_url(event.id)
+        org_line = f"Organisator: {cls._organizer_cn(event)}"
         notes = (event.notizen or "").strip()
+        parts = [org_line]
         if notes:
-            return f"{notes}\n\nDetails: {detail}"
-        return f"Details: {detail}"
+            parts.append(notes)
+        parts.append(f"Details: {detail}")
+        return "\n\n".join(parts)
 
     @classmethod
     def _organizer_cn(cls, event: Event) -> str:

@@ -156,7 +156,7 @@ Zwei separate Alembic-Commits in Phase 5:
 | `DTSTART` | `Event.datum.date()` plus `18:00` mit `TZID=Europe/Zurich` | `DTSTART;TZID=Europe/Zurich:20260615T180000` |
 | `DTEND` | `Event.datum.date()` plus `23:00` mit `TZID=Europe/Zurich` | `DTEND;TZID=Europe/Zurich:20260615T230000` |
 | `LOCATION` | `Event.place_name` + `, ` + `Event.place_address` (Fallback `Event.restaurant`) | `Da Marco, Bahnhofstrasse 12, 8001 Zürich` |
-| `DESCRIPTION` | `Event.notizen` + Leerzeile + `Details: <App-URL>` | siehe 6.3 |
+| `DESCRIPTION` | «Organisator: …» (`display_spirit_rufname`); optional Leerzeile + `Event.notizen`; Leerzeile + `Details: <App-URL>` | siehe 6.3 |
 | `URL` | Deep-Link auf App-Event-Detail-Seite | `https://gourmen.ch/events/247` |
 | `CATEGORIES` | `Event.event_typ.value` (`MONATSESSEN`, `AUSFLUG`, `GENERALVERSAMMLUNG`) | `CATEGORIES:MONATSESSEN` |
 | `ORGANIZER` | `CN=[Organisator.display_spirit_rufname]:mailto:kontakt@gourmen.ch` | `ORGANIZER;CN=Wolf Andreas:mailto:kontakt@gourmen.ch` |
@@ -177,12 +177,16 @@ Begründung: SVG-Icons aus der App-UI können im iCal-`SUMMARY` nicht eingebette
 ### 6.3 DESCRIPTION-Format
 
 ```
+Organisator: [Spirit + Rufname siehe ORGANIZER-CN]
+
 <Event.notizen, falls vorhanden>
 
 Details: https://gourmen.ch/events/<event_id>
 ```
 
-Falls `Event.notizen` leer ist, beginnt die Description direkt mit «Details: …». Der Link auf die App-Detail-Seite ist der zentrale Klickpunkt für mehr Kontext (Organisator-Profil, Teilnehmerliste, BillBro-Stand, Place-Maps-Karte).
+Die Zeile «Organisator: …» ist bewusst im Fliesstext dupliziert: Viele Kalender-Apps zeigen das Feld `ORGANIZER` in der Monatsliste kaum; `DESCRIPTION` erscheint dagegen typischerweise in der Termin-Detailansicht.
+
+Falls `Event.notizen` leer ist, entfällt der mittlere Block; es folgt direkt nach der Organisator-Zeile «Details: …».
 
 ### 6.4 LOCATION-Komposition
 
