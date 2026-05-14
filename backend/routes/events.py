@@ -737,6 +737,10 @@ def edit(event_id):
     
     if form.validate_on_submit():
         try:
+            from backend.services.calendar_feed import CalendarFeedService
+
+            before_cal = CalendarFeedService.calendar_relevant_state(event)
+
             old_organizer_id = event.organisator_id
             new_organizer_id = form.organisator_id.data
             
@@ -819,7 +823,9 @@ def edit(event_id):
                         responded_at=datetime.utcnow()
                     )
                     db.session.add(new_organizer_participation)
-            
+
+            after_cal = CalendarFeedService.calendar_relevant_state(event)
+            CalendarFeedService.bump_sequence_if_changed(event, before_cal, after_cal)
             db.session.commit()
             
             # Log organizer change if it happened

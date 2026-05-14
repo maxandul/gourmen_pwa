@@ -101,7 +101,15 @@ class CalendarFeedService:
 
     @staticmethod
     def calendar_relevant_state(event: Event) -> dict:
-        d: date | None = event.datum.date() if event.datum else None
+        raw = event.datum
+        if raw is None:
+            d = None
+        elif isinstance(raw, datetime):
+            d = raw.date()
+        elif isinstance(raw, date):
+            d = raw
+        else:
+            d = raw
         et = (
             event.event_typ.value
             if event.event_typ and hasattr(event.event_typ, "value")
@@ -188,7 +196,13 @@ class CalendarFeedService:
 
     @classmethod
     def _build_vevent(cls, event: Event, now_utc: datetime) -> ICalEvent:
-        day = event.datum.date() if event.datum else None
+        raw_d = event.datum
+        if isinstance(raw_d, datetime):
+            day = raw_d.date()
+        elif isinstance(raw_d, date):
+            day = raw_d
+        else:
+            day = None
         if not day:
             raise ValueError("Event ohne Datum")
 
@@ -257,7 +271,17 @@ class CalendarFeedService:
             .order_by(Event.datum.asc())
             .all()
         )
-        events = [e for e in rows if e.datum and e.datum.date() >= today]
+        def _cal_day(ev: Event) -> date | None:
+            raw = ev.datum
+            if raw is None:
+                return None
+            if isinstance(raw, datetime):
+                return raw.date()
+            if isinstance(raw, date):
+                return raw
+            return None
+
+        events = [e for e in rows if (cd := _cal_day(e)) is not None and cd >= today]
         cal = cls._build_calendar_shell()
         for ev in events:
             try:
