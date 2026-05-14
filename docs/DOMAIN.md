@@ -179,6 +179,7 @@ Im `AuditAction`-Enum definiert. Beispiele:
 - `CHANGE_PASSWORD`, `RESET_PASSWORD`
 - `REQUEST_2FA_RESET`, `RESET_2FA`
 - `READ_SENSITIVE_DATA`
+- `CALENDAR_FEED_ENABLED`, `CALENDAR_FEED_REGENERATED`, `CALENDAR_FEED_DISABLED` — persönlicher iCal-Feed (`docs/capabilities/calendar.md`); **ohne** Token-Wert im Audit-`extra_json`
 - weitere bei Bedarf
 
 ## Merchandise

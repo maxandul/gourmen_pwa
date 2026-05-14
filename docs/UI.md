@@ -340,6 +340,12 @@ Verhalten:
 | `.docs-action-modal` | –; `dialog` wie Upload-Modal zentriert | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
 | `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |
 | `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
+| `.calendar-subscribe-card` | – | iCal-Abo; nutzt äussere `.card` |
+| `.calendar-subscribe__url-row` | mit `__url-input`, `__copy-btn` | HTTPS-Feed-URL + Kopieren |
+| `.calendar-subscribe__howto` | innerhalb `.disclosure` | Accordion «Wie binde ich den Kalender ein?» |
+| `.calendar-subscribe__platform` | mit `__platform-title`, `__steps` | Plattform-Block (Apple / Google / Outlook) |
+| `.calendar-subscribe__hint`, `__secondary`, `__sep` | – | Hinweis Polling/Push; sekundäre Links Regenerieren/Deaktivieren |
+| `.calendar-subscribe-dialog` | mit `__panel`, `__title` | Bestätigungs-`<dialog>` für Link neu / Abo aus |
 
 ### 5.10 Deprecated / Legacy
 

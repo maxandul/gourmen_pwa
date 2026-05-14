@@ -63,6 +63,7 @@ Registrierung in `backend/app.py`:
 | `member` | `/member` | Member-Profile, Settings, Google-Login-Adresse fuer Drive |
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
 | `docs` | `/docs` | **Phase 03:** Vereinsdokumente im Google Shared Drive – Index, Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. |
+| `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -110,6 +111,7 @@ Aktuelle Services:
 | `RatingPromptService` | Logik wann Rating angezeigt wird |
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
 | `DriveStorageService` | **Phase 03:** Google Shared Drive – Folder-Init, Upload, Rename, Move, Archive/Restore, Hard-Delete, Auto-Sync per Document, Admin-Full-Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Authoritatives Spec: `docs/capabilities/drive.md`. |
+| `CalendarFeedService` | **Phase 05:** RFC-5545-iCal-Feed aus veröffentlichten Zukunfts-Events (`icalendar`), Token-Lifecycle (`Member.ical_token`), `ical_sequence`-Bump bei kalender-relevanten Feldänderungen. Spec: `docs/capabilities/calendar.md`. |
 
 ## Auth-Flow
 
@@ -153,7 +155,7 @@ RESET / ONBOARDING TOKENS
 - **Cache-Buster** bei jedem UI-Deploy: siehe `docs/UI.md` Sektion „Cache-Buster"
 - **Push-Notifications** via VAPID (`VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`); Subscriptions in DB
 - **Client-Registrierung** in `static/js/pwa.js`: `navigator.serviceWorker.register('/sw.js', { scope: '/' })` (nicht `/static/`); legacies Scope `/static/` wird beim erfolgreichen Register entfernt
-- **`member.technical`** (`templates/member/technical.html`): Einstellungs-Hub für **Push**, **Homescreen/PWA**, **Technik/Offline**; Verweis auf **`member.security`** (Passwort, 2FA). Auf **localhost** Hinweis/Toast wenn kein Service Worker (`?pwa_sw=1`), damit Push-Init nicht an `serviceWorker.ready` hängt (`static/js/app.js`).
+- **`member.technical`** (`templates/member/technical.html`): Einstellungs-Hub für **Push**, **Kalender-Abo (iCal/Webcal)**, **Homescreen/PWA**, **Technik/Offline**; Verweis auf **`member.security`** (Passwort, 2FA). Auf **localhost** Hinweis/Toast wenn kein Service Worker (`?pwa_sw=1`), damit Push-Init nicht an `serviceWorker.ready` hängt (`static/js/app.js`). **Kalender:** persönlicher Feed unter `/calendar/<token>.ics` (öffentlich, Token in URL); Aktivierung/Regenerieren/Deaktivieren per API unter `/member/settings/calendar/*` — Spec `docs/capabilities/calendar.md`.
 - **Install-/Push-Einblendungen** (`static/js/pwa.js`, nur eingeloggte Member, keine `public.*`): **Install** nur im Browser-Tab (iOS-Anleitung, Android/Chromium nach `beforeinstallprompt`); **Push-Promo** nur in **`display-mode: standalone`** (installierte PWA); jeweils wegklickbar mit **7-Tage**-Cooldown über `localStorage`; im Text Hinweis auf **Einstellungen → Technik** (`member.technical`). Promos liegen oben im **scrollenden** Dokument unter `#top-notifications` innerhalb von `main` (keine fixe Overlay-Leiste mehr). Tab-Fokus erneut `syncNotificationPermissionPromo()` (gedrosselt).
 - **Basis-Healthcheck** `GET /health` nur in der App-Factory (`backend/app.py`); **`GET /health/db`** (DB-Ping) bleibt am Public-Blueprint (`backend/routes/public.py`)
 
