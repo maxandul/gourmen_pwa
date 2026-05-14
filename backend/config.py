@@ -96,6 +96,8 @@ class Config:
 
     MAIL_FROM_ADDRESS = os.environ.get('MAIL_FROM_ADDRESS', 'kontakt@gourmen.ch')
     MAIL_REPLY_TO = os.environ.get('MAIL_REPLY_TO', MAIL_FROM_ADDRESS)
+    # Öffentliche App-URL (absolute Links in iCal, Mail); Production: https://gourmen.ch
+    PUBLIC_APP_BASE_URL = os.environ.get('PUBLIC_APP_BASE_URL', 'https://gourmen.ch').rstrip('/')
     MAIL_SMTP_HOST = os.environ.get('MAIL_SMTP_HOST', 'mail.infomaniak.com')
     MAIL_SMTP_PORT = int(os.environ.get('MAIL_SMTP_PORT', '587'))
     MAIL_SMTP_USERNAME = os.environ.get('MAIL_SMTP_USERNAME')

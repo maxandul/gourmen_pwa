@@ -70,6 +70,9 @@ class Event(db.Model):
     # Publication status
     published = db.Column(db.Boolean, default=False, nullable=False)
     allow_ratings = db.Column(db.Boolean, default=True, nullable=False)
+
+    # iCal SEQUENCE for subscribed calendars (Phase 5, RFC 5545)
+    ical_sequence = db.Column(db.Integer, nullable=False, default=0)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

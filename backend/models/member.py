@@ -62,6 +62,9 @@ class Member(db.Model, UserMixin):
     google_email = db.Column(db.String(255), index=True)
     google_email_verified = db.Column(db.Boolean, default=False, nullable=False)
     google_email_verified_at = db.Column(db.DateTime)
+
+    # iCal personal feed (Phase 5, docs/capabilities/calendar.md)
+    ical_token = db.Column(db.String(64), unique=True, nullable=True, index=True)
     
     # Association data
     funktion = db.Column(db.Enum(Funktion), default=Funktion.MEMBER)
