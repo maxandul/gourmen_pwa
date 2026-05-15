@@ -85,12 +85,13 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | 0 | done | master | 2026-05-01 | Baseline gelesen und gegen aktuelle Strategie abgeglichen |
 | 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM/MX stabil; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
 | 2 | done | master | 2026-05-07 | Resend in Prod (PR #11); `/admin/mail/test` verifiziert. Optional nachziehen: Forgot-Password/Onboarding/2FA E2E, mail-tester.com, Resend/Privacy-Text auf oeffentlicher Seite — siehe `PHASE_02_APP_SYSTEM_MAIL.md` |
-| 3 | done (Implementation + Prod) | master | 2026-05-13 | Code merged (PR #12), Hotfix Migration `d2b4e8f5a312` auf `4377231`; DB Head `e3c5f9a6b423`; Drive-Folders via `scripts/setup_drive.py`; `DRIVE_FEATURE_ENABLED=false` bis MVP-Cutover — siehe `PHASE_03_GOOGLE_SHARED_DRIVE_FILES.md` + `docs/capabilities/drive.md` |
+| 3 | done (legacy Kategorie-UI entfernt in Phase 9) | master | 2026-05-13 | Code merged (PR #12), Hotfix Migration `d2b4e8f5a312` auf `4377231`; DB Head `e3c5f9a6b423`. **2026-05-15:** Konzeptwende Drive-Browser → Phase 9; `scripts/setup_drive.py` entfernt. |
 | 4 | pending | – | – | Inhaltlich analog `_archive/2026-04_modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive; n8n-Pfad als offene Architektur-Frage (siehe STRATEGY_2026.md) |
 | 5 | done | master (war `phase/05-workspace-ical-feed`) | 2026-05-14 | iCal-Feed pro Mitglied (Service, Migrationen, UI Polish Disclosure/Aktionen, Rate-Limit). Spec: `docs/capabilities/calendar.md`. |
 | 6 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_06_PAYMENTS.md` |
 | 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |
 | 8 | pending | – | – | `PHASE_08_INFOMANIAK_DECOMMISSION.md`; nur abbauen wenn nichts mehr referenziert |
+| 9 | in_progress | `phase/09-workspace-drive-browser-refactor` | 2026-05-15 | Drive-Browser implementiert (Tiles, Breadcrumb, Kebab), Migration Phase 9, `DRIVE_ARCHIVE_FOLDER_ID`. PR/Merge offen; nach `master`-Deploy DB-Migration + Env setzen. Spec: `docs/capabilities/drive.md` §17. |
 
 Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 

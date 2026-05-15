@@ -330,12 +330,17 @@ Verhalten:
 | `.error-page` | HTTP-Fehlerseite mit `__code`, `__actions` |
 | `.offline-shell` | PWA-Offline-Shell mit `__inner`, `__lead` |
 
-#### Dokumente / Drive (Phase 03)
+#### Dokumente / Drive (Phase 03 / Phase 09 Browser)
 
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
-| `.docs-index` | mit `__toolbar-card`, `disclosure`/`disclosure__summary` (orangener Titel «Suchen & Hochladen», Chevron), `__toolbar-layout`, `__search-form`, `__query-row`, `__query-buttons`, `__upload-slot`, `__tabs-wrap`, `__tab-count` | Dokumenten-Liste (`docs/index.html`): Toolbar klappbar wie Events-Filter; Ordner-Leiste `tabs tabs--panel`; Upload-Modal zentriert. |
-| `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, Action-Buttons (Oeffnen/Download/Rename/Move/Archive/Restore/Hard-Delete), Audit-Historie. |
+| `.docs-browser` | mit `__toolbar-card`, `__toolbar-layout`, `__search-form`, `__query-row`, `__upload-slot`, `__section`, `__tile-grid`, `__search-list`, `__breadcrumb` | Drive-Browser-Shell (`docs/index.html`, `docs/folder.html`): Suche, Hochladen, Unterordner-Kacheln, Dateiliste, Suchtreffer. |
+| `.docs-folder-head` | mit `__actions` | Ordner-Kopfzeile mit «In Drive öffnen» und Hochladen (`folder.html`). |
+| `.docs-folder-tile` | `docs-folder-tile--archive` | Kachel-Link fuer Unterordner im Tile-Grid. |
+| `.docs-file-row` | mit `__main`, `__title`, `__icon`, `__meta`, `__kebab`, `__kebab-panel`, `__kebab-link`, `__kebab-btn` | Dateizeile mit Kebab-Aktionen (Öffnen, Download, Rename, Move, Archiv/Restore, Details). |
+| `.docs-folder-picker` | mit `__shell`, `__tree`, `__row`, `__row--selected`, `__toggle`, `__choose`, `__children` (DOM via JS) | Modal «Ordner wählen» fuer Upload/Verschieben/Wiederherstellen (`_folder_picker_modal.html` + `docs-folder-picker.js`). |
+| `.docs-upload-modal__folder-row` | mit `__folder-label` | Zielordner-Zeile im Upload-Modal (Picker-Trigger). |
+| `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, sekundaere Aktionen/Audit-Historie. |
 | `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`; `dialog` viewport-zentriert (`inset:0`, `margin:auto`) | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
 | `.docs-action-modal` | –; `dialog` wie Upload-Modal zentriert | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
 | `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |

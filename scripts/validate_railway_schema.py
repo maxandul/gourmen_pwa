@@ -41,8 +41,13 @@ EXPECTED_SCHEMA = {
         'guest_names', 'notes', 'created_at', 'updated_at'
     },
     'documents': {
-        'id', 'event_id', 'filename', 'file_path', 'file_type', 
-        'file_size', 'uploaded_by', 'created_at'
+        'id',
+        'drive_file_id',
+        'drive_parent_id',
+        'uploader_id',
+        'event_id',
+        'last_seen_at',
+        'created_at',
     },
     'audit_events': {
         'id', 'event_type', 'user_id', 'target_type', 'target_id', 
@@ -177,7 +182,7 @@ def validate_database():
             'member_mfa': [('member_id', 'members')],
             'mfa_backup_codes': [('member_id', 'members')],
             'participations': [('event_id', 'events'), ('member_id', 'members')],
-            'documents': [('event_id', 'events'), ('uploaded_by', 'members')],
+            'documents': [('event_id', 'events'), ('uploader_id', 'members')],
             'event_ratings': [('event_id', 'events'), ('member_id', 'members')],
             'push_subscriptions': [('member_id', 'members')],
             'merch_variants': [('article_id', 'merch_articles')],

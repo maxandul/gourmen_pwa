@@ -1,0 +1,63 @@
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
+<dialog class="docs-upload-modal" id="docs-upload-modal" aria-labelledby="docs-upload-modal-title"
+        data-docs-upload-modal
+        data-default-folder-id="{{ upload_folder_id }}"
+        data-max-mb="{{ max_file_size_mb }}"
+        data-allowed-mimes='{{ allowed_mime_types|tojson }}'>
+  <form method="POST" enctype="multipart/form-data" action="{{ url_for('docs.upload') }}" class="docs-upload-modal__form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="drive_folder_id" id="docs-upload-drive-folder-id" value="{{ upload_folder_id }}">
+    <header class="docs-upload-modal__header">
+      <h2 id="docs-upload-modal-title" class="docs-upload-modal__title">Dokument hochladen</h2>
+      <button type="button" class="docs-upload-modal__close" aria-label="Schliessen" data-docs-upload-close>{{ lucide_icon('x') }}</button>
+    </header>
+
+    <div class="docs-upload-modal__body">
+      <div class="docs-upload-modal__dropzone" data-docs-dropzone tabindex="0">
+        {{ lucide_icon('upload-cloud', 'icon icon--lg') }}
+        <p class="docs-upload-modal__dropzone-hint">Datei hierher ziehen oder auswählen</p>
+        <input type="file" id="docs-upload-file" name="file" class="docs-upload-modal__file-input" required>
+        <label for="docs-upload-file" class="btn btn--outline">Datei wählen</label>
+        <p class="docs-upload-modal__filename" data-docs-filename></p>
+      </div>
+
+      <p class="docs-upload-modal__hint">
+        Maximale Grösse: {{ max_file_size_mb }} MB. Erlaubt: PDF, Office-Formate, Bilder, SVG.
+      </p>
+
+      <div class="form-field">
+        <label class="form-field__label" for="docs-upload-title">Dateiname <span class="form-field__required" aria-hidden="true">*</span></label>
+        <input type="text" id="docs-upload-title" name="title" class="form-field__input" maxlength="200" required>
+      </div>
+
+      <div class="form-field">
+        <label class="form-field__label">Zielordner</label>
+        <div class="docs-upload-modal__folder-row">
+          <span class="docs-upload-modal__folder-label" id="docs-upload-folder-label">Ordner</span>
+          <button type="button" class="btn btn--outline btn--sm"
+                  data-docs-folder-picker-open
+                  data-target-input="#docs-upload-drive-folder-id"
+                  data-target-label="#docs-upload-folder-label">
+            {{ lucide_icon('folder-tree') }}
+            <span>Ordner wählen</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-field__label" for="docs-upload-event">Event (optional)</label>
+        <select id="docs-upload-event" name="event_id" class="form-field__input">
+          <option value="">– Kein Event –</option>
+          {% for ev in events %}
+            <option value="{{ ev.id }}">{{ ev.datum.strftime('%d.%m.%Y') }} – {{ ev.restaurant or ev.place_name or ev.event_typ.value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <footer class="docs-upload-modal__footer">
+      <button type="button" class="btn btn--outline" data-docs-upload-close>Abbrechen</button>
+      <button type="submit" class="btn btn--primary">Hochladen</button>
+    </footer>
+  </form>
+</dialog>

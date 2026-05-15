@@ -2,9 +2,21 @@
 
 > **Zweck**: Mitglieder verwalten Vereinsdokumente (Statuten, Protokolle, Verträge, Belege, Fotos) in der PWA – hochladen, anzeigen, organisieren, archivieren. Speicherort ist ein **Google Shared Drive**, das im Workspace-Starter-Konto `kontakt@gourmen.ch` lebt. Editieren von Office-Dokumenten erfolgt über den Drive-Web-View («Öffnen»-Aktion in der App), nicht in der App selbst.
 >
-> **Status**: Konzept abgeschlossen, bereit für Phase-3-Implementation. **Owner**: Andreas. **Stand**: 2026-05-09.
+> **Status**: Phase 3 (Kategorie-Modell) live auf Production seit 2026-05-13, Feature-Flag aus. **Konzeptwende 2026-05-15**: App wird vor dem MVP-Cutover vom 7-Kategorien-Modell auf einen **reinen Drive-Browser** umgebaut. **Owner**: Andreas. **Stand**: 2026-05-15.
 >
-> **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen), `docs/initiatives/workspace-railway/PHASE_03_GOOGLE_SHARED_DRIVE_FILES.md` (Phasen-Briefing für Cursor), `docs/ARCHITECTURE.md` (Stack-Detail).
+> **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen), `docs/initiatives/workspace-railway/PHASE_03_GOOGLE_SHARED_DRIVE_FILES.md` (Phasen-Briefing für Cursor – Kategorie-Modell), `docs/ARCHITECTURE.md` (Stack-Detail).
+>
+> ### Konzeptwende 2026-05-15 — Drive-Browser statt fixe Kategorien
+>
+> Aus der Praxis-Sicht von Andreas: die sieben fixen Kategorien werden in einzelnen Bereichen schnell unübersichtlich. Lösung: die App folgt der Drive-Struktur **rekursiv**, ohne eigenes Kategorie-Modell. Top-Level der App = direkte Unterordner des Shared-Drive-Roots; Mitglieder können in Drive beliebig tief verschachteln und die App folgt.
+>
+> Folgen für dieses Doc:
+>
+> - Sektionen **5 (Folder-Struktur)**, **6 (Datenmodell)**, **7 (Service-Layer)**, **8 (Lifecycle)**, **9 (Sync)**, **10 (UX-Flows)**, **16 (Setup)** und **17 (Cursor-Briefing)** sind neu geschrieben.
+> - Sektionen **3 (Auth)**, **4 (Drive-Mitgliedschaft)**, **11 (Quota/MIME)**, **12 (AI)**, **13 (Datenschutz)**, **14 (Operations)**, **15 (Verzahnung)** sind durch die Konzeptwende **nicht** betroffen und gelten unverändert.
+> - Decision-Log ergänzt um Eintrag **2026-05-15**.
+>
+> Cursor-Auftrag für den Refactor lebt in einem neuen Phase-Doc (`PHASE_09_DRIVE_BROWSER_REFACTOR.md`, wird separat angelegt).
 
 ---
 
@@ -126,14 +138,22 @@ Wenn ein Mitglied austritt:
 
 DSGVO-relevant: Drive-Membership-Removal innerhalb von 30 Tagen nach Austritt, dokumentiert im Vereins-Datenschutz.
 
-## 5. Folder-Struktur im Shared Drive
+## 5. Folder-Struktur im Shared Drive (Drive-Browser-Modell)
 
-### 5.1 Acht Top-Level-Folders
+### 5.1 Prinzip
+
+Die App listet die **Drive-Ordnerstruktur rekursiv** ab dem Shared-Drive-Root. Es gibt keine fixen App-Kategorien mehr. Was als Top-Level in der App erscheint, sind die direkten Unterordner des Shared-Drive-Roots. Was als Sub-Ordner erscheint, sind die jeweiligen Drive-Sub-Folder.
+
+**Drive ist Source of Truth** für die Folder-Struktur. Mitglieder pflegen Ordner direkt in Drive (anlegen, umbenennen, verschieben, löschen). Die App folgt automatisch — kein Sync-Cron, kein DB-Konfig-Pflege-Schritt.
+
+### 5.2 Empfohlene Default-Struktur (Konvention, nicht App-Zwang)
+
+Beim Initial-Setup legt der Vorstand in Drive die folgende Default-Struktur an. Sie ist eine **Empfehlung**, kein App-Zwang — Mitglieder können sie jederzeit erweitern, umbenennen oder umstrukturieren:
 
 ```
 /Statuten/             – aktuelle und alte Statuten-Versionen, unterzeichnete Exemplare
 /Vereinsführung/       – Vorstandsprotokolle, GV-Protokolle, Anträge, Beschlüsse
-/Finanzen/             – Erfolgsrechnungen, Budgets, Revisionsberichte, Belege (später)
+/Finanzen/             – Erfolgsrechnungen, Budgets, Revisionsberichte, Belege
 /Verträge/             – externe Vereinbarungen (Sunrise, Restaurants, Versicherungen, Sponsoring)
 /Reisen-und-Events/    – Reiseunterlagen, Event-Programme, Reservationsbestätigungen
 /Medien/               – Logos, Grafiken (auch SVG), Vereinsfotos
@@ -141,153 +161,195 @@ DSGVO-relevant: Drive-Membership-Removal innerhalb von 30 Tagen nach Austritt, d
 /Archiv/               – Sammelpunkt für nicht mehr aktive Dokumente
 ```
 
-Alle Folders sind direkt im Shared-Drive-Root, **flach**. Keine initialen Sub-Folders. Jahresordner (`/Finanzen/2026/`, `/Vereinsführung/2026/`) werden erst aktiviert, wenn ein Folder die Schwelle von ~200 Files überschreitet – das ist bei eurem Volumen nicht im MVP-Horizont.
+Bei wachsendem Volumen kann jeder Ordner intern beliebig verschachtelt werden, z.B. `/Finanzen/2026/Belege/`, `/Vereinsführung/Protokolle/2026/`. Die App stellt diese Verschachtelung in der UI mit Breadcrumbs dar.
 
-### 5.2 Folder-Modell-Wahl
+### 5.3 Ordner-CRUD nur in Drive
 
-**Modell B Mini**: App schreibt jeden Upload automatisch in den Folder, der zur Kategorie passt. DB-`category` ist Source of Truth, Drive-Folder ist deterministische Spiegelung.
+Die App **kann keine Ordner anlegen, umbenennen oder löschen**. Sie kann nur Dateien hochladen, lesen, umbenennen und zwischen **bestehenden** Ordnern verschieben. Wer Struktur ändern will, geht in Drive (Web oder Mobile-App).
 
-Re-Klassifikation (User klickt «Verschieben»): Service-Layer ruft Drive-API `files.update` mit `addParents`/`removeParents` plus DB-Update. Atomar.
+Begründung: ein Pflege-Ort statt zwei. Mitglieder, die ohnehin in Drive editieren, machen Strukturarbeit dort.
 
-### 5.3 Archiv ist Folder, nicht Status-Flag
+### 5.4 Archiv ist Folder, nicht Status-Flag
 
-Das `/Archiv/` ist ein normaler Drive-Folder mit denselben α-Permissions wie die Aktiv-Folders. Archivierung = Move ins `/Archiv/` plus DB-Update auf `status='archived'`. Die Original-Kategorie bleibt im DB-Feld erhalten, damit beim Wiederherstellen klar ist, in welchen Aktiv-Folder zurückzulegen ist.
+Das `/Archiv/` ist ein normaler Drive-Folder als **Konvention**. Archivierung in der App = Move-Operation der Datei ins `/Archiv/` via Drive-API. Es gibt **kein** DB-Status-Flag mehr — der Drive-Folder-Standort ist die einzige Wahrheit.
+
+Wiederherstellen: der User wählt einen Ziel-Folder über den Folder-Picker. Es gibt keinen «Original-Folder» mehr, da die App den ursprünglichen Standort nicht persistiert (Drive-Realität ist führend, nicht ein DB-Memorial).
 
 Vorteile dieses Modells:
-- Drive-Realität und App-Status sind immer kongruent
+- Datenmodell wird einfacher (kein `status`-Feld, kein `archived_at`)
+- Drive-Realität und App-Sicht sind immer kongruent — per Definition
 - Mitglieder, die direkt im Drive browsen, sehen das Archiv natürlich
 - Keine 30-Tage-Frist wie beim Drive-Papierkorb – archivierte Files bleiben unbegrenzt
 
-## 6. Datenmodell
+### 5.5 Belege und Buchhaltung
 
-### 6.1 `Document`-Model (Redesign)
+Belege liegen weiterhin in Drive, typischerweise unter `/Finanzen/`. Im Drive-Browser-Modell sind sie für alle Mitglieder sichtbar wie alle anderen Files (Strategie «alle sehen alles»). Die Buchhaltungs-Capability arbeitet mit denselben Files via Service-Account — keine Sonder-Verstecke nötig.
+
+### 5.6 Wurzel-Einstieg
+
+App-Root entspricht dem konfigurierten `GOOGLE_DRIVE_ID` (der Shared Drive selbst). Top-Level-Tiles in `/docs/` sind die direkten Children dieses Shared Drives. Andreas kann jederzeit weitere Top-Level-Folder in Drive anlegen — sie erscheinen automatisch als neue Tiles.
+
+## 6. Datenmodell (Drive-Browser-Modell)
+
+### 6.1 `Document`-Model (geschrumpft)
 
 ```python
-class DocumentCategory(Enum):
-    STATUTEN          = 'STATUTEN'
-    VEREINSFUEHRUNG   = 'VEREINSFUEHRUNG'
-    FINANZEN          = 'FINANZEN'
-    VERTRAEGE         = 'VERTRAEGE'
-    REISEN_EVENTS     = 'REISEN_EVENTS'
-    MEDIEN            = 'MEDIEN'
-    SONSTIGES         = 'SONSTIGES'
-
-class DocumentStatus(Enum):
-    ACTIVE   = 'ACTIVE'
-    ARCHIVED = 'ARCHIVED'
-
 class Document(db.Model):
+    """Schlanker DB-Cache: zeigt auf eine Drive-Datei, hält App-spezifische Beziehungen.
+
+    Drive ist Source of Truth für Name, Folder-Standort, MIME, Grösse, Versionen.
+    Die App persistiert nur, was nicht aus Drive zurückgewonnen werden kann
+    (Uploader-Identität, Event-Verknüpfung, Audit-Spur).
+    """
     __tablename__ = 'documents'
 
     id                   = db.Column(db.Integer, primary_key=True)
-    title                = db.Column(db.String(200), nullable=False)
-    category             = db.Column(db.Enum(DocumentCategory), nullable=False, index=True)
-    status               = db.Column(db.Enum(DocumentStatus), nullable=False,
-                                     default=DocumentStatus.ACTIVE, index=True)
 
-    # Drive-Identität
+    # Drive-Identität (Source of Truth)
     drive_file_id        = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    drive_web_view_link  = db.Column(db.String(500), nullable=True)
+    drive_parent_id      = db.Column(db.String(100), nullable=False, index=True)
+    # ^ Cache des aktuellen Parent-Folders. Wird beim Move aktualisiert,
+    #   beim Auto-Sync gegen Drive geprueft.
 
-    # Datei-Metadaten
-    mime_type            = db.Column(db.String(100), nullable=True)
-    size_bytes           = db.Column(db.BigInteger, nullable=True)
-    checksum             = db.Column(db.String(64), nullable=True)
-
-    # Beziehungen
-    event_id             = db.Column(db.Integer, db.ForeignKey('events.id', ondelete='SET NULL'),
-                                     nullable=True)
+    # App-spezifisch (kann nicht aus Drive rekonstruiert werden)
     uploader_id          = db.Column(db.Integer, db.ForeignKey('members.id', ondelete='SET NULL'),
-                                     nullable=False)
-
-    # Lifecycle
-    archived_at          = db.Column(db.DateTime, nullable=True)
-    archived_by_id       = db.Column(db.Integer, db.ForeignKey('members.id', ondelete='SET NULL'),
+                                     nullable=True)
+    event_id             = db.Column(db.Integer, db.ForeignKey('events.id', ondelete='SET NULL'),
                                      nullable=True)
 
     # Sync-Helper
-    last_synced_at       = db.Column(db.DateTime, nullable=True)
+    last_seen_at         = db.Column(db.DateTime, nullable=True)
+    # ^ Wann hat die App das File zuletzt in Drive bestaetigt gesehen?
+    #   Fuer verwaiste Eintraege (in Drive geloescht, in DB noch da).
 
     # Timestamps
     created_at           = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at           = db.Column(db.DateTime, default=datetime.utcnow,
-                                     onupdate=datetime.utcnow)
 ```
 
-**Wegfallende Felder** aus dem alten Schema: `url`, `visibility`, `deleted_at`. Bestehende URL-only-Records werden vor Migration komplett gelöscht (Andreas-Freigabe: «alles bisher verwerfen»).
+**Was wegfaellt gegenueber dem Kategorie-Modell**: `title`, `category`, `status`, `archived_at`, `archived_by_id`, `mime_type`, `size_bytes`, `checksum`, `drive_web_view_link`, `updated_at`, `last_synced_at`.
+
+**Begruendung**:
+
+- `title` -> Drive-File-Name ist die Wahrheit. App liest live oder via einfachen Cache pro Request.
+- `category`, `status` -> beides ist Folder-Standort in Drive (siehe Sektion 5.4 zum Archiv).
+- `archived_at`, `archived_by_id` -> aus AuditEvents rekonstruierbar.
+- `mime_type`, `size_bytes`, `checksum` -> kommen pro Request aus Drive-API. Kein Vorteil aus dem Cache.
+- `drive_web_view_link` -> deterministisch aus `drive_file_id`, kein eigenes Feld noetig.
+- `updated_at`, `last_synced_at` -> ueberschneiden sich mit `last_seen_at`. Auto-Sync schreibt nur den.
 
 ### 6.2 `Member`-Erweiterung
 
-```python
-# Ergänzung in models/member.py
-google_email             = db.Column(db.String(120), nullable=True, index=True)
-google_email_verified    = db.Column(db.Boolean, default=False, nullable=False)
-google_email_verified_at = db.Column(db.DateTime, nullable=True)
-```
-
-Verifikations-Token werden in der bestehenden `auth_tokens`-Tabelle mit neuem `purpose='google_email_verify'` abgelegt – konsistent zum Pattern für Password-Reset, Onboarding, 2FA-Reset.
+Bleibt wie in Phase 3 implementiert (siehe `backend/models/member.py`): `google_email`, `google_email_verified`, `google_email_verified_at`. Kein neuer Migration-Schritt durch den Refactor.
 
 ### 6.3 Indexes
 
 ```sql
 CREATE UNIQUE INDEX ix_documents_drive_file_id ON documents (drive_file_id);
-CREATE INDEX ix_documents_status ON documents (status);
-CREATE INDEX ix_documents_category ON documents (category);
-CREATE INDEX ix_documents_status_category ON documents (status, category);
+CREATE INDEX ix_documents_drive_parent_id ON documents (drive_parent_id);
+-- Alte Indexes (ix_documents_status, ix_documents_category, ix_documents_status_category) entfernen.
 ```
 
-### 6.4 Migration
+### 6.4 Migration vom Kategorie-Modell zum Drive-Browser-Modell
 
-Drei separate Alembic-Commits in Phase 3:
+**Ausgangslage (Stand 2026-05-15)**: Production hat exakt **ein Test-Dokument** in der `documents`-Tabelle, hochgeladen waehrend Phase 3 fuer die Funktionsverifikation. `DRIVE_FEATURE_ENABLED=false`, also keine produktive Nutzung. Andreas-Freigabe: dieses Test-Dokument darf vor der Migration manuell entfernt werden (Drive-File loeschen + DB-Record loeschen).
 
-1. **Member-Schema-Erweiterung**: `google_email`-Felder.
-2. **Document-Schema-Redesign**: alte Records löschen, alte Spalten droppen, neue Spalten anlegen, Enum-Werte aktualisieren.
-3. **Token-Purpose-Erweiterung**: `google_email_verify` als neuer Wert im Token-Purpose-Enum.
+Damit ist die Migration **trocken** — keine Daten-Erhaltung, kein Drive-API-Backfill, kein Mapping von Kategorien auf Folder-IDs noetig.
 
-Downgrade ist bewusst nicht implementiert (`raise NotImplementedError`), weil Drive-Verknüpfungen nicht reversibel sind.
+**Manuelle Vorbereitung (Andreas, ca. 1 Min)**:
+
+1. Das Test-File im Drive loeschen (oder in den Drive-Papierkorb verschieben).
+2. In der `documents`-Tabelle den passenden Record loeschen (oder ein `TRUNCATE TABLE documents` in der Production-DB ausfuehren — bei nur einem Record gleichwertig).
+
+**Alembic-Migration (Cursor)**:
+
+1. **Neue Spalten anlegen**: `drive_parent_id` (String(100), nullable=False, indexed), `last_seen_at` (DateTime, nullable=True).
+2. **Alte Spalten droppen**: `title`, `category`, `status`, `archived_at`, `archived_by_id`, `mime_type`, `size_bytes`, `checksum`, `drive_web_view_link`, `updated_at`, `last_synced_at`.
+3. **Alte Indexes droppen**: `ix_documents_status`, `ix_documents_category`, `ix_documents_status_category`.
+4. **Neuen Index anlegen**: `ix_documents_drive_parent_id`.
+5. **Enums droppen**: `DocumentCategory` und `DocumentStatus` aus dem ORM entfernen. Postgres-Enum-Types per `DROP TYPE document_category` / `DROP TYPE document_status` aufraeumen (mit `IF EXISTS` fuer Idempotenz).
+
+**Downgrade** wird bewusst nicht implementiert (`raise NotImplementedError`) — irreversibel.
+
+**Reihenfolge in Produktion**: Andreas-Vorbereitung (Test-Doc weg) **vor** Migration-Deployment. Falls die DB doch noch Records enthaelt, bricht die Migration sauber mit Constraint-Fehler ab — sicheres Default.
 
 ## 7. Service-Layer (`backend/services/drive_storage.py`)
 
-### 7.1 Methoden-Skelett
+### 7.1 Methoden-Skelett (Drive-Browser-Modell)
 
 ```python
 class DriveStorageService:
-    """Service-Layer für Google Shared Drive Operations.
+    """Service-Layer fuer Google Shared Drive Operations.
 
     Authentifiziert via Service-Account-Key aus GOOGLE_SERVICE_ACCOUNT_KEY env.
-    Alle Operationen sind atomar (Drive + DB) oder werfen explizite Fehler.
+    Drive ist Source of Truth fuer Folder-Struktur, Filenames und MIME.
+    DB haelt nur Uploader-Identitaet, Event-Verknuepfung und Audit-Spur.
     """
 
-    # Setup / Bootstrap (von scripts/setup_drive.py genutzt)
-    def initialize_folder_structure(self, drive_id: str) -> dict[DocumentCategory, str]: ...
+    # Listing (live aus Drive)
+    def list_folder(self, drive_folder_id: str) -> FolderListing: ...
+    # ^ Listet direkte Children eines Drive-Folders.
+    #   FolderListing enthaelt: subfolders (list von Folder-Meta),
+    #   files (list von File-Meta inkl. App-Beziehungen aus DB-Join).
+
+    def get_folder_breadcrumb(self, drive_folder_id: str) -> list[FolderRef]: ...
+    # ^ Liest den Pfad vom Root bis zum gegebenen Folder (rekursiver Parent-Lookup).
+
+    def get_root_id(self) -> str: ...
+    # ^ Liefert die Shared-Drive-Wurzel-ID aus GOOGLE_DRIVE_ID.
+
+    # Suche (live via Drive Volltext)
+    def search_files(self, query: str, scope_folder_id: str | None = None) -> list[FileMeta]: ...
+    # ^ Drive files.list mit q="fullText contains '...'".
+    #   scope_folder_id=None -> ueber den ganzen Shared Drive.
 
     # Standard-CRUD
-    def upload_document(self, file_stream, title: str, category: DocumentCategory,
+    def upload_document(self, file_stream, title: str, drive_folder_id: str,
                         uploader: Member, event: Event | None = None,
                         original_filename: str | None = None) -> Document: ...
+    # ^ Laedt in den angegebenen Drive-Folder hoch (kein Kategorie-Mapping).
+    #   Sanitization + Kollisions-Counter wie bisher.
+
     def download_document(self, document: Document) -> tuple[bytes, str]: ...
-    def get_web_view_link(self, document: Document, refresh: bool = False) -> str: ...
+    def get_web_view_link(self, document: Document) -> str: ...
+    # ^ Live aus Drive geholt, kein DB-Cache.
 
-    # Lifecycle
-    def archive_document(self, document: Document, archived_by: Member) -> None: ...
-    def restore_document(self, document: Document, restored_by: Member) -> None: ...
-    def permanently_delete_document(self, document: Document, deleted_by: Member) -> None: ...
-    def change_category(self, document: Document, new_category: DocumentCategory,
-                        changed_by: Member) -> None: ...
-    def rename_document(self, document: Document, new_title: str, renamed_by: Member) -> None: ...
+    # Lifecycle (alles via Drive-API, App-Aktionen)
+    def archive_document(self, document: Document, archived_by: Member,
+                         archive_folder_id: str) -> None: ...
+    # ^ Move ins /Archiv/ (Folder-ID wird per Konfiguration uebergeben).
 
-    # Listing / Query (reine DB-Queries)
-    def list_documents(self, category: DocumentCategory | None = None,
-                       status: DocumentStatus = DocumentStatus.ACTIVE) -> list[Document]: ...
+    def restore_document(self, document: Document, target_folder_id: str,
+                         restored_by: Member) -> None: ...
+    # ^ Move zurueck in einen vom User gewaehlten Folder.
+
+    def move_document(self, document: Document, new_parent_id: str,
+                      moved_by: Member) -> None: ...
+    # ^ Generisches Verschieben zwischen bestehenden Drive-Folders.
+
+    def rename_document(self, document: Document, new_filename: str,
+                        renamed_by: Member) -> None: ...
+    # ^ Drive files.update mit name=...; aktualisiert nur Drive, kein DB-Feld.
+
+    def permanently_delete_document(self, document: Document,
+                                    deleted_by: Member) -> None: ...
 
     # Sync
     def auto_sync_document(self, document: Document) -> SyncResult: ...
-    def admin_full_resync(self) -> ResyncReport: ...
+    # ^ Prueft beim Detail-View, ob drive_file_id noch existiert und
+    #   drive_parent_id noch stimmt. Bei Drift: DB-Update.
 
-    # Member-Lifecycle
+    def admin_full_resync(self) -> ResyncReport: ...
+    # ^ Walkt rekursiv den ganzen Shared Drive ab Root, listet alle Files,
+    #   gleicht mit DB ab.
+
+    # Member-Lifecycle (unveraendert)
     def invite_member_to_drive(self, member: Member) -> None: ...
     def remove_member_from_drive(self, member: Member) -> None: ...
 ```
+
+**Wegfallend** gegenueber Phase 3: `initialize_folder_structure`, `change_category`, `list_documents`. Folder-Anlegung passiert in Drive (nicht in App-Code); Kategorie-Aenderung ist ein normaler `move_document`-Aufruf; Listing per Kategorie ist eine `list_folder`-Operation pro Folder-ID.
+
+**Caching-Strategie**: `list_folder` und `get_folder_breadcrumb` ohne eigenen Cache — Drive-API ist schnell genug fuer interaktive Latenz (<300ms typisch). Falls spaeter noetig: einfacher In-Memory-LRU pro Request-Kontext.
 
 ### 7.2 Error-Handling
 
@@ -359,156 +421,217 @@ def invite_member_to_drive(self, member: Member) -> None:
         raise
 ```
 
-## 8. Lifecycle und Soft-Delete (Drei-Stufen-Modell)
+## 8. Lifecycle und Soft-Delete (Drive-Browser-Modell)
 
-| Zustand | Drive-Realität | DB-Status | Sichtbarkeit in App |
+| Zustand | Drive-Realitaet | DB-Sicht | Sichtbarkeit in App |
 |---|---|---|---|
-| **Aktiv** | in einem der sieben Aktiv-Folders | `status = ACTIVE` | Standard-Liste |
-| **Archiviert** | im `/Archiv/`-Folder | `status = ARCHIVED` | Tab/Filter «Archiv» |
-| **Endgültig gelöscht** | im Drive-Papierkorb | DB-Eintrag entfernt | weg, nur AuditEvent-Snapshot |
+| **Aktiv** | in irgendeinem Folder ausser `/Archiv/` | `drive_parent_id` zeigt dorthin | normaler Tile/Datei-Listen-Pfad |
+| **Archiviert** | im `/Archiv/`-Folder (oder Sub-Folder davon) | `drive_parent_id` zeigt dorthin | sichtbar wenn User durch `/Archiv/` browst |
+| **Endgueltig geloescht** | im Drive-Papierkorb | DB-Eintrag entfernt | weg, nur AuditEvent-Snapshot |
 
 **App-Aktionen**:
 
-- *«Archivieren»* (jedes Mitglied): File-Move ins `/Archiv/`, `status=ARCHIVED`, `archived_at` und `archived_by_id` gesetzt, AuditEvent `DOCUMENT_ARCHIVED`.
-- *«Wiederherstellen»* (jedes Mitglied im Archiv-View): File-Move zurück in den Original-Folder (aus `category` abgeleitet), `status=ACTIVE`, `archived_at=NULL`, AuditEvent `DOCUMENT_RESTORED`.
-- *«Endgültig löschen»* (**nur Admin**, im Archiv-View sichtbar): Drive-API `files.update` mit `trashed=true`, danach DB-Hard-Delete, AuditEvent `DOCUMENT_PERMANENTLY_DELETED` mit Document-Snapshot im Payload (für die nachträgliche Forensik).
+- *«Archivieren»* (jedes Mitglied): `move_document` ins `/Archiv/`. `drive_parent_id` wird aktualisiert. AuditEvent `DOCUMENT_ARCHIVED` mit `from_folder_id` im Payload (fuer evtl. spaetere Forensik). Kein DB-Status-Flag mehr.
+- *«Wiederherstellen»* (jedes Mitglied, wenn er im Archiv ist): Folder-Picker oeffnen, Ziel-Folder waehlen, `move_document` dorthin. AuditEvent `DOCUMENT_RESTORED`. Es gibt keinen «Original-Folder» — User muss bewusst wieder einsortieren.
+- *«Endgueltig loeschen»* (**nur Admin**): Drive-API `files.update(trashed=True)`, danach DB-Hard-Delete, AuditEvent `DOCUMENT_PERMANENTLY_DELETED` mit File-Meta-Snapshot im Payload.
 
-Drive-Papierkorb hat einen 30-Tage-Wiederherstellungs-Pfad. Falls innerhalb dieser Zeit ein Restore nötig wird, geschieht dies via Drive-Web-UI durch den Admin (manueller Recovery-Schritt – kein App-Feature).
+Drive-Papierkorb hat einen 30-Tage-Wiederherstellungs-Pfad. Falls innerhalb dieser Zeit ein Restore noetig wird, geschieht dies via Drive-Web-UI durch den Admin (manueller Recovery-Schritt — kein App-Feature).
 
-## 9. Sync-Modell
+**Konvention `/Archiv/`-Folder-ID**: wird einmalig in einer App-Konfiguration (env oder DB-Singleton) gehalten — `DRIVE_ARCHIVE_FOLDER_ID`. Wenn Andreas den Archiv-Folder in Drive umbenennt oder verschiebt, muss diese ID synchron gehalten werden. Bei einem zukuenftigen Refactor koennte die App das per Name-Lookup selbst finden, aber im MVP genuegt die explizite ID.
 
-### 9.1 Strict-App im Default
+## 9. Sync-Modell (Drive-Browser-Modell)
 
-App-Operationen sind atomar. Nach jedem `upload_document` / `archive_document` / `change_category` / etc. sind Drive und DB konsistent. **Kein** Sync-Mechanismus für den Normalbetrieb nötig.
+### 9.1 Drive ist Source of Truth, DB ist duenner Cache
 
-### 9.2 Auto-Sync für Drift
+Im Drive-Browser-Modell ist Drift weniger problematisch als im Kategorie-Modell — die meisten «Drift»-Faelle (User benennt File in Drive um, verschiebt es in einen Sub-Folder) sind im neuen Modell schlicht **erwartetes Verhalten**. Listing-Operationen lesen ohnehin live aus Drive; nur die Document-Beziehungen (Uploader, Event-Verknuepfung) liegen in der DB.
 
-Drift entsteht nur, wenn jemand **direkt im Drive** operiert (Drive-Web, Mobile-App). Die App fängt das passiv ein:
+Drift im engeren Sinn betrifft also nur:
 
-- Beim Aufruf der Detail-View eines Documents: leichter API-Check, ob `drive_file_id` noch existiert und der Folder-Pfad noch zu `category`+`status` passt. Bei Drift: silentes Auto-Sync, DB folgt Drive.
-- Beim List-View: kein API-Call, nur DB-Query (Performance).
+- File wird in Drive geloescht -> DB-Eintrag wird verwaist
+- File wird in Drive hochgeladen -> kein DB-Eintrag existiert (Uploader unbekannt)
+- `drive_parent_id`-Cache ist veraltet (nach Direct-Drive-Move)
+
+### 9.2 Auto-Sync passiv
+
+- Beim Aufruf der Detail-View: pruefen, ob `drive_file_id` noch existiert; falls nicht, DB-Eintrag loeschen + AuditEvent `DOCUMENT_AUTO_REMOVED`. Falls existiert, aber `drive_parent_id` weicht ab: silent korrigieren, `last_seen_at` setzen.
+- Beim Folder-List-View: Drive-API liefert die Liste live. Files, die in Drive da sind aber keinen DB-Eintrag haben, werden in der Anzeige mit «Hochgeladen extern via Drive» beschriftet (kein automatischer DB-Insert beim List — das macht der Re-Sync).
 
 ### 9.3 Manueller Re-Sync
 
-Im Admin-Dashboard ein Button «Drive synchronisieren». Klick öffnet Modal mit Erklärung («Was macht das? Was passiert dabei? Dauer?»). Nach Bestätigung läuft `admin_full_resync` über alle acht Folders, gleicht mit DB ab und meldet Summary («3 neue Dokumente importiert, 1 verwaister Eintrag bereinigt, 0 Konflikte»).
+Im Admin-Dashboard ein Button «Drive synchronisieren». Klick oeffnet Modal mit Erklaerung. Nach Bestaetigung walkt `admin_full_resync` den Shared Drive rekursiv ab Root und gleicht mit DB ab. Summary-Toast nach Lauf.
 
 Drift-Behandlung beim manuellen Re-Sync:
 
 | Situation | Drive | DB | Auto-Aktion |
 |---|---|---|---|
-| Verschoben | in anderem Aktiv-Folder | falsche `category` | DB-Update |
-| Archiviert | in `/Archiv/` | `status=ACTIVE` | DB auf `archived` |
-| Wiederhergestellt | in Aktiv-Folder | `status=ARCHIVED` | DB auf `active` |
-| Direkt-gelöscht | im Drive-Papierkorb | Eintrag verwaist | DB-Eintrag entfernen, AuditEvent `DOCUMENT_AUTO_SYNCED` |
-| Neu hochgeladen | File in Folder | kein DB-Eintrag | Neuer Document-Record erzeugt, Uploader auf «System» (kein Member-Match) |
+| Verschoben (in anderen Folder) | in anderem Folder | `drive_parent_id` veraltet | DB-Update |
+| Umbenannt | neuer Name | (kein Name in DB) | nichts noetig — Drive ist Wahrheit |
+| Direkt-geloescht | im Drive-Papierkorb | Eintrag verwaist | DB-Eintrag entfernen, AuditEvent `DOCUMENT_AUTO_REMOVED` |
+| Neu hochgeladen | File in Folder | kein DB-Eintrag | Neuer Document-Record, `uploader_id=NULL` (extern via Drive), AuditEvent `DOCUMENT_AUTO_IMPORTED` |
 
-## 10. UX-Flows
+## 10. UX-Flows (Drive-Browser-Modell)
 
 ### 10.1 Sprache in der UI
 
-DB-Spalten heissen weiterhin englisch (`category`, `status`), die UI-Labels werden auf Deutsch und benutzerfreundlich gewählt:
+Da das Datenmodell keine eigene `category` mehr kennt, vereinfacht sich die UI-Sprache:
 
-| DB-Konzept | UI-Label |
+| Konzept | UI-Label |
 |---|---|
-| `category` | «Ordner» |
+| Drive-Folder | «Ordner» |
 | Detail-View-Aktion | «Details» |
-| Kategorie ändern | «Verschieben» |
-| Edit-Action (Drive-Web öffnen) | «Öffnen» |
-| Titel ändern | «Umbenennen» |
+| In anderen Ordner schieben | «Verschieben» |
+| Drive-Web oeffnen | «In Drive oeffnen» |
+| Drive-Filename aendern | «Umbenennen» |
+| Pfad-Anzeige | Breadcrumb «Dokumente › Finanzen › 2026» |
 
-### 10.2 Upload
+### 10.2 Routing und Pfade
+
+- `/docs/` → **Ordner-Uebersicht**: Top-Level-Tiles = direkte Children des Shared-Drive-Roots.
+- `/docs/folder/<drive_folder_id>` → **Ordner-Detail**: Sub-Folder-Tiles oben (falls vorhanden), Datei-Liste darunter.
+- `/docs/file/<doc_id>` → optionale Detail-Seite (nur fuer Audit-Historie und Event-Verknuepfung; primaere Aktionen liegen inline im Kebab-Menue).
+
+`drive_folder_id` ist die Drive-File-ID des Folders, ein stabiler Identifier — Folder-Umbenennen in Drive bricht keine Links.
+
+### 10.3 Ordner-Uebersicht (`/docs/`)
+
+**Layout**: oben Suche und «Hochladen»-Button, darunter Grid mit Ordner-Tiles.
+
+- Desktop: 3-4 Spalten Tile-Grid, horizontal zentriert.
+- Mobile: 2 Spalten.
+
+**Tile-Inhalt**:
+
+- Lucide `folder`-Icon, einheitlich (Brand-Primary-Akzent)
+- Folder-Name (Drive-Name)
+- Klein darunter: «X Dokumente» (Anzahl direkter Children, inkl. Sub-Folder + Files)
+
+**Sortierung**: alphabetisch nach Folder-Name, ausser `/Archiv/` — der Archiv-Tile haengt visuell gedaempft am Ende des Grids (eigene Background-Farbe, leicht reduzierte Opacity), egal wo er alphabetisch eingeordnet waere.
+
+**Suche**: Volltext via Drive-API (`fullText contains`). Eingabe + Submit zeigt eine flache Treffer-Liste mit Breadcrumb pro Treffer («Finanzen › 2026 › Beleg-XYZ.pdf»). Klick auf Treffer oeffnet den enthaltenden Folder; Klick auf den Datei-Titel oeffnet sie direkt in Drive.
+
+### 10.4 Ordner-Detail (`/docs/folder/<id>`)
+
+**Layout**:
 
 ```
-Member klickt «Dokument hochladen» (im Documents-Index oder Event-Detail)
-  → Modal mit Feldern:
+[<- Zurueck]   Breadcrumb: Dokumente › Finanzen › 2026     [Hochladen] [In Drive oeffnen]
+
+[Suche im Ordner]    [Sortieren: Datum / Name]
+
+Unterordner (falls vorhanden)
+  [Folder-Tile]  [Folder-Tile]  [Folder-Tile]
+
+Dateien
+  [Icon] Bilanz_2026.pdf                      uploaded by Andreas    12.05.2026     [⋮]
+  [Icon] Erfolgsrechnung_2026.xlsx            uploaded by Markus     10.05.2026     [⋮]
+  ...
+```
+
+**Datei-Listen-Eintrag** (Drive-Stil):
+
+- Dateityp-Icon (PDF / DOCX / XLSX / Image / Generic basierend auf Drive-MIME)
+- Drive-Filename (klick = «In Drive oeffnen» in neuem Tab)
+- Klein: Uploader (oder «extern via Drive»), Datum (relatives Format «vor 3 Tagen», Tooltip mit absolutem Datum)
+- Kebab-Menue rechts mit Aktionen
+
+**Kebab-Aktionen** pro Datei:
+
+- «In Drive oeffnen» (default-Click auf den Titel macht dasselbe, hier explizit nochmal)
+- «Herunterladen»
+- «Umbenennen» (Modal mit aktuellem Filename, neuer eintippen, Submit ruft Drive-API)
+- «Verschieben» (Modal mit Folder-Picker, siehe 10.7)
+- «Archivieren» (Bestaetigung, dann Move ins `/Archiv/`)
+- «Endgueltig loeschen» (nur Admin, im `/Archiv/`-Kontext sichtbar — siehe 10.8)
+- «Details» (zur Detail-Seite, wenn man Audit-Historie oder Event-Verknuepfung sehen will)
+
+### 10.5 Upload
+
+```
+Member klickt «Hochladen» (auf Uebersicht oder im Ordner-Detail)
+  → Modal mit:
        Datei (file-Picker oder Drag-and-Drop-Zone auf Desktop)
-       Titel (Pflicht, Vorschlag = Filename ohne Extension)
-       Ordner (Dropdown, sieben Aktiv-Kategorien)
-       Event (optional, Dropdown, vorausgewählt aus Event-Context)
-  → Frontend-Validierung (Dateigrösse ≤ 100 MB, MIME aus Allowlist)
-  → POST /documents/upload (multipart)
-  → Service-Layer: sanitize_filename → Drive-API-Upload → DB-Insert → AuditEvent
-  → Erfolgsmeldung, Dokument erscheint in Liste
+       Filename (Vorschlag = original filename, editierbar)
+       Ordner (Folder-Picker; vorausgewaehlt = aktuell geoeffneter Folder
+               oder Shared-Drive-Root, wenn von der Uebersicht aus)
+       Event (optional, Dropdown wie heute)
+  → Frontend-Validierung (Groesse ≤ 100 MB, MIME aus Allowlist)
+  → POST /docs/upload (multipart, enthaelt drive_folder_id)
+  → Service-Layer: sanitize_filename → Drive-Upload → DB-Insert → AuditEvent
+  → Erfolgsmeldung, neu hochgeladenes File erscheint in der Liste
 ```
 
-Drag-and-Drop wird auf Desktop unterstützt (HTML5-API, Drop-Zone mit Hover-Feedback). Auf Mobile bleibt der File-Picker Standard.
+Wenn der User von einem Sub-Folder ausgeloest hat: dieser ist vorausgewaehlt, kann aber im Picker geaendert werden.
 
-### 10.3 Listing
+### 10.6 Datei-Detail-Seite (`/docs/file/<id>`)
 
-Hauptansicht `/documents`:
-
-- *Tab-Leiste*: Alle / Statuten / Vereinsführung / Finanzen / Verträge / Reisen-und-Events / Medien / Sonstiges / Archiv
-- *Suche*: Titel-Suche (DB-Query, kein Drive-API-Call)
-- *Sortierung*: Datum (neueste zuerst, default), alphabetisch
-- *Liste*: Titel, Ordner, Uploader, Datum, MIME-Icon, Aktionen-Dropdown
-
-Pro Eintrag drei Aktionen:
-
-- «Details» – zur Detail-Seite
-- «Öffnen» – `target="_blank"` zu `webViewLink`
-- Aktionen-Menü: «Verschieben», «Umbenennen», «Archivieren»
-
-### 10.4 Detail-Seite
+Nur fuer die App-spezifischen Informationen — der primaere Daten-Inhalt liegt in Drive:
 
 ```
-Titel (read-only, separate Aktion «Umbenennen» darüber)
-Metadaten: Ordner, Uploader, Datum, MIME, Grösse
-Event-Verknüpfung (klickbar) wenn vorhanden
-Buttons: Download, Öffnen, Verschieben, Umbenennen, Archivieren
-Audit-Historie: letzte fünf AuditEvents zu diesem Document
+[<- Zurueck zum Ordner]   Drive-Pfad: Dokumente › Finanzen › 2026
+
+Bilanz_2026.pdf                          [In Drive oeffnen] [Herunterladen]
+
+Uploader: Andreas, 12.05.2026
+Event-Verknuepfung: GV 2026 (klickbar)
+
+Audit-Historie:
+  12.05.2026  hochgeladen von Andreas
+  13.05.2026  umbenannt von «Bilanz_v2.pdf» zu «Bilanz_2026.pdf»
 ```
 
-### 10.5 Archivieren / Wiederherstellen
+Aktionen-Sekundaerleiste (klein): Umbenennen, Verschieben, Archivieren. Alle gleichberechtigt zum Kebab-Menue im Listing.
 
-Archivieren: einfache Bestätigung («Dokument wird ins Archiv verschoben, kann jederzeit wiederhergestellt werden»). Reversibel, kein Drama.
+### 10.7 Folder-Picker
 
-Wiederherstellen: im Archiv-Tab pro Eintrag «Wiederherstellen»-Button, ein Klick.
-
-### 10.6 Endgültig löschen (Admin)
-
-Sichtbar nur in der Admin-Ansicht des Archiv-Tabs. Pro Eintrag «Endgültig löschen»-Button. Klick öffnet Modal:
+Modal mit Tree-View des Shared-Drive-Inhalts:
 
 ```
-Endgültig löschen
+Verschieben nach...
+
+  [Suche im Tree]
+
+  ▾ Dokumente (Shared Drive)
+    ▸ Statuten
+    ▾ Finanzen
+      ▾ 2026
+        ▸ Belege
+      ▸ 2025
+    ▸ Vertraege
+    ▸ Reisen-und-Events
+    ▸ Medien
+    ▸ Sonstiges
+    ▸ Archiv
+
+  [ Abbrechen ]      [ Hierher verschieben ]
+```
+
+Tree wird lazy expandiert (Drive-API `files.list` pro Klick auf einen Folder). Der aktuell-Container des Files ist ausgegraut (kein Move auf sich selbst).
+
+### 10.8 Endgueltig loeschen (Admin)
+
+Sichtbar nur fuer Admins, **wenn** das File aktuell im `/Archiv/`-Folder (oder Sub-Folder davon) liegt. Pro Eintrag «Endgueltig loeschen»-Button mit Bestaetigungs-Modal:
+
+```
+Endgueltig loeschen
 
 Das folgende Dokument wird in den Drive-Papierkorb verschoben und nach
-30 Tagen permanent gelöscht.
+30 Tagen permanent geloescht.
 
   ┌──────────────────────────────────┐
-  │  Statuten 2024 Entwurf v3.docx   │   [Titel kopieren]
+  │  Bilanz_2024_Entwurf_v3.pdf      │   [Filename kopieren]
   └──────────────────────────────────┘
 
-Tippe oder füge den Titel hier ein, um zu bestätigen:
+Tippe oder fuege den Filename hier ein, um zu bestaetigen:
   ┌──────────────────────────────────┐
   │                                  │
   └──────────────────────────────────┘
 
-  [ Abbrechen ]              [ Löschen ]
+  [ Abbrechen ]              [ Loeschen ]
 ```
 
-Titel ist in einer monospace-Box mit Copy-Button selektierbar – User kopiert, paste ins Eingabefeld, Submit-Button aktiviert sich. Verhindert das mühsame exakte Tippen langer Filenames.
+### 10.9 Re-Sync (Admin)
 
-### 10.7 Re-Sync (Admin)
-
-Im Admin-Dashboard ein Button «Drive synchronisieren». Klick öffnet ein Erklärungs-Modal:
-
-```
-Was macht das?
-Diese Aktion gleicht den Inhalt des Shared Drives mit der App-Datenbank
-ab. Nötig, wenn jemand direkt in Drive eine Datei verschoben, hochgeladen
-oder gelöscht hat – ausserhalb der App.
-
-Was passiert dabei?
-– Neue Files in Drive ohne App-Eintrag werden importiert
-– App-Einträge mit gelöschtem Drive-File werden bereinigt
-– Drift bei Folder-Position wird korrigiert
-
-Dauer: einige Sekunden.
-
-[ Abbrechen ]   [ Jetzt synchronisieren ]
-```
-
-Nach Lauf: Toast oder kleine Result-Box mit Summary. Kein eigenes Dashboard, keine Drift-Liste-View.
+Unveraendert in Funktion gegenueber Phase 3 — siehe Sektion 9.3 fuer die Drift-Behandlung.
 
 ## 11. Quotas, MIME-Whitelist, Validierung
 
@@ -716,24 +839,22 @@ railway variables set GOOGLE_DRIVE_ID=<drive_id-aus-Schritt-3>
 rm /tmp/sa-key.json
 ```
 
-### 16.3 Setup-Script
+### 16.3 Setup-Script (obsolet im Drive-Browser-Modell)
 
-`scripts/setup_drive.py` einmalig laufen, nachdem Service Account zum Shared Drive eingeladen wurde:
+`scripts/setup_drive.py` aus Phase 3 ist mit der Konzeptwende **obsolet**. Begruendung:
 
-```python
-"""Initialisiert die acht Top-Level-Folders im Shared Drive.
+- App legt keine fixen Folder mehr an. Top-Level-Struktur wird von Andreas in Drive selbst angelegt (Web-UI, ~2 Minuten).
+- Die einzige folder-spezifische Konfiguration ist `DRIVE_ARCHIVE_FOLDER_ID` — wird per Hand in Railway-Env gesetzt, sobald der `/Archiv/`-Folder in Drive existiert.
 
-Idempotent: kann mehrfach laufen ohne Schaden.
-Schreibt Folder-IDs in eine Konfigurations-Tabelle (oder env als JSON).
-"""
-```
+Das Script kann im Repo bleiben (mit Deprecation-Hinweis) oder im Refactor entfernt werden. Empfehlung: entfernen, weil es bei kuenftigen Restrukturierungen in Drive nicht mehr passen wuerde.
 
-Schritte:
+**Neuer Initial-Setup-Pfad** (manuelle Schritte des Vorstands beim ersten Drive-Aufsetzen):
 
-- Authentifizieren via `GOOGLE_SERVICE_ACCOUNT_KEY`
-- Pro `DocumentCategory` und für `Archiv`: Folder anlegen, falls noch nicht vorhanden
-- Folder-IDs zurückgeben und in App-Konfiguration speichern
-- Validierung: Test-Upload eines Dummy-Files, sofort wieder löschen
+1. Andreas oeffnet den Shared Drive in der Drive-Web-UI.
+2. Legt die empfohlenen acht Top-Level-Folder an (oder die Struktur, die der Verein bevorzugt) — Statuten, Vereinsfuehrung, Finanzen, Vertraege, Reisen-und-Events, Medien, Sonstiges, Archiv.
+3. Kopiert die Drive-File-ID des Archiv-Folders (rechtsklick → Link kopieren, ID aus URL extrahieren).
+4. Setzt `DRIVE_ARCHIVE_FOLDER_ID` als Railway-Env-Variable.
+5. Fertig — App folgt automatisch.
 
 ### 16.4 Cutover
 
@@ -744,69 +865,81 @@ Nicht im Phase-3-Liefer-Scope. Cutover passiert mit der App-weiten MVP-Update-Ma
 - Mit der MVP-Update-Mail: Verifikations-Klick aktiviert Drive-Membership pro Mitglied. Drive-Sektion in der App wird sichtbar.
 - Karenz-Phase nach Cutover: alter Drive bleibt 4 Wochen aktiv, danach von Andreas gelöscht.
 
-## 17. Cursor-Briefing für Phase 3
+## 17. Cursor-Briefing fuer den Drive-Browser-Refactor (Phase 9)
+
+> Phase 3 (Kategorie-Modell) ist auf Production gemerged (PR #12, 2026-05-13) mit `DRIVE_FEATURE_ENABLED=false`. Der hier beschriebene Refactor ersetzt die Kategorie-Logik durch das Drive-Browser-Modell **vor** dem MVP-Cutover.
 
 ### 17.1 Reihenfolge der Commits
 
 | # | Commit | Inhalt |
 |---|---|---|
-| 1 | Schema-Migration: Member | `google_email`, `google_email_verified`, `google_email_verified_at` Felder + Token-Purpose `google_email_verify` |
-| 2 | Schema-Migration: Document | Alte URL-only-Records löschen, alte Spalten droppen, neue Spalten anlegen, Enum-Werte aktualisieren |
-| 3 | Service-Layer | `backend/services/drive_storage.py` mit allen Methoden, Tests, Filename-Sanitization, SVG-Sanitization |
-| 4 | Routes und UI | Templates für Documents-Index, Detail-View, Upload-Modal (inkl. Drag-and-Drop), Aktionen, Admin-Re-Sync-Button, Member-Profile-Erweiterung |
-| 5 | Setup-Script | `scripts/setup_drive.py` |
+| 1 | Schema-Migration: Document schrumpfen | Neue Spalten `drive_parent_id`, `last_seen_at` anlegen, Backfill via Drive-API, alte Spalten droppen, Enums `DocumentCategory`/`DocumentStatus` entfernen, Indexes anpassen. |
+| 2 | Service-Layer-Refactor | `backend/services/drive_storage.py` von `category`-Parametern auf `drive_folder_id`-Parameter umstellen. Neue Methoden `list_folder`, `get_folder_breadcrumb`, `search_files`, `move_document`. `initialize_folder_structure` und `change_category` entfernen. |
+| 3 | Routes-Refactor | `backend/routes/docs.py`: alte Routen (`/`, `/<id>`) durch `/`, `/folder/<drive_folder_id>`, `/file/<doc_id>` ersetzen. Upload-Endpoint nimmt `drive_folder_id` statt `category`. |
+| 4 | Templates-Refactor | `templates/docs/index.html`: Tabs raus, Ordner-Tile-Grid rein. Neues Template `templates/docs/folder.html` fuer Ordner-Detail (Sub-Folder-Tiles + Datei-Liste). Folder-Picker-Modal-Partial. Datei-Listen-Eintrag im Drive-Stil mit Kebab-Menue. |
+| 5 | Setup-Script & Env | `scripts/setup_drive.py` entfernen oder mit Deprecation-Notice versehen. `DRIVE_ARCHIVE_FOLDER_ID` in `env.example` ergaenzen. |
+| 6 | Cleanup & Doc-Sync | Tests anpassen, alte Kategorie-Fixtures entfernen, `docs/ARCHITECTURE.md` (PWA-Aspekte / Drive-Sektion) auf das neue Modell ziehen. |
 
 ### 17.2 Cursor-Briefing-Block
 
 ```
-Branch: phase/03-workspace-drive-files
-Lies vor Implementation: docs/capabilities/drive.md (autoritativ).
-Lies docs/initiatives/workspace-railway/PHASE_03_GOOGLE_SHARED_DRIVE_FILES.md
-nur für Rahmen, Details aus Capability-Doc.
+Branch: phase/09-workspace-drive-browser-refactor
+Lies vor Implementation: docs/capabilities/drive.md (autoritativ, neu strukturiert 2026-05-15).
+Lies docs/initiatives/workspace-railway/PHASE_09_DRIVE_BROWSER_REFACTOR.md
+nur fuer Rahmen, Details aus Capability-Doc.
 
-Implementations-Reihenfolge: Member-Migration → Document-Migration →
-Service-Layer mit Tests → Routes/UI → Setup-Script.
+Implementations-Reihenfolge:
+  1. Document-Schema-Migration mit Drive-API-Backfill
+  2. Service-Layer auf drive_folder_id-Parameter umstellen
+  3. Routes auf neue Pfade umstellen
+  4. Templates auf Tile + Liste + Breadcrumb umstellen
+  5. Setup-Script entfernen, env.example um DRIVE_ARCHIVE_FOLDER_ID ergaenzen
+  6. Tests, Doc-Sync
 
-Drei Migrationen sind separate Alembic-Commits. Service-Layer und
-Routes/UI sind Code-Commits.
+Drive ist Source of Truth. Folder-Struktur wird in Drive gepflegt,
+App liest nur. Ordner-CRUD-Aktionen (Anlegen, Umbenennen, Loeschen
+von Folders) sind in der App NICHT implementiert.
 
-Service-Account-Key NIEMALS ins Repo. env.example listet nur den
-Variablen-Namen GOOGLE_SERVICE_ACCOUNT_KEY (Base64) und
-GOOGLE_DRIVE_ID, nicht die Werte.
+Datei-Titel wird nicht mehr in der DB persistiert — Drive-Filename ist
+die Wahrheit. Umbenennen aendert Drive-File-Name via API; DB hat kein
+title-Feld mehr.
 
-SVG-Sanitization ist Pflicht für Marketing-Use-Case.
+DRIVE_FEATURE_ENABLED bleibt false bis das Capability-Doc auch fuer
+die UI-Polish-Punkte (Nav-Aktiv-Bug, Desktop-Zentrierung,
+Install-Banner-Fix — siehe STRATEGY_2026.md Begleit-Verbesserungen)
+gruen ist.
 
 UX-Texte auf Deutsch, schweizerische Schreibweise mit Guillemets («…»).
+Konsequent: kein Eszett (ß), Umlaute (ä/ö/ü) verwenden.
 ```
 
-### 17.3 Akzeptanzkriterien für Phase 3
+### 17.3 Akzeptanzkriterien fuer den Refactor
 
-- [ ] Mitglied kann Datei via App hochladen (Picker oder Drag-and-Drop), File erscheint im richtigen Drive-Folder
-- [ ] Dateigrösse >100 MB wird abgelehnt mit klarer Fehlermeldung
-- [ ] Verbotener MIME-Type wird abgelehnt
-- [ ] SVG mit eingebettetem `<script>` wird vor Drive-Upload sanitiziert
-- [ ] «Öffnen»-Aktion öffnet Drive-Web in neuem Tab
-- [ ] «Verschieben»-Aktion bewegt File in anderen Folder, DB-Status konsistent
-- [ ] «Umbenennen»-Aktion ändert Drive-Filename und DB-Title atomar
-- [ ] «Archivieren»-Aktion bewegt File ins `/Archiv/`, `status=ARCHIVED`
-- [ ] «Wiederherstellen»-Aktion bewegt File zurück in Original-Folder, `status=ACTIVE`
-- [ ] «Endgültig löschen» (nur Admin sichtbar): Bestätigungs-Modal mit Titel-Copy, danach Drive-Trash + DB-Hard-Delete
-- [ ] Re-Sync-Button im Admin-Dashboard zeigt Drift-Summary nach Lauf
-- [ ] Member-Profil zeigt Kontakt-Mail und Google-Login-Mail getrennt
-- [ ] Auto-Sync bei Detail-View korrigiert Drift silent
-- [ ] DB-Insert-Fehler nach erfolgreichem Drive-Upload führt zu Drive-Rollback
-- [ ] AuditEvents werden für alle Lifecycle-Aktionen geloggt
-- [ ] Setup-Script ist idempotent
+- [ ] `/docs/` zeigt Top-Level-Tiles, die exakt den direkten Children des Shared Drives entsprechen
+- [ ] Klick auf einen Tile fuehrt zu `/docs/folder/<drive_folder_id>` mit Breadcrumb und korrekter Sub-Folder-/Datei-Trennung
+- [ ] Datei-Listen-Eintrag zeigt Drive-Filename, Uploader (oder «extern via Drive» wenn `uploader_id` null), relatives Datum, Kebab-Menue mit allen Aktionen
+- [ ] Mitglied kann Datei in einen beliebigen bestehenden Drive-Folder hochladen (Folder-Picker im Upload-Modal)
+- [ ] «Umbenennen» aendert Drive-Filename, in der App sofort sichtbar; kein DB-`title`-Feld mehr involviert
+- [ ] «Verschieben» mit Folder-Picker bewegt File in beliebigen anderen Drive-Folder, `drive_parent_id` wird aktualisiert
+- [ ] «Archivieren» bewegt File in den Folder mit ID `DRIVE_ARCHIVE_FOLDER_ID`
+- [ ] «Wiederherstellen» (im Archiv-Kontext) oeffnet Folder-Picker und bewegt File dorthin
+- [ ] «Endgueltig loeschen» (nur Admin, nur im Archiv) zeigt Bestaetigungs-Modal mit Filename-Copy
+- [ ] Volltext-Suche ueber `/docs/` zeigt Treffer mit Breadcrumb-Pfad und klickbarem Folder-Sprung
+- [ ] Re-Sync-Button im Admin-Dashboard walkt rekursiv ab Root, importiert neue Drive-Files (`uploader_id=NULL`), entfernt verwaiste DB-Eintraege
+- [ ] Auto-Sync bei Detail-View korrigiert `drive_parent_id`-Drift silent
+- [ ] DB-Insert-Fehler nach erfolgreichem Drive-Upload fuehrt zu Drive-Rollback (wie heute)
+- [ ] AuditEvents fuer Upload, Move, Rename, Archive, Restore, Permanently-Delete, Auto-Import, Auto-Remove
+- [ ] Bestehende Document-Records (Phase 3) sind nach Migration konsistent: `drive_parent_id` gesetzt, `last_seen_at` initialisiert, alte Spalten weg
+- [ ] `setup_drive.py` ist entfernt oder mit Deprecation-Header versehen; `env.example` enthaelt `DRIVE_ARCHIVE_FOLDER_ID`
 
-### 17.4 Out of Scope für Phase 3
+### 17.4 Out of Scope fuer den Refactor
 
-- Echtzeit-Kollaboration in iframe innerhalb der PWA
-- Externer Virus-Scan
-- Granulare Drive-ACL pro Mitglied (nicht nötig: alle gleichberechtigt via α)
-- Backup-Strategie
-- Quota-Cron
-- AI/OCR-Pipelines
-- Self-Service «andere Kontakt-Mail eintragen»
+- App-eigene Ordner-CRUD (Anlegen, Umbenennen, Loeschen) — bleibt Drive-Aufgabe
+- Bulk-Aktionen (mehrere Dateien gleichzeitig verschieben/archivieren)
+- Datei-Tags (orthogonale Klassifikation neben der Folder-Hierarchie)
+- Drag-and-Drop zwischen Folder-Tiles im UI
+- Permission-Differenzierung pro Folder (alle Mitglieder sehen alles, wie bisher)
+- Backup-Strategie, Quota-Cron, AI/OCR (unveraendert out of scope)
 
 ## 18. Decision Log
 
@@ -833,11 +966,18 @@ UX-Texte auf Deutsch, schweizerische Schreibweise mit Guillemets («…»).
 | 2026-05-09 | Voll-Drive-API-Scope | Engerer Scope reicht für Listing nicht; effektiv auf eines Shared Drive begrenzt |
 | 2026-05-09 | `sendNotificationEmail=False` bei Member-Invite | Kommunikation gebündelt über App-weite MVP-Update-Mail |
 | 2026-05-09 | Cutover an MVP-Bundle-Mail gekoppelt | Eine Mail für alle Neuerungen, keine Wellen-Kommunikation |
+| **2026-05-15** | **Drive-Browser statt fixe 7 Kategorien** | Aus der Praxis: 7 Kategorien werden in einzelnen Bereichen unuebersichtlich. Drive hat die Hierarchie ohnehin nativ — App folgt rekursiv, Drive ist Source of Truth fuer Folder-Struktur. |
+| **2026-05-15** | **Datenmodell schrumpft drastisch** | `title`, `category`, `status`, `archived_at`, `archived_by_id`, `mime_type`, `size_bytes`, `checksum`, `drive_web_view_link`, `updated_at`, `last_synced_at` entfallen. Document ist nur noch Beziehungs-Cache (Uploader + Event + drive_parent_id). |
+| **2026-05-15** | **Drive-Filename ist Document-Titel** | Keine doppelte Wahrheit zwischen App-Titel und Drive-Filename. Umbenennen aendert Drive direkt. |
+| **2026-05-15** | **Ordner-CRUD nur in Drive, nicht in App** | Ein Pflege-Ort. App kann nur Dateien verwalten, Folder-Struktur ist Drive-Aufgabe. |
+| **2026-05-15** | **Archiv via `DRIVE_ARCHIVE_FOLDER_ID`-Env, nicht via Name-Lookup** | Pragmatisch im MVP. Wenn Andreas den Archiv-Folder umbenennt, muss die Env nachgezogen werden. Bewusste Vereinfachung. |
 
 ## 19. Offene Punkte und Trade-offs
 
-- *Sub-Folder-Aktivierung*: Schwellenwert für Jahresordner (`/Finanzen/2026/`) noch nicht hart definiert. Vorschlag: ab 200 Files in einem Folder, manuelle Entscheidung durch Vorstand.
 - *Mitglied ohne Google-Konto-Adresse*: Pflichtfeld bedeutet, dass diese Mitglieder de facto blockiert sind. Sozial bei familiärem Verein zumutbar, aber pro Edge-Case Sonderlösung möglich (nur App-Reader-Modus mit ausgegrauten Edit-Aktionen).
 - *Drive-Audit-Log-Limitierung*: Workspace Starter hat kein vollständiges Audit. Falls in der Zukunft Workspace-Upgrade kommt, eingebaute Audit-Funktion aktivieren.
 - *Auto-Sync-Performance*: Detail-View löst leichten API-Check aus. Bei sehr viel Detail-View-Traffic könnte das Drive-API-Quotas berühren – nicht heute relevant, im Auge behalten.
-- *Fallback bei verwaisten Files vom System-Sync*: Auto-Sync importiert neue Drive-Files mit `uploader_id = NULL` (oder System-Member). Im UI sollen solche Einträge mit «Hochgeladen extern via Drive» beschriftet werden, nicht als anonyme Einträge.
+- *Fallback bei verwaisten Files vom System-Sync*: Auto-Sync importiert neue Drive-Files mit `uploader_id = NULL`. Im UI mit «Hochgeladen extern via Drive» beschriften.
+- *List-Folder-Performance bei grossen Folders*: Drive `files.list` mit Pagination unterstuetzt, aber wenn ein Folder >1000 Files hat, koennen mehrere API-Calls noetig sein. Im MVP nicht relevant; bei Bedarf serverseitiges Paging im Template einbauen.
+- *DRIVE_ARCHIVE_FOLDER_ID-Drift*: Wenn der Vorstand den `/Archiv/`-Folder in Drive umbenennt oder verschiebt, bleibt die Env-Variable trotzdem gueltig (Folder-ID ist stabil). Wenn der Folder ganz geloescht wird, bricht die Archivieren-Aktion — Health-Check beim App-Start, Fail-Fast mit Admin-Notice.
+- *Folder-Picker bei sehr tiefer Hierarchie*: Tree-View kann mobile unhandlich werden. Falls Tiefe >4 Ebenen, evtl. ein separater Modal-Pfad (Breadcrumb-basierte Navigation) statt Tree.

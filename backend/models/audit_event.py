@@ -51,6 +51,8 @@ class AuditAction(Enum):
     DOCUMENT_RESTORED = 'DOCUMENT_RESTORED'
     DOCUMENT_PERMANENTLY_DELETED = 'DOCUMENT_PERMANENTLY_DELETED'
     DOCUMENT_AUTO_SYNCED = 'DOCUMENT_AUTO_SYNCED'
+    DOCUMENT_AUTO_IMPORTED = 'DOCUMENT_AUTO_IMPORTED'
+    DOCUMENT_AUTO_REMOVED = 'DOCUMENT_AUTO_REMOVED'
     DRIVE_MEMBERSHIP_ADDED = 'DRIVE_MEMBERSHIP_ADDED'
     DRIVE_MEMBERSHIP_REMOVED = 'DRIVE_MEMBERSHIP_REMOVED'
     DRIVE_MEMBERSHIP_FAILED = 'DRIVE_MEMBERSHIP_FAILED'
@@ -135,6 +137,8 @@ class AuditEvent(db.Model):
             AuditAction.DOCUMENT_RESTORED: 'Dokument wiederhergestellt',
             AuditAction.DOCUMENT_PERMANENTLY_DELETED: 'Dokument endgültig gelöscht',
             AuditAction.DOCUMENT_AUTO_SYNCED: 'Dokument Auto-Sync',
+            AuditAction.DOCUMENT_AUTO_IMPORTED: 'Dokument automatisch importiert',
+            AuditAction.DOCUMENT_AUTO_REMOVED: 'Dokument automatisch entfernt',
             AuditAction.DRIVE_MEMBERSHIP_ADDED: 'Drive-Mitgliedschaft hinzugefügt',
             AuditAction.DRIVE_MEMBERSHIP_REMOVED: 'Drive-Mitgliedschaft entfernt',
             AuditAction.DRIVE_MEMBERSHIP_FAILED: 'Drive-Einladung fehlgeschlagen',
