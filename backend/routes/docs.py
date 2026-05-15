@@ -139,10 +139,19 @@ def folder_view(drive_folder_id: str):
     archive_cfg = (current_app.config.get("DRIVE_ARCHIVE_FOLDER_ID") or "").strip()
     folder_drive_link = DriveStorageService.get_web_view_link_for_folder_id(drive_folder_id)
 
+    root_id = DriveStorageService.get_root_id()
+    if crumbs:
+        folder_display_name = crumbs[-1].name or "Ordner"
+    elif drive_folder_id == root_id:
+        folder_display_name = "Dokumente"
+    else:
+        folder_display_name = "Ordner"
+
     return render_template(
         "docs/folder.html",
-        root_folder_id=DriveStorageService.get_root_id(),
+        root_folder_id=root_id,
         drive_folder_id=drive_folder_id,
+        folder_display_name=folder_display_name,
         listing=listing,
         breadcrumbs=crumbs,
         search_query=q,

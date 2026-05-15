@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from 'partials/_lucide_icon.html' import lucide_icon %}
 
-{% block title %}Ordner – Dokumente – Gourmen{% endblock %}
+{% block title %}{{ folder_display_name }} – Dokumente – Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -10,7 +10,7 @@
       <a href="{{ url_for('docs.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Dokumente</span></a>
     </p>
     <div class="docs-folder-head">
-      <h1>{{ lucide_icon('folder') }} Ordner</h1>
+      <h1>{{ lucide_icon('folder') }} {{ folder_display_name }}</h1>
       <div class="docs-folder-head__actions">
         {% if folder_drive_link %}
           <a href="{{ folder_drive_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline">
