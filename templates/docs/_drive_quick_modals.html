@@ -1,0 +1,98 @@
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
+
+<dialog class="docs-action-modal" id="drive-quick-rename-dialog" aria-labelledby="drive-quick-rename-title">
+  <form method="POST" id="drive-quick-rename-form" class="docs-action-modal__form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ docs_actions_next }}">
+    <header class="docs-action-modal__header">
+      <h2 id="drive-quick-rename-title" class="docs-action-modal__title">Umbenennen</h2>
+      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-drive-quick-close>{{ lucide_icon('x') }}</button>
+    </header>
+    <div class="docs-action-modal__body">
+      <div class="form-field">
+        <label class="form-field__label" for="drive-quick-rename-title-input">Neuer Dateiname (Basis ohne Extension)</label>
+        <input type="text" id="drive-quick-rename-title-input" name="title" class="form-field__input" maxlength="200" required>
+      </div>
+    </div>
+    <footer class="docs-action-modal__footer">
+      <button type="button" class="btn btn--outline" data-drive-quick-close>Abbrechen</button>
+      <button type="submit" class="btn btn--primary">Speichern</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="docs-action-modal" id="drive-quick-move-dialog" aria-labelledby="drive-quick-move-title">
+  <form method="POST" id="drive-quick-move-form" class="docs-action-modal__form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ docs_actions_next }}">
+    <input type="hidden" name="new_parent_id" id="drive-quick-move-parent-id" value="">
+    <header class="docs-action-modal__header">
+      <h2 id="drive-quick-move-title" class="docs-action-modal__title">Verschieben</h2>
+      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-drive-quick-close>{{ lucide_icon('x') }}</button>
+    </header>
+    <div class="docs-action-modal__body">
+      <p class="text-muted">Wähle einen Zielordner.</p>
+      <div class="docs-upload-modal__folder-row">
+        <span class="docs-upload-modal__folder-label" id="drive-quick-move-folder-label">Kein Ordner gewählt</span>
+        <button type="button" class="btn btn--outline btn--sm"
+                data-docs-folder-picker-open
+                data-target-input="#drive-quick-move-parent-id"
+                data-target-label="#drive-quick-move-folder-label">
+          {{ lucide_icon('folder-tree') }}
+          <span>Ordner wählen</span>
+        </button>
+      </div>
+    </div>
+    <footer class="docs-action-modal__footer">
+      <button type="button" class="btn btn--outline" data-drive-quick-close>Abbrechen</button>
+      <button type="submit" class="btn btn--primary">Verschieben</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="docs-action-modal" id="drive-quick-archive-dialog" aria-labelledby="drive-quick-archive-title">
+  <form method="POST" id="drive-quick-archive-form" class="docs-action-modal__form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ docs_actions_next }}">
+    <header class="docs-action-modal__header">
+      <h2 id="drive-quick-archive-title" class="docs-action-modal__title">Archivieren</h2>
+      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-drive-quick-close>{{ lucide_icon('x') }}</button>
+    </header>
+    <div class="docs-action-modal__body">
+      <p>Diese Datei wird in den konfigurierten Archiv-Ordner im Shared Drive verschoben.</p>
+    </div>
+    <footer class="docs-action-modal__footer">
+      <button type="button" class="btn btn--outline" data-drive-quick-close>Abbrechen</button>
+      <button type="submit" class="btn btn--primary">Archivieren</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="docs-action-modal" id="drive-quick-restore-dialog" aria-labelledby="drive-quick-restore-title">
+  <form method="POST" id="drive-quick-restore-form" class="docs-action-modal__form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ docs_actions_next }}">
+    <input type="hidden" name="target_folder_id" id="drive-quick-restore-target-id" value="">
+    <header class="docs-action-modal__header">
+      <h2 id="drive-quick-restore-title" class="docs-action-modal__title">Wiederherstellen</h2>
+      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-drive-quick-close>{{ lucide_icon('x') }}</button>
+    </header>
+    <div class="docs-action-modal__body">
+      <p class="text-muted">Wähle einen Zielordner ausserhalb des Archivs.</p>
+      <div class="docs-upload-modal__folder-row">
+        <span class="docs-upload-modal__folder-label" id="drive-quick-restore-folder-label">Kein Ordner gewählt</span>
+        <button type="button" class="btn btn--outline btn--sm"
+                data-docs-folder-picker-open
+                data-target-input="#drive-quick-restore-target-id"
+                data-target-label="#drive-quick-restore-folder-label">
+          {{ lucide_icon('folder-tree') }}
+          <span>Ordner wählen</span>
+        </button>
+      </div>
+    </div>
+    <footer class="docs-action-modal__footer">
+      <button type="button" class="btn btn--outline" data-drive-quick-close>Abbrechen</button>
+      <button type="submit" class="btn btn--primary">Wiederherstellen</button>
+    </footer>
+  </form>
+</dialog>

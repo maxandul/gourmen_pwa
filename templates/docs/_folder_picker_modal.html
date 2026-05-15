@@ -1,0 +1,17 @@
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
+<dialog class="docs-folder-picker docs-action-modal" id="docs-folder-picker-dialog" aria-labelledby="docs-folder-picker-title">
+  <div class="docs-folder-picker__shell">
+    <header class="docs-action-modal__header">
+      <h2 id="docs-folder-picker-title" class="docs-action-modal__title">Ordner wählen</h2>
+      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-docs-folder-picker-close>{{ lucide_icon('x') }}</button>
+    </header>
+    <div class="docs-folder-picker__body">
+      <p class="docs-folder-picker__hint text-muted">Klappe Unterordner auf und wähle einen Zielordner.</p>
+      <div class="docs-folder-picker__tree" id="docs-folder-picker-tree" data-docs-folder-picker-tree></div>
+    </div>
+    <footer class="docs-action-modal__footer">
+      <button type="button" class="btn btn--outline" data-docs-folder-picker-close>Abbrechen</button>
+      <button type="button" class="btn btn--primary" id="docs-folder-picker-apply" disabled data-docs-folder-picker-apply>Übernehmen</button>
+    </footer>
+  </div>
+</dialog>

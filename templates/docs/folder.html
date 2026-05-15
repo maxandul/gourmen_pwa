@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from 'partials/_lucide_icon.html' import lucide_icon %}
+
+{% block title %}Ordner – Dokumente – Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('docs.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Dokumente</span></a>
+    </p>
+    <div class="docs-folder-head">
+      <h1>{{ lucide_icon('folder') }} Ordner</h1>
+      <div class="docs-folder-head__actions">
+        {% if folder_drive_link %}
+          <a href="{{ folder_drive_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline">
+            {{ lucide_icon('external-link') }} <span>In Drive öffnen</span>
+          </a>
+        {% endif %}
+        <button type="button" class="btn btn--primary" data-docs-upload-trigger>
+          {{ lucide_icon('upload') }} <span>Hochladen</span>
+        </button>
+      </div>
+    </div>
+    <p class="docs-browser__breadcrumb text-muted" aria-label="Pfad">
+      Dokumente{% for seg in breadcrumbs %} › {{ seg.name }}{% endfor %}
+    </p>
+  </div>
+
+  <div class="page-content docs-browser">
+    <div class="card card--filter tool-surface docs-browser__toolbar-card">
+      <div class="card__body">
+        <details class="disclosure" {% if search_query %}open{% endif %}>
+          <summary class="disclosure__summary">
+            {{ lucide_icon('chevron-down') }}
+            <span>Suche in diesem Ordnerbaum</span>
+          </summary>
+          <div class="disclosure__content">
+            <form method="get" action="{{ url_for('docs.folder_view', drive_folder_id=drive_folder_id) }}" class="form docs-browser__search-form" role="search">
+              <div class="form-field">
+                <label class="form-field__label" for="docs-folder-search">Volltext (mind. 2 Zeichen)</label>
+                <div class="docs-browser__query-row">
+                  <input id="docs-folder-search" type="search" name="q" value="{{ search_query or '' }}" minlength="2" class="form-field__input">
+                  <div class="docs-browser__query-buttons">
+                    <button type="submit" class="btn btn--primary">{{ lucide_icon('search') }}<span>Suchen</span></button>
+                    {% if search_query %}
+                      <a href="{{ url_for('docs.folder_view', drive_folder_id=drive_folder_id) }}" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Zurücksetzen</span></a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    {% if search_query and search_query|length >= 2 %}
+      <section class="docs-browser__section">
+        {% if search_hits %}
+          <ul class="docs-browser__search-list">
+            {% for hit in search_hits %}
+              <li class="docs-browser__search-item">
+                <div class="docs-browser__search-main">
+                  {% if hit.web_view_link %}
+                    <a href="{{ hit.web_view_link }}" target="_blank" rel="noopener noreferrer" class="docs-browser__search-title">{{ lucide_icon(hit.icon_name) }} {{ hit.name }}</a>
+                  {% else %}
+                    <span class="docs-browser__search-title">{{ lucide_icon(hit.icon_name) }} {{ hit.name }}</span>
+                  {% endif %}
+                  {% if hit.parent_id %}
+                    <a href="{{ url_for('docs.folder_view', drive_folder_id=hit.parent_id) }}" class="docs-browser__search-folder-link">Ordner öffnen</a>
+                  {% endif %}
+                </div>
+                <p class="docs-browser__search-crumb text-muted">
+                  Dokumente{% for seg in hit.breadcrumb %} › {{ seg.name }}{% endfor %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state empty-state--filtered">
+            <p class="empty-state__message">Keine Treffer in diesem Bereich.</p>
+          </div>
+        {% endif %}
+      </section>
+    {% else %}
+
+      {% if listing.subfolders %}
+        <section class="docs-browser__section" aria-label="Unterordner">
+          <h2 class="docs-browser__section-title">Unterordner</h2>
+          <div class="docs-browser__tile-grid docs-browser__tile-grid--compact">
+            {% for folder in listing.subfolders %}
+              <a href="{{ url_for('docs.folder_view', drive_folder_id=folder.id) }}"
+                 class="docs-folder-tile {% if archive_folder_id and folder.id == archive_folder_id %}docs-folder-tile--archive{% endif %}">
+                <span class="docs-folder-tile__icon" aria-hidden="true">{{ lucide_icon('folder') }}</span>
+                <span class="docs-folder-tile__name">{{ folder.name }}</span>
+                <span class="docs-folder-tile__meta">{{ folder.direct_child_count }} Einträge</span>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="docs-browser__section" aria-label="Dateien">
+        <h2 class="docs-browser__section-title">Dateien</h2>
+        {% if listing.files %}
+          <ul class="docs-file-list">
+            {% for row in listing.files %}
+              <li class="docs-file-row">
+                <div class="docs-file-row__main">
+                  {% if row.web_view_link %}
+                    <a href="{{ row.web_view_link }}" target="_blank" rel="noopener noreferrer" class="docs-file-row__title">
+                      {{ lucide_icon(row.icon_name, 'icon docs-file-row__icon') }}
+                      <span>{{ row.name }}</span>
+                    </a>
+                  {% else %}
+                    <span class="docs-file-row__title">
+                      {{ lucide_icon(row.icon_name, 'icon docs-file-row__icon') }}
+                      <span>{{ row.name }}</span>
+                    </span>
+                  {% endif %}
+                  <span class="docs-file-row__meta text-muted">{{ row.uploader_display }} · {{ row.relative_label }}</span>
+                </div>
+                {% if row.document_id %}
+                  <details class="docs-file-row__kebab">
+                    <summary class="docs-file-row__kebab-summary" aria-label="Aktionen">{{ lucide_icon('more-vertical') }}</summary>
+                    <div class="docs-file-row__kebab-panel">
+                      {% if row.web_view_link %}
+                        <a href="{{ row.web_view_link }}" target="_blank" rel="noopener noreferrer" class="docs-file-row__kebab-link">In Drive öffnen</a>
+                      {% endif %}
+                      <a href="{{ url_for('docs.download', doc_id=row.document_id) }}" class="docs-file-row__kebab-link">Herunterladen</a>
+                      <button type="button" class="docs-file-row__kebab-btn"
+                              data-drive-quick-rename data-doc-id="{{ row.document_id }}" data-filename="{{ row.name }}">Umbenennen</button>
+                      <button type="button" class="docs-file-row__kebab-btn"
+                              data-drive-quick-move data-doc-id="{{ row.document_id }}">Verschieben</button>
+                      {% if not row.document_under_archive %}
+                        <button type="button" class="docs-file-row__kebab-btn"
+                                data-drive-quick-archive data-doc-id="{{ row.document_id }}">Archivieren</button>
+                      {% else %}
+                        <button type="button" class="docs-file-row__kebab-btn"
+                                data-drive-quick-restore data-doc-id="{{ row.document_id }}">Wiederherstellen</button>
+                      {% endif %}
+                      <a href="{{ url_for('docs.detail', doc_id=row.document_id) }}" class="docs-file-row__kebab-link">Details</a>
+                    </div>
+                  </details>
+                {% elif row.web_view_link %}
+                  <a href="{{ row.web_view_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline btn--sm">{{ lucide_icon('external-link') }} Öffnen</a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state"><p class="empty-state__message">Keine Dateien in diesem Ordner.</p></div>
+        {% endif %}
+      </section>
+
+    {% endif %}
+  </div>
+</div>
+
+{% set upload_folder_id = drive_folder_id %}
+{% include 'docs/_upload_modal.html' %}
+{% include 'docs/_folder_picker_modal.html' %}
+{% include 'docs/_drive_quick_modals.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-upload-modal.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-quick-actions.js') }}?v=3.12.0" defer></script>
+{% endblock %}

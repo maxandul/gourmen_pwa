@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 {% from 'partials/_lucide_icon.html' import lucide_icon %}
 
-{% block title %}{{ document.title }} – Dokumente – Gourmen{% endblock %}
+{% block title %}{{ drive_filename }} – Dokumente – Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
   <div class="page-header">
     <p class="page-back">
-      <a href="{{ url_for('docs.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Dokumente</span></a>
+      <a href="{{ url_for('docs.folder_view', drive_folder_id=document.drive_parent_id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Ordner</span></a>
     </p>
-    <h1>{{ lucide_icon('file') }} {{ document.title }}</h1>
+    <h1>{{ lucide_icon('file') }} {{ drive_filename }}</h1>
+    <p class="docs-browser__breadcrumb text-muted" aria-label="Pfad">
+      Dokumente{% for seg in breadcrumbs %} › {{ seg.name }}{% endfor %}
+    </p>
   </div>
 
   {% if sync_failed %}
@@ -19,39 +22,46 @@
   {% endif %}
 
   <div class="page-content docs-detail">
+    <div class="docs-detail__actions">
+      {% if drive_web_link %}
+      <a href="{{ drive_web_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+        {{ lucide_icon('external-link') }} <span>In Drive öffnen</span>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('docs.download', doc_id=document.id) }}" class="btn btn--outline">
+        {{ lucide_icon('download') }} <span>Herunterladen</span>
+      </a>
+
+      <button type="button" class="btn btn--outline" data-drive-quick-rename data-doc-id="{{ document.id }}" data-filename="{{ drive_filename }}">{{ lucide_icon('pencil') }} <span>Umbenennen</span></button>
+      <button type="button" class="btn btn--outline" data-drive-quick-move data-doc-id="{{ document.id }}">{{ lucide_icon('folder-symlink') }} <span>Verschieben</span></button>
+
+      {% if not in_archive %}
+        <button type="button" class="btn btn--outline" data-drive-quick-archive data-doc-id="{{ document.id }}">{{ lucide_icon('archive') }} <span>Archivieren</span></button>
+      {% else %}
+        <button type="button" class="btn btn--outline" data-drive-quick-restore data-doc-id="{{ document.id }}">{{ lucide_icon('archive-restore') }} <span>Wiederherstellen</span></button>
+        {% if current_user.is_admin() %}
+          <button type="button" class="btn btn--danger" data-docs-action-trigger="delete">{{ lucide_icon('trash-2') }} <span>Endgültig löschen</span></button>
+        {% endif %}
+      {% endif %}
+    </div>
+
     <div class="card docs-detail__meta-card">
       <div class="card__body">
         <dl class="info-row docs-detail__meta">
           <div>
-            <dt class="info-row__label">Ordner</dt>
-            <dd class="info-row__value">{{ category_labels[document.category] }}</dd>
-          </div>
-          <div>
-            <dt class="info-row__label">Status</dt>
-            <dd class="info-row__value">{{ document.display_status }}</dd>
+            <dt class="info-row__label">Dateiname (Drive)</dt>
+            <dd class="info-row__value">{{ drive_filename }}</dd>
           </div>
           <div>
             <dt class="info-row__label">Hochgeladen von</dt>
             <dd class="info-row__value">
-              {% if document.uploader %}{{ document.uploader.display_name }}{% else %}Extern (Drive-Sync){% endif %}
+              {% if document.uploader %}{{ document.uploader.display_name }}{% else %}extern via Drive{% endif %}
             </dd>
           </div>
           <div>
             <dt class="info-row__label">Hochgeladen am</dt>
             <dd class="info-row__value">{{ document.created_at.strftime('%d.%m.%Y %H:%M') }}</dd>
           </div>
-          {% if document.mime_type %}
-          <div>
-            <dt class="info-row__label">Dateityp</dt>
-            <dd class="info-row__value">{{ document.mime_type }}</dd>
-          </div>
-          {% endif %}
-          {% if document.size_bytes %}
-          <div>
-            <dt class="info-row__label">Grösse</dt>
-            <dd class="info-row__value">{{ '%.1f' | format(document.size_bytes / 1024 / 1024) }} MB</dd>
-          </div>
-          {% endif %}
           {% if document.event_id %}
           <div>
             <dt class="info-row__label">Event</dt>
@@ -60,47 +70,13 @@
             </dd>
           </div>
           {% endif %}
-          {% if document.archived_at %}
-          <div>
-            <dt class="info-row__label">Archiviert am</dt>
-            <dd class="info-row__value">{{ document.archived_at.strftime('%d.%m.%Y %H:%M') }}</dd>
-          </div>
-          {% endif %}
         </dl>
       </div>
     </div>
 
-    <div class="docs-detail__actions">
-      {% if document.drive_web_view_link %}
-      <a href="{{ document.drive_web_view_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary">
-        {{ lucide_icon('external-link') }} <span>Öffnen</span>
-      </a>
-      {% endif %}
-      <a href="{{ url_for('docs.download', doc_id=document.id) }}" class="btn btn--outline">
-        {{ lucide_icon('download') }} <span>Download</span>
-      </a>
-
-      {% if not document.is_archived %}
-        <button type="button" class="btn btn--outline" data-docs-action-trigger="rename">{{ lucide_icon('pencil') }} <span>Umbenennen</span></button>
-        <button type="button" class="btn btn--outline" data-docs-action-trigger="move">{{ lucide_icon('folder-symlink') }} <span>Verschieben</span></button>
-        <form method="POST" action="{{ url_for('docs.archive', doc_id=document.id) }}" class="docs-detail__inline-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn--outline">{{ lucide_icon('archive') }} <span>Archivieren</span></button>
-        </form>
-      {% else %}
-        <form method="POST" action="{{ url_for('docs.restore', doc_id=document.id) }}" class="docs-detail__inline-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn--primary">{{ lucide_icon('archive-restore') }} <span>Wiederherstellen</span></button>
-        </form>
-        {% if current_user.is_admin() %}
-          <button type="button" class="btn btn--danger" data-docs-action-trigger="delete">{{ lucide_icon('trash-2') }} <span>Endgültig löschen</span></button>
-        {% endif %}
-      {% endif %}
-    </div>
-
     <section class="card docs-detail__history-card">
       <div class="card__header">
-        <h2 class="card__title">{{ lucide_icon('history') }} Letzte Aktivität</h2>
+        <h2 class="card__title">{{ lucide_icon('history') }} Aktivität</h2>
       </div>
       <div class="card__body">
         {% if history %}
@@ -120,51 +96,10 @@
   </div>
 </div>
 
-<dialog class="docs-action-modal" id="docs-rename-modal" aria-labelledby="docs-rename-title">
-  <form method="POST" action="{{ url_for('docs.rename', doc_id=document.id) }}" class="docs-action-modal__form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <header class="docs-action-modal__header">
-      <h2 id="docs-rename-title" class="docs-action-modal__title">Dokument umbenennen</h2>
-      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-docs-modal-close>{{ lucide_icon('x') }}</button>
-    </header>
-    <div class="docs-action-modal__body">
-      <div class="form-field">
-        <label class="form-field__label" for="docs-rename-title-input">Neuer Titel</label>
-        <input type="text" id="docs-rename-title-input" name="title" class="form-field__input" value="{{ document.title }}" maxlength="200" required>
-      </div>
-    </div>
-    <footer class="docs-action-modal__footer">
-      <button type="button" class="btn btn--outline" data-docs-modal-close>Abbrechen</button>
-      <button type="submit" class="btn btn--primary">Speichern</button>
-    </footer>
-  </form>
-</dialog>
+{% include 'docs/_folder_picker_modal.html' %}
+{% include 'docs/_drive_quick_modals.html' %}
 
-<dialog class="docs-action-modal" id="docs-move-modal" aria-labelledby="docs-move-title">
-  <form method="POST" action="{{ url_for('docs.move', doc_id=document.id) }}" class="docs-action-modal__form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <header class="docs-action-modal__header">
-      <h2 id="docs-move-title" class="docs-action-modal__title">Dokument verschieben</h2>
-      <button type="button" class="docs-action-modal__close" aria-label="Schliessen" data-docs-modal-close>{{ lucide_icon('x') }}</button>
-    </header>
-    <div class="docs-action-modal__body">
-      <div class="form-field">
-        <label class="form-field__label" for="docs-move-category">Neuer Ordner</label>
-        <select id="docs-move-category" name="category" class="form-field__input" required>
-          {% for cat in categories %}
-            <option value="{{ cat.value }}" {% if cat == document.category %}selected{% endif %}>{{ category_labels[cat] }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-    <footer class="docs-action-modal__footer">
-      <button type="button" class="btn btn--outline" data-docs-modal-close>Abbrechen</button>
-      <button type="submit" class="btn btn--primary">Verschieben</button>
-    </footer>
-  </form>
-</dialog>
-
-{% if current_user.is_admin() and document.is_archived %}
+{% if current_user.is_admin() and in_archive %}
 <dialog class="docs-action-modal" id="docs-delete-modal" aria-labelledby="docs-delete-title">
   <form method="POST" action="{{ url_for('docs.hard_delete', doc_id=document.id) }}" class="docs-action-modal__form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -175,12 +110,12 @@
     <div class="docs-action-modal__body">
       <p>Das folgende Dokument wird in den Drive-Papierkorb verschoben und nach 30 Tagen permanent gelöscht.</p>
       <div class="docs-action-modal__title-box">
-        <code class="docs-action-modal__title-code" id="docs-delete-target">{{ document.title }}</code>
-        <button type="button" class="btn btn--outline" data-docs-copy-title>{{ lucide_icon('copy') }} <span>Titel kopieren</span></button>
+        <code class="docs-action-modal__title-code" id="docs-delete-target">{{ drive_filename }}</code>
+        <button type="button" class="btn btn--outline" data-docs-copy-filename>{{ lucide_icon('copy') }} <span>Dateiname kopieren</span></button>
       </div>
       <div class="form-field">
-        <label class="form-field__label" for="docs-delete-confirm">Tippe oder füge den Titel hier ein, um zu bestätigen:</label>
-        <input type="text" id="docs-delete-confirm" name="confirm_title" class="form-field__input" autocomplete="off" required>
+        <label class="form-field__label" for="docs-delete-confirm">Tippe oder füge den Dateinamen hier ein, um zu bestätigen:</label>
+        <input type="text" id="docs-delete-confirm" name="confirm_filename" class="form-field__input" autocomplete="off" required>
       </div>
     </div>
     <footer class="docs-action-modal__footer">
@@ -193,11 +128,13 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-quick-actions.js') }}?v=3.12.0" defer></script>
 <script>
   (function () {
     'use strict';
     function openModal(id) {
-      const m = document.getElementById(id);
+      var m = document.getElementById(id);
       if (!m) return;
       if (typeof m.showModal === 'function') m.showModal(); else m.setAttribute('open', 'open');
     }
@@ -207,38 +144,34 @@
 
     document.querySelectorAll('[data-docs-action-trigger]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        const target = btn.getAttribute('data-docs-action-trigger');
-        if (target === 'rename') openModal('docs-rename-modal');
-        if (target === 'move') openModal('docs-move-modal');
+        var target = btn.getAttribute('data-docs-action-trigger');
         if (target === 'delete') openModal('docs-delete-modal');
       });
     });
 
     document.querySelectorAll('[data-docs-modal-close]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        const dlg = btn.closest('dialog');
+        var dlg = btn.closest('dialog');
         if (dlg) closeModal(dlg);
       });
     });
 
-    const deleteModal = document.getElementById('docs-delete-modal');
+    var deleteModal = document.getElementById('docs-delete-modal');
     if (deleteModal) {
-      const targetEl = deleteModal.querySelector('#docs-delete-target');
-      const confirmInput = deleteModal.querySelector('#docs-delete-confirm');
-      const submitBtn = deleteModal.querySelector('[data-docs-delete-submit]');
-      const copyBtn = deleteModal.querySelector('[data-docs-copy-title]');
-      const expected = targetEl ? targetEl.textContent.trim() : '';
+      var targetEl = deleteModal.querySelector('#docs-delete-target');
+      var confirmInput = deleteModal.querySelector('#docs-delete-confirm');
+      var submitBtn = deleteModal.querySelector('[data-docs-delete-submit]');
+      var copyBtn = deleteModal.querySelector('[data-docs-copy-filename]');
+      var expected = targetEl ? targetEl.textContent.trim() : '';
 
       if (confirmInput && submitBtn) {
         confirmInput.addEventListener('input', function () {
           submitBtn.disabled = confirmInput.value.trim() !== expected;
         });
       }
-      if (copyBtn && targetEl) {
+      if (copyBtn && expected && navigator.clipboard) {
         copyBtn.addEventListener('click', function () {
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(expected);
-          }
+          navigator.clipboard.writeText(expected);
         });
       }
     }

@@ -12,7 +12,7 @@
 |---|---|---|
 | Domain & DNS | **Infomaniak** | Registrar bleibt; DNS-Records (MX, SPF, DKIM, DMARC, CNAMEs) werden dort gepflegt. |
 | Mail-Postfächer (Personen) | **Google Workspace Starter** | Eine bezahlte Mailbox `kontakt@gourmen.ch`, weitere Adressen als Alias auf dieselbe Lizenz. |
-| Vereinsdokumente (editierbar) | **Google Shared Drive** | Protokolle, Verträge, Vorstandsdokumente. «Alle sehen alles». Bearbeitung in Google Docs/Sheets. |
+| Vereinsdokumente (editierbar) | **Google Shared Drive** | Protokolle, Verträge, Vorstandsdokumente. «Alle sehen alles». Bearbeitung in Google Docs/Sheets. **App ist reiner Drive-Browser** (Entscheid 2026-05-15): listet die Drive-Ordnerstruktur rekursiv ab dem Shared-Drive-Root, keine fixen App-Kategorien. Ordner-Struktur wird in Drive selbst gepflegt; App liest, lädt Dateien hoch und bewegt sie innerhalb bestehender Ordner. |
 | Strukturierte App-Daten | **Postgres auf Railway** | Members, Events, Participations, Bookings, Audit-Log. Migrationen via Alembic. |
 | App-Code & Hosting | **Railway Hobby** (Web + Cron + Postgres + Redis) | Kein Plattform-Wechsel geplant. |
 | Transaktionsmails (System) | **Resend (free)** | Forgot-Password, 2FA-Reset, Onboarding, Admin-Mailtest. HTTPS-API, Railway Hobby blockiert SMTP. |
@@ -135,6 +135,9 @@ Nicht auf demselben Level wie die vier MVP-Capabilities, aber wichtig genug, um 
 - **Cronjob-Audit** — die drei bestehenden Reminder-Cronjobs (3-Wochen, Wochen, Rating) auf korrekte Auslösung in Production prüfen. Ist eher Tech-Debt-Audit als Feature: laufen sie, kommen Push-Reminder an, ist die Logik noch korrekt? Eigene kleine Phase mit Production-Logs-Review.
 - **Changelog / What's-New für Mitglieder** — wenn ein neues Feature live geht, sollen Mitglieder das in der App sehen. Kleines Modal/Card beim Login mit «Neu seit letzter Anmeldung», dismissible. AI-Optionen prüfen: Auto-Generierung aus Git-Commits seit letzter Sichtbarkeit pro Mitglied.
 - **Dashboard-Personalisierung** — Mitglieder sollen wählen können, welche Karten/Widgets sie auf ihrem Dashboard sehen (z.B. nächstes Event hervorgehoben, GGL-Stand, BillBro-Pending, Merch-Bestellungen). Eigene Capability mittlerer Grösse — eigenes Capability-Doc fällig.
+- **Drive-Browser-Refactor (vor Cutover)** — Konzeptwende 2026-05-15: App wird vom Kategorie-Modell zum reinen Drive-Browser. Top-Level der App folgt der Drive-Wurzelstruktur, beliebige Tiefe rekursiv. UI: Ordner-Tiles + Datei-Liste, Breadcrumb. Datenmodell schrumpft (category/status/title/archived_* obsolet, `drive_parent_id` als Cache). Migration der bestehenden Documents nötig. Muss vor `DRIVE_FEATURE_ENABLED=true` durch sein. Details in `docs/capabilities/drive.md`.
+- **Nav: keine falsche Aktiv-Markierung in Profil/Einstellungen** — wenn die aktuelle Seite Profil, Einstellungen, App o.ä. ist, soll der letzte Bereich in Bottom-/Side-Nav nicht als „aktiv" markiert werden. Aktuell verwirrend. UX-Bug. Aufgenommen 2026-05-15.
+- **Desktop-Layout: Inhalt horizontal zentrieren** — der gesamte App-Inhalt soll auf Desktop horizontal zentriert dargestellt werden, nicht linksbündig. Vermutlich `main.main-content` / `.container`-Anpassung in `static/css/v2/layout.css` (siehe `docs/UI.md`, Sektion Layout). Aufgenommen 2026-05-15.
 
 ## Hauptbrocken danach (Q4 2026 / Q1 2027)
 
@@ -165,6 +168,8 @@ Nicht auf demselben Level wie die vier MVP-Capabilities, aber wichtig genug, um 
 | **2026-05-07** | **GV-Admin als Hauptbrocken-Capability** | Eigener Workflow mit hohem AI-Hebel (Traktanden, Protokoll, Einladung). |
 | **2026-05-07** | **Merch wird Prozess-Redesign, nicht nur Tech-Politur** | Capability-Doc beginnt mit Prozess-Beschreibung, Technik folgt. |
 | **2026-05-07** | **Begleit-Verbesserungen aufgenommen**: Install-Banner-Fix, Cronjob-Audit, Changelog-Konzept, Dashboard-Personalisierung | Punkte parallel zum MVP, eigene kleine bis mittlere Capabilities. |
+| **2026-05-15** | **iCal-Capability (Phase 5) live** | Token-basierter Feed pro Mitglied implementiert, Spec in `docs/capabilities/calendar.md`. |
+| **2026-05-15** | **Drive-Browser statt fixe Kategorien** | Vor Drive-Cutover wird die App vom 7-Kategorien-Modell auf einen reinen Drive-Browser umgebaut: Top-Level = direkte Drive-Wurzel-Folder, beliebige Tiefe rekursiv, Drive ist Source of Truth für Folder-Struktur. App liest, lädt hoch und bewegt Dateien zwischen bestehenden Ordnern; Ordner anlegen/umbenennen/löschen passiert in Drive. Datenmodell schrumpft entsprechend. Begründung: 7 Kategorien werden in einzelnen Bereichen schnell unübersichtlich; Drive bietet die Hierarchie ohnehin nativ, doppelte Pflege entfällt. |
 
 ---
 

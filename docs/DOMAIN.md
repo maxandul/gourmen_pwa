@@ -149,24 +149,25 @@ Komma-separierte Liste der Führerscheinklassen (z.B. `"B,A1"`). Praktisch für 
 
 In `MemberSensitive` werden potentiell sensitive Felder verschlüsselt abgelegt (z.B. AHV-Nr., IBAN falls erfasst). Lese-Zugriff erfordert **Step-Up-Auth** (frische Passwort-Bestätigung).
 
-## Vereins-Drive (Phase 03)
+## Vereins-Drive (Phase 03 / Phase 09 Browser)
 
-Der Verein nutzt ein **Google Shared Drive** als zentralen Dokumentenspeicher fuer Statuten, Protokolle, Belege, Fotos und Marketing-Material. Authoritatives Spec: `docs/capabilities/drive.md`.
+Der Verein nutzt ein **Google Shared Drive** als zentralen Dokumentenspeicher fuer Statuten, Protokolle, Belege, Fotos und Marketing-Material. Die App folgt der **Drive-Ordnerstruktur** (rekursiv ab Shared-Drive-Root); Ordner pflegen die Vereinsmitglieder in Drive. Authoritatives Spec: `docs/capabilities/drive.md`.
 
 ### Begriffe
 
 - **Vereins-Drive** – das eine Shared Drive `gourmen.ch` (`GOOGLE_DRIVE_ID`). Jedes verifizierte Mitglied wird als `content_manager` eingeladen.
 - **Google-Login-Adresse** (`Member.google_email`) – die E-Mail-Adresse, mit der ein Mitglied sich bei Google einloggt. Muss nicht zwingend Gmail sein. Wird im Profil getrennt von der Kontakt-Mail (`Member.email`) gepflegt und per Token-Mail (`AuthTokenPurpose.GOOGLE_EMAIL_VERIFY`, 7 Tage gueltig) verifiziert.
 - **Service-Account** – eigener Google-Account fuer die App-Backend-Zugriffe (kein Mensch). Authentifiziert via Base64-encoded JSON-Key in `GOOGLE_SERVICE_ACCOUNT_KEY`.
-- **`DocumentCategory`** – Top-Level-Folder im Shared Drive: `STATUTEN`, `PROTOKOLLE`, `JAHRESBERICHTE`, `BUCHHALTUNG`, `BELEGE`, `VERTRAEGE`, `MARKETING`, `SONSTIGES`. Folder-Namen siehe `CATEGORY_FOLDER_NAMES`.
-- **`DocumentStatus`** – `ACTIVE` (im Kategorie-Folder) oder `ARCHIVED` (im `99_Archiv`-Folder). Hard-Delete loescht nur via expliziten Admin-Klick.
-- **Auto-Sync** – pro Detail-Aufruf: prueft, ob die DB-Metadaten noch zu Drive passen (Title, Folder, Existenz). Drift wird selbstheilend korrigiert.
-- **Admin-Re-Sync** – Voll-Abgleich Drive vs. DB durch einen Admin (Importiert manuelle Drive-Uploads, archiviert/restored DB-Records bei Folder-Changes, bereinigt verwaiste Eintraege).
+- **`drive_parent_id`** – in der DB gecachter Google-Folder, in dem die Datei liegt; bei Abweichung zu Drive korrigiert Auto-Sync still.
+- **Archiv-Ordner** – dedizierter Folder im Shared Drive; seine Drive-File-ID steht in `DRIVE_ARCHIVE_FOLDER_ID`. *Archivieren* verschiebt die Datei dorthin (kein separates DB-Status-Feld).
+- **Auto-Sync** – pro Detail-Aufruf (und verwandte Pfade): prueft Existenz der Datei und Obsoleszenz von `drive_parent_id`; Import/Removal bei Resync.
+- **Admin-Re-Sync** – rekursiver Walk ab Root: neue Drive-Dateien mit DB-Zeilen verknuepfen, verschwundene Eintraege bereinigen.
 
 ### Audit-Aktionen (zusaetzlich zu Sektion «Audit-Aktionen»)
 
 - `GOOGLE_EMAIL_VERIFY_REQUESTED`, `GOOGLE_EMAIL_VERIFIED`
-- `DOCUMENT_UPLOADED`, `DOCUMENT_RENAMED`, `DOCUMENT_MOVED`, `DOCUMENT_ARCHIVED`, `DOCUMENT_RESTORED`, `DOCUMENT_HARD_DELETED`, `DOCUMENT_DOWNLOADED`
+- `DOCUMENT_UPLOADED`, `DOCUMENT_RENAMED`, `DOCUMENT_MOVED`, `DOCUMENT_ARCHIVED`, `DOCUMENT_RESTORED`, `DOCUMENT_PERMANENTLY_DELETED`, `DOCUMENT_DOWNLOADED`
+- `DOCUMENT_AUTO_SYNCED`, `DOCUMENT_AUTO_IMPORTED`, `DOCUMENT_AUTO_REMOVED`
 - `DRIVE_MEMBER_INVITED`, `DRIVE_MEMBER_REMOVED`
 - `DRIVE_RESYNC_TRIGGERED`, `DRIVE_AUTO_SYNC_DRIFT_FIXED`, `DRIVE_HARD_DELETE_CONFIRMED`
 

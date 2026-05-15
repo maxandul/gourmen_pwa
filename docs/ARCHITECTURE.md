@@ -62,7 +62,7 @@ Registrierung in `backend/app.py`:
 | `ggl` | `/ggl` | Gourmen Guessing League Ranking |
 | `member` | `/member` | Member-Profile, Settings, Google-Login-Adresse fuer Drive |
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
-| `docs` | `/docs` | **Phase 03:** Vereinsdokumente im Google Shared Drive – Index, Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. |
+| `docs` | `/docs` | **Phase 03 + 09:** Vereinsdokumente im Google Shared Drive – Drive-Browser (Ordner-Tiles, Breadcrumb, Dateiliste), Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. Spec: `docs/capabilities/drive.md`. |
 | `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
@@ -76,7 +76,7 @@ Registrierung in `backend/app.py`:
 - **`MemberMFA`** + **`MFABackupCode`** – 2FA-Konfiguration
 - **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung) mit Google-Places-Daten und BillBro-Kalkulationsfeldern; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
-- **`Document`** – Vereinsdokumente im Google Shared Drive. Spiegelt Drive-Files (`drive_file_id`, `drive_web_view_link`, `mime_type`, `size_bytes`, `checksum`) inkl. Lifecycle (`DocumentStatus.ACTIVE/ARCHIVED`, `archived_at`, `archived_by_id`, `last_synced_at`). Kategorien (`DocumentCategory`) bilden die Drive-Folder-Struktur ab. Authoritatives Spec: `docs/capabilities/drive.md`.
+- **`Document`** – schlanker DB-Cache zu einer Drive-Datei (**Phase 09**): `drive_file_id`, `drive_parent_id`, optional `uploader_id`/`event_id`, `last_seen_at`, `created_at`. Metadaten (Name, MIME, Groesse) kommen von der Drive-API; Archiv ist ein Ordner (`DRIVE_ARCHIVE_FOLDER_ID`), kein DB-Status mehr. Spec: `docs/capabilities/drive.md`.
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)
 - **`MerchArticle/Variant/Order/OrderItem`** – Vereins-Merchandise-Shop
 - **`PushSubscription`** – Web-Push-Subscriptions pro Member+Gerät
@@ -110,7 +110,7 @@ Aktuelle Services:
 | `MonatsessenStatsService` | Statistiken über Monatsessen |
 | `RatingPromptService` | Logik wann Rating angezeigt wird |
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
-| `DriveStorageService` | **Phase 03:** Google Shared Drive – Folder-Init, Upload, Rename, Move, Archive/Restore, Hard-Delete, Auto-Sync per Document, Admin-Full-Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Authoritatives Spec: `docs/capabilities/drive.md`. |
+| `DriveStorageService` | Google Shared Drive – Drive-Browser (**Phase 09**): `list_folder`, Breadcrumb, Volltextsuche, Upload mit Zielordner, Move/Archive/Restore, Auto-Sync/Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Spec: `docs/capabilities/drive.md`. |
 | `CalendarFeedService` | **Phase 05:** RFC-5545-iCal-Feed aus veröffentlichten Zukunfts-Events (`icalendar`), Token-Lifecycle (`Member.ical_token`), `ical_sequence`-Bump bei kalender-relevanten Feldänderungen. Spec: `docs/capabilities/calendar.md`. |
 
 ## Auth-Flow
@@ -255,6 +255,5 @@ Cron-Trigger → run_cron_reminders.py
 
 ## Bekannte Schwächen
 
-- **`Document`-Model**: Felder für File-Upload vorbereitet, aber bisher nur URLs. Wird in Phase 3 implementiert.
 - **Drei Hilfs-Routes** (`init_db`, `migrate`, `test_migrate`): einmalige Migration-Helper, sollten bei Cleanup entfernt werden.
 - **Tests**: aktuell kein automatisches Test-Setup. Manuell + Production-Smoke-Testing.

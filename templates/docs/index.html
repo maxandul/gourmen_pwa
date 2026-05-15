@@ -13,47 +13,47 @@
     <h1>{{ lucide_icon('folder') }} Dokumente</h1>
   </div>
 
-  <div class="page-content docs-index">
-    <div class="card card--filter tool-surface docs-index__toolbar-card">
+  <div class="page-content docs-browser">
+    <div class="card card--filter tool-surface docs-browser__toolbar-card">
       <div class="card__body">
-        <details id="docs-index-toolbar-disclosure" class="disclosure" {% if search %}open{% endif %}>
+        <details id="docs-browser-toolbar" class="disclosure" {% if search_query %}open{% endif %}>
           <summary class="disclosure__summary">
             {{ lucide_icon('chevron-down') }}
             <span>Suchen &amp; Hochladen</span>
-            {% if search %}
-              <span class="chip chip--info">{{ search|truncate(32, True, '…') }}</span>
+            {% if search_query %}
+              <span class="chip chip--info">{{ search_query|truncate(32, True, '…') }}</span>
             {% endif %}
           </summary>
           <div class="disclosure__content">
-            <div class="docs-index__toolbar-layout">
-              <form method="get" action="{{ url_for('docs.index') }}" class="form docs-index__search-form" role="search">
-                <input type="hidden" name="tab" value="{{ active_tab }}">
-                <div class="form-field docs-index__search-field">
-                  <label class="form-field__label" for="docs-search">Suche</label>
-                  <div class="docs-index__query-row">
+            <div class="docs-browser__toolbar-layout">
+              <form method="get" action="{{ url_for('docs.index') }}" class="form docs-browser__search-form" role="search">
+                <div class="form-field docs-browser__search-field">
+                  <label class="form-field__label" for="docs-search">Volltextsuche (Drive)</label>
+                  <div class="docs-browser__query-row">
                     <input
                       id="docs-search"
                       type="search"
                       name="q"
-                      value="{{ search or '' }}"
-                      placeholder="Titel suchen …"
-                      class="form-field__input docs-index__query-input"
+                      value="{{ search_query or '' }}"
+                      placeholder="Mind. 2 Zeichen …"
+                      class="form-field__input docs-browser__query-input"
                       autocomplete="off"
+                      minlength="2"
                     >
-                    <div class="docs-index__query-buttons">
+                    <div class="docs-browser__query-buttons">
                       <button type="submit" class="btn btn--primary">
                         {{ lucide_icon('search') }}
                         <span>Suchen</span>
                       </button>
-                      {% if search %}
-                        <a href="{{ url_for('docs.index', tab=active_tab) }}" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Zurücksetzen</span></a>
+                      {% if search_query %}
+                        <a href="{{ url_for('docs.index') }}" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Zurücksetzen</span></a>
                       {% endif %}
                     </div>
                   </div>
                 </div>
               </form>
-              <div class="docs-index__upload-slot">
-                <button type="button" class="btn btn--primary docs-index__upload-btn" data-docs-upload-trigger>
+              <div class="docs-browser__upload-slot">
+                <button type="button" class="btn btn--primary docs-browser__upload-btn" data-docs-upload-trigger>
                   {{ lucide_icon('upload') }}
                   <span>Hochladen</span>
                 </button>
@@ -64,237 +64,69 @@
       </div>
     </div>
 
-    <div class="tabs tabs--panel docs-index__tabs-wrap" aria-label="Dokumente nach Ordner">
-      <nav class="tabs__nav" role="tablist" aria-label="Ordner">
-        <a href="{{ url_for('docs.index', tab='all', q=search) }}"
-           class="tabs__tab {% if active_tab == 'all' %}tabs__tab--active{% endif %}"
-           role="tab"
-           aria-selected="{{ 'true' if active_tab == 'all' else 'false' }}">
-          {{ lucide_icon('layout-grid') }}
-          Alle
-        </a>
-        {% for cat in categories %}
-          <a href="{{ url_for('docs.index', tab=cat.value, q=search) }}"
-             class="tabs__tab {% if active_tab == cat.value %}tabs__tab--active{% endif %}"
-             role="tab"
-             aria-selected="{{ 'true' if active_tab == cat.value else 'false' }}">
-            {{ lucide_icon('folder') }}
-            {{ category_labels[cat] }}
-          </a>
-        {% endfor %}
-        <a href="{{ url_for('docs.index', tab='archive', q=search) }}"
-           class="tabs__tab {% if active_tab == 'archive' %}tabs__tab--active{% endif %}"
-           role="tab"
-           aria-selected="{{ 'true' if active_tab == 'archive' else 'false' }}">
-          {{ lucide_icon('archive') }}
-          Archiv{% if archive_count %} <span class="docs-index__tab-count">({{ archive_count }})</span>{% endif %}
-        </a>
-      </nav>
-
-      <div class="tabs__content">
-        <div class="tabs__panel tabs__panel--active" role="tabpanel" aria-live="polite">
-    {% if documents %}
-      <div class="data-table-scroll-outer">
-        <div class="data-table-scroll-inner table-responsive data-table-wrap">
-          <table class="data-table docs-index-table">
-            <thead>
-              <tr>
-                <th class="docs-index-table__col-title">Titel</th>
-                <th class="docs-index-table__col-folder">Ordner</th>
-                <th class="docs-index-table__col-uploader">Hochgeladen von</th>
-                <th class="docs-index-table__col-date">Datum</th>
-                <th class="docs-index-table__col-actions">Aktionen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for doc in documents %}
-                <tr class="docs-index-table__row">
-                  <td class="docs-index-table__col-title">
-                    <a href="{{ url_for('docs.detail', doc_id=doc.id) }}" class="docs-index-table__title-link">
-                      {{ lucide_icon('file', 'icon docs-index-table__file-icon') }}
-                      <span>{{ doc.title }}</span>
+    {% if search_query and search_query|length >= 2 %}
+      <section class="docs-browser__section" aria-label="Suchtreffer">
+        {% if search_hits %}
+          <ul class="docs-browser__search-list">
+            {% for hit in search_hits %}
+              <li class="docs-browser__search-item">
+                <div class="docs-browser__search-main">
+                  {% if hit.web_view_link %}
+                    <a href="{{ hit.web_view_link }}" target="_blank" rel="noopener noreferrer" class="docs-browser__search-title">{{ lucide_icon(hit.icon_name) }} {{ hit.name }}</a>
+                  {% else %}
+                    <span class="docs-browser__search-title">{{ lucide_icon(hit.icon_name) }} {{ hit.name }}</span>
+                  {% endif %}
+                  {% if hit.parent_id %}
+                    <a href="{{ url_for('docs.folder_view', drive_folder_id=hit.parent_id) }}" class="docs-browser__search-folder-link">
+                      Ordner öffnen
                     </a>
-                  </td>
-                  <td class="docs-index-table__col-folder">{{ category_labels[doc.category] }}</td>
-                  <td class="docs-index-table__col-uploader">
-                    {% if doc.uploader %}
-                      {{ doc.uploader.display_name }}
-                    {% else %}
-                      <span class="docs-index-table__uploader-system">Extern (Drive-Sync)</span>
-                    {% endif %}
-                  </td>
-                  <td class="docs-index-table__col-date">
-                    {{ doc.created_at.strftime('%d.%m.%Y') }}
-                  </td>
-                  <td class="docs-index-table__col-actions">
-                    <div class="docs-index-table__actions">
-                      {% if doc.drive_web_view_link %}
-                        <a href="{{ doc.drive_web_view_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline">
-                          {{ lucide_icon('external-link') }}
-                          <span>Öffnen</span>
-                        </a>
-                      {% endif %}
-                      <a href="{{ url_for('docs.detail', doc_id=doc.id) }}" class="btn btn--outline">Details</a>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    {% else %}
-      <div class="empty-state {% if search %}empty-state--filtered{% endif %}">
-        <div class="empty-state__icon" aria-hidden="true">
-          {{ lucide_icon('folder-open', 'icon icon--lg') }}
-        </div>
-        {% if search %}
-          <p class="empty-state__message">Keine Treffer für «{{ search }}».</p>
-        {% elif active_tab == 'archive' %}
-          <p class="empty-state__message">Das Archiv ist leer.</p>
+                  {% endif %}
+                </div>
+                <p class="docs-browser__search-crumb text-muted">
+                  Dokumente{% for seg in hit.breadcrumb %} › {{ seg.name }}{% endfor %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
         {% else %}
-          <p class="empty-state__message">Noch keine Dokumente in diesem Ordner.</p>
+          <div class="empty-state empty-state--filtered">
+            <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('search-x', 'icon icon--lg') }}</div>
+            <p class="empty-state__message">Keine Treffer für «{{ search_query }}».</p>
+          </div>
         {% endif %}
-      </div>
+      </section>
+    {% else %}
+      <section class="docs-browser__section" aria-label="Ordner">
+        {% if top_level_folders %}
+          <div class="docs-browser__tile-grid">
+            {% for folder in top_level_folders %}
+              <a href="{{ url_for('docs.folder_view', drive_folder_id=folder.id) }}"
+                 class="docs-folder-tile {% if archive_folder_id and folder.id == archive_folder_id %}docs-folder-tile--archive{% endif %}">
+                <span class="docs-folder-tile__icon" aria-hidden="true">{{ lucide_icon('folder') }}</span>
+                <span class="docs-folder-tile__name">{{ folder.name }}</span>
+                <span class="docs-folder-tile__meta">{{ folder.direct_child_count }} Einträge</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state__icon" aria-hidden="true">{{ lucide_icon('folder-open', 'icon icon--lg') }}</div>
+            <p class="empty-state__message">Keine Ordner unter der Drive-Wurzel.</p>
+          </div>
+        {% endif %}
+      </section>
     {% endif %}
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
-<dialog class="docs-upload-modal" id="docs-upload-modal" aria-labelledby="docs-upload-modal-title">
-  <form method="POST" enctype="multipart/form-data" action="{{ url_for('docs.upload') }}" class="docs-upload-modal__form" novalidate>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <header class="docs-upload-modal__header">
-      <h2 id="docs-upload-modal-title" class="docs-upload-modal__title">Dokument hochladen</h2>
-      <button type="button" class="docs-upload-modal__close" aria-label="Schliessen" data-docs-upload-close>{{ lucide_icon('x') }}</button>
-    </header>
+{% set upload_folder_id = root_folder_id %}
+{% include 'docs/_upload_modal.html' %}
 
-    <div class="docs-upload-modal__body">
-      <div class="docs-upload-modal__dropzone" data-docs-dropzone tabindex="0">
-        {{ lucide_icon('upload-cloud', 'icon icon--lg') }}
-        <p class="docs-upload-modal__dropzone-hint">Datei hierher ziehen oder auswählen</p>
-        <input type="file" id="docs-upload-file" name="file" class="docs-upload-modal__file-input" required>
-        <label for="docs-upload-file" class="btn btn--outline">Datei wählen</label>
-        <p class="docs-upload-modal__filename" data-docs-filename></p>
-      </div>
+{% include 'docs/_folder_picker_modal.html' %}
 
-      <p class="docs-upload-modal__hint">
-        Maximale Grösse: {{ max_file_size_mb }} MB. Erlaubt: PDF, Office-Formate, Bilder, SVG.
-      </p>
-
-      <div class="form-field">
-        <label class="form-field__label" for="docs-upload-title">Titel <span class="form-field__required" aria-hidden="true">*</span></label>
-        <input type="text" id="docs-upload-title" name="title" class="form-field__input" maxlength="200" required>
-      </div>
-
-      <div class="form-field">
-        <label class="form-field__label" for="docs-upload-category">Ordner <span class="form-field__required" aria-hidden="true">*</span></label>
-        <select id="docs-upload-category" name="category" class="form-field__input" required>
-          {% for cat in categories %}
-            <option value="{{ cat.value }}">{{ category_labels[cat] }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="form-field">
-        <label class="form-field__label" for="docs-upload-event">Event (optional)</label>
-        <select id="docs-upload-event" name="event_id" class="form-field__input">
-          <option value="">– Kein Event –</option>
-          {% for ev in events %}
-            <option value="{{ ev.id }}">{{ ev.datum.strftime('%d.%m.%Y') }} – {{ ev.restaurant or ev.place_name or ev.event_typ.value }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-
-    <footer class="docs-upload-modal__footer">
-      <button type="button" class="btn btn--outline" data-docs-upload-close>Abbrechen</button>
-      <button type="submit" class="btn btn--primary">Hochladen</button>
-    </footer>
-  </form>
-</dialog>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  (function () {
-    'use strict';
-    const trigger = document.querySelector('[data-docs-upload-trigger]');
-    const modal = document.getElementById('docs-upload-modal');
-    if (!trigger || !modal) {
-      return;
-    }
-    const closers = modal.querySelectorAll('[data-docs-upload-close]');
-    const fileInput = modal.querySelector('input[type="file"][name="file"]');
-    const filenameEl = modal.querySelector('[data-docs-filename]');
-    const titleInput = modal.querySelector('#docs-upload-title');
-    const dropzone = modal.querySelector('[data-docs-dropzone]');
-    const maxBytes = {{ max_file_size_mb }} * 1024 * 1024;
-    const allowedMimeTypes = new Set({{ allowed_mime_types|tojson }});
-
-    function openModal() {
-      if (typeof modal.showModal === 'function') {
-        modal.showModal();
-      } else {
-        modal.setAttribute('open', 'open');
-      }
-    }
-    function closeModal() {
-      if (typeof modal.close === 'function') {
-        modal.close();
-      } else {
-        modal.removeAttribute('open');
-      }
-    }
-
-    trigger.addEventListener('click', openModal);
-    closers.forEach(function (btn) { btn.addEventListener('click', closeModal); });
-
-    function handleFile(file) {
-      if (!file) return;
-      if (file.size > maxBytes) {
-        alert('Datei ist grösser als das Limit von ' + {{ max_file_size_mb }} + ' MB.');
-        fileInput.value = '';
-        return;
-      }
-      if (file.type && !allowedMimeTypes.has(file.type)) {
-        alert('Dateityp «' + file.type + '» ist nicht erlaubt.');
-        fileInput.value = '';
-        return;
-      }
-      filenameEl.textContent = file.name;
-      if (titleInput && !titleInput.value) {
-        titleInput.value = file.name.replace(/\.[^.]+$/, '');
-      }
-    }
-
-    fileInput.addEventListener('change', function () {
-      handleFile(fileInput.files && fileInput.files[0]);
-    });
-
-    if (dropzone) {
-      ['dragenter', 'dragover'].forEach(function (evt) {
-        dropzone.addEventListener(evt, function (e) {
-          e.preventDefault();
-          dropzone.classList.add('docs-upload-modal__dropzone--active');
-        });
-      });
-      ['dragleave', 'drop'].forEach(function (evt) {
-        dropzone.addEventListener(evt, function (e) {
-          e.preventDefault();
-          dropzone.classList.remove('docs-upload-modal__dropzone--active');
-        });
-      });
-      dropzone.addEventListener('drop', function (e) {
-        const files = e.dataTransfer && e.dataTransfer.files;
-        if (files && files.length) {
-          fileInput.files = files;
-          handleFile(files[0]);
-        }
-      });
-    }
-  })();
-</script>
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-upload-modal.js') }}?v=3.12.0" defer></script>
 {% endblock %}

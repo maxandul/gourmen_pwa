@@ -121,6 +121,8 @@ class Config:
     # Feature-Flag fuer schrittweise Aktivierung (Phase 3 implementiert,
     # Cutover erst mit MVP-Update-Mail – bis dahin nur intern aktiv).
     DRIVE_FEATURE_ENABLED = os.environ.get('DRIVE_FEATURE_ENABLED', 'false').lower() in ('1', 'true', 'yes')
+    # Archiv-Ordner im Shared Drive (Drive-File-ID des /Archiv/-Folders).
+    DRIVE_ARCHIVE_FOLDER_ID = os.environ.get('DRIVE_ARCHIVE_FOLDER_ID', '').strip() or None
     
     # Warnung wenn Keys nicht gesetzt sind
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
