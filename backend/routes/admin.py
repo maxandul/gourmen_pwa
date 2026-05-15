@@ -75,8 +75,8 @@ def index():
     """Admin dashboard overview"""
     from backend.models.event import Event
     from backend.models.audit_event import AuditEvent
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
     from datetime import datetime
     from sqlalchemy import func
     
@@ -101,15 +101,23 @@ def index():
     audit_events_count = AuditEvent.query.count()
     
     # Merch statistics
-    active_articles_count = MerchArticle.query.filter_by(is_active=True).count()
-    pending_orders_count = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).count()
+    active_articles_count = MerchArticleLegacy.query.filter_by(is_active=True).count()
+    pending_orders_count = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.BESTELLT).count()
     
     # Total revenue (Gesamtumsatz)
     total_revenue = db.session.query(
-        func.sum(MerchOrder.total_profit_rappen)
-    ).filter(MerchOrder.status == OrderStatus.GELIEFERT).scalar() or 0
+        func.sum(MerchOrderLegacy.total_profit_rappen)
+    ).filter(MerchOrderLegacy.status == MerchLegacyOrderStatus.GELIEFERT).scalar() or 0
     total_revenue_chf = total_revenue / 100
-    
+
+    merch_v2_cockpit_visible = bool(
+        current_app.config.get('MERCH_V2_ENABLED')
+        and (
+            current_user.is_admin()
+            or current_user.funktion == Funktion.MARKETINGCHEF
+        )
+    )
+
     return render_template(
         'admin/index.html',
         members_count=members_count,
@@ -120,7 +128,8 @@ def index():
         audit_events_count=audit_events_count,
         active_articles_count=active_articles_count,
         pending_orders_count=pending_orders_count,
-        total_revenue_chf=total_revenue_chf
+        total_revenue_chf=total_revenue_chf,
+        merch_v2_cockpit_visible=merch_v2_cockpit_visible,
     )
 
 
@@ -831,10 +840,10 @@ def show_temp_password():
 @verein_member_required
 def merch():
     """Admin Merch Übersicht mit Tabs (Bestellungen, Lieferanten, Artikel)"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    from backend.models.merch_order_item import MerchOrderItem
-    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
+    from backend.models.merch_order_item import MerchOrderItemLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
     from backend.models.member import Member
     from sqlalchemy import func
     
@@ -845,12 +854,12 @@ def merch():
         sort_by = 'member'
     
     # Gemeinsame Stats (können für Summaries genutzt werden)
-    total_articles = MerchArticle.query.count()
-    active_articles = MerchArticle.query.filter_by(is_active=True).count()
-    total_orders = MerchOrder.query.count()
-    pending_orders = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).count()
-    in_progress_orders = MerchOrder.query.filter_by(status=OrderStatus.WIRD_GELIEFERT).count()
-    delivered_orders = MerchOrder.query.filter_by(status=OrderStatus.GELIEFERT).count()
+    total_articles = MerchArticleLegacy.query.count()
+    active_articles = MerchArticleLegacy.query.filter_by(is_active=True).count()
+    total_orders = MerchOrderLegacy.query.count()
+    pending_orders = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.BESTELLT).count()
+    in_progress_orders = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.WIRD_GELIEFERT).count()
+    delivered_orders = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.GELIEFERT).count()
     
     orders = None
     articles = None
@@ -871,12 +880,12 @@ def merch():
         member_filter_id = request.args.get('member_id', type=int)
         members_for_select = Member.query.order_by(Member.vorname.asc(), Member.nachname.asc()).all()
         
-        query = MerchOrder.query
+        query = MerchOrderLegacy.query
         
         # Status filtern (nur gültige Werte)
-        valid_status = [s.value for s in OrderStatus]
+        valid_status = [s.value for s in MerchLegacyOrderStatus]
         if status_filter in valid_status:
-            query = query.filter_by(status=OrderStatus(status_filter))
+            query = query.filter_by(status=MerchLegacyOrderStatus(status_filter))
         else:
             status_filter = None
         
@@ -891,29 +900,29 @@ def merch():
             )
         
         if sort_by == 'member':
-            orders = query.order_by(MerchOrder.created_at.desc()).all()
+            orders = query.order_by(MerchOrderLegacy.created_at.desc()).all()
         else:
             # sort_by == 'article' → aggregiert nach Artikel/Variante (wie Lieferanten-Tab)
             if not status_filter:
-                status_filter = OrderStatus.BESTELLT.value
-                query = query.filter_by(status=OrderStatus.BESTELLT)
+                status_filter = MerchLegacyOrderStatus.BESTELLT.value
+                query = query.filter_by(status=MerchLegacyOrderStatus.BESTELLT)
             orders_filtered = query.all()
             order_ids = [o.id for o in orders_filtered]
             
             if order_ids:
                 aggregated = db.session.query(
-                    MerchOrderItem.article_id,
-                    MerchOrderItem.variant_id,
-                    func.sum(MerchOrderItem.quantity).label('total_quantity'),
-                    func.count(func.distinct(MerchOrderItem.order_id)).label('order_count'),
-                    func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
-                    func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
-                    func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
+                    MerchOrderItemLegacy.article_id,
+                    MerchOrderItemLegacy.variant_id,
+                    func.sum(MerchOrderItemLegacy.quantity).label('total_quantity'),
+                    func.count(func.distinct(MerchOrderItemLegacy.order_id)).label('order_count'),
+                    func.sum(MerchOrderItemLegacy.total_supplier_price_rappen).label('total_supplier_price'),
+                    func.sum(MerchOrderItemLegacy.total_member_price_rappen).label('total_member_price'),
+                    func.sum(MerchOrderItemLegacy.total_profit_rappen).label('total_profit')
                 ).filter(
-                    MerchOrderItem.order_id.in_(order_ids)
+                    MerchOrderItemLegacy.order_id.in_(order_ids)
                 ).group_by(
-                    MerchOrderItem.article_id,
-                    MerchOrderItem.variant_id
+                    MerchOrderItemLegacy.article_id,
+                    MerchOrderItemLegacy.variant_id
                 ).all()
                 
                 articles_dict = {}
@@ -924,8 +933,8 @@ def merch():
                 total_variants = 0
                 
                 for item in aggregated:
-                    article = MerchArticle.query.get(item.article_id)
-                    variant = MerchVariant.query.get(item.variant_id)
+                    article = MerchArticleLegacy.query.get(item.article_id)
+                    variant = MerchVariantLegacy.query.get(item.variant_id)
                     if not article or not variant:
                         continue
                     
@@ -968,23 +977,23 @@ def merch():
     
     elif tab == 'supplier':
         try:
-            pending_orders_list = MerchOrder.query.filter_by(status=OrderStatus.BESTELLT).all()
+            pending_orders_list = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.BESTELLT).all()
             pending_ids = [order.id for order in pending_orders_list]
             
             if pending_ids:
                 aggregated = db.session.query(
-                    MerchOrderItem.article_id,
-                    MerchOrderItem.variant_id,
-                    func.sum(MerchOrderItem.quantity).label('total_quantity'),
-                    func.count(func.distinct(MerchOrderItem.order_id)).label('order_count'),
-                    func.sum(MerchOrderItem.total_supplier_price_rappen).label('total_supplier_price'),
-                    func.sum(MerchOrderItem.total_member_price_rappen).label('total_member_price'),
-                    func.sum(MerchOrderItem.total_profit_rappen).label('total_profit')
+                    MerchOrderItemLegacy.article_id,
+                    MerchOrderItemLegacy.variant_id,
+                    func.sum(MerchOrderItemLegacy.quantity).label('total_quantity'),
+                    func.count(func.distinct(MerchOrderItemLegacy.order_id)).label('order_count'),
+                    func.sum(MerchOrderItemLegacy.total_supplier_price_rappen).label('total_supplier_price'),
+                    func.sum(MerchOrderItemLegacy.total_member_price_rappen).label('total_member_price'),
+                    func.sum(MerchOrderItemLegacy.total_profit_rappen).label('total_profit')
                 ).filter(
-                    MerchOrderItem.order_id.in_(pending_ids)
+                    MerchOrderItemLegacy.order_id.in_(pending_ids)
                 ).group_by(
-                    MerchOrderItem.article_id,
-                    MerchOrderItem.variant_id
+                    MerchOrderItemLegacy.article_id,
+                    MerchOrderItemLegacy.variant_id
                 ).all()
                 
                 articles_dict = {}
@@ -995,8 +1004,8 @@ def merch():
                 total_variants = 0
                 
                 for item in aggregated:
-                    article = MerchArticle.query.get(item.article_id)
-                    variant = MerchVariant.query.get(item.variant_id)
+                    article = MerchArticleLegacy.query.get(item.article_id)
+                    variant = MerchVariantLegacy.query.get(item.variant_id)
                     if not article or not variant:
                         continue
                     
@@ -1045,7 +1054,7 @@ def merch():
             return redirect(url_for('admin.merch', tab='orders'))
     
     elif tab == 'articles':
-        articles = MerchArticle.query.order_by(MerchArticle.is_active.desc(), MerchArticle.created_at.desc()).all()
+        articles = MerchArticleLegacy.query.order_by(MerchArticleLegacy.is_active.desc(), MerchArticleLegacy.created_at.desc()).all()
     
     return render_template(
         'admin/merch/index.html',
@@ -1083,9 +1092,9 @@ def merch_orders():
 @verein_member_required
 def merch_order_detail(order_id):
     """Admin order detail"""
-    from backend.models.merch_order import MerchOrder
+    from backend.models.merch_order import MerchOrderLegacy
     
-    order = MerchOrder.query.get_or_404(order_id)
+    order = MerchOrderLegacy.query.get_or_404(order_id)
     
     return render_template('admin/merch/order_detail.html', order=order)
 
@@ -1094,25 +1103,25 @@ def merch_order_detail(order_id):
 @admin_required
 def update_order_status(order_id):
     """Update order status"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
     
     print(f"DEBUG: Route reached - Order ID: {order_id}, Method: {request.method}")
     next_url = request.form.get('next')
     
     if request.method == 'POST':
         try:
-            order = MerchOrder.query.get_or_404(order_id)
+            order = MerchOrderLegacy.query.get_or_404(order_id)
             new_status = request.form.get('status')
             
             print(f"DEBUG: Order ID: {order_id}, New Status: {new_status}")
             print(f"DEBUG: Request method: {request.method}")
             print(f"DEBUG: Request form: {dict(request.form)}")
             
-            if new_status in [status.value for status in OrderStatus]:
+            if new_status in [status.value for status in MerchLegacyOrderStatus]:
                 old_status = order.status.value
-                order.status = OrderStatus(new_status)
+                order.status = MerchLegacyOrderStatus(new_status)
                 
-                if new_status == OrderStatus.GELIEFERT.value:
+                if new_status == MerchLegacyOrderStatus.GELIEFERT.value:
                     order.delivered_at = datetime.utcnow()
                 
                 db.session.commit()
@@ -1137,19 +1146,19 @@ def update_order_status(order_id):
 @admin_required
 def update_order_status_alt(order_id):
     """Alternative update order status route"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
     
     try:
-        order = MerchOrder.query.get_or_404(order_id)
+        order = MerchOrderLegacy.query.get_or_404(order_id)
         new_status = request.form.get('status')
         
         print(f"DEBUG ALT: Order ID: {order_id}, New Status: {new_status}")
         
-        if new_status in [status.value for status in OrderStatus]:
+        if new_status in [status.value for status in MerchLegacyOrderStatus]:
             old_status = order.status.value
-            order.status = OrderStatus(new_status)
+            order.status = MerchLegacyOrderStatus(new_status)
             
-            if new_status == OrderStatus.GELIEFERT.value:
+            if new_status == MerchLegacyOrderStatus.GELIEFERT.value:
                 order.delivered_at = datetime.utcnow()
             
             db.session.commit()
@@ -1169,11 +1178,11 @@ def update_order_status_alt(order_id):
 @verein_member_required
 def merch_article_detail(article_id):
     """Admin article detail"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
     
-    article = MerchArticle.query.get_or_404(article_id)
-    variants = MerchVariant.query.filter_by(article_id=article_id).all()
+    article = MerchArticleLegacy.query.get_or_404(article_id)
+    variants = MerchVariantLegacy.query.filter_by(article_id=article_id).all()
     
     return render_template('admin/merch/article_detail.html', article=article, variants=variants)
 
@@ -1182,8 +1191,8 @@ def merch_article_detail(article_id):
 @admin_required
 def create_merch_article():
     """Create new merch article"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
     
     if request.method == 'POST':
         try:
@@ -1200,7 +1209,7 @@ def create_merch_article():
                 return render_template('admin/merch/article_form.html', article=None)
             
             # Create article
-            article = MerchArticle(
+            article = MerchArticleLegacy(
                 name=request.form.get('name'),
                 description=request.form.get('description'),
                 base_supplier_price_rappen=int(float(request.form.get('base_supplier_price_chf')) * 100),
@@ -1216,7 +1225,7 @@ def create_merch_article():
             variant_count = 0
             for color in colors:
                 for size in sizes:
-                    variant = MerchVariant(
+                    variant = MerchVariantLegacy(
                         article_id=article.id,
                         color=color,
                         size=size,
@@ -1243,10 +1252,10 @@ def create_merch_article():
 @admin_required
 def edit_merch_article(article_id):
     """Edit merch article"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
     
-    article = MerchArticle.query.get_or_404(article_id)
+    article = MerchArticleLegacy.query.get_or_404(article_id)
     
     if request.method == 'POST':
         try:
@@ -1274,13 +1283,13 @@ def edit_merch_article(article_id):
             article.updated_at = datetime.utcnow()
             
             # Delete existing variants
-            MerchVariant.query.filter_by(article_id=article.id).delete()
+            MerchVariantLegacy.query.filter_by(article_id=article.id).delete()
             
             # Create new variants with updated combinations
             variant_count = 0
             for color in colors:
                 for size in sizes:
-                    variant = MerchVariant(
+                    variant = MerchVariantLegacy(
                         article_id=article.id,
                         color=color.strip(),
                         size=size.strip(),
@@ -1301,7 +1310,7 @@ def edit_merch_article(article_id):
             flash(f'Fehler beim Aktualisieren des Artikels: {str(e)}', 'error')
     
     # GET request - load existing variants and extract unique colors/sizes
-    variants = MerchVariant.query.filter_by(article_id=article_id).all()
+    variants = MerchVariantLegacy.query.filter_by(article_id=article_id).all()
     existing_colors = sorted(list(set([v.color for v in variants])))
     existing_sizes = sorted(list(set([v.size for v in variants])))
     
@@ -1322,7 +1331,7 @@ def create_merch_variant(article_id):
 @admin_required
 def edit_merch_variant(variant_id):
     """Legacy: Varianten-Bearbeitung entfällt, bitte Artikel-Form nutzen."""
-    from backend.models.merch_variant import MerchVariant
-    variant = MerchVariant.query.get_or_404(variant_id)
+    from backend.models.merch_variant import MerchVariantLegacy
+    variant = MerchVariantLegacy.query.get_or_404(variant_id)
     return redirect(url_for('admin.edit_merch_article', article_id=variant.article_id))
 

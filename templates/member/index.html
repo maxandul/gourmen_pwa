@@ -20,7 +20,7 @@
                 <h2 id="verein-hub-member" class="settings-nav__section-title">Member</h2>
                 <ul class="settings-nav__list" role="list">
                     <li>
-                        <a href="{{ url_for('member.merch') }}" class="settings-nav__row">
+                        <a href="{{ url_for('merch.shop_index') if config.get('MERCH_V2_ENABLED') else url_for('member.merch') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <use href="{{ _sprite }}#shirt"></use>
@@ -28,7 +28,13 @@
                             </span>
                             <span class="settings-nav__meta">
                                 <span class="settings-nav__label">Merch</span>
-                                <span class="settings-nav__description">Shop und Bestellungen</span>
+                                <span class="settings-nav__description">
+                                  {% if config.get('MERCH_V2_ENABLED') %}
+                                  Bestellrunden und Shop (neu)
+                                  {% else %}
+                                  Shop und Bestellungen
+                                  {% endif %}
+                                </span>
                             </span>
                             <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
                                 <use href="{{ _sprite }}#chevron-right"></use>

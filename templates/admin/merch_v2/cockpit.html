@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% set _sprite = url_for('static', filename='icons/lucide-sprite.7e463391.svg') %}
+
+{% block title %}Merch Cockpit - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('admin.index') }}">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <use href="{{ _sprite }}#chevron-left"></use>
+        </svg>
+        <span>Zurück zum Admin-Hub</span>
+      </a>
+    </p>
+    <h1>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <use href="{{ _sprite }}#shirt"></use>
+      </svg>
+      Merch-Cockpit
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <p class="admin-hub__hint">
+      Neue Bestellrunden und Sortiment (Merch v2). Der klassische Admin-Merch-Shop bleibt unter «Merch verwalten» im Hub erreichbar.
+    </p>
+
+    <div class="card card--flat">
+      <div class="card__body">
+        <dl class="form-row form-row--stacked">
+          <div>
+            <dt class="form-field__label">Lieferanten (aktiv)</dt>
+            <dd>{{ supplier_count }}</dd>
+          </div>
+          <div>
+            <dt class="form-field__label">Artikel (aktiv)</dt>
+            <dd>{{ article_count }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <section class="settings-nav__section" aria-labelledby="merch-v2-rounds-title">
+      <h2 id="merch-v2-rounds-title" class="settings-nav__section-title">Runden</h2>
+      <p class="card__subtitle">
+        <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">Neue Runde anlegen</a>
+      </p>
+      {% if rounds %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for r in rounds %}
+          <p class="card__subtitle">
+            <a href="{{ url_for('merch_admin.round_detail', round_id=r.id) }}"><strong>{{ r.title }}</strong></a>
+            — Status {{ r.status.value }}
+          </p>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="card__subtitle">Noch keine Runde angelegt.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

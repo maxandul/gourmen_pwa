@@ -64,6 +64,8 @@ Registrierung in `backend/app.py`:
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
 | `docs` | `/docs` | **Phase 03 + 09:** Vereinsdokumente im Google Shared Drive – Drive-Browser (Ordner-Tiles, Breadcrumb, Dateiliste), Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. Spec: `docs/capabilities/drive.md`. |
 | `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
+| `merch` | `/merch` | **Phase 10:** Merch v2 nur wenn `MERCH_V2_ENABLED=true`: `GET /` Uebersicht, `GET /rounds/<id>` Runden-Shop, `POST /rounds/<id>/cart`, `POST /rounds/<id>/confirm`, `GET /merch/image/<article_id>` Bild-Proxy (Drive, Redis-Cache). Spec: `docs/capabilities/merch.md`. |
+| `merch_admin` | `/admin/merch-v2` | **Phase 10:** Cockpit: Uebersicht, Runden `GET/POST`, Round-Detail, Sortiment `POST/DELETE …/items`, `POST …/open` (mindestens eine Position fuer OPEN). Legacy: `admin` `/admin/merch`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -78,7 +80,8 @@ Registrierung in `backend/app.py`:
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
 - **`Document`** – schlanker DB-Cache zu einer Drive-Datei (**Phase 09**): `drive_file_id`, `drive_parent_id`, optional `uploader_id`/`event_id`, `last_seen_at`, `created_at`. Metadaten (Name, MIME, Groesse) kommen von der Drive-API; Archiv ist ein Ordner (`DRIVE_ARCHIVE_FOLDER_ID`), kein DB-Status mehr. Spec: `docs/capabilities/drive.md`.
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)
-- **`MerchArticle/Variant/Order/OrderItem`** – Vereins-Merchandise-Shop
+- **`MerchArticleLegacy` / `MerchVariantLegacy` / `MerchOrderLegacy` / `MerchOrderItemLegacy`** – alter Vereins-Merch (**Phase 10**, Tabellen `merch_*_legacy`).
+- **`MerchSupplier`**, **`MerchArticle`**, **`MerchVariant`**, **`MerchRound`**, **`MerchRoundItem`**, **`MerchOrder`**, **`MerchOrderItem`** – Merch v2 (**Phase 10**, Modul `backend/models/merch_v2.py`, Migration `a9c81e2d4f03`; Spec `docs/capabilities/merch.md`).
 - **`PushSubscription`** – Web-Push-Subscriptions pro Member+Gerät
 - **`AuditEvent`** – Audit-Log sensibler Aktionen
 
@@ -112,6 +115,10 @@ Aktuelle Services:
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
 | `DriveStorageService` | Google Shared Drive – Drive-Browser (**Phase 09**): `list_folder`, Breadcrumb, Volltextsuche, Upload mit Zielordner, Move/Archive/Restore, Auto-Sync/Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Spec: `docs/capabilities/drive.md`. |
 | `CalendarFeedService` | **Phase 05:** RFC-5545-iCal-Feed aus veröffentlichten Zukunfts-Events (`icalendar`), Token-Lifecycle (`Member.ical_token`), `ical_sequence`-Bump bei kalender-relevanten Feldänderungen. Spec: `docs/capabilities/calendar.md`. |
+| `MerchSortimentService` | **Phase 10:** Kombinationen aus `variant_schema`, Listenpreis-Aufloesung Artikel/Variante (`docs/capabilities/merch.md`). |
+| `MerchRoundService` | **Phase 10:** Runden-Lifecycle (`create_draft_round`, `apply_transition`, `add_variant_to_round`, `remove_round_item`), OPEN nur mit mind. einer `MerchRoundItem`. |
+| `MerchOrderService` | **Phase 10:** Mitglieder-Warenkorb und Bestaetigung (`get_or_create_draft_order`, `set_cart_line`, `confirm_order`); Subvention `min(Cap, Brutto)`; Schaetzung mit Listenpreis-Snapshot solange keine definitiven Memberpreise. |
+| `MerchImageService` | **Phase 10:** Redis-Zwischenspeicher + ETag fuer `GET /merch/image/<article_id>`; Download ueber `DriveStorageService.download_binary_by_file_id`. Ohne `REDIS_URL` erfolgt kein Zwischenspeicher.
 
 ## Auth-Flow
 

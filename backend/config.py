@@ -123,7 +123,16 @@ class Config:
     DRIVE_FEATURE_ENABLED = os.environ.get('DRIVE_FEATURE_ENABLED', 'false').lower() in ('1', 'true', 'yes')
     # Archiv-Ordner im Shared Drive (Drive-File-ID des /Archiv/-Folders).
     DRIVE_ARCHIVE_FOLDER_ID = os.environ.get('DRIVE_ARCHIVE_FOLDER_ID', '').strip() or None
-    
+
+    # Merch v2 (Phase 10, docs/capabilities/merch.md)
+    MERCH_V2_ENABLED = os.environ.get('MERCH_V2_ENABLED', 'false').lower() in (
+        '1',
+        'true',
+        'yes',
+    )
+    MERCH_IMAGE_CACHE_TTL_SECONDS = int(
+        os.environ.get('MERCH_IMAGE_CACHE_TTL_SECONDS', '86400')
+    )
     # Warnung wenn Keys nicht gesetzt sind
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
         import warnings

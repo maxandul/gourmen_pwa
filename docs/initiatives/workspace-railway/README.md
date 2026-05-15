@@ -65,8 +65,10 @@ DKIM-Signaturen kommen aus Workspace (Personenpost) und Resend (System-Mails) pa
 | 6 | TWINT/Payments | ~5 Tage | Phase 4, Phase 2 |
 | 7 | WhatsApp | ~1 Woche + Meta-Wartezeit | Phase 2 |
 | 8 | Infomaniak-Mail/Object-Storage abbauen (`PHASE_08_INFOMANIAK_DECOMMISSION.md`) | ~0.5 Tag | Phase 1–3 done |
+| 9 | Drive-Browser-Refactor (`PHASE_09_DRIVE_BROWSER_REFACTOR.md`) | ~2–3 Tage | Phase 3 done |
+| 10 | Merch-Verwaltung neu (`PHASE_10_MERCH.md`) | ~2 Wochen | Phase 3 done (Drive), Phase 9 hilfreich aber nicht hart noetig |
 
-**Empfohlene Reihenfolge**: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8  
+**Empfohlene Reihenfolge**: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8; 9 und 10 koennen parallel zu den hinteren Phasen laufen.  
 
 Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 
@@ -92,6 +94,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |
 | 8 | pending | – | – | `PHASE_08_INFOMANIAK_DECOMMISSION.md`; nur abbauen wenn nichts mehr referenziert |
 | 9 | in_progress | `phase/09-workspace-drive-browser-refactor` | 2026-05-15 | Drive-Browser implementiert (Tiles, Breadcrumb, Kebab), Migration Phase 9, `DRIVE_ARCHIVE_FOLDER_ID`. PR/Merge offen; nach `master`-Deploy DB-Migration + Env setzen. Spec: `docs/capabilities/drive.md` §17. |
+| 10 | pending | – | 2026-05-15 | Merch-Verwaltung neu (Konzept-Reset). Spec: `docs/capabilities/merch.md`. Briefing: `PHASE_10_MERCH.md`. |
 
 Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 

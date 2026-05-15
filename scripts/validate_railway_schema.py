@@ -61,26 +61,65 @@ EXPECTED_SCHEMA = {
         'id', 'member_id', 'endpoint', 'p256dh_key', 'auth_key', 
         'user_agent', 'created_at', 'updated_at'
     },
-    'merch_articles': {
-        'id', 'name', 'description', 'base_supplier_price_rappen', 
-        'base_member_price_rappen', 'image_url', 'is_active', 
+    # Legacy Merch (Phase 10 Rename): Produktion nach Migration f8e91d4c3b2a
+    'merch_articles_legacy': {
+        'id', 'name', 'description', 'base_supplier_price_rappen',
+        'base_member_price_rappen', 'image_url', 'is_active',
         'created_at', 'updated_at'
     },
-    'merch_variants': {
-        'id', 'article_id', 'color', 'size', 'supplier_price_rappen', 
+    'merch_variants_legacy': {
+        'id', 'article_id', 'color', 'size', 'supplier_price_rappen',
         'member_price_rappen', 'is_active', 'created_at', 'updated_at'
     },
-    'merch_orders': {
-        'id', 'member_id', 'order_number', 'status', 'total_member_price_rappen', 
-        'total_supplier_price_rappen', 'total_profit_rappen', 'notes', 
+    'merch_orders_legacy': {
+        'id', 'member_id', 'order_number', 'status', 'total_member_price_rappen',
+        'total_supplier_price_rappen', 'total_profit_rappen', 'notes',
         'created_at', 'updated_at', 'delivered_at'
     },
-    'merch_order_items': {
-        'id', 'order_id', 'article_id', 'variant_id', 'quantity', 
-        'unit_member_price_rappen', 'unit_supplier_price_rappen', 
-        'total_member_price_rappen', 'total_supplier_price_rappen', 
+    'merch_order_items_legacy': {
+        'id', 'order_id', 'article_id', 'variant_id', 'quantity',
+        'unit_member_price_rappen', 'unit_supplier_price_rappen',
+        'total_member_price_rappen', 'total_supplier_price_rappen',
         'total_profit_rappen', 'created_at'
-    }
+    },
+    # Merch v2 (Phase 10): Migration a9c81e2d4f03; parallel zu Legacy *_legacy
+    'merch_suppliers': {
+        'id', 'name', 'contact_email', 'website_url', 'notes',
+        'is_archived', 'created_at', 'updated_at',
+    },
+    'merch_articles': {
+        'id', 'name', 'description', 'supplier_id', 'list_price_rappen',
+        'image_drive_file_id', 'variant_schema', 'is_archived',
+        'created_at', 'updated_at',
+    },
+    'merch_variants': {
+        'id', 'article_id', 'attributes', 'list_price_rappen', 'is_active',
+        'created_at', 'updated_at',
+    },
+    'merch_rounds': {
+        'id', 'title', 'description', 'status', 'deadline_communicated',
+        'subsidy_per_member_rappen', 'supplier_invoice_drive_file_id',
+        'supplier_invoice_total_rappen', 'notes', 'cancellation_reason',
+        'marketing_chief_id', 'opened_at', 'locked_at', 'ordered_at',
+        'delivered_at', 'closed_at', 'cancelled_at', 'created_at',
+        'updated_at',
+    },
+    'merch_round_items': {
+        'id', 'round_id', 'variant_id', 'list_price_snapshot_rappen',
+        'effective_supplier_price_rappen', 'member_price_rappen',
+    },
+    'merch_orders': {
+        'id', 'round_id', 'member_id', 'status', 'gross_amount_rappen',
+        'subsidy_amount_rappen', 'member_amount_due_rappen',
+        'confirmed_at', 'invoiced_at', 'picked_up_at',
+        'picked_up_by_member_id', 'paid_at', 'paid_by_member_id',
+        'cancelled_at', 'cancellation_reason', 'created_at', 'updated_at',
+    },
+    'merch_order_items': {
+        'id', 'order_id', 'round_item_id', 'quantity',
+        'unit_price_at_confirm_rappen', 'unit_price_final_rappen',
+        'created_at',
+    },
 }
 
 def validate_database():
@@ -185,13 +224,30 @@ def validate_database():
             'documents': [('event_id', 'events'), ('uploader_id', 'members')],
             'event_ratings': [('event_id', 'events'), ('member_id', 'members')],
             'push_subscriptions': [('member_id', 'members')],
+            'merch_variants_legacy': [('article_id', 'merch_articles_legacy')],
+            'merch_orders_legacy': [('member_id', 'members')],
+            'merch_order_items_legacy': [
+                ('order_id', 'merch_orders_legacy'),
+                ('article_id', 'merch_articles_legacy'),
+                ('variant_id', 'merch_variants_legacy'),
+            ],
+            'merch_articles': [('supplier_id', 'merch_suppliers')],
             'merch_variants': [('article_id', 'merch_articles')],
-            'merch_orders': [('member_id', 'members')],
+            'merch_rounds': [('marketing_chief_id', 'members')],
+            'merch_round_items': [
+                ('round_id', 'merch_rounds'),
+                ('variant_id', 'merch_variants'),
+            ],
+            'merch_orders': [
+                ('round_id', 'merch_rounds'),
+                ('member_id', 'members'),
+                ('picked_up_by_member_id', 'members'),
+                ('paid_by_member_id', 'members'),
+            ],
             'merch_order_items': [
                 ('order_id', 'merch_orders'),
-                ('article_id', 'merch_articles'),
-                ('variant_id', 'merch_variants')
-            ]
+                ('round_item_id', 'merch_round_items'),
+            ],
         }
         
         for table, expected_fk_list in expected_fks.items():

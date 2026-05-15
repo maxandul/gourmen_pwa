@@ -112,6 +112,12 @@
       </a>
     </div>
 
+    {% if merch_v2_cockpit_visible %}
+    <p class="admin-hub__hint">
+      <a href="{{ url_for('merch_admin.cockpit') }}">Merch-Cockpit für Bestellrunden öffnen</a>
+    </p>
+    {% endif %}
+
     {% if config.get('DRIVE_FEATURE_ENABLED') and current_user.is_admin() %}
     <section class="admin-hub__drive-resync" aria-labelledby="drive-resync-title">
       <div class="admin-hub__drive-resync-head">

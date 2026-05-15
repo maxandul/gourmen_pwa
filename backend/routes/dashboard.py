@@ -2,7 +2,7 @@ from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from backend.models.event import Event
 from backend.models.participation import Participation
-from backend.models.merch_order import MerchOrder, OrderStatus
+from backend.models.merch_order import MerchLegacyOrderStatus, MerchOrderLegacy
 from backend.services.ggl_rules import GGLService
 from backend.services.retro_cleanup import RetroCleanupService
 from backend.routes.events import hamburg2026_is_visible
@@ -75,13 +75,16 @@ def index():
     ).order_by(Event.datum.asc()).first()
 
     merch_orders = (
-        MerchOrder.query.filter_by(member_id=current_user.id)
-        .order_by(MerchOrder.created_at.desc())
+        MerchOrderLegacy.query.filter_by(member_id=current_user.id)
+        .order_by(MerchOrderLegacy.created_at.desc())
         .all()
     )
     merch_last_order = merch_orders[0] if merch_orders else None
     merch_open_count = sum(
-        1 for o in merch_orders if o.status in (OrderStatus.BESTELLT, OrderStatus.WIRD_GELIEFERT)
+        1
+        for o in merch_orders
+        if o.status
+        in (MerchLegacyOrderStatus.BESTELLT, MerchLegacyOrderStatus.WIRD_GELIEFERT)
     )
 
     return render_template(

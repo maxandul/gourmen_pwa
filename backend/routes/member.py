@@ -299,20 +299,20 @@ def technical():
 @login_required
 def merch():
     """Merch overview page"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    from backend.models.merch_order import MerchOrder
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
+    from backend.models.merch_order import MerchOrderLegacy
     
     # Get active articles
-    articles = MerchArticle.query.filter_by(is_active=True).all()
+    articles = MerchArticleLegacy.query.filter_by(is_active=True).all()
     # Enrich articles with variants and available colors (used by template/JS)
     for article in articles:
-        variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
+        variants = MerchVariantLegacy.query.filter_by(article_id=article.id, is_active=True).all()
         article.variants = variants
         article.available_colors = sorted({v.color for v in variants}) if variants else []
     
     # Get user's orders
-    user_orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
+    user_orders = MerchOrderLegacy.query.filter_by(member_id=current_user.id).order_by(MerchOrderLegacy.created_at.desc()).all()
     selected_order_id = request.args.get('order_id', type=int)
     selected_order = None
     if user_orders:
@@ -334,10 +334,10 @@ def merch():
 @login_required
 def merch_order():
     """Merch order page"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    from backend.models.merch_order_item import MerchOrderItem
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
+    from backend.models.merch_order_item import MerchOrderItemLegacy
     import uuid
     from datetime import datetime
     
@@ -345,10 +345,10 @@ def merch_order():
         try:
             # Create new order
             order_number = f"ORD-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
-            order = MerchOrder(
+            order = MerchOrderLegacy(
                 member_id=current_user.id,
                 order_number=order_number,
-                status=OrderStatus.BESTELLT,
+                status=MerchLegacyOrderStatus.BESTELLT,
                 total_member_price_rappen=0,
                 total_supplier_price_rappen=0,
                 total_profit_rappen=0
@@ -361,7 +361,7 @@ def merch_order():
             total_profit = 0
             
             # Process each article (now with multiple variants per article)
-            for article in MerchArticle.query.filter_by(is_active=True).all():
+            for article in MerchArticleLegacy.query.filter_by(is_active=True).all():
                 # Get arrays of colors, sizes, and quantities for this article
                 colors = request.form.getlist(f'color_{article.id}[]')
                 sizes = request.form.getlist(f'size_{article.id}[]')
@@ -373,7 +373,7 @@ def merch_order():
                     
                     if quantity > 0 and color and size:
                         # Find the variant
-                        variant = MerchVariant.query.filter_by(
+                        variant = MerchVariantLegacy.query.filter_by(
                             article_id=article.id,
                             color=color,
                             size=size,
@@ -382,7 +382,7 @@ def merch_order():
                         
                         if variant:
                             # Create order item
-                            item = MerchOrderItem(
+                            item = MerchOrderItemLegacy(
                                 order_id=order.id,
                                 article_id=article.id,
                                 variant_id=variant.id,
@@ -414,11 +414,11 @@ def merch_order():
     
     # GET request - show form
     # Get active articles with their variants
-    articles = MerchArticle.query.filter_by(is_active=True).all()
+    articles = MerchArticleLegacy.query.filter_by(is_active=True).all()
     
     # Get all variants for each article and prepare available colors
     for article in articles:
-        article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
+        article.variants = MerchVariantLegacy.query.filter_by(article_id=article.id, is_active=True).all()
         # Get unique colors for this article
         article.available_colors = list(set([variant.color for variant in article.variants]))
     
@@ -428,9 +428,9 @@ def merch_order():
 @login_required
 def merch_orders():
     """User's merch orders"""
-    from backend.models.merch_order import MerchOrder
+    from backend.models.merch_order import MerchOrderLegacy
     
-    orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
+    orders = MerchOrderLegacy.query.filter_by(member_id=current_user.id).order_by(MerchOrderLegacy.created_at.desc()).all()
     
     return render_template('member/merch/orders.html', orders=orders)
 
@@ -438,39 +438,39 @@ def merch_orders():
 @login_required
 def merch_order_detail(order_id):
     """Bestellungen werden im Merch-Bereich (Tab «Meine Bestellungen») angezeigt — Deep-Link-Weiterleitung."""
-    from backend.models.merch_order import MerchOrder
+    from backend.models.merch_order import MerchOrderLegacy
 
-    order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
+    order = MerchOrderLegacy.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
     return redirect(url_for('member.merch', tab='orders', order_id=order.id))
 
 @bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])
 @login_required
 def merch_order_edit(order_id):
     """Edit merch order (only if status is BESTELLT)"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    from backend.models.merch_order_item import MerchOrderItem
+    from backend.models.merch_article import MerchArticleLegacy
+    from backend.models.merch_variant import MerchVariantLegacy
+    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
+    from backend.models.merch_order_item import MerchOrderItemLegacy
     
     # Load the order and verify ownership + status
-    order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
+    order = MerchOrderLegacy.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
     
     # Check if order can be edited
-    if order.status != OrderStatus.BESTELLT:
+    if order.status != MerchLegacyOrderStatus.BESTELLT:
         flash('Diese Bestellung kann nicht mehr bearbeitet werden.', 'error')
         return redirect(url_for('member.merch', tab='orders', order_id=order_id))
     
     if request.method == 'POST':
         try:
             # Delete old order items
-            MerchOrderItem.query.filter_by(order_id=order.id).delete()
+            MerchOrderItemLegacy.query.filter_by(order_id=order.id).delete()
             
             total_member_price = 0
             total_supplier_price = 0
             total_profit = 0
             
             # Process each article (now with multiple variants per article)
-            for article in MerchArticle.query.filter_by(is_active=True).all():
+            for article in MerchArticleLegacy.query.filter_by(is_active=True).all():
                 # Get arrays of colors, sizes, and quantities for this article
                 colors = request.form.getlist(f'color_{article.id}[]')
                 sizes = request.form.getlist(f'size_{article.id}[]')
@@ -482,7 +482,7 @@ def merch_order_edit(order_id):
                     
                     if quantity > 0 and color and size:
                         # Find the variant
-                        variant = MerchVariant.query.filter_by(
+                        variant = MerchVariantLegacy.query.filter_by(
                             article_id=article.id,
                             color=color,
                             size=size,
@@ -491,7 +491,7 @@ def merch_order_edit(order_id):
                         
                         if variant:
                             # Create new order item
-                            item = MerchOrderItem(
+                            item = MerchOrderItemLegacy(
                                 order_id=order.id,
                                 article_id=article.id,
                                 variant_id=variant.id,
@@ -522,7 +522,7 @@ def merch_order_edit(order_id):
             flash(f'Fehler beim Aktualisieren der Bestellung: {str(e)}', 'error')
     
     # GET request - show form with existing data
-    articles = MerchArticle.query.filter_by(is_active=True).all()
+    articles = MerchArticleLegacy.query.filter_by(is_active=True).all()
     
     # Prepare existing order data (now supporting multiple items per article)
     existing_items = {}  # article_id -> list of items
@@ -537,7 +537,7 @@ def merch_order_edit(order_id):
     
     # Get all variants for each article
     for article in articles:
-        article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
+        article.variants = MerchVariantLegacy.query.filter_by(article_id=article.id, is_active=True).all()
         article.available_colors = list(set([variant.color for variant in article.variants]))
         
         # Pre-fill existing data if available (now as a list)

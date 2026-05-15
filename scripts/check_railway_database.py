@@ -62,10 +62,17 @@ def check_database():
             'audit_events',
             'ratings',
             'push_subscriptions',
+            'merch_articles_legacy',
+            'merch_variants_legacy',
+            'merch_orders_legacy',
+            'merch_order_items_legacy',
+            'merch_suppliers',
             'merch_articles',
             'merch_variants',
+            'merch_rounds',
+            'merch_round_items',
             'merch_orders',
-            'merch_order_items'
+            'merch_order_items',
         ]
         
         print("🔎 ERWARTETE TABELLEN:")
@@ -91,8 +98,18 @@ def check_database():
         print("🔗 FOREIGN KEY CONSTRAINTS (Auswahl):")
         print("-" * 80)
         
-        important_fks = ['merch_variants', 'merch_orders', 'merch_order_items', 
-                        'participations', 'documents', 'ratings']
+        important_fks = [
+            'merch_variants_legacy',
+            'merch_orders_legacy',
+            'merch_order_items_legacy',
+            'merch_variants',
+            'merch_orders',
+            'merch_order_items',
+            'merch_round_items',
+            'participations',
+            'documents',
+            'ratings',
+        ]
         
         for table in important_fks:
             if table in tables:
@@ -107,7 +124,14 @@ def check_database():
         print("📑 WICHTIGE INDIZES:")
         print("-" * 80)
         
-        for table in ['merch_orders', 'merch_order_items', 'merch_variants']:
+        for table in [
+            'merch_orders_legacy',
+            'merch_order_items_legacy',
+            'merch_variants_legacy',
+            'merch_orders',
+            'merch_order_items',
+            'merch_variants',
+        ]:
             if table in tables:
                 indexes = inspector.get_indexes(table)
                 if indexes:

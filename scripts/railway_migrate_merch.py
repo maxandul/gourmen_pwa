@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Railway Merch Migration Script
-Erstellt die Merch-Tabellen direkt in Railway
+Historisches Railway-Hilfsskript fuer Merch-Tabellen (vor Phase 10).
+
+Ab Phase 10: Alembic-Migration `f8e91d4c3b2a` benennt die Alt-Tabellen auf
+`*_legacy` um; neue Tabellen kommen mit spaeteren Revisionen. Dieses Skript
+nicht auf bereits migrierte Datenbanken ausfuehren (Tabellennamen sind veraltet).
 """
 
 import os

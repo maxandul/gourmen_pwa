@@ -10,8 +10,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.app import create_app
 from backend.extensions import db
-from backend.models.merch_article import MerchArticle
-from backend.models.merch_variant import MerchVariant
+from backend.models.merch_article import MerchArticleLegacy
+from backend.models.merch_variant import MerchVariantLegacy
 
 def seed_merch_data():
     """Seed merch test data"""
@@ -19,14 +19,14 @@ def seed_merch_data():
     
     with app.app_context():
         # Check if data already exists
-        if MerchArticle.query.count() > 0:
+        if MerchArticleLegacy.query.count() > 0:
             print("Merch data already exists, skipping...")
             return
         
         print("Creating merch test data...")
         
         # Create T-Shirt article
-        tshirt = MerchArticle(
+        tshirt = MerchArticleLegacy(
             name="Gourmen T-Shirt",
             description="Klassisches Gourmen T-Shirt aus 100% Baumwolle",
             base_supplier_price_rappen=2500,  # 25.00 CHF
@@ -54,7 +54,7 @@ def seed_merch_data():
                     supplier_price = 2500  # 25.00 CHF
                     member_price = 3500    # 35.00 CHF
                 
-                variant = MerchVariant(
+                variant = MerchVariantLegacy(
                     article_id=tshirt.id,
                     color=color,
                     size=size,
@@ -65,7 +65,7 @@ def seed_merch_data():
                 db.session.add(variant)
         
         # Create Hoodie article
-        hoodie = MerchArticle(
+        hoodie = MerchArticleLegacy(
             name="Gourmen Hoodie",
             description="Warmes Gourmen Hoodie mit Kapuze",
             base_supplier_price_rappen=4500,  # 45.00 CHF
@@ -93,7 +93,7 @@ def seed_merch_data():
                     supplier_price = 4500  # 45.00 CHF
                     member_price = 6500    # 65.00 CHF
                 
-                variant = MerchVariant(
+                variant = MerchVariantLegacy(
                     article_id=hoodie.id,
                     color=color,
                     size=size,
@@ -106,13 +106,13 @@ def seed_merch_data():
         # Commit all changes
         db.session.commit()
         
-        print(f"✅ Created {MerchArticle.query.count()} articles")
-        print(f"✅ Created {MerchVariant.query.count()} variants")
+        print(f"✅ Created {MerchArticleLegacy.query.count()} articles")
+        print(f"✅ Created {MerchVariantLegacy.query.count()} variants")
         
         # Print summary
         print("\n📊 Merch Data Summary:")
-        for article in MerchArticle.query.all():
-            variants = MerchVariant.query.filter_by(article_id=article.id).count()
+        for article in MerchArticleLegacy.query.all():
+            variants = MerchVariantLegacy.query.filter_by(article_id=article.id).count()
             print(f"  {article.name}: {variants} variants")
             print(f"    Base Price: {article.base_supplier_price_chf:.2f} CHF → {article.base_member_price_chf:.2f} CHF")
             print(f"    Profit: {article.base_profit_chf:.2f} CHF")

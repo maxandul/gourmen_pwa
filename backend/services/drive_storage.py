@@ -953,7 +953,7 @@ class DriveStorageService:
             drive.files()
             .get(
                 fileId=file_id,
-                fields="id, name, mimeType, parents, webViewLink, trashed",
+                fields="id, name, mimeType, parents, webViewLink, trashed, modifiedTime",
                 supportsAllDrives=True,
             )
             .execute()
@@ -987,6 +987,58 @@ class DriveStorageService:
         while not done:
             _, done = downloader.next_chunk()
         return buffer.getvalue(), mime, name
+
+    @classmethod
+    def download_binary_by_file_id(
+        cls, file_id: str
+    ) -> tuple[bytes, str, str, str | None]:
+        """Laedt eine Drive-Datei als Bytes ohne Document-Zeile (z.B. Merch-Bild).
+
+        Rueckgabe: ``(payload, mime_type, filename, modified_time_rfc3339|None)``.
+        """
+        try:
+            from googleapiclient.errors import HttpError
+            from googleapiclient.http import MediaIoBaseDownload
+        except ImportError as exc:
+            raise DriveError("google-api-python-client fehlt.") from exc
+
+        raw_id = (file_id or "").strip()
+        if not raw_id:
+            raise DriveError("Drive file_id fehlt.")
+
+        drive = cls._build_drive()
+        try:
+            meta = (
+                drive.files()
+                .get(
+                    fileId=raw_id,
+                    fields="id, name, mimeType, modifiedTime, trashed",
+                    supportsAllDrives=True,
+                )
+                .execute()
+            )
+        except HttpError as exc:
+            status = getattr(getattr(exc, "resp", None), "status", None)
+            if status == 404:
+                raise DriveError("Drive-Datei nicht gefunden.") from exc
+            raise DriveError(f"Drive-Metadaten fehlgeschlagen: {exc}") from exc
+
+        if meta.get("trashed"):
+            raise DriveError("Drive-Datei ist geloescht.")
+
+        name = meta.get("name") or "download"
+        mime = meta.get("mimeType") or "application/octet-stream"
+        modified = meta.get("modifiedTime")
+
+        media_req = drive.files().get_media(
+            fileId=raw_id, supportsAllDrives=True
+        )
+        buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(buffer, media_req)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        return buffer.getvalue(), mime, name, modified
 
     @classmethod
     def get_web_view_link(cls, document: Document) -> str:

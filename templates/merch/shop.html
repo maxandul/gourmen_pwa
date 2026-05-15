@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% set _sprite = url_for('static', filename='icons/lucide-sprite.7e463391.svg') %}
+
+{% block title %}Merch - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('member.index') }}">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <use href="{{ _sprite }}#chevron-left"></use>
+        </svg>
+        <span>Zurück zum Verein</span>
+      </a>
+    </p>
+    <h1>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <use href="{{ _sprite }}#shirt"></use>
+      </svg>
+      Merch
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <p class="admin-hub__hint">
+      Hinweis: Der klassische Shop bleibt unter <a href="{{ url_for('member.merch') }}">Verein → Merch (klassisch)</a> erreichbar, bis die neue Rundenlogik vollstaendig umgestellt ist.
+    </p>
+
+    <section class="settings-nav__section" aria-labelledby="merch-v2-open-rounds">
+      <h2 id="merch-v2-open-rounds" class="settings-nav__section-title">Aktuelle Bestellrunden</h2>
+      {% if open_rounds %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for r in open_rounds %}
+          <p class="card__subtitle">
+            <a href="{{ url_for('merch.round_shop', round_id=r.id) }}"><strong>{{ r.title }}</strong></a>
+            {% if r.deadline_communicated %}
+            — Frist {{ r.deadline_communicated.strftime('%d.%m.%Y') }}
+            {% endif %}
+          </p>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="card__subtitle">Zurzeit keine offene Runde.</p>
+      {% endif %}
+    </section>
+
+    <section class="settings-nav__section" aria-labelledby="merch-v2-orders">
+      <h2 id="merch-v2-orders" class="settings-nav__section-title">Deine Bestellungen (neu)</h2>
+      {% if recent_orders %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for o in recent_orders %}
+          <p class="card__subtitle">
+            <a href="{{ url_for('merch.round_shop', round_id=o.round_id) }}"><strong>{{ o.round.title }}</strong></a> — {{ o.status.value }}
+          </p>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="card__subtitle">Noch keine Bestellung im neuen Merch.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

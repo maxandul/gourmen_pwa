@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}{{ round.title }} - Merch - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('merch_admin.cockpit') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Cockpit</span></a>
+    </p>
+    <h1>
+      {{ lucide_icon('shirt') }}
+      {{ round.title }}
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <div class="card card--flat">
+      <div class="card__body">
+        <dl class="form-row form-row--stacked">
+          <div>
+            <dt class="form-field__label">Status</dt>
+            <dd>{{ round.status.value }}</dd>
+          </div>
+          {% if round.description %}
+          <div>
+            <dt class="form-field__label">Beschreibung</dt>
+            <dd>{{ round.description }}</dd>
+          </div>
+          {% endif %}
+          {% if round.deadline_communicated %}
+          <div>
+            <dt class="form-field__label">Kommunizierte Frist</dt>
+            <dd>{{ round.deadline_communicated.strftime('%d.%m.%Y') }}</dd>
+          </div>
+          {% endif %}
+          <div>
+            <dt class="form-field__label">Subvention pro Mitglied</dt>
+            <dd>CHF {{ '%.2f'|format(round.subsidy_per_member_rappen / 100.0) }}</dd>
+          </div>
+          <div>
+            <dt class="form-field__label">Bestellungen</dt>
+            <dd>{{ round.orders|length }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <section class="settings-nav__section" aria-labelledby="merch-round-sortiment">
+      <h2 id="merch-round-sortiment" class="settings-nav__section-title">Sortiment dieser Runde</h2>
+      <p class="card__subtitle">
+        Listenpreis ist ein Snapshot beim Hinzufuegen (siehe Capability-Doc). Effektiv- und Mitgliederpreise folgen nach «Lock» der Runde.
+      </p>
+
+      {% if round_items_sorted %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for ri in round_items_sorted %}
+          <div class="form-row form-row--stacked">
+            <p class="card__subtitle">
+              <strong>{{ ri.variant.article.name }}</strong>
+              —
+              {% set attrs = ri.variant.attributes %}
+              {% if attrs %}
+                {% for k, v in attrs|dictsort %}
+                  {{ k }}: {{ v }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              {% else %}
+                Standard
+              {% endif %}
+              <br/>
+              <span class="form-field__hint">Listenpreis-Snapshot: CHF {{ '%.2f'|format(ri.list_price_snapshot_rappen / 100.0) }}</span>
+            </p>
+            {% if round.status == MerchRoundStatus.DRAFT %}
+            <form method="POST" action="{{ url_for('merch_admin.round_remove_item', round_id=round.id, item_id=ri.id) }}" class="form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn btn--secondary">Position entfernen</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="card__subtitle">Noch keine Positionen.</p>
+      {% endif %}
+
+      {% if round.status == MerchRoundStatus.DRAFT and add_round_item_form %}
+      <div class="card">
+        <div class="card__header">
+          <h3 class="card__title">Variante hinzufuegen</h3>
+        </div>
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.round_add_item', round_id=round.id) }}" class="form">
+            {{ add_round_item_form.hidden_tag() }}
+            <div class="form-field">
+              {{ add_round_item_form.variant_id.label(class='form-field__label') }}
+              {{ add_round_item_form.variant_id(class='form-field__select') }}
+              {% if add_round_item_form.variant_id.errors %}
+              <p class="form-field__error" role="alert">{{ add_round_item_form.variant_id.errors[0] }}</p>
+              {% endif %}
+            </div>
+            <div class="form-actions">
+              {{ add_round_item_form.submit(class='btn btn--primary') }}
+            </div>
+          </form>
+        </div>
+      </div>
+      {% elif round.status == MerchRoundStatus.DRAFT %}
+      <p class="admin-hub__hint">Keine weiteren Varianten im Sortiment-Stamm (nicht archiviert, aktiv). Legen Sie Artikel unter dem klassischen Merch-Admin an oder erweitern Sie spaeter die Merch-v2-Artikelpflege.</p>
+      {% endif %}
+    </section>
+
+    {% if round.status == MerchRoundStatus.DRAFT %}
+    <div class="card">
+      <div class="card__body">
+        <p class="card__subtitle">Als Entwurf ist die Runde fuer Mitglieder noch nicht sichtbar. Mindestens eine Sortimentsposition ist noetig, bevor die Runde geoeffnet werden kann.</p>
+        <form method="POST" action="{{ url_for('merch_admin.round_open', round_id=round.id) }}" class="form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Runde oeffnen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
