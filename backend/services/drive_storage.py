@@ -1047,6 +1047,33 @@ class DriveStorageService:
         return meta.get("webViewLink") or ""
 
     @classmethod
+    def get_web_view_link_by_file_id(cls, file_id: str) -> str:
+        """WebView-Link fuer eine Drive-Datei (z.B. Merch-Lieferantenbeleg ohne Document-Shortcut)."""
+        raw_id = (file_id or "").strip()
+        if not raw_id:
+            return ""
+        try:
+            from googleapiclient.errors import HttpError
+        except ImportError:
+            return ""
+        try:
+            drive = cls._build_drive()
+            meta = (
+                drive.files()
+                .get(
+                    fileId=raw_id,
+                    fields="webViewLink, trashed",
+                    supportsAllDrives=True,
+                )
+                .execute()
+            )
+            if meta.get("trashed"):
+                return ""
+            return meta.get("webViewLink") or ""
+        except HttpError:
+            return ""
+
+    @classmethod
     def get_web_view_link_for_folder_id(cls, folder_id: str) -> str | None:
         """Öffentlicher Ordner-Link in der Drive-Web-UI."""
         try:

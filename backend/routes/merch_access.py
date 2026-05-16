@@ -34,6 +34,26 @@ def marketing_chief_or_admin_required(f):
     return decorated_function
 
 
+def merch_statistics_view_required(f):
+    """Vereins- und KPI-Statistik: Marketingchef, Schatzmeister oder Admin (Lesen).
+
+    Spec: docs/capabilities/merch.md Sektion 14.3 Datenzugriff fuer Jahresreport.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, 'is_active', False):
+            abort(403)
+        if current_user.is_admin():
+            return f(*args, **kwargs)
+        fx = getattr(current_user, 'funktion', None)
+        if fx in (Funktion.MARKETINGCHEF, Funktion.SCHATZMEISTER):
+            return f(*args, **kwargs)
+        abort(403)
+
+    return decorated_function
+
+
 def treasury_marketing_or_admin_required(f):
     """Zusaetzlich fuer paid-Markierungen: Schatzmeister, Marketingchef oder Admin."""
 

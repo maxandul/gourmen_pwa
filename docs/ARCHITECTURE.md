@@ -65,7 +65,7 @@ Registrierung in `backend/app.py`:
 | `docs` | `/docs` | **Phase 03 + 09:** Vereinsdokumente im Google Shared Drive – Drive-Browser (Ordner-Tiles, Breadcrumb, Dateiliste), Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. Spec: `docs/capabilities/drive.md`. |
 | `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
 | `merch` | `/merch` | **Phase 10:** Merch v2 nur wenn `MERCH_V2_ENABLED=true`: `GET /` Uebersicht, `GET /rounds/<id>` Runden-Shop, `POST /rounds/<id>/cart`, `POST /rounds/<id>/confirm`, `POST /rounds/<id>/cancel-order`, `GET /merch/image/<article_id>` Bild-Proxy (Drive, Redis-Cache). Spec: `docs/capabilities/merch.md`. |
-| `merch_admin` | `/admin/merch-v2` | **Phase 10:** Cockpit, Runden-Lifecycle (Lock, Re-Open, Cancel, Preise, Lieferantenbestellung, Wareneingang, Abschluss), CSV-Aggregat, Bestellungen «Abgeholt»/«Bezahlt». Legacy-Forderungen read-only: `admin` `/admin/merch/legacy-receivables`. Klassischer Merch-Admin: `/admin/merch`. |
+| `merch_admin` | `/admin/merch-v2` | **Phase 10:** Cockpit, Stammdaten Lieferanten (`/suppliers`), Runden-Lifecycle, CSV-Aggregat, Lieferantenbeleg-Upload, Jahresstatistik (`/statistics`, `/statistics/export.csv`), Bestellungen «Abgeholt»/«Bezahlt». Legacy-Forderungen read-only: `admin` `/admin/merch/legacy-receivables`. Klassischer Merch-Admin: `/admin/merch`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -118,7 +118,8 @@ Aktuelle Services:
 | `MerchSortimentService` | **Phase 10:** Kombinationen aus `variant_schema`, Listenpreis-Aufloesung Artikel/Variante (`docs/capabilities/merch.md`). |
 | `MerchRoundService` | **Phase 10:** Runden-Lifecycle (`create_draft_round`, `apply_transition`, `add_variant_to_round`, `remove_round_item`), OPEN nur mit mind. einer `MerchRoundItem`. |
 | `MerchOrderService` | **Phase 10:** Mitglieder-Warenkorb und Bestaetigung (`get_or_create_draft_order`, `set_cart_line`, `confirm_order`); Subvention `min(Cap, Brutto)`; Schaetzung mit Listenpreis-Snapshot solange keine definitiven Memberpreise. |
-| `MerchImageService` | **Phase 10:** Redis-Zwischenspeicher + ETag fuer `GET /merch/image/<article_id>`; Download ueber `DriveStorageService.download_binary_by_file_id`. Ohne `REDIS_URL` erfolgt kein Zwischenspeicher.
+| `MerchImageService` | **Phase 10:** Redis-Zwischenspeicher + ETag fuer `GET /merch/image/<article_id>`; Download ueber `DriveStorageService.download_binary_by_file_id`. Ohne `REDIS_URL` erfolgt kein Zwischenspeicher. |
+| `MerchStatisticsService` | **Phase 10:** Kennzahlen pro Runde (`compute_round_statistics`) und Vereinsjahr (`build_year_overview`, Top-Artikel). Spec `docs/capabilities/merch.md` Sektion 14. |
 
 ## Auth-Flow
 

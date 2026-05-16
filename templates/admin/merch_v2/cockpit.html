@@ -42,11 +42,20 @@
       </div>
     </div>
 
+    <section class="settings-nav__section" aria-labelledby="merch-v2-stamm-title">
+      <h2 id="merch-v2-stamm-title" class="settings-nav__section-title">Stammdaten</h2>
+      <p class="card__subtitle">
+        <a href="{{ url_for('merch_admin.suppliers_index') }}" class="btn btn--secondary">Lieferanten pflegen</a>
+      </p>
+      <p class="admin-hub__hint">Artikel und Varianten (v2): z. B. ueber Seed-Script <code>scripts/seed_merch_v2_dev.py</code> bis die Cockpit-Sortimentspflege folgt.</p>
+    </section>
+
     <section class="settings-nav__section" aria-labelledby="merch-v2-rounds-title">
       <h2 id="merch-v2-rounds-title" class="settings-nav__section-title">Runden</h2>
-      <p class="card__subtitle">
+      <div class="form-actions">
         <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">Neue Runde anlegen</a>
-      </p>
+        <a href="{{ url_for('merch_admin.statistics_year') }}" class="btn btn--secondary">Vereinsjahresstatistik</a>
+      </div>
       {% if rounds %}
       <div class="card card--flat">
         <div class="card__body">

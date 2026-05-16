@@ -1,9 +1,11 @@
 # Phase 10 – Merch-Verwaltung neu
 
-> **Branch**: `phase/10-workspace-merch`
+> **Branch**: `phase/10-workspace-merch` (Empfehlung: Feature-Branches; Merge-Ziel ist `master`)
 > **Spec (autoritativ)**: [`docs/capabilities/merch.md`](../../capabilities/merch.md)
 > **Strategie-Anker**: [`docs/STRATEGY_2026.md`](../../STRATEGY_2026.md) MVP-Punkt 4
-> **Status**: pending. **Aufwand**: ~2 Wochen.
+> **Status**: in_progress auf `master` (MERCH-V2‑Cockpit, Shop, Statistik/Jahresreport, Audit, Legacy‑Receivables; Sortiment/Stammdaten v2 schrittweise). **Aufwand**: ~2 Wochen.
+
+**Umsetzungsstand (laufend, nicht gleich Release):** Lieferantenpflege im Cockpit (`/admin/merch-v2/suppliers`); Runden-KPI + Vereinsjahresstatistik + CSV; Merch-Historie im Admin-Mitglied-Detail; Lieferantenbeleg nach Drive (ENV `MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`). **Offen im MVP:** vollstaendige Artikel/Varianten/Bild-Cockpit-UI (bis dahin z. B. `scripts/seed_merch_v2_dev.py`).
 
 ---
 

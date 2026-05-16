@@ -146,6 +146,56 @@
             </div>
         </div>
         
+        {% if config.get('MERCH_V2_ENABLED') %}
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Merch v2 (Bestellhistorie)</h2></div>
+            <div class="card__body">
+                {% if merch_v2_orders %}
+                <dl class="form-row form-row--stacked">
+                  <div>
+                    <dt class="form-field__label">Summe bezahlte Merch-Forderungen (Zeilen PAID)</dt>
+                    <dd>CHF {{ '%.2f'|format(merch_v2_totals.bezahlt_rappen / 100.0) }}</dd>
+                  </div>
+                  <div>
+                    <dt class="form-field__label">Subventionsverbrauch (Summe)</dt>
+                    <dd>CHF {{ '%.2f'|format(merch_v2_totals.subvention_rappen / 100.0) }}</dd>
+                  </div>
+                  <div>
+                    <dt class="form-field__label">Offene Forderungen (INVOICED / PICKED_UP)</dt>
+                    <dd>CHF {{ '%.2f'|format(merch_v2_totals.offen_rappen / 100.0) }}</dd>
+                  </div>
+                </dl>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Runde</th>
+                            <th>Status</th>
+                            <th>Forderung</th>
+                            <th>Bestaetigt am</th>
+                            <th>Bezahlt am</th>
+                            <th>Subvention</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for mo in merch_v2_orders %}
+                        <tr>
+                            <td>{% if mo.round %}{{ mo.round.title }}{% else %}—{% endif %}</td>
+                            <td>{{ mo.status.value }}</td>
+                            <td>CHF {{ '%.2f'|format((mo.member_amount_due_rappen or 0) / 100.0) }}</td>
+                            <td>{% if mo.confirmed_at %}{{ mo.confirmed_at.strftime('%d.%m.%Y') }}{% else %}—{% endif %}</td>
+                            <td>{% if mo.paid_at %}{{ mo.paid_at.strftime('%d.%m.%Y') }}{% else %}—{% endif %}</td>
+                            <td>CHF {{ '%.2f'|format((mo.subsidy_amount_rappen or 0) / 100.0) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="card-description">Keine Merch-v2-Bestellungen fuer dieses Mitglied.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="form-actions">
             {{ form.submit(class="btn btn--primary") }}
             <a href="{{ url_for('admin.members') }}" class="btn btn--outline">Abbrechen</a>

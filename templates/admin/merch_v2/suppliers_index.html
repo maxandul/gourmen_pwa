@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Lieferanten Merch v2 - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('merch_admin.cockpit') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Cockpit</span></a>
+    </p>
+    <h1>
+      {{ lucide_icon('truck') }}
+      Lieferanten (Merch v2)
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <div class="form-actions">
+      <a href="{{ url_for('merch_admin.supplier_new') }}" class="btn btn--primary">{{ lucide_icon('circle-plus') }}<span>Neuer Lieferant</span></a>
+    </div>
+
+    <section class="settings-nav__section" aria-labelledby="sup-active">
+      <h2 id="sup-active" class="settings-nav__section-title">Aktiv</h2>
+      {% if active_suppliers %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for sup in active_suppliers %}
+          <div class="form-row form-row--stacked">
+            <p class="card__subtitle">
+              <strong>{{ sup.name }}</strong>
+              {% if sup.contact_email %} · {{ sup.contact_email }}{% endif %}
+              {% if sup.website_url %} · <a href="{{ sup.website_url }}" rel="noopener noreferrer" target="_blank">Web</a>{% endif %}
+            </p>
+            <div class="form-actions">
+              <a href="{{ url_for('merch_admin.supplier_edit', supplier_id=sup.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
+              <form method="POST" action="{{ url_for('merch_admin.supplier_archive', supplier_id=sup.id) }}" class="form form--inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn--outline">{{ lucide_icon('archive') }}<span>Archivieren</span></button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-hub__hint">Keine aktiven Lieferanten.</p>
+      {% endif %}
+    </section>
+
+    <section class="settings-nav__section" aria-labelledby="sup-arch">
+      <h2 id="sup-arch" class="settings-nav__section-title">Archiv</h2>
+      {% if archived_suppliers %}
+      <div class="card card--flat">
+        <div class="card__body">
+          {% for sup in archived_suppliers %}
+          <div class="form-row form-row--stacked">
+            <p class="card__subtitle"><strong>{{ sup.name }}</strong></p>
+            <div class="form-actions">
+              <a href="{{ url_for('merch_admin.supplier_edit', supplier_id=sup.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
+              <form method="POST" action="{{ url_for('merch_admin.supplier_restore', supplier_id=sup.id) }}" class="form form--inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Wieder aktivieren</span></button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-hub__hint">Keine archivierten Lieferanten.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

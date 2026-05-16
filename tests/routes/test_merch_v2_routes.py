@@ -286,3 +286,46 @@ def test_round_remove_item(marketing_chief_client, app, merch_v2_enabled):
 
     with app.app_context():
         assert MerchRoundItem.query.filter_by(round_id=rid).count() == 0
+
+
+def test_suppliers_index_ok(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.get('/admin/merch-v2/suppliers')
+    assert rv.status_code == 200
+
+
+def test_supplier_create_redirects(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.post(
+        '/admin/merch-v2/suppliers/new',
+        data={
+            'name': 'ACME Caps',
+            'contact_email': 'x@example.test',
+            'website_url': '',
+            'notes': 'n',
+            'submit': 'Speichern',
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+
+
+def test_supplier_archive_blocked_with_active_article(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchSupplier
+
+        sup = MerchSupplier(name='S-arch-block')
+        db.session.add(sup)
+        db.session.flush()
+        db.session.add(
+            MerchArticle(name='Keeps-supplier', supplier_id=sup.id, list_price_rappen=100),
+        )
+        sid = sup.id
+        db.session.commit()
+
+    rv = marketing_chief_client.post(f'/admin/merch-v2/suppliers/{sid}/archive', follow_redirects=True)
+    assert rv.status_code == 200
+    assert b'aktive Artikel' in rv.data
+
+    with app.app_context():
+        from backend.models.merch_v2 import MerchSupplier
+
+        assert MerchSupplier.query.filter_by(id=sid).first().is_archived is False

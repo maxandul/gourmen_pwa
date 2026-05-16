@@ -133,6 +133,10 @@ class Config:
     MERCH_IMAGE_CACHE_TTL_SECONDS = int(
         os.environ.get('MERCH_IMAGE_CACHE_TTL_SECONDS', '86400')
     )
+    # Drive-Ordner fuer Lieferantenbelege Merch v2 (optional; ohne Upload keine Beleg-Verknuepfung)
+    MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID = os.environ.get(
+        'MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID', ''
+    ).strip() or None
     # Warnung wenn Keys nicht gesetzt sind
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
         import warnings

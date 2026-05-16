@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import io
 from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 from io import StringIO
 
 import csv
 
-from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from wtforms import DateField, DecimalField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
@@ -29,11 +31,21 @@ from backend.models.merch_v2 import (
 )
 from backend.routes.merch_access import (
     marketing_chief_or_admin_required,
+    merch_statistics_view_required,
     require_merch_v2_enabled,
     treasury_marketing_or_admin_required,
 )
+from backend.services.drive_storage import DriveError, DriveStorageService
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
+from backend.services.merch_statistics_service import (
+    build_year_overview,
+    club_season_utc_bounds,
+    compute_round_statistics,
+    current_club_season_label_year,
+    top_articles_by_margin_for_round_ids,
+    top_articles_by_quantity_for_round_ids,
+)
 from backend.services.security import SecurityService
 
 bp = Blueprint('merch_admin', __name__, url_prefix='/admin/merch-v2')
@@ -88,6 +100,14 @@ class AddRoundItemForm(FlaskForm):
     submit = SubmitField('Position hinzufuegen')
 
 
+class MerchSupplierForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=1, max=200)])
+    contact_email = StringField('Kontakt E-Mail', validators=[Optional(), Length(max=200)])
+    website_url = StringField('Webseite (URL)', validators=[Optional(), Length(max=500)])
+    notes = TextAreaField('Notizen', validators=[Optional(), Length(max=10000)])
+    submit = SubmitField('Speichern')
+
+
 @bp.route('/', methods=['GET'])
 @login_required
 @marketing_chief_or_admin_required
@@ -103,6 +123,138 @@ def cockpit():
         article_count=article_count,
         MerchRoundStatus=MerchRoundStatus,
     )
+
+
+def _supplier_apply_form(form: MerchSupplierForm, model: MerchSupplier) -> None:
+    raw_email = (form.contact_email.data or '').strip()
+    model.name = (form.name.data or '').strip()
+    model.contact_email = raw_email or None
+    raw_url = (form.website_url.data or '').strip()
+    model.website_url = raw_url or None
+    model.notes = (form.notes.data or '').strip() or None
+
+
+@bp.route('/suppliers', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def suppliers_index():
+    require_merch_v2_enabled()
+    active = MerchSupplier.query.filter_by(is_archived=False).order_by(MerchSupplier.name.asc()).all()
+    archived = MerchSupplier.query.filter_by(is_archived=True).order_by(MerchSupplier.name.asc()).all()
+    return render_template(
+        'admin/merch_v2/suppliers_index.html',
+        active_suppliers=active,
+        archived_suppliers=archived,
+    )
+
+
+@bp.route('/suppliers/new', methods=['GET', 'POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def supplier_new():
+    require_merch_v2_enabled()
+    form = MerchSupplierForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            s = MerchSupplier(is_archived=False)
+            _supplier_apply_form(form, s)
+            db.session.add(s)
+            db.session.commit()
+            SecurityService.log_audit_event(
+                AuditAction.MERCH_SUPPLIER_CREATED,
+                'merch_supplier',
+                s.id,
+                extra_data={'name': s.name},
+            )
+            flash('Lieferant angelegt.', 'success')
+            return redirect(url_for('merch_admin.suppliers_index'))
+        flash('Bitte Eingaben pruefen.', 'error')
+    return render_template(
+        'admin/merch_v2/supplier_form.html',
+        form=form,
+        page_title='Neuer Lieferant',
+        supplier=None,
+    )
+
+
+@bp.route('/suppliers/<int:supplier_id>/edit', methods=['GET', 'POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def supplier_edit(supplier_id: int):
+    require_merch_v2_enabled()
+    s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
+    if request.method == 'POST':
+        form = MerchSupplierForm()
+        if form.validate_on_submit():
+            _supplier_apply_form(form, s)
+            db.session.commit()
+            SecurityService.log_audit_event(
+                AuditAction.MERCH_SUPPLIER_UPDATED,
+                'merch_supplier',
+                s.id,
+                extra_data={'name': s.name},
+            )
+            flash('Lieferant gespeichert.', 'success')
+            return redirect(url_for('merch_admin.suppliers_index'))
+        flash('Bitte Eingaben pruefen.', 'error')
+    else:
+        form = MerchSupplierForm(obj=s)
+    return render_template(
+        'admin/merch_v2/supplier_form.html',
+        form=form,
+        page_title='Lieferant bearbeiten',
+        supplier=s,
+    )
+
+
+@bp.route('/suppliers/<int:supplier_id>/archive', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def supplier_archive(supplier_id: int):
+    require_merch_v2_enabled()
+    s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
+    if s.is_archived:
+        flash('Lieferant ist bereits archiviert.', 'warning')
+        return redirect(url_for('merch_admin.suppliers_index'))
+    blocked = MerchArticle.query.filter_by(supplier_id=s.id, is_archived=False).count()
+    if blocked > 0:
+        flash('Lieferant hat noch aktive Artikel — bitte zuerst alle Artikel archivieren.', 'error')
+        return redirect(url_for('merch_admin.suppliers_index'))
+    s.is_archived = True
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_SUPPLIER_UPDATED,
+        'merch_supplier',
+        s.id,
+        extra_data={'archived': True, 'name': s.name},
+    )
+    flash('Lieferant archiviert.', 'success')
+    return redirect(url_for('merch_admin.suppliers_index'))
+
+
+@bp.route('/suppliers/<int:supplier_id>/restore', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def supplier_restore(supplier_id: int):
+    require_merch_v2_enabled()
+    s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
+    if not s.is_archived:
+        flash('Lieferant ist bereits aktiv.', 'warning')
+        return redirect(url_for('merch_admin.suppliers_index'))
+    s.is_archived = False
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_SUPPLIER_UPDATED,
+        'merch_supplier',
+        s.id,
+        extra_data={'restored': True, 'name': s.name},
+    )
+    flash('Lieferant wieder aktiviert.', 'success')
+    return redirect(url_for('merch_admin.suppliers_index'))
 
 
 @bp.route('/rounds/new', methods=['GET'])
@@ -178,6 +330,53 @@ def _round_aggregate_rows(round_obj: MerchRound) -> list[tuple[MerchRoundItem, i
     return rows
 
 
+def _supplier_invoice_web_link_safe(file_id: str | None) -> str | None:
+    fid = (file_id or '').strip()
+    if not fid:
+        return None
+    try:
+        ln = DriveStorageService.get_web_view_link_by_file_id(fid)
+        return ln or None
+    except DriveError:
+        return None
+
+
+def _aggregate_clipboard_columns(aggregate_rows: list[tuple[MerchRoundItem, int]]) -> str:
+    sep = ';'
+    header = sep.join(['Artikel', 'Variante', 'Stueckzahl', 'Listenpreis_CHF', 'Effektiv_CHF', 'Mitglied_CHF'])
+    lines = [header]
+    for ri, qty in aggregate_rows:
+        attr = _variant_attrs_label(ri.variant.attributes)
+        lines.append(
+            sep.join(
+                [
+                    ri.variant.article.name,
+                    attr,
+                    str(qty),
+                    f'{ri.list_price_snapshot_rappen / 100:.2f}',
+                    ''
+                    if ri.effective_supplier_price_rappen is None
+                    else f'{ri.effective_supplier_price_rappen / 100:.2f}',
+                    ''
+                    if ri.member_price_rappen is None
+                    else f'{ri.member_price_rappen / 100:.2f}',
+                ]
+            )
+        )
+    return '\n'.join(lines)
+
+
+def _statistics_season_years_list() -> list[int]:
+    min_ts = db.session.query(func.min(func.coalesce(MerchRound.opened_at, MerchRound.created_at))).scalar()
+    latest = current_club_season_label_year()
+    if min_ts is None:
+        return [latest]
+    oldest = current_club_season_label_year(min_ts)
+    if oldest > latest:
+        oldest = latest
+    return list(range(latest, oldest - 1, -1))
+
+
 @bp.route('/rounds/<int:round_id>', methods=['GET'])
 @login_required
 @marketing_chief_or_admin_required
@@ -195,6 +394,12 @@ def round_detail(round_id: int):
         key=lambda ri: (ri.variant.article.name.lower(), ri.variant_id),
     )
     aggregate_rows = _round_aggregate_rows(r)
+    round_stats = compute_round_statistics(r)
+    invoice_web_link = _supplier_invoice_web_link_safe(r.supplier_invoice_drive_file_id)
+    invoice_folder_configured = bool(
+        (current_app.config.get('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID') or '').strip()
+    )
+    aggregate_clipboard_text = _aggregate_clipboard_columns(aggregate_rows)
     orders_sorted = sorted(
         [o for o in r.orders],
         key=lambda o: ((o.member.nachname or '').lower(), (o.member.vorname or '').lower(), o.id),
@@ -207,6 +412,10 @@ def round_detail(round_id: int):
         add_round_item_form=add_form,
         round_items_sorted=round_items_sorted,
         aggregate_rows=aggregate_rows,
+        round_stats=round_stats,
+        aggregate_clipboard_text=aggregate_clipboard_text,
+        invoice_web_link=invoice_web_link,
+        invoice_folder_configured=invoice_folder_configured,
         orders_sorted=orders_sorted,
     )
 
@@ -527,3 +736,136 @@ def order_mark_paid(round_id: int, order_id: int):
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
     return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/supplier-invoice', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('20 per minute', methods=['POST'])
+def round_supplier_invoice(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    if r.status in (MerchRoundStatus.DRAFT, MerchRoundStatus.OPEN, MerchRoundStatus.CANCELLED):
+        flash('Lieferantenbeleg ist ab gesperrter Runde (Lock) vorgesehen.', 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    uf = request.files.get('invoice_file')
+    invoice_upload = bool(uf and uf.filename)
+    total_raw = (request.form.get('invoice_total_chf') or '').strip()
+    if not invoice_upload and not total_raw:
+        flash('Bitte Datei waehlen oder Rechnungs-Summe eintragen.', 'warning')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    folder_id = (current_app.config.get('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID') or '').strip()
+
+    changed = False
+    if invoice_upload:
+        if not folder_id:
+            flash('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID fehlt (Drive-Zielordner).', 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        raw = uf.read()
+        if not raw:
+            flash('Leere Datei.', 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        try:
+            doc = DriveStorageService.upload_document(
+                file_stream=io.BytesIO(raw),
+                filename_stem=f'merch-lieferant-runde-{round_id}',
+                drive_folder_id=folder_id,
+                uploader=current_user,
+                event_id=None,
+                original_filename=uf.filename,
+                mime_type=uf.mimetype or 'application/octet-stream',
+            )
+            r.supplier_invoice_drive_file_id = doc.drive_file_id
+            changed = True
+        except DriveError as exc:
+            db.session.rollback()
+            flash(str(exc), 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        except Exception as exc:
+            db.session.rollback()
+            current_app.logger.error('Merch Lieferantenbeleg Upload: %s', exc, exc_info=True)
+            flash('Drive-Upload fehlgeschlagen.', 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    if total_raw:
+        try:
+            r.supplier_invoice_total_rappen = _subsidy_chf_to_rappen(
+                Decimal(total_raw.replace(',', '.'))
+            )
+            changed = True
+        except Exception:
+            flash('Rechnungs-Summe CHF ist ungueltig.', 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    if changed:
+        db.session.commit()
+        if invoice_upload:
+            SecurityService.log_audit_event(
+                AuditAction.MERCH_SUPPLIER_INVOICE_UPLOADED,
+                'merch_round',
+                round_id,
+                extra_data={'drive_file_id': r.supplier_invoice_drive_file_id},
+            )
+        flash('Lieferantenbeleg / Summe aktualisiert.', 'success')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/statistics', methods=['GET'])
+@login_required
+@merch_statistics_view_required
+def statistics_year():
+    require_merch_v2_enabled()
+    years = _statistics_season_years_list()
+    requested = request.args.get('year', type=int)
+    year = requested if requested is not None else current_club_season_label_year()
+    if years and year not in years:
+        year = years[0]
+    overview = build_year_overview(year)
+    qty_top = top_articles_by_quantity_for_round_ids(overview.round_ids, limit=5)
+    marg_top = top_articles_by_margin_for_round_ids(overview.round_ids, limit=5)
+    season_start, season_end = club_season_utc_bounds(year)
+    return render_template(
+        'admin/merch_v2/statistics.html',
+        season_year=year,
+        season_years=years,
+        overview=overview,
+        top_qty=qty_top,
+        top_margin=marg_top,
+        season_start=season_start.date(),
+        season_end=season_end.date(),
+    )
+
+
+@bp.route('/statistics/export.csv', methods=['GET'])
+@login_required
+@merch_statistics_view_required
+def statistics_export_csv():
+    require_merch_v2_enabled()
+    years = _statistics_season_years_list()
+    requested = request.args.get('year', type=int)
+    year = requested if requested is not None else current_club_season_label_year()
+    if years and year not in years:
+        year = years[0]
+    ov = build_year_overview(year)
+    buf = StringIO()
+    w = csv.writer(buf, delimiter=';')
+    w.writerow(['Vereinsjahr_Kennzahl', ov.season_label_year])
+    w.writerow(['Runden_Anzahl', ov.rounds_count])
+    w.writerow(['Bestellungen_Anzahl_Aktive', ov.orders_active_count])
+    w.writerow(['Besteller_Unterschiedlich', ov.buyers_distinct])
+    w.writerow(['Brutto_Mitgliederpreise_Rappen', ov.gross_rappen])
+    w.writerow(['Subventionsverbrauch_Rappen', ov.subsidy_rappen])
+    w.writerow(['Lieferanten_Kosten_Stueck_Summe_Rappen', ov.supplier_cost_rappen])
+    w.writerow(['Marge_Rappen', ov.margin_rappen])
+    w.writerow(['Vereins_Netto_Rappen', ov.club_net_rappen])
+    for title, sub in ov.subsidy_by_round_title:
+        safe = ''.join(c if c.isalnum() or c in '-_' else '_' for c in title)[:72]
+        w.writerow([f'Subvention_Runde_{safe}', sub])
+    data = buf.getvalue().encode('utf-8-sig')
+    resp = Response(data, mimetype='text/csv; charset=utf-8')
+    resp.headers['Content-Disposition'] = (
+        f'attachment; filename=merch-jahresreport-{ov.season_label_year}.csv'
+    )
+    return resp

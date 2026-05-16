@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Merch Jahresstatistik - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('merch_admin.cockpit') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Cockpit</span></a>
+    </p>
+    <h1>
+      {{ lucide_icon('chart-column') }}
+      Merch Vereinsjahresstatistik Saison&nbsp;{{ season_year }}
+    </h1>
+  </div>
+
+  <div class="page-content">
+    <p class="card__subtitle">
+      Zeitraum Vereinsjahr gemaess App-Logik: {{ season_start.strftime('%d.%m.%Y') }} – {{ season_end.strftime('%d.%m.%Y') }}.
+      Werte sind live berechnet; siehe Capability-Dokumentation zur Definition der Kennzahlen.
+    </p>
+
+    {% if season_years %}
+    <div class="card card--flat">
+      <div class="card__body">
+        <form method="get" action="{{ url_for('merch_admin.statistics_year') }}" class="form">
+          <div class="form-field">
+            <label class="form-field__label" for="season-year">Saisonwahl</label>
+            <select class="form-field__select" id="season-year" name="year" onchange="this.form.submit()">
+              {% for y in season_years %}
+                <option value="{{ y }}" {% if y == season_year %}selected{% endif %}>Saison {{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <noscript><button type="submit" class="btn btn--secondary">Anzeigen</button></noscript>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <a href="{{ url_for('merch_admin.statistics_export_csv', year=season_year) }}" class="btn btn--secondary">Jahresreport als CSV</a>
+    </div>
+
+    <div class="card card--flat">
+      <div class="card__body">
+        <dl class="form-row form-row--stacked">
+          <div><dt class="form-field__label">Runden (im Zeitraum)</dt><dd>{{ overview.rounds_count }}</dd></div>
+          <div><dt class="form-field__label">Aktive Bestellungen</dt><dd>{{ overview.orders_active_count }}</dd></div>
+          <div><dt class="form-field__label">Mitglieder mit Bestellung</dt><dd>{{ overview.buyers_distinct }}</dd></div>
+          <div><dt class="form-field__label">Brutto (Mitgliederpreise)</dt><dd>CHF {{ '%.2f'|format(overview.gross_rappen / 100.0) }}</dd></div>
+          <div><dt class="form-field__label">Subventionsverbrauch</dt><dd>CHF {{ '%.2f'|format(overview.subsidy_rappen / 100.0) }}</dd></div>
+          <div><dt class="form-field__label">Lieferant (Stück-Summen)</dt>
+            <dd>CHF {{ '%.2f'|format(overview.supplier_cost_rappen / 100.0) }}
+              {% if not overview.supplier_cost_aggregate_complete %}
+              <span class="form-field__hint">teilweise keine Effektivpreise</span>
+              {% endif %}
+            </dd></div>
+          <div><dt class="form-field__label">Marge (geschätzt)</dt><dd>CHF {{ '%.2f'|format(overview.margin_rappen / 100.0) }}</dd></div>
+          <div><dt class="form-field__label">Vereins-Netto</dt><dd>CHF {{ '%.2f'|format(overview.club_net_rappen / 100.0) }}</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    {% if overview.subsidy_by_round_title %}
+    <section class="settings-nav__section" aria-labelledby="subsidy-rounds">
+      <h2 id="subsidy-rounds" class="settings-nav__section-title">Subventionsverbrauch pro Runde</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <table class="table">
+            <thead><tr><th>Runde</th><th>Subvention CHF</th></tr></thead>
+            <tbody>
+              {% for title, sr in overview.subsidy_by_round_title %}
+              <tr><td>{{ title }}</td><td>{{ '%.2f'|format(sr / 100.0) }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="settings-nav__section" aria-labelledby="top-qty">
+      <h2 id="top-qty" class="settings-nav__section-title">Top-Artikel (Stückzahlen)</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          {% if top_qty %}
+          <table class="table">
+            <thead><tr><th>Artikel</th><th>Stück</th></tr></thead>
+            <tbody>
+              {% for row in top_qty %}
+              <tr><td>{{ row.name }}</td><td>{{ row.quantity }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="admin-hub__hint">Keine Daten in dieser Saison.</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-nav__section" aria-labelledby="top-mar">
+      <h2 id="top-mar" class="settings-nav__section-title">Top-Artikel (Marge gesamt)</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          {% if top_margin %}
+          <table class="table">
+            <thead><tr><th>Artikel</th><th>Marge CHF</th></tr></thead>
+            <tbody>
+              {% for row in top_margin %}
+              <tr><td>{{ row.name }}</td><td>{{ '%.2f'|format(row.margin_rappen / 100.0) }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="admin-hub__hint">Keine Marge ermittelt (Effektivpreise fehlen noch oder keine Bestellungen).</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

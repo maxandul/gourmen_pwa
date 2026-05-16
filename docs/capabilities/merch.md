@@ -2,7 +2,7 @@
 
 > **Zweck**: Der Verein verkauft eigens designte Merch-Artikel (T-Shirts, Polos, Caps, Accessoires) an seine Mitglieder. Die App deckt den vollstaendigen Prozess vom Sortiments-Anlegen ueber zeitlich begrenzte **Bestellrunden** bis zur Auslieferung und Bezahlung ab. Buchhalterische Endverarbeitung ist explizit *nicht* hier, sondern wird in der spaeteren Buchhaltungs-Capability ueber eine definierte Schnittstelle uebernommen.
 >
-> **Status**: Konzept abgeschlossen, bereit fuer Phase-10-Implementation. **Owner**: Andreas. **Stand**: 2026-05-15.
+> **Status**: Merch v2 wird in der App gebaut (`MERCH_V2_ENABLED` fuer Cutover); Konzept fuer Betrieb weiterhin autoritativ. **Owner**: Andreas. **Stand**: 2026-05-16.
 >
 > **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen, MVP-Punkt 4), `docs/initiatives/workspace-railway/PHASE_10_MERCH.md` (Phasen-Briefing fuer Cursor), `docs/capabilities/drive.md` (Drive-Integration fuer Bilder und Lieferantenbelege), `docs/capabilities/calendar.md` (Schwester-Capability, gleiche Doc-Konvention), `docs/ARCHITECTURE.md` (Stack-Detail), `docs/CONVENTIONS.md` (Code-Standards).
 
@@ -939,9 +939,10 @@ Branch: phase/10-workspace-merch
 Lies vor Implementation: docs/capabilities/merch.md (autoritativ).
 Lies docs/initiatives/workspace-railway/PHASE_10_MERCH.md nur fuer Rahmen.
 
-Implementations-Reihenfolge: Schema-Migration neue Tabellen → Daten-Migration
-→ Service-Layer mit Tests → Bild-Proxy → Cockpit-UI → Mitglieder-UI →
-Image-Migration-Script → Aufraeum-Migration → Feature-Flag-Cutover.
+Implementations-Reihenfolge: Rename-Migration _legacy → Code-Refactor Legacy-Models → neue Tabellen
+→ Service-Layer mit Tests → Bild-Proxy → Routes und Cockpit-UI → Mitglieder-UI →
+Legacy-Receivables read-only → Feature-Flag-Cutover (MERCH_V2_ENABLED).
+**Datenmigration aus `_legacy`, Bild-Migration Repo→Drive sowie Drop `_legacy`** sind keine Phase-10-Schritte (§21.4).
 
 Schema-Migrationen sind separate Alembic-Commits. Service-Layer und UI sind
 eigene Code-Commits.
@@ -971,7 +972,8 @@ Lokale Verifikation:
 
 ### 21.3 Akzeptanzkriterien fuer Phase 10
 
-- [ ] Marketingchef kann Lieferanten anlegen, Artikel mit Variantenschema und Bild (Drive-Upload) anlegen, archivieren
+- [ ] Marketingchef kann Lieferanten im Cockpit anlegen, bearbeiten und archivieren (`GET/POST /admin/merch-v2/suppliers`)
+- [ ] Marketingchef kann Artikel mit Variantenschema, Drive‑Bildanbindung sowie Archivierung im Cockpit pflegen (Zwischenweise: `scripts/seed_merch_v2_dev.py` / technische Schulden dokumentieren bis UI vollstaendig)
 - [ ] Marketingchef kann Runde anlegen, oeffnen, schliessen, re-oeffnen (mit Begruendung), abbrechen (mit Begruendung)
 - [ ] Mehrere Runden parallel `OPEN` moeglich
 - [ ] Mitglied sieht aktive Runden im Shop und in Dashboard-Card
@@ -986,8 +988,9 @@ Lokale Verifikation:
 - [ ] Audit-Log enthaelt alle Lifecycle- und Bezahl-Aktionen
 - [ ] Permissions korrekt: Mitglied sieht keine fremden Bestellungen, kein Mitglied kann Cockpit aufrufen
 - [ ] Feature-Flag `MERCH_V2_ENABLED` schaltet die neue Capability ein
-- [ ] Image-Migration-Script ueberfuehrt alle Bestand-Bilder fehlerfrei
-- [ ] Aufraeum-Migration entfernt alte Felder ohne Datenverlust
+
+**Abgrenzung (kein Abnahme-Blocker fuer Phase 10, §21.4 Out of Scope):** automatische Bilder-Migration aus `static/img/merch/` nach Drive; Schema-Aufraeum fuer `_legacy`-Tabellen ohne vorherige Bestandsmigration; Datenmigration aus `_legacy` ins v2-Modell — jeweils **Folgephase** nach Phase‑10‑Stabilisierung.
+
 - [ ] Tests gruen, keine sensiblen Daten in Logs
 - [ ] Mitglieder-Shop und Cockpit nutzen BEM, Lucide-Icons, Disclosure-Pattern konsistent
 - [ ] Rename-Migration alte Tabellen reversibel (Downgrade benennt zurueck)

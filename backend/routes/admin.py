@@ -557,11 +557,36 @@ def edit_member(member_id):
     )
     calendar_feed_active_since = cal_audit.at.date() if cal_audit else None
 
+    merch_v2_orders = []
+    merch_v2_totals = {'bezahlt_rappen': 0, 'subvention_rappen': 0, 'offen_rappen': 0}
+    if current_app.config.get('MERCH_V2_ENABLED'):
+        from backend.models.merch_v2 import MerchOrder, MerchOrderStatus
+        from sqlalchemy.orm import joinedload
+
+        merch_v2_orders = (
+            MerchOrder.query.options(joinedload(MerchOrder.round))
+            .filter(
+                MerchOrder.member_id == member.id,
+                MerchOrder.status != MerchOrderStatus.CANCELLED,
+            )
+            .order_by(MerchOrder.id.desc())
+            .limit(50)
+            .all()
+        )
+        for mo in merch_v2_orders:
+            merch_v2_totals['subvention_rappen'] += mo.subsidy_amount_rappen or 0
+            if mo.status == MerchOrderStatus.PAID:
+                merch_v2_totals['bezahlt_rappen'] += mo.member_amount_due_rappen or 0
+            elif mo.status in (MerchOrderStatus.INVOICED, MerchOrderStatus.PICKED_UP):
+                merch_v2_totals['offen_rappen'] += mo.member_amount_due_rappen or 0
+
     return render_template(
         'admin/edit_member_enhanced.html',
         form=form,
         member=member,
         calendar_feed_active_since=calendar_feed_active_since,
+        merch_v2_orders=merch_v2_orders,
+        merch_v2_totals=merch_v2_totals,
     )
 
 @bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST'])
