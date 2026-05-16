@@ -12,7 +12,7 @@ import csv
 from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
-from sqlalchemy import func
+from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import joinedload
 from wtforms import (
     BooleanField,
@@ -30,11 +30,13 @@ from backend.models.audit_event import AuditAction
 from backend.models.member import Funktion
 from backend.models.merch_v2 import (
     MerchArticle,
+    MerchColor,
     MerchOrder,
     MerchOrderStatus,
     MerchRound,
     MerchRoundItem,
     MerchRoundStatus,
+    MerchSize,
     MerchSupplier,
     MerchVariant,
 )
@@ -46,6 +48,7 @@ from backend.routes.merch_access import (
 )
 from backend.services.drive_storage import DriveError, DriveStorageService, DriveValidationError
 from backend.services.merch_image_service import MerchImageService
+from backend.services.merch_lookup_service import MerchLookupService, MerchVariantBulkService
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
 from backend.services.merch_sortiment_service import (
@@ -476,6 +479,45 @@ def _apply_variant_list_price_overrides(article_id: int) -> str | None:
     return None
 
 
+def _article_bulk_color_size_lists(
+    article: MerchArticle | None,
+) -> tuple[list[MerchColor], list[MerchSize]]:
+    """Distinct Farben/Groessen, die bei Varianten dieses Artikels vorkommen."""
+    if article is None:
+        return [], []
+    c_ids = list(
+        db.session.scalars(
+            select(distinct(MerchVariant.color_id)).where(
+                MerchVariant.article_id == article.id,
+                MerchVariant.color_id.isnot(None),
+            )
+        ).all()
+    )
+    s_ids = list(
+        db.session.scalars(
+            select(distinct(MerchVariant.size_id)).where(
+                MerchVariant.article_id == article.id,
+                MerchVariant.size_id.isnot(None),
+            )
+        ).all()
+    )
+    colors: list[MerchColor] = []
+    sizes: list[MerchSize] = []
+    if c_ids:
+        colors = (
+            MerchColor.query.filter(MerchColor.id.in_(sorted(c_ids)))
+            .order_by(MerchColor.sort_order.asc(), MerchColor.label.asc())
+            .all()
+        )
+    if s_ids:
+        sizes = (
+            MerchSize.query.filter(MerchSize.id.in_(sorted(s_ids)))
+            .order_by(MerchSize.sort_order.asc(), MerchSize.label.asc())
+            .all()
+        )
+    return colors, sizes
+
+
 @bp.route('/articles', methods=['GET'])
 @login_required
 @marketing_chief_or_admin_required
@@ -535,6 +577,8 @@ def article_new():
         page_title='Neuer Artikel',
         article=None,
         variant_pricing_rows=[],
+        bulk_colors=[],
+        bulk_sizes=[],
     )
 
 
@@ -596,12 +640,15 @@ def article_edit(article_id: int):
                     return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
         else:
             flash('Bitte Eingaben pruefen.', 'error')
+    bulk_colors, bulk_sizes = _article_bulk_color_size_lists(art)
     return render_template(
         'admin/merch_v2/article_form.html',
         form=form,
         page_title='Artikel bearbeiten',
         article=art,
         variant_pricing_rows=_article_variant_pricing_rows(art),
+        bulk_colors=bulk_colors,
+        bulk_sizes=bulk_sizes,
     )
 
 
@@ -654,6 +701,164 @@ def article_restore(article_id: int):
     )
     flash('Artikel wieder aktiv.', 'success')
     return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
+
+
+@bp.route('/lookups', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def lookups_index():
+    require_merch_v2_enabled()
+    return render_template(
+        'admin/merch_v2/lookups_hub.html',
+        page_title='Farben und Groessen',
+        colors=MerchLookupService.list_colors_ordered(),
+        sizes=MerchLookupService.list_sizes_ordered(),
+        merch_tab='sortiment',
+    )
+
+
+@bp.route('/lookups/colors/new', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def lookups_color_new():
+    require_merch_v2_enabled()
+    res = MerchLookupService.create_color(request.form.get('label', ''))
+    if res['success']:
+        db.session.commit()
+        flash('Farbe angelegt.', 'success')
+    else:
+        db.session.rollback()
+        flash(res.get('error') or 'Farbe konnte nicht angelegt werden.', 'error')
+    return redirect(url_for('merch_admin.lookups_index'))
+
+
+@bp.route('/lookups/colors/<int:color_id>/rename', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def lookups_color_rename(color_id: int):
+    require_merch_v2_enabled()
+    res = MerchLookupService.rename_color(color_id, request.form.get('label', ''))
+    if res['success']:
+        db.session.commit()
+        flash('Farbe umbenannt.', 'success')
+    else:
+        db.session.rollback()
+        flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
+    return redirect(url_for('merch_admin.lookups_index'))
+
+
+@bp.route('/lookups/sizes/new', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def lookups_size_new():
+    require_merch_v2_enabled()
+    res = MerchLookupService.create_size(request.form.get('label', ''))
+    if res['success']:
+        db.session.commit()
+        flash('Grösse angelegt.', 'success')
+    else:
+        db.session.rollback()
+        flash(res.get('error') or 'Grösse konnte nicht angelegt werden.', 'error')
+    return redirect(url_for('merch_admin.lookups_index'))
+
+
+@bp.route('/lookups/sizes/<int:size_id>/rename', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def lookups_size_rename(size_id: int):
+    require_merch_v2_enabled()
+    res = MerchLookupService.rename_size(size_id, request.form.get('label', ''))
+    if res['success']:
+        db.session.commit()
+        flash('Grösse umbenannt.', 'success')
+    else:
+        db.session.rollback()
+        flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
+    return redirect(url_for('merch_admin.lookups_index'))
+
+
+@bp.route('/articles/<int:article_id>/variants/bulk-deactivate-color', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_variants_bulk_deactivate_color(article_id: int):
+    require_merch_v2_enabled()
+    art = MerchArticle.query.filter_by(id=article_id).first_or_404()
+    cid = request.form.get('color_id', type=int)
+    if not cid:
+        flash('Bitte eine Farbe wählen.', 'error')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    hit = MerchVariant.query.filter_by(
+        article_id=art.id, color_id=cid
+    ).first()
+    if hit is None:
+        flash('Für diesen Artikel gibt es keine Variante mit dieser Farbe.', 'warning')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    n, err = MerchVariantBulkService.deactivate_variants_with_color(
+        article_id=art.id, color_id=cid
+    )
+    if err:
+        db.session.rollback()
+        flash(err, 'error')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_ARTICLE_UPDATED,
+        'merch_article',
+        art.id,
+        extra_data={
+            'bulk_deactivate_color_id': cid,
+            'variants_touched': n,
+        },
+    )
+    if n:
+        flash(f'{n} Variante(n) mit dieser Farbe deaktiviert.', 'success')
+    else:
+        flash('Keine passenden Varianten (bereits inaktiv).', 'info')
+    return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+
+
+@bp.route('/articles/<int:article_id>/variants/bulk-deactivate-size', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_variants_bulk_deactivate_size(article_id: int):
+    require_merch_v2_enabled()
+    art = MerchArticle.query.filter_by(id=article_id).first_or_404()
+    sid = request.form.get('size_id', type=int)
+    if not sid:
+        flash('Bitte eine Grösse wählen.', 'error')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    hit = MerchVariant.query.filter_by(article_id=art.id, size_id=sid).first()
+    if hit is None:
+        flash('Für diesen Artikel gibt es keine Variante mit dieser Grösse.', 'warning')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    n, err = MerchVariantBulkService.deactivate_variants_with_size(
+        article_id=art.id, size_id=sid
+    )
+    if err:
+        db.session.rollback()
+        flash(err, 'error')
+        return redirect(url_for('merch_admin.article_edit', article_id=article_id))
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_ARTICLE_UPDATED,
+        'merch_article',
+        art.id,
+        extra_data={
+            'bulk_deactivate_size_id': sid,
+            'variants_touched': n,
+        },
+    )
+    if n:
+        flash(f'{n} Variante(n) mit dieser Grösse deaktiviert.', 'success')
+    else:
+        flash('Keine passenden Varianten (bereits inaktiv).', 'info')
+    return redirect(url_for('merch_admin.article_edit', article_id=article_id))
 
 
 @bp.route('/rounds/new', methods=['GET'])

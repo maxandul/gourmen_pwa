@@ -1,5 +1,9 @@
 """Merch v2 Routes (Shop, Warenkorb, Bild-Proxy). Feature-Flag: MERCH_V2_ENABLED."""
 
+from __future__ import annotations
+
+from collections import defaultdict
+
 from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.orm import joinedload
@@ -49,11 +53,52 @@ def shop_index():
     )
 
 
-def _sort_round_items(round_obj: MerchRound):
-    return sorted(
-        round_obj.round_items,
-        key=lambda ri: (ri.variant.article.name.lower(), ri.variant_id),
+def _round_shop_variant_sort_key(variant: MerchVariant) -> tuple:
+    c_ord = variant.color.sort_order if variant.color else 10_000
+    c_lbl = (variant.color.label or '').lower() if variant.color else ''
+    s_ord = variant.size.sort_order if variant.size else 10_000
+    s_lbl = (variant.size.label or '').lower() if variant.size else ''
+    return (c_ord, c_lbl, s_ord, s_lbl, variant.id)
+
+
+def _shop_article_groups(round_obj: MerchRound) -> list[tuple]:
+    buckets: dict[int, list] = defaultdict(list)
+    for ri in round_obj.round_items:
+        buckets[ri.variant.article_id].append(ri)
+    ordered_aids = sorted(
+        buckets.keys(),
+        key=lambda aid: (buckets[aid][0].variant.article.name or '').lower(),
     )
+    out: list[tuple] = []
+    for aid in ordered_aids:
+        rows = buckets[aid]
+        art = rows[0].variant.article
+        rows_sorted = sorted(
+            rows,
+            key=lambda r: _round_shop_variant_sort_key(r.variant),
+        )
+        out.append((art, rows_sorted))
+    return out
+
+
+def _round_shop_default_item_id_for_config(
+    items: list[MerchRoundItem], qty_by_ri: dict[int, int]
+) -> int:
+    """Erste Rundeneinlage mit Warenbestand im Entwurf, sonst erste Option (Sortierreihenfolge)."""
+    for ri in items:
+        if qty_by_ri.get(ri.id, 0) > 0:
+            return ri.id
+    return items[0].id
+
+
+def _round_shop_preferred_item_ids(
+    groups: list[tuple],
+    qty_by_ri: dict[int, int],
+) -> dict[int, int]:
+    return {
+        article.id: _round_shop_default_item_id_for_config(ris, qty_by_ri)
+        for article, ris in groups
+    }
 
 
 @bp.route('/rounds/<int:round_id>', methods=['GET'])
@@ -62,15 +107,19 @@ def round_shop(round_id: int):
     require_merch_v2_enabled()
     r = (
         MerchRound.query.options(
-            joinedload(MerchRound.round_items).joinedload(MerchRoundItem.variant).joinedload(
-                MerchVariant.article
+            joinedload(MerchRound.round_items)
+            .joinedload(MerchRoundItem.variant)
+            .options(
+                joinedload(MerchVariant.article),
+                joinedload(MerchVariant.color),
+                joinedload(MerchVariant.size),
             ),
         )
         .filter_by(id=round_id)
         .first_or_404()
     )
 
-    round_items_sorted = _sort_round_items(r)
+    shop_article_groups = _shop_article_groups(r)
     order = None
     editable = False
     qty_by_ri: dict[int, int] = {}
@@ -100,10 +149,15 @@ def round_shop(round_id: int):
         if order:
             qty_by_ri = {li.round_item_id: li.quantity for li in order.order_items}
 
+    preferred_round_item_id = _round_shop_preferred_item_ids(
+        shop_article_groups, qty_by_ri
+    )
+
     return render_template(
         'merch/round_shop.html',
         round=r,
-        round_items_sorted=round_items_sorted,
+        shop_article_groups=shop_article_groups,
+        preferred_round_item_id=preferred_round_item_id,
         order=order,
         editable=editable,
         qty_by_ri=qty_by_ri,

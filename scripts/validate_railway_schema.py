@@ -92,9 +92,23 @@ EXPECTED_SCHEMA = {
         'image_drive_file_id', 'variant_schema', 'is_archived',
         'created_at', 'updated_at',
     },
+    'merch_colors': {
+        'id', 'slug', 'label', 'sort_order', 'created_at', 'updated_at',
+    },
+    'merch_sizes': {
+        'id', 'slug', 'label', 'sort_order', 'created_at', 'updated_at',
+    },
     'merch_variants': {
-        'id', 'article_id', 'attributes', 'list_price_rappen', 'is_active',
-        'created_at', 'updated_at',
+        'id',
+        'article_id',
+        'color_id',
+        'size_id',
+        'variant_key',
+        'attributes',
+        'list_price_rappen',
+        'is_active',
+        'created_at',
+        'updated_at',
     },
     'merch_rounds': {
         'id', 'title', 'description', 'status', 'deadline_communicated',
@@ -232,7 +246,11 @@ def validate_database():
                 ('variant_id', 'merch_variants_legacy'),
             ],
             'merch_articles': [('supplier_id', 'merch_suppliers')],
-            'merch_variants': [('article_id', 'merch_articles')],
+            'merch_variants': [
+                ('article_id', 'merch_articles'),
+                ('color_id', 'merch_colors'),
+                ('size_id', 'merch_sizes'),
+            ],
             'merch_rounds': [('marketing_chief_id', 'members')],
             'merch_round_items': [
                 ('round_id', 'merch_rounds'),

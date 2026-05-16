@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, event
 
 from backend.extensions import db
 
@@ -35,6 +35,32 @@ class MerchOrderStatus(Enum):
 
 def _enum_values(enum_cls):
     return [e.value for e in enum_cls]
+
+
+class MerchColor(db.Model):
+    __tablename__ = 'merch_colors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(80), nullable=False, unique=True)
+    label = db.Column(db.String(160), nullable=False)
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    variants = db.relationship('MerchVariant', back_populates='color')
+
+
+class MerchSize(db.Model):
+    __tablename__ = 'merch_sizes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(80), nullable=False, unique=True)
+    label = db.Column(db.String(160), nullable=False)
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    variants = db.relationship('MerchVariant', back_populates='size')
 
 
 class MerchSupplier(db.Model):
@@ -81,6 +107,13 @@ class MerchArticle(db.Model):
 
 class MerchVariant(db.Model):
     __tablename__ = 'merch_variants'
+    __table_args__ = (
+        UniqueConstraint(
+            'article_id',
+            'variant_key',
+            name='uq_nv2_merch_variants_article_variant_key',
+        ),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     article_id = db.Column(
@@ -89,6 +122,19 @@ class MerchVariant(db.Model):
         nullable=False,
         index=True,
     )
+    color_id = db.Column(
+        db.Integer,
+        db.ForeignKey('merch_colors.id', ondelete='RESTRICT'),
+        nullable=True,
+        index=True,
+    )
+    size_id = db.Column(
+        db.Integer,
+        db.ForeignKey('merch_sizes.id', ondelete='RESTRICT'),
+        nullable=True,
+        index=True,
+    )
+    variant_key = db.Column(db.String(128), nullable=False)
     attributes = db.Column(db.JSON, nullable=False)
     list_price_rappen = db.Column(db.Integer)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
@@ -96,6 +142,8 @@ class MerchVariant(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     article = db.relationship('MerchArticle', back_populates='variants')
+    color = db.relationship('MerchColor', back_populates='variants')
+    size = db.relationship('MerchSize', back_populates='variants')
 
 
 class MerchRound(db.Model):
@@ -273,3 +321,19 @@ class MerchOrderItem(db.Model):
 
     order = db.relationship('MerchOrder', back_populates='order_items')
     round_item = db.relationship('MerchRoundItem')
+
+
+def _merch_variant_ensure_variant_key_before_insert(mapper, connection, target):
+    """Tests/Seed ohne expliziten `variant_key` — Fallback aus FKs/attributes."""
+    if getattr(target, 'variant_key', None):
+        return
+    from backend.utils.merch_variant_key import compute_merch_variant_key
+
+    target.variant_key = compute_merch_variant_key(
+        color_id=getattr(target, 'color_id', None),
+        size_id=getattr(target, 'size_id', None),
+        attributes=getattr(target, 'attributes', None) or {},
+    )[:126]
+
+
+event.listen(MerchVariant, 'before_insert', _merch_variant_ensure_variant_key_before_insert)

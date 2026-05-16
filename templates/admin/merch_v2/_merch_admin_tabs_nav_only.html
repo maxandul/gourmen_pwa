@@ -12,7 +12,7 @@
   {% set nav_main = 'runden' %}
 {% elif ep in ('merch_admin.suppliers_index', 'merch_admin.supplier_new', 'merch_admin.supplier_edit') %}
   {% set nav_main = 'lieferanten' %}
-{% elif ep in ('merch_admin.articles_index', 'merch_admin.article_new', 'merch_admin.article_edit') %}
+{% elif ep in ('merch_admin.articles_index', 'merch_admin.article_new', 'merch_admin.article_edit', 'merch_admin.lookups_index') %}
   {% set nav_main = 'sortiment' %}
 {% elif ep in ('merch_admin.statistics_year', 'merch_admin.statistics_export_csv') %}
   {% set nav_main = 'statistik' %}
@@ -27,14 +27,6 @@
      aria-selected="{{ 'true' if nav_main == 'cockpit' else 'false' }}">
     {{ merch_admin_nav_icon('layout-dashboard') }}
     Übersicht
-  </a>
-  <a href="{{ url_for('merch_admin.cockpit', tab='lieferanten', _anchor='gourmen-tabs') }}"
-     data-force-navigation="true"
-     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'lieferanten' else '' }}"
-     role="tab"
-     aria-selected="{{ 'true' if nav_main == 'lieferanten' else 'false' }}">
-    {{ merch_admin_nav_icon('truck') }}
-    Lieferanten
   </a>
   <a href="{{ url_for('merch_admin.cockpit', tab='sortiment', _anchor='gourmen-tabs') }}"
      data-force-navigation="true"
@@ -51,6 +43,14 @@
      aria-selected="{{ 'true' if nav_main == 'runden' else 'false' }}">
     {{ merch_admin_nav_icon('repeat') }}
     Runden
+  </a>
+  <a href="{{ url_for('merch_admin.cockpit', tab='lieferanten', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'lieferanten' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'lieferanten' else 'false' }}">
+    {{ merch_admin_nav_icon('truck') }}
+    Lieferanten
   </a>
   <a href="{{ url_for('merch_admin.cockpit', tab='statistik', _anchor='gourmen-tabs') }}"
      data-force-navigation="true"

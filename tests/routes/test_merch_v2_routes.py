@@ -424,3 +424,57 @@ def test_article_variant_list_price_override(marketing_chief_client, app, merch_
         assert v1b.list_price_rappen == 3450
         v2b = MerchVariant.query.filter_by(article_id=aid, attributes={'farbe': 'blau'}).first()
         assert v2b.list_price_rappen is None
+
+
+def test_merch_lookups_hub_ok(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.get('/admin/merch-v2/lookups')
+    assert rv.status_code == 200
+    assert b'Farben' in rv.data
+
+
+def test_merch_lookup_color_create(marketing_chief_client, app, merch_v2_enabled):
+    marketing_chief_client.post(
+        '/admin/merch-v2/lookups/colors/new',
+        data={'label': '  Testfarbe  '},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        from backend.models.merch_v2 import MerchColor
+
+        row = MerchColor.query.filter_by(slug='testfarbe').first()
+        assert row is not None
+        assert row.label == 'Testfarbe'
+
+
+def test_article_bulk_deactivate_color(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchColor, MerchSupplier, MerchVariant
+
+        col = MerchColor(slug='marine-tests', label='Marine Tests', sort_order=10)
+        sup = MerchSupplier(name='Bulk-Lief')
+        db.session.add_all([col, sup])
+        db.session.flush()
+        cid, sid = col.id, sup.id
+        art = MerchArticle(name='Bulk-Polo', supplier_id=sid, list_price_rappen=3900)
+        db.session.add(art)
+        db.session.flush()
+        pv = MerchVariant(
+            article_id=art.id,
+            color_id=cid,
+            variant_key=f'bulk-t-{cid}-a',
+            attributes={'farbe': 'Marine'},
+            is_active=True,
+        )
+        db.session.add(pv)
+        db.session.flush()
+        vid, aid = pv.id, art.id
+        db.session.commit()
+
+    marketing_chief_client.post(
+        f'/admin/merch-v2/articles/{aid}/variants/bulk-deactivate-color',
+        data={'color_id': cid},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        v = db.session.get(MerchVariant, vid)
+        assert v.is_active is False

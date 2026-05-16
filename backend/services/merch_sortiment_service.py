@@ -5,8 +5,18 @@ from __future__ import annotations
 from itertools import product
 from typing import Any
 
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
+
 from backend.extensions import db
-from backend.models.merch_v2 import MerchArticle, MerchVariant
+from backend.models.merch_v2 import MerchArticle, MerchColor, MerchSize, MerchVariant
+from backend.utils.merch_variant_key import (
+    MERCH_COLOR_DIMENSION_KEYS_CF,
+    MERCH_SIZE_DIMENSION_KEYS_CF,
+    compute_merch_variant_key,
+    normalized_attr_dimension_key,
+    slugify_ascii_label,
+)
 
 MAX_VARIANT_DIMENSIONS = 6
 MAX_OPTIONS_PER_DIMENSION = 24
@@ -122,6 +132,86 @@ def parse_variant_schema_text(raw: str | None) -> tuple[dict[str, list[str]] | N
     return result, None
 
 
+def _combo_dimension_label(
+    combo: dict[str, Any], dim_keys_cf: frozenset[str]
+) -> str | None:
+    for k_raw, val in combo.items():
+        if normalized_attr_dimension_key(str(k_raw)) not in dim_keys_cf:
+            continue
+        lbl = str(val).strip()
+        if lbl:
+            return lbl[:160]
+    return None
+
+
+def _ensure_merch_color_id(label: str | None) -> int | None:
+    if not label or not label.strip():
+        return None
+    base_slug = slugify_ascii_label(label)
+    slug_try = base_slug
+    suffix = 2
+    while True:
+        row = MerchColor.query.filter_by(slug=slug_try).first()
+        if row is not None:
+            return row.id
+        try:
+            with db.session.begin_nested():
+                nxt_sort = db.session.scalar(
+                    func.coalesce(func.max(MerchColor.sort_order), 0)
+                )
+                mc = MerchColor(
+                    slug=slug_try,
+                    label=str(label).strip()[:160],
+                    sort_order=int(nxt_sort or 0) + 1,
+                )
+                db.session.add(mc)
+                db.session.flush()
+                return mc.id
+        except IntegrityError:
+            slug_try = f'{base_slug}-{suffix}'
+            suffix += 1
+
+
+def _ensure_merch_size_id(label: str | None) -> int | None:
+    if not label or not label.strip():
+        return None
+    slug = slugify_ascii_label(label)
+    row = MerchSize.query.filter_by(slug=slug).first()
+    if row is not None:
+        return row.id
+    try:
+        with db.session.begin_nested():
+            nxt_sort = db.session.scalar(
+                func.coalesce(func.max(MerchSize.sort_order), 0)
+            )
+            ms = MerchSize(
+                slug=slug,
+                label=str(label).strip()[:160],
+                sort_order=int(nxt_sort or 0) + 1,
+            )
+            db.session.add(ms)
+            db.session.flush()
+            return ms.id
+    except IntegrityError:
+        row2 = MerchSize.query.filter_by(slug=slug).first()
+        if row2 is not None:
+            return row2.id
+        raise
+
+
+def _apply_variant_physical_fields(variant: MerchVariant, combo: dict[str, Any]) -> None:
+    attrs_cd = dict(combo)
+    c_lbl = _combo_dimension_label(attrs_cd, MERCH_COLOR_DIMENSION_KEYS_CF)
+    s_lbl = _combo_dimension_label(attrs_cd, MERCH_SIZE_DIMENSION_KEYS_CF)
+    variant.color_id = _ensure_merch_color_id(c_lbl)
+    variant.size_id = _ensure_merch_size_id(s_lbl)
+    variant.variant_key = compute_merch_variant_key(
+        color_id=variant.color_id,
+        size_id=variant.size_id,
+        attributes=attrs_cd,
+    )[:126]
+
+
 class MerchSortimentService:
     """Kombinationen aus variant_schema; Listenpreis-Aufloesung."""
 
@@ -164,12 +254,18 @@ class MerchSortimentService:
                 cd = dict(combo)
                 if hit.attributes != cd:
                     hit.attributes = cd
+                _apply_variant_physical_fields(hit, cd)
                 if hit.id:
                     matched_ids.add(hit.id)
             else:
-                db.session.add(
-                    MerchVariant(article_id=article.id, attributes=dict(combo), is_active=True)
+                cd = dict(combo)
+                nv = MerchVariant(
+                    article_id=article.id,
+                    attributes=cd,
+                    is_active=True,
                 )
+                _apply_variant_physical_fields(nv, cd)
+                db.session.add(nv)
 
         for v in existing:
             if v.id and norm_key(v.attributes) not in wanted_keys:

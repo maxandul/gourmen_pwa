@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}{{ page_title }} - Merch - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('merch_admin.cockpit', tab='sortiment') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Sortimentsliste</span></a>
+    </p>
+    <h1>{{ lucide_icon('swatch-book') }} {{ page_title }}</h1>
+  </div>
+
+  {% include 'admin/merch_v2/_subnav.html' %}
+
+  <div class="page-content">
+    <p class="admin-hub__hint">Nur der Anzeigename ist änderbar; der technische Kurzcode bleibt für bestehende Verknüpfungen stabil.</p>
+
+    <section class="settings-nav__section" aria-labelledby="sec-colors">
+      <h2 id="sec-colors" class="settings-nav__section-title">Farben</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.lookups_color_new') }}" class="form form-row">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-field">
+              <label class="form-field__label" for="new-color-label">Neue Farbe</label>
+              <input class="form-field__input" id="new-color-label" name="label" type="text" maxlength="160" placeholder="Marineblau" autocomplete="off"/>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary">Anlegen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% if colors %}
+      <div class="card card--flat">
+        <div class="card__body">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Kurzcode</th><th>Anzeige</th></tr></thead>
+              <tbody>
+                {% for c in colors %}
+                <tr>
+                  <td><code>{{ c.slug }}</code></td>
+                  <td>
+                    <form method="POST" action="{{ url_for('merch_admin.lookups_color_rename', color_id=c.id) }}" class="form form-row">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                      <input class="form-field__input" name="label" type="text" value="{{ c.label }}" maxlength="160"/>
+                      <div class="form-actions">
+                        <button type="submit" class="btn btn--secondary">Speichern</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-hub__hint">Noch keine Farben.</p>
+      {% endif %}
+    </section>
+
+    <section class="settings-nav__section" aria-labelledby="sec-sizes">
+      <h2 id="sec-sizes" class="settings-nav__section-title">Grössen</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.lookups_size_new') }}" class="form form-row">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-field">
+              <label class="form-field__label" for="new-size-label">Neue Grösse</label>
+              <input class="form-field__input" id="new-size-label" name="label" type="text" maxlength="160" placeholder="L" autocomplete="off"/>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary">Anlegen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% if sizes %}
+      <div class="card card--flat">
+        <div class="card__body">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Kurzcode</th><th>Anzeige</th></tr></thead>
+              <tbody>
+                {% for s in sizes %}
+                <tr>
+                  <td><code>{{ s.slug }}</code></td>
+                  <td>
+                    <form method="POST" action="{{ url_for('merch_admin.lookups_size_rename', size_id=s.id) }}" class="form form-row">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                      <input class="form-field__input" name="label" type="text" value="{{ s.label }}" maxlength="160"/>
+                      <div class="form-actions">
+                        <button type="submit" class="btn btn--secondary">Speichern</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-hub__hint">Noch keine Grössen.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

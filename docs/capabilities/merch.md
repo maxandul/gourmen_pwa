@@ -4,7 +4,7 @@
 >
 > **Status**: Merch v2 wird in der App gebaut (`MERCH_V2_ENABLED` fuer Cutover); Konzept fuer Betrieb weiterhin autoritativ. **Owner**: Andreas. **Stand**: 2026-05-16.
 >
-> **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen, MVP-Punkt 4), `docs/initiatives/workspace-railway/PHASE_10_MERCH.md` (Phasen-Briefing fuer Cursor), `docs/capabilities/drive.md` (Drive-Integration fuer Bilder und Lieferantenbelege), `docs/capabilities/calendar.md` (Schwester-Capability, gleiche Doc-Konvention), `docs/ARCHITECTURE.md` (Stack-Detail), `docs/CONVENTIONS.md` (Code-Standards).
+> **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen, MVP-Punkt 4), `docs/initiatives/workspace-railway/PHASE_10_MERCH.md` (Phasen-Briefing fuer Cursor), [`docs/capabilities/merch-article-variant-target-state.md`](merch-article-variant-target-state.md) (Zielzustand Artikel/Farbe/Grösse/Variante; **§9 Umsetzungsstand & Agent-Handoff**), `docs/capabilities/drive.md` (Drive-Integration fuer Bilder und Lieferantenbelege), `docs/capabilities/calendar.md` (Schwester-Capability, gleiche Doc-Konvention), `docs/ARCHITECTURE.md` (Stack-Detail), `docs/CONVENTIONS.md` (Code-Standards).
 
 ---
 

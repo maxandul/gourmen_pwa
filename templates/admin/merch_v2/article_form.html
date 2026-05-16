@@ -48,7 +48,49 @@
             <p class="card__subtitle">Eine Zeile pro Dimension, z.&nbsp;B. <code>farbe: schwarz, weiss</code> und <code>groesse: S, M, L</code>. Leer lassen fuer einen Artikel ohne Varianten (eine Standard-Variante).</p>
             {{ form.variant_schema_text(class='form-field__textarea') }}
             {% if form.variant_schema_text.errors %}<p class="form-field__error" role="alert">{{ form.variant_schema_text.errors[0] }}</p>{% endif %}
+            <p class="form-field__hint">Zentrale Bezeichner für dieselbe Farbe oder Grösse: <a href="{{ url_for('merch_admin.lookups_index') }}">Stammdaten Farben &amp; Grössen</a>.</p>
           </div>
+
+          {% if article and (bulk_colors or bulk_sizes) %}
+          <div class="card card--flat merch-article-bulk">
+            <div class="card__body">
+              <h2 class="settings-nav__section-title">Massen-Deaktivierung (Varianten)</h2>
+              <p class="card__subtitle">Setzt Varianten nur auf inaktiv; sie bleiben in der Datenbank (z.&nbsp;B. fuer abgeschlossene Runden).</p>
+              {% if bulk_colors %}
+              <form method="POST" action="{{ url_for('merch_admin.article_variants_bulk_deactivate_color', article_id=article.id) }}" class="form form-row form-row--stacked merch-article-bulk__row">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-field">
+                  <label class="form-field__label" for="bulk-color-id">Alle Varianten mit Farbe</label>
+                  <select class="form-field__select" id="bulk-color-id" name="color_id" required>
+                    {% for c in bulk_colors %}
+                    <option value="{{ c.id }}">{{ c.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn--outline">Deaktivieren</button>
+                </div>
+              </form>
+              {% endif %}
+              {% if bulk_sizes %}
+              <form method="POST" action="{{ url_for('merch_admin.article_variants_bulk_deactivate_size', article_id=article.id) }}" class="form form-row form-row--stacked merch-article-bulk__row">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="form-field">
+                  <label class="form-field__label" for="bulk-size-id">Alle Varianten mit Grösse</label>
+                  <select class="form-field__select" id="bulk-size-id" name="size_id" required>
+                    {% for s in bulk_sizes %}
+                    <option value="{{ s.id }}">{{ s.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn--outline">Deaktivieren</button>
+                </div>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
 
           <div class="form-field">
             <span class="form-field__label">Artikelbild</span>

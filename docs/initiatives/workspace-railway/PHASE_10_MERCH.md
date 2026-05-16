@@ -1,11 +1,13 @@
 # Phase 10 – Merch-Verwaltung neu
 
 > **Branch**: `phase/10-workspace-merch` (Empfehlung: Feature-Branches; Merge-Ziel ist `master`)
-> **Spec (autoritativ)**: [`docs/capabilities/merch.md`](../../capabilities/merch.md)
+> **Spec (autoritativ)**: [`docs/capabilities/merch.md`](../../capabilities/merch.md). **Zielbild Sortiment (Artikel/Farbe/Groesse/Matrix)**: [`merch-article-variant-target-state.md`](../../capabilities/merch-article-variant-target-state.md) — Umsetzung schrittweise oder Folge-Phase; zunaechst Capability-Baseline in `merch.md` Sektion 6.
 > **Strategie-Anker**: [`docs/STRATEGY_2026.md`](../../STRATEGY_2026.md) MVP-Punkt 4
 > **Status**: in_progress auf `master` (MERCH-V2‑Cockpit, Shop, Statistik/Jahresreport, Audit, Legacy‑Receivables; Sortiment/Stammdaten v2 schrittweise). **Aufwand**: ~2 Wochen.
 
-**Umsetzungsstand (laufend, nicht gleich Release):** Lieferanten- und **Sortimentspflege (Artikel, Varianten, Bild)** im Cockpit (`/admin/merch-v2/suppliers`, `/admin/merch-v2/articles`); Runden-KPI + Vereinsjahresstatistik + CSV; Merch-Historie im Admin-Mitglied-Detail; Lieferantenbeleg nach Drive (`MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`); Artikelbilder nach Drive (`MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID`). **Feinschliff:** Cockpit-Subnavigation (`_subnav.html`); weiteres Polish nach Bedarf.
+**Umsetzungsstand (laufend, nicht gleich Release):** Lieferanten- und **Sortimentspflege (Artikel, Varianten, Bild)** im Cockpit (`/admin/merch-v2/suppliers`, `/admin/merch-v2/articles`); **Lookups Farbe/Grösse** (`/admin/merch-v2/lookups`, Migration `c4e8a9012b71`) und **`variant_key`**; **Mitglieder-Shop** mit Konfigurator pro Artikel (Dropdown Ausführung); Runden-KPI + Vereinsjahresstatistik + CSV; Merch-Historie im Admin-Mitglied-Detail; Lieferantenbeleg nach Drive (`MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`); Artikelbilder nach Drive (`MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID`). **Nächster Agent:** Ziel-/Handoff siehe [`docs/capabilities/merch-article-variant-target-state.md`](../../capabilities/merch-article-variant-target-state.md) §9; offen u.a. Bulk-Bestätigung, Hinweis nach Massen-Anlage Varianten.
+
+**Feinschliff:** Cockpit-Subnavigation (`_subnav.html`); weiteres Polish nach Bedarf.
 
 ---
 
