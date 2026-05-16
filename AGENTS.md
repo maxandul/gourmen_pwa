@@ -4,7 +4,9 @@ Eingangstor für jeden AI-Agent, der an diesem Repo arbeitet.
 
 ## Was das ist
 
-**Gourmen PWA** ist die Web-App des Gourmen-Vereins (CH). Flask-Backend, Postgres, Railway-Hosting, installierbare PWA mit Service Worker und Push-Notifications. Sprache der UI: Deutsch (kein Eszett im Code/Templates).
+**Gourmen PWA** ist die Web-App des Gourmen-Vereins (CH). Flask-Backend, Postgres, Railway-Hosting, installierbare PWA mit Service Worker und Push-Notifications.
+
+**Sprache:** Nutzersichtbare Texte (Templates, Flash-Meldungen, UI-Strings, feste Dokumentation für Mitglieder) sind auf **Deutsch** mit Umlauten **ä, ö, ü**. **Kein Eszett:** immer **ss** statt dessen (z. B. «gemäss», «ausser», «Standardmässig», «Grossbuchstaben»). Keine ASCII-Ersatzschreibweise **ae / oe / ue** in diesem sichtbaren Text. **Technische Identifier** bleiben ASCII (z. B. Routen-Parameter `tab=cockpit`, Python-Symbole, CSS-Klassen, ENV-Keys).
 
 ## Vor jeder Code-Änderung lesen
 

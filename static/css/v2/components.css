@@ -1408,6 +1408,47 @@ a.btn:active {
   min-width: 0;
 }
 
+/* Merch-Cockpit Hub: Haupt-Tabs + gemeinsamer Panel-Body; Scroll-Huellen fuer Statistik-Tabellen */
+.page-content--merch-hub {
+  min-width: 0;
+}
+
+.page-content--merch-hub > .tabs.tabs--panel {
+  min-width: 0;
+}
+
+.page-content--merch-hub .tabs__content {
+  min-width: 0;
+}
+
+.page-content--merch-hub .data-table-scroll-outer {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.page-content--merch-hub .data-table-scroll-inner {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overscroll-behavior-x: contain;
+}
+
+/* Listen Lieferanten/Sortiment: keine Trennlinie ueber Zeilen-Aktionen (.form-actions Standardborder) */
+.merch-hub-entity-row .form-actions {
+  border-top: none;
+  padding-top: 0;
+  margin-top: var(--space-2);
+}
+
+.page-content--merch-hub .tabs__content > .form-actions:first-child,
+.page-content--merch-hub .tabs__content > .admin-hub__hint + .form-actions {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
 .page-content--admin-members-table > .data-table-scroll-outer {
   min-width: 0;
   width: 100%;

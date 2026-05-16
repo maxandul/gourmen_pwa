@@ -9,7 +9,7 @@ from io import StringIO
 
 import csv
 
-from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from sqlalchemy import func
@@ -27,6 +27,7 @@ from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
 from backend.extensions import db, limiter
 from backend.models.audit_event import AuditAction
+from backend.models.member import Funktion
 from backend.models.merch_v2 import (
     MerchArticle,
     MerchOrder,
@@ -63,6 +64,27 @@ from backend.services.merch_statistics_service import (
 from backend.services.security import SecurityService
 
 bp = Blueprint('merch_admin', __name__, url_prefix='/admin/merch-v2')
+
+_MERCH_HUB_MAIN_TABS = frozenset({'cockpit', 'lieferanten', 'sortiment', 'runden', 'statistik'})
+# Alte Bookmarks nutzten tab= fuer innere Cockpit-Panels (vor Haupt-Tabs).
+_MERCH_HUB_LEGACY_WRONG_TAB = frozenset({'uebersicht', 'kennzahlen', 'stamm'})
+
+
+def _user_can_merch_marketing_hub(user) -> bool:
+    if not user.is_authenticated or not getattr(user, 'is_active', False):
+        return False
+    if user.is_admin():
+        return True
+    return getattr(user, 'funktion', None) == Funktion.MARKETINGCHEF
+
+
+def _user_can_merch_statistics_hub(user) -> bool:
+    if not user.is_authenticated or not getattr(user, 'is_active', False):
+        return False
+    if user.is_admin():
+        return True
+    fx = getattr(user, 'funktion', None)
+    return fx in (Funktion.MARKETINGCHEF, Funktion.SCHATZMEISTER)
 
 
 def _subsidy_chf_to_rappen(val) -> int:
@@ -200,19 +222,85 @@ def _article_store_image_upload(article: MerchArticle, uf) -> str | None:
 
 @bp.route('/', methods=['GET'])
 @login_required
-@marketing_chief_or_admin_required
 def cockpit():
+    """Einheitliche Merch-Admin-Shell unter /admin/merch-v2/ (?tab=cockpit|lieferanten|sortiment|runden|statistik)."""
     require_merch_v2_enabled()
-    rounds = MerchRound.query.order_by(MerchRound.id.desc()).limit(50).all()
-    supplier_count = MerchSupplier.query.filter_by(is_archived=False).count()
-    article_count = MerchArticle.query.filter_by(is_archived=False).count()
-    return render_template(
-        'admin/merch_v2/cockpit.html',
-        rounds=rounds,
-        supplier_count=supplier_count,
-        article_count=article_count,
-        MerchRoundStatus=MerchRoundStatus,
-    )
+    if not getattr(current_user, 'is_active', False):
+        abort(403)
+
+    raw_tab = request.args.get('tab')
+    if raw_tab is not None:
+        legacy_key = raw_tab.strip().lower()
+        if legacy_key in _MERCH_HUB_LEGACY_WRONG_TAB:
+            return redirect(url_for('merch_admin.cockpit', tab='cockpit'))
+
+    if raw_tab is None:
+        return redirect(url_for('merch_admin.cockpit', tab='cockpit'))
+
+    main_tab = raw_tab.strip().lower()
+    if main_tab not in _MERCH_HUB_MAIN_TABS:
+        return redirect(url_for('merch_admin.cockpit', tab='cockpit'))
+
+    if main_tab == 'statistik':
+        if not _user_can_merch_statistics_hub(current_user):
+            abort(403)
+    elif not _user_can_merch_marketing_hub(current_user):
+        abort(403)
+
+    if main_tab == 'cockpit' and request.args.get('panel'):
+        return redirect(url_for('merch_admin.cockpit', tab='cockpit'))
+
+    ctx: dict = {
+        'merch_tab': main_tab,
+        'MerchRoundStatus': MerchRoundStatus,
+    }
+
+    if main_tab == 'cockpit':
+        ctx['supplier_count'] = MerchSupplier.query.filter_by(is_archived=False).count()
+        ctx['article_count'] = MerchArticle.query.filter_by(is_archived=False).count()
+    elif main_tab == 'runden':
+        ctx['rounds'] = MerchRound.query.order_by(MerchRound.id.desc()).limit(50).all()
+    elif main_tab == 'lieferanten':
+        ctx['active_suppliers'] = (
+            MerchSupplier.query.filter_by(is_archived=False).order_by(MerchSupplier.name.asc()).all()
+        )
+        ctx['archived_suppliers'] = (
+            MerchSupplier.query.filter_by(is_archived=True).order_by(MerchSupplier.name.asc()).all()
+        )
+    elif main_tab == 'sortiment':
+        ctx['active_articles'] = (
+            MerchArticle.query.filter_by(is_archived=False)
+            .options(joinedload(MerchArticle.supplier))
+            .order_by(MerchArticle.name.asc())
+            .all()
+        )
+        ctx['archived_articles'] = (
+            MerchArticle.query.filter_by(is_archived=True)
+            .options(joinedload(MerchArticle.supplier))
+            .order_by(MerchArticle.name.asc())
+            .all()
+        )
+    elif main_tab == 'statistik':
+        years = _statistics_season_years_list()
+        requested = request.args.get('year', type=int)
+        year = requested if requested is not None else current_club_season_label_year()
+        if years and year not in years:
+            year = years[0]
+        overview = build_year_overview(year)
+        qty_top = top_articles_by_quantity_for_round_ids(overview.round_ids, limit=5)
+        marg_top = top_articles_by_margin_for_round_ids(overview.round_ids, limit=5)
+        season_start, season_end = club_season_utc_bounds(year)
+        ctx.update(
+            season_year=year,
+            season_years=years,
+            overview=overview,
+            top_qty=qty_top,
+            top_margin=marg_top,
+            season_start=season_start.date(),
+            season_end=season_end.date(),
+        )
+
+    return render_template('admin/merch_v2/merch_hub.html', **ctx)
 
 
 def _supplier_apply_form(form: MerchSupplierForm, model: MerchSupplier) -> None:
@@ -229,13 +317,7 @@ def _supplier_apply_form(form: MerchSupplierForm, model: MerchSupplier) -> None:
 @marketing_chief_or_admin_required
 def suppliers_index():
     require_merch_v2_enabled()
-    active = MerchSupplier.query.filter_by(is_archived=False).order_by(MerchSupplier.name.asc()).all()
-    archived = MerchSupplier.query.filter_by(is_archived=True).order_by(MerchSupplier.name.asc()).all()
-    return render_template(
-        'admin/merch_v2/suppliers_index.html',
-        active_suppliers=active,
-        archived_suppliers=archived,
-    )
+    return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
 
 @bp.route('/suppliers/new', methods=['GET', 'POST'])
@@ -258,7 +340,7 @@ def supplier_new():
                 extra_data={'name': s.name},
             )
             flash('Lieferant angelegt.', 'success')
-            return redirect(url_for('merch_admin.suppliers_index'))
+            return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
         flash('Bitte Eingaben pruefen.', 'error')
     return render_template(
         'admin/merch_v2/supplier_form.html',
@@ -287,7 +369,7 @@ def supplier_edit(supplier_id: int):
                 extra_data={'name': s.name},
             )
             flash('Lieferant gespeichert.', 'success')
-            return redirect(url_for('merch_admin.suppliers_index'))
+            return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
         flash('Bitte Eingaben pruefen.', 'error')
     else:
         form = MerchSupplierForm(obj=s)
@@ -308,11 +390,11 @@ def supplier_archive(supplier_id: int):
     s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
     if s.is_archived:
         flash('Lieferant ist bereits archiviert.', 'warning')
-        return redirect(url_for('merch_admin.suppliers_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
     blocked = MerchArticle.query.filter_by(supplier_id=s.id, is_archived=False).count()
     if blocked > 0:
         flash('Lieferant hat noch aktive Artikel — bitte zuerst alle Artikel archivieren.', 'error')
-        return redirect(url_for('merch_admin.suppliers_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
     s.is_archived = True
     db.session.commit()
     SecurityService.log_audit_event(
@@ -322,7 +404,7 @@ def supplier_archive(supplier_id: int):
         extra_data={'archived': True, 'name': s.name},
     )
     flash('Lieferant archiviert.', 'success')
-    return redirect(url_for('merch_admin.suppliers_index'))
+    return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
 
 @bp.route('/suppliers/<int:supplier_id>/restore', methods=['POST'])
@@ -334,7 +416,7 @@ def supplier_restore(supplier_id: int):
     s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
     if not s.is_archived:
         flash('Lieferant ist bereits aktiv.', 'warning')
-        return redirect(url_for('merch_admin.suppliers_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
     s.is_archived = False
     db.session.commit()
     SecurityService.log_audit_event(
@@ -344,7 +426,7 @@ def supplier_restore(supplier_id: int):
         extra_data={'restored': True, 'name': s.name},
     )
     flash('Lieferant wieder aktiviert.', 'success')
-    return redirect(url_for('merch_admin.suppliers_index'))
+    return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
 
 def _article_apply_core(form: MerchArticleForm, article: MerchArticle) -> None:
@@ -399,23 +481,7 @@ def _apply_variant_list_price_overrides(article_id: int) -> str | None:
 @marketing_chief_or_admin_required
 def articles_index():
     require_merch_v2_enabled()
-    active = (
-        MerchArticle.query.filter_by(is_archived=False)
-        .options(joinedload(MerchArticle.supplier))
-        .order_by(MerchArticle.name.asc())
-        .all()
-    )
-    archived = (
-        MerchArticle.query.filter_by(is_archived=True)
-        .options(joinedload(MerchArticle.supplier))
-        .order_by(MerchArticle.name.asc())
-        .all()
-    )
-    return render_template(
-        'admin/merch_v2/articles_index.html',
-        active_articles=active,
-        archived_articles=archived,
-    )
+    return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
 
 
 @bp.route('/articles/new', methods=['GET', 'POST'])
@@ -428,7 +494,7 @@ def article_new():
     form.supplier_id.choices = _supplier_select_choices()
     if not form.supplier_id.choices:
         flash('Bitte zuerst mindestens einen aktiven Lieferanten anlegen.', 'warning')
-        return redirect(url_for('merch_admin.suppliers_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
     if request.method == 'POST':
         form.supplier_id.choices = _supplier_select_choices()
@@ -527,7 +593,7 @@ def article_edit(article_id: int):
                         extra_data={'name': art.name},
                     )
                     flash('Artikel gespeichert.', 'success')
-                    return redirect(url_for('merch_admin.articles_index'))
+                    return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
         else:
             flash('Bitte Eingaben pruefen.', 'error')
     return render_template(
@@ -548,7 +614,7 @@ def article_archive(article_id: int):
     art = MerchArticle.query.filter_by(id=article_id).first_or_404()
     if art.is_archived:
         flash('Artikel ist bereits archiviert.', 'warning')
-        return redirect(url_for('merch_admin.articles_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
     art.is_archived = True
     for v in art.variants:
         v.is_active = False
@@ -560,7 +626,7 @@ def article_archive(article_id: int):
         extra_data={'name': art.name},
     )
     flash('Artikel archiviert.', 'success')
-    return redirect(url_for('merch_admin.articles_index'))
+    return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
 
 
 @bp.route('/articles/<int:article_id>/restore', methods=['POST'])
@@ -572,10 +638,10 @@ def article_restore(article_id: int):
     art = MerchArticle.query.filter_by(id=article_id).first_or_404()
     if not art.is_archived:
         flash('Artikel ist bereits aktiv.', 'warning')
-        return redirect(url_for('merch_admin.articles_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
     if art.supplier and art.supplier.is_archived:
         flash('Lieferant ist archiviert — bitte zuerst Lieferant wieder aktivieren.', 'error')
-        return redirect(url_for('merch_admin.articles_index'))
+        return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
     art.is_archived = False
     schema = art.variant_schema if isinstance(art.variant_schema, dict) else {}
     MerchSortimentService.sync_variants_for_article(art, schema)
@@ -587,7 +653,7 @@ def article_restore(article_id: int):
         extra_data={'restored': True, 'name': art.name},
     )
     flash('Artikel wieder aktiv.', 'success')
-    return redirect(url_for('merch_admin.articles_index'))
+    return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
 
 
 @bp.route('/rounds/new', methods=['GET'])
@@ -1150,25 +1216,9 @@ def round_supplier_invoice(round_id: int):
 @merch_statistics_view_required
 def statistics_year():
     require_merch_v2_enabled()
-    years = _statistics_season_years_list()
-    requested = request.args.get('year', type=int)
-    year = requested if requested is not None else current_club_season_label_year()
-    if years and year not in years:
-        year = years[0]
-    overview = build_year_overview(year)
-    qty_top = top_articles_by_quantity_for_round_ids(overview.round_ids, limit=5)
-    marg_top = top_articles_by_margin_for_round_ids(overview.round_ids, limit=5)
-    season_start, season_end = club_season_utc_bounds(year)
-    return render_template(
-        'admin/merch_v2/statistics.html',
-        season_year=year,
-        season_years=years,
-        overview=overview,
-        top_qty=qty_top,
-        top_margin=marg_top,
-        season_start=season_start.date(),
-        season_end=season_end.date(),
-    )
+    args = request.args.to_dict(flat=True)
+    args['tab'] = 'statistik'
+    return redirect(url_for('merch_admin.cockpit', **args))
 
 
 @bp.route('/statistics/export.csv', methods=['GET'])

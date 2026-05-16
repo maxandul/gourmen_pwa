@@ -4,7 +4,7 @@ Stabile Code-Standards für Gourmen PWA. Bei jeder Änderung mit anderen Pattern
 
 ## Sprache & Lokalisierung
 
-- **UI-Sprache**: Deutsch (kein Schweizer Hochdeutsch mit ß; "ss" verwenden)
+- **UI-Sprache**: Deutsch; im sichtbaren Text immer **ss** statt Eszett; Umlaute **ä, ö, ü** wie in **AGENTS.md**
 - **Code-Identifiers**: Englisch (Variablennamen, Funktionsnamen, Klassennamen)
 - **Kommentare im Code**: Deutsch oder Englisch, einheitlich pro Datei
 - **Commit-Messages**: Deutsch oder Englisch, einheitlich pro Phase/Initiative
@@ -49,10 +49,10 @@ class <Name>Service:
 
 ### Regeln
 
-- **Keine Geschäftslogik in Routes** außer Permission-Checks und Form-Validierung
+- **Keine Geschäftslogik in Routes** ausser Permission-Checks und Form-Validierung
 - **Keine direkten externen API-Calls in Routes** – immer über Service
 - **Strukturierte Rückgabe** (Dict mit `success`, `data` o.ä.) statt rohem API-Response
-- **Errors loggen, nicht crashen** außer bei wirklich kritischen Fehlern (z.B. `CRYPTO_KEY` fehlt)
+- **Errors loggen, nicht crashen** ausser bei wirklich kritischen Fehlern (z.B. `CRYPTO_KEY` fehlt)
 - **Konfiguration aus `current_app.config`** lesen, nicht direkt aus `os.environ`
 - **Transaktionale E-Mails** nur über `MailService` (`RESEND_API_KEY` gesetzt → Resend/HTTPS, sonst SMTP)
 - **Externe Storage-/API-Services** (Beispiel: `DriveStorageService`) muessen idempotente Schreib-Operationen anbieten und bei API-Fehlern explizite Service-Errors werfen (z.B. `DriveError`, `DriveValidationError`). Routes catchen die Service-Errors, mappen sie auf Flash-Meldungen und committen DB-Aenderungen erst nach erfolgreichem externen Call (Drive zuerst, DB danach – siehe `docs/capabilities/drive.md` Sektion 7.2).
@@ -204,7 +204,7 @@ class MyForm(FlaskForm):
     submit = SubmitField('Speichern')
 ```
 
-- **Labels Deutsch**, mit Großbuchstaben am Anfang
+- **Labels Deutsch**, mit Grossbuchstaben am Anfang
 - **Validators explizit**, niemals `optional()` ohne Begründung
 - **Choices als Tuple** `(value, label)`, value matcht Enum-Werten
 - **Submit-Button am Ende** als `SubmitField`

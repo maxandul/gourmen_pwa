@@ -1,9 +1,4 @@
-{# Hilfsnavigation Cockpit v2 (Spec §12.1 Tabs-Anmutung). Keine neue CSS-Klasse: btn-Steuerung. #}
-{% set ep = request.endpoint %}
-{% set on_round = ep is not none and ep.startswith('merch_admin.round') %}
-<div class="form-actions" role="navigation" aria-label="Merch v2 Bereiche">
-  <a href="{{ url_for('merch_admin.cockpit') }}" class="btn {{ 'btn--primary' if ep == 'merch_admin.cockpit' or on_round else 'btn--secondary' }}">Uebersicht</a>
-  <a href="{{ url_for('merch_admin.suppliers_index') }}" class="btn {{ 'btn--primary' if ep in ('merch_admin.suppliers_index', 'merch_admin.supplier_new', 'merch_admin.supplier_edit') else 'btn--secondary' }}">Lieferanten</a>
-  <a href="{{ url_for('merch_admin.articles_index') }}" class="btn {{ 'btn--primary' if ep in ('merch_admin.articles_index', 'merch_admin.article_new', 'merch_admin.article_edit') else 'btn--secondary' }}">Sortiment</a>
-  <a href="{{ url_for('merch_admin.statistics_year') }}" class="btn {{ 'btn--primary' if ep in ('merch_admin.statistics_year', 'merch_admin.statistics_export_csv') else 'btn--secondary' }}">Statistik</a>
+{# Merch-Admin Tab-Leiste auf Unterseiten (ohne gemeinsamen Panel-Body). #}
+<div class="tabs tabs--panel" id="gourmen-tabs" aria-label="Merch-Verwaltung">
+{% include 'admin/merch_v2/_merch_admin_tabs_nav_only.html' %}
 </div>

@@ -56,13 +56,29 @@ def test_shop_ok(logged_in_client, app, merch_v2_enabled):
 
 
 def test_cockpit_member_forbidden(logged_in_client, app, merch_v2_enabled):
-    rv = logged_in_client.get('/admin/merch-v2/')
+    rv = logged_in_client.get('/admin/merch-v2/', follow_redirects=True)
     assert rv.status_code == 403
 
 
 def test_cockpit_marketingchef_ok(marketing_chief_client, merch_v2_enabled):
-    rv = marketing_chief_client.get('/admin/merch-v2/')
+    rv = marketing_chief_client.get('/admin/merch-v2/', follow_redirects=True)
     assert rv.status_code == 200
+
+
+def test_cockpit_redirects_canonical_tab(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.get('/admin/merch-v2/', follow_redirects=False)
+    assert rv.status_code == 302
+    loc = rv.headers.get('Location', '')
+    assert 'tab=cockpit' in loc
+    assert 'panel=' not in loc
+
+
+def test_cockpit_invalid_tab_redirects(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.get('/admin/merch-v2/?tab=invalid', follow_redirects=False)
+    assert rv.status_code == 302
+    loc = rv.headers.get('Location', '')
+    assert 'tab=cockpit' in loc
+    assert 'panel=' not in loc
 
 
 def test_round_new_schatzmeister_forbidden(app, client, merch_v2_enabled):
@@ -289,8 +305,9 @@ def test_round_remove_item(marketing_chief_client, app, merch_v2_enabled):
 
 
 def test_suppliers_index_ok(marketing_chief_client, merch_v2_enabled):
-    rv = marketing_chief_client.get('/admin/merch-v2/suppliers')
+    rv = marketing_chief_client.get('/admin/merch-v2/suppliers', follow_redirects=True)
     assert rv.status_code == 200
+    assert b'Lieferanten' in rv.data
 
 
 def test_supplier_create_redirects(marketing_chief_client, merch_v2_enabled):
@@ -332,8 +349,9 @@ def test_supplier_archive_blocked_with_active_article(marketing_chief_client, ap
 
 
 def test_articles_index_ok(marketing_chief_client, merch_v2_enabled):
-    rv = marketing_chief_client.get('/admin/merch-v2/articles')
+    rv = marketing_chief_client.get('/admin/merch-v2/articles', follow_redirects=True)
     assert rv.status_code == 200
+    assert b'Sortiment' in rv.data
 
 
 def test_article_create_variants(marketing_chief_client, app, merch_v2_enabled):

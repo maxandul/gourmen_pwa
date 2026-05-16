@@ -14,7 +14,7 @@ Verbindliche UI-Konventionen für Gourmen PWA. Vor jeder Template-, CSS- oder JS
 | **Breadcrumbs** | Keine. Nutzung von `.page-back` zum Elternziel |
 | **Page-Header** | Nur `h1`, kein zusätzliches Subtitle |
 | **Layout** | Mobile-first, Bottom-Nav (4 Bereiche) + Sidebar ab 1024px; **horizontales Dokument-Overflow**: `html { overflow-x: clip; }`, `main.main-content` und `.container` mit `width: 100%`, `min-width: 0` damit breite Tabellen nicht die Seite aufblasen |
-| **Templates** | `base.html` + Partials in `templates/partials/` |
+| **Nutzt deutscher UI-Text** | Umlaute **ä, ö, ü**; kein Eszett-Zeichen, immer **ss** (`AGENTS.md`). Keine **ae / oe / ue** in sichtbarem Text. Technische Identifier (URLs/Parameter, Code-Symbole, BEM-Klassen): ASCII |
 
 Eine **Abweichung** von einer Grundsatz-Entscheidung erfordert User-Auftrag und einen Eintrag im Entscheidungslog (siehe Sektion 8 unten).
 
@@ -85,7 +85,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 - `--color-success`, `--color-warning`, `--color-error`, `--color-info`
 - `--shadow-sm/md/lg/xl`
 
-**Regel**: Komponenten verwenden **semantische Tokens**, niemals direkt Brand-Paletten oder Logo-Farben (außer in `tokens.css` selbst).
+**Regel**: Komponenten verwenden **semantische Tokens**, niemals direkt Brand-Paletten oder Logo-Farben (ausser in `tokens.css` selbst).
 
 ## 4. Decision Tree – Brauche ich eine neue Klasse?
 
@@ -196,6 +196,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.data-table` | – | Standard-Tabelle (BEM-aligned) |
 | `.admin-members-table` | `__row--inactive`, `__col-email`, `__col-adresse`, `__col-kleider`, `__col-fuehrerschein`, `__col-status`, `__status-chips`, `__actions`, `__actions-inner` | Admin Mitgliederliste (`admin/members.html`): alle Mitgliedsfelder als Spalten; `data-table-scroll-*`; erste Spalte (Rufname) sticky; inaktive Zeilen gedimmt |
 | `.page-content--admin-members-table` | – | Modifier: `min-width: 0` auf Flex-Spalte + Scroll-Hülle, damit horizontale Tabelle nicht die Seitenbreite aufbläht |
+| `.page-content--merch-hub` | – | Merch-Admin Hub: `min-width: 0`; gemeinsamer `.tabs__content`-Panel unter Haupt-Tabs; Scroll-Hüllen/`overscroll-behavior-x` für Statistik-Tabellen; erste Toolbar-`.form-actions` ohne Oberstrich |
+| `.merch-hub-entity-row` | – | Zeilen-Wrapper Lieferanten/Sortiment im Hub: unterdrückt `border-top` auf verschachtelten `.form-actions` (keine Strich-Trennung vor Bearbeiten/Archiv) |
 | `.events-index-table__event-link` | mit `__event-icon`, `__event-date`, `__event-chev` | Erste Spalte ("Event") in `events.index` Kommend/Archiv: Typ-Icon + Datum + Chevron als ein klickbares Element zum Event-Detail; nowrap, sticky-Spalte schrumpft auf Inhalt |
 | `.events-index-table__restaurant-link` | mit `__restaurant-name`, `__restaurant-icon` | Restaurant-Spalte in `events.index`: optionaler externer Link auf `event.place_website` (`target="_blank"` + Lucide `external-link`); Name mit Ellipsis bei `--col-restaurant` Max-Width |
 | `.events-index-table__col-restaurant` / `__col-status` / `__col-organisator` | – | Spalten-Constraints fuer `events-index-table`: Restaurant/Organisator gedeckelt mit Ellipsis (sinnvolles Maximum), Status (Teilnahme/Bewertung) `width: 1%` + `nowrap` |
@@ -274,7 +276,7 @@ Sekundäre Toolleisten (Filter, Planung etc.) verwenden ein einheitliches Muster
 ```
 
 Verhalten:
-- **Standardmäßig eingeklappt**
+- **Standardmässig eingeklappt**
 - **Nach GET-Submit „Filtern"**: einklappen + State in `sessionStorage`
 
 ### 5.9 Bereichs-spezifische Komponenten
@@ -365,11 +367,11 @@ Komponenten ohne Verwendung in Templates können ohne Diskussion gelöscht werde
 
 ## 6. Verbote
 
-- ❌ **Keine Inline-Styles** in HTML außer mit explizitem User-OK + Begründung im Commit
+- ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit
 - ❌ **Keine Hardcode-Farben** (`#FFAA00`) – Token verwenden
 - ❌ **Keine Hardcode-Pixel** für Spacing – `--space-*` verwenden
 - ❌ **Keine generischen Klassennamen** wie `.btn-blue`, `.card-2`, `.text-bold`
-- ❌ **Keine `!important`** außer dokumentiert (siehe `[hidden]` in `base.css` als Beispiel)
+- ❌ **Keine `!important`** ausser dokumentiert (siehe `[hidden]` in `base.css` als Beispiel)
 - ❌ **Kein Tailwind, DaisyUI, Bootstrap o.ä.** ohne User-Auftrag
 - ❌ **Keine neuen Pattern** ohne User-OK + Registry-Update
 - ❌ **Keine Brand-Farben direkt** in Komponenten – nur semantische Tokens

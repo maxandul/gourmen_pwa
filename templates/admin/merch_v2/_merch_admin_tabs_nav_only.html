@@ -1,0 +1,63 @@
+{# Nur Tab-Leiste (ohne .tabs-Wrapper). Makro und nav_main fuer Hub + Subnav. #}
+{% macro merch_admin_nav_icon(symbol_id) -%}
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% set ep = request.endpoint %}
+{% set on_round = ep is not none and ep.startswith('merch_admin.round') %}
+{% if merch_tab is defined %}
+  {% set nav_main = merch_tab %}
+{% elif on_round %}
+  {% set nav_main = 'runden' %}
+{% elif ep in ('merch_admin.suppliers_index', 'merch_admin.supplier_new', 'merch_admin.supplier_edit') %}
+  {% set nav_main = 'lieferanten' %}
+{% elif ep in ('merch_admin.articles_index', 'merch_admin.article_new', 'merch_admin.article_edit') %}
+  {% set nav_main = 'sortiment' %}
+{% elif ep in ('merch_admin.statistics_year', 'merch_admin.statistics_export_csv') %}
+  {% set nav_main = 'statistik' %}
+{% else %}
+  {% set nav_main = '' %}
+{% endif %}
+<nav class="tabs__nav" role="tablist">
+  <a href="{{ url_for('merch_admin.cockpit', tab='cockpit', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'cockpit' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'cockpit' else 'false' }}">
+    {{ merch_admin_nav_icon('layout-dashboard') }}
+    Übersicht
+  </a>
+  <a href="{{ url_for('merch_admin.cockpit', tab='lieferanten', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'lieferanten' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'lieferanten' else 'false' }}">
+    {{ merch_admin_nav_icon('truck') }}
+    Lieferanten
+  </a>
+  <a href="{{ url_for('merch_admin.cockpit', tab='sortiment', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'sortiment' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'sortiment' else 'false' }}">
+    {{ merch_admin_nav_icon('shirt') }}
+    Sortiment
+  </a>
+  <a href="{{ url_for('merch_admin.cockpit', tab='runden', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'runden' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'runden' else 'false' }}">
+    {{ merch_admin_nav_icon('repeat') }}
+    Runden
+  </a>
+  <a href="{{ url_for('merch_admin.cockpit', tab='statistik', _anchor='gourmen-tabs') }}"
+     data-force-navigation="true"
+     class="tabs__tab {{ 'tabs__tab--active' if nav_main == 'statistik' else '' }}"
+     role="tab"
+     aria-selected="{{ 'true' if nav_main == 'statistik' else 'false' }}">
+    {{ merch_admin_nav_icon('chart-column') }}
+    Statistik
+  </a>
+</nav>

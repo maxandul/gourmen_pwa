@@ -11,7 +11,7 @@
 <div class="container">
   <div class="page-header">
     <p class="page-back">
-      <a href="{{ url_for('merch_admin.articles_index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Sortimentsliste</span></a>
+      <a href="{{ url_for('merch_admin.cockpit', tab='sortiment') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Sortimentsliste</span></a>
     </p>
     <h1>{{ lucide_icon('shirt') }} {{ page_title }}</h1>
   </div>
@@ -82,7 +82,7 @@
 
           <div class="form-actions">
             {{ form.submit(class='btn btn--primary') }}
-            <a href="{{ url_for('merch_admin.articles_index') }}" class="btn btn--outline">Abbrechen</a>
+            <a href="{{ url_for('merch_admin.cockpit', tab='sortiment') }}" class="btn btn--outline">Abbrechen</a>
           </div>
         </form>
       </div>
