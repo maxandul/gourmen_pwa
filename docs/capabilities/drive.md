@@ -454,13 +454,13 @@ Drift im engeren Sinn betrifft also nur:
 ### 9.2 Auto-Sync passiv
 
 - Beim Aufruf der Detail-View: pruefen, ob `drive_file_id` noch existiert; falls nicht, DB-Eintrag loeschen + AuditEvent `DOCUMENT_AUTO_REMOVED`. Falls existiert, aber `drive_parent_id` weicht ab: silent korrigieren, `last_seen_at` setzen.
-- Beim Folder-List-View: Drive-API liefert die Liste live. Files, die in Drive da sind aber keinen DB-Eintrag haben, werden in der Anzeige mit «Hochgeladen extern via Drive» beschriftet (kein automatischer DB-Insert beim List — das macht der Re-Sync).
+- Beim Folder-List-View: Drive-API liefert die Liste live. Files, die in Drive da sind aber keinen DB-Eintrag haben, werden in der Anzeige mit «Hochgeladen extern via Drive» beschriftet (kein automatischer DB-Insert beim List — Konsistenz-Backfill nur noch operativ via `DriveStorageService.admin_full_resync`, nicht mehr als Button in der App).
 
-### 9.3 Manueller Re-Sync
+### 9.3 Manueller Vollabgleich (`admin_full_resync`)
 
-Im Admin-Dashboard ein Button «Drive synchronisieren». Klick oeffnet Modal mit Erklaerung. Nach Bestaetigung walkt `admin_full_resync` den Shared Drive rekursiv ab Root und gleicht mit DB ab. Summary-Toast nach Lauf.
+**Stand App (2026-05):** Es gibt **keinen** Re-Sync-Button in der UI mehr (Phase-9-Browser + passiver Auto-Sync reichen im Regelbetrieb). Die Methode `DriveStorageService.admin_full_resync` bleibt fuer **manuelle Notfaelle** (z.B. Flask-Shell), walkt den Shared Drive rekursiv ab Root und gleicht mit der DB ab; danach wie bisher Audit `DRIVE_RESYNC_RAN` und Zusammenfassung in den Logs.
 
-Drift-Behandlung beim manuellen Re-Sync:
+Drift-Behandlung beim Aufruf von `admin_full_resync`:
 
 | Situation | Drive | DB | Auto-Aktion |
 |---|---|---|---|

@@ -78,22 +78,6 @@
                 <h2 id="verein-hub-admin" class="settings-nav__section-title">Vereinsverwaltung</h2>
                 <ul class="settings-nav__list" role="list">
                     <li>
-                        <a href="{{ url_for('admin.index') }}" class="settings-nav__row">
-                            <span class="settings-nav__icon" aria-hidden="true">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <use href="{{ _sprite }}#layout-dashboard"></use>
-                                </svg>
-                            </span>
-                            <span class="settings-nav__meta">
-                                <span class="settings-nav__label">Übersicht</span>
-                                <span class="settings-nav__description">Zahlen und Einstieg Admin-Bereich</span>
-                            </span>
-                            <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
-                                <use href="{{ _sprite }}#chevron-right"></use>
-                            </svg>
-                        </a>
-                    </li>
-                    <li>
                         <a href="{{ url_for('admin.members') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -109,22 +93,43 @@
                             </svg>
                         </a>
                     </li>
+                    {% if config.get('MERCH_V2_ENABLED') and (current_user.is_admin() or (current_user.funktion and current_user.funktion.value == 'MARKETINGCHEF')) %}
                     <li>
-                        <a href="{{ url_for('admin.merch') }}" class="settings-nav__row">
+                        <a href="{{ url_for('merch_admin.cockpit') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <use href="{{ _sprite }}#warehouse"></use>
+                                    <use href="{{ _sprite }}#shirt"></use>
                                 </svg>
                             </span>
                             <span class="settings-nav__meta">
-                                <span class="settings-nav__label">Merch-Verwaltung</span>
-                                <span class="settings-nav__description">Bestellungen und Artikel; Ändern nur für Admins</span>
+                                <span class="settings-nav__label">Merch-Cockpit</span>
+                                <span class="settings-nav__description">Runden, Sortiment, Lieferanten (Marketingchef/Admin)</span>
                             </span>
                             <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
                                 <use href="{{ _sprite }}#chevron-right"></use>
                             </svg>
                         </a>
                     </li>
+                    {% endif %}
+                    {% set _merch_legacy_fin = current_user.funktion and current_user.funktion.value in ('MARKETINGCHEF', 'SCHATZMEISTER') %}
+                    {% if current_user.is_admin() or _merch_legacy_fin %}
+                    <li>
+                        <a href="{{ url_for('admin.merch_legacy_receivables') }}" class="settings-nav__row">
+                            <span class="settings-nav__icon" aria-hidden="true">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <use href="{{ _sprite }}#archive"></use>
+                                </svg>
+                            </span>
+                            <span class="settings-nav__meta">
+                                <span class="settings-nav__label">Merch Altbestand (read-only)</span>
+                                <span class="settings-nav__description">Forderungen aus dem alten Shop, nur zur Kontrolle</span>
+                            </span>
+                            <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                                <use href="{{ _sprite }}#chevron-right"></use>
+                            </svg>
+                        </a>
+                    </li>
+                    {% endif %}
                     <li>
                         <div class="settings-nav__row settings-nav__row--soon" aria-disabled="true">
                             <span class="settings-nav__icon" aria-hidden="true">

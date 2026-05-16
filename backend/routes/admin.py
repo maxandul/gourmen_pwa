@@ -73,65 +73,8 @@ def verein_member_required(f):
 @login_required
 @verein_member_required
 def index():
-    """Admin dashboard overview"""
-    from backend.models.event import Event
-    from backend.models.audit_event import AuditEvent
-    from backend.models.merch_article import MerchArticleLegacy
-    from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
-    from datetime import datetime
-    from sqlalchemy import func
-    
-    # Member statistics
-    members_count = Member.query.filter_by(is_active=True).count()
-    admins_count = Member.query.filter_by(role=Role.ADMIN, is_active=True).count()
-    
-    # Event statistics
-    upcoming_events_count = Event.query.filter(Event.datum >= datetime.now()).count()
-    
-    # Current season (aktuelle Saison berechnen)
-    current_year = datetime.now().year
-    current_month = datetime.now().month
-    # Saison läuft von September bis August
-    if current_month >= 9:
-        current_season = current_year
-    else:
-        current_season = current_year - 1
-    current_season_events = Event.query.filter_by(season=current_season).count()
-    
-    # Audit events count
-    audit_events_count = AuditEvent.query.count()
-    
-    # Merch statistics
-    active_articles_count = MerchArticleLegacy.query.filter_by(is_active=True).count()
-    pending_orders_count = MerchOrderLegacy.query.filter_by(status=MerchLegacyOrderStatus.BESTELLT).count()
-    
-    # Total revenue (Gesamtumsatz)
-    total_revenue = db.session.query(
-        func.sum(MerchOrderLegacy.total_profit_rappen)
-    ).filter(MerchOrderLegacy.status == MerchLegacyOrderStatus.GELIEFERT).scalar() or 0
-    total_revenue_chf = total_revenue / 100
-
-    merch_v2_cockpit_visible = bool(
-        current_app.config.get('MERCH_V2_ENABLED')
-        and (
-            current_user.is_admin()
-            or current_user.funktion == Funktion.MARKETINGCHEF
-        )
-    )
-
-    return render_template(
-        'admin/index.html',
-        members_count=members_count,
-        admins_count=admins_count,
-        upcoming_events_count=upcoming_events_count,
-        current_season=current_season,
-        current_season_events=current_season_events,
-        audit_events_count=audit_events_count,
-        active_articles_count=active_articles_count,
-        pending_orders_count=pending_orders_count,
-        total_revenue_chf=total_revenue_chf,
-        merch_v2_cockpit_visible=merch_v2_cockpit_visible,
-    )
+    """Einstieg /admin/: Weiterleitung zum Verein-Hub (Themenbereiche dort)."""
+    return redirect(url_for('member.index'))
 
 
 @bp.route('/mail/test')
@@ -177,7 +120,7 @@ def mail_test():
         flash(f"Test-Mail fehlgeschlagen: {result.get('error', 'Unbekannter Fehler')}", 'error')
         current_app.logger.error("Admin Mail-Test fehlgeschlagen: %s", result.get('error'))
 
-    return redirect(url_for('admin.index'))
+    return redirect(url_for('member.index'))
 
 class MemberForm(FlaskForm):
     # Basic info

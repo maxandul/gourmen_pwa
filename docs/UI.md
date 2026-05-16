@@ -211,7 +211,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
 | `.hub-grid` | – | Auto-Fit-Grid für Hub-Seiten (Member, Settings); Admin-Übersicht nutzt `admin-hub` |
-| `.admin-hub`, `.admin-hub__hero`, `.admin-hub__metrics`, `.admin-hub__cta` | – | Admin-Dashboard (`admin/index`): grosse verlinkte Hero-Kacheln mit Kennzahlen statt `hub-card` |
+| `.admin-hub`, `.admin-hub__hero`, `.admin-hub__metrics`, `.admin-hub__cta` | – | Wird in Merch-Cockpit und verwandten Admin-Seiten fuer **Hinweise** (`admin-hub__hint`) genutzt; es gibt keine separate Admin-**Uebersichts**-Seite mehr (`GET /admin` leitet zum Verein-Hub um). |
 | `.hub-card` | `--featured` | Kachel auf Hub-Grid (kombiniert mit `.card`) |
 
 ### 5.6 Forms
@@ -343,7 +343,7 @@ Verhalten:
 | `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, sekundaere Aktionen/Audit-Historie. |
 | `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`; `dialog` viewport-zentriert (`inset:0`, `margin:auto`) | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
 | `.docs-action-modal` | –; `dialog` wie Upload-Modal zentriert | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
-| `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |
+| `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | **Entfernt (2026-05):** frueher Re-Sync-Karte auf der Admin-Uebersicht. CSS-Klassen duerfen noch in aelterem CSS vorkommen; keine aktive Verwendung. |
 | `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
 | `.calendar-subscribe-card` | – | iCal-Abo; nutzt äussere `.card` |
 | `.calendar-subscribe__url-row` | mit `__url-input`, `__copy-btn` | HTTPS-Feed-URL + Kopieren |

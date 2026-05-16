@@ -481,33 +481,3 @@ def download(doc_id: int):
     )
 
 
-# ---------------------------------------------------------------------------
-# Admin: Re-Sync
-# ---------------------------------------------------------------------------
-
-
-@bp.route("/admin/resync", methods=["POST"])
-@login_required
-def admin_resync():
-    _require_feature()
-    _require_admin()
-    _validate_csrf_or_403()
-
-    try:
-        report = DriveStorageService.admin_full_resync(actor=current_user)
-    except DriveError as exc:
-        current_app.logger.error("Drive-Resync fehlgeschlagen: %s", exc, exc_info=True)
-        flash("Drive-Re-Sync fehlgeschlagen. Bitte Logs prüfen.", "error")
-        return redirect(url_for("admin.index"))
-
-    if report.total_changes == 0:
-        flash("Drive-Re-Sync fertig: alles war bereits konsistent.", "success")
-    else:
-        flash(
-            "Drive-Re-Sync fertig: "
-            f"{report.imported} neu importiert, "
-            f"{report.parent_updates} Ordner-Zuordnungen aktualisiert, "
-            f"{report.orphans_removed} verwaiste Einträge bereinigt.",
-            "success",
-        )
-    return redirect(url_for("admin.index"))
