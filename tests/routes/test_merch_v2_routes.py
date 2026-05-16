@@ -356,12 +356,15 @@ def test_articles_index_ok(marketing_chief_client, merch_v2_enabled):
 
 def test_article_create_variants(marketing_chief_client, app, merch_v2_enabled):
     with app.app_context():
-        from backend.models.merch_v2 import MerchSupplier
+        from backend.models.merch_v2 import MerchColor, MerchSupplier
 
         sup = MerchSupplier(name='Art-Lief')
-        db.session.add(sup)
+        c_marine = MerchColor(slug='marine', label='marine', sort_order=1)
+        c_schwarz = MerchColor(slug='schwarz', label='schwarz', sort_order=2)
+        db.session.add_all([sup, c_marine, c_schwarz])
         db.session.commit()
         sid = sup.id
+        cid_marine, cid_schwarz = c_marine.id, c_schwarz.id
 
     rv = marketing_chief_client.post(
         '/admin/merch-v2/articles/new',
@@ -370,7 +373,7 @@ def test_article_create_variants(marketing_chief_client, app, merch_v2_enabled):
             'supplier_id': sid,
             'description': 'd',
             'list_price_chf': '39.90',
-            'variant_schema_text': 'farbe: marine, schwarz',
+            'color_choice_ids': [str(cid_marine), str(cid_schwarz)],
             'submit': 'Speichern',
         },
         follow_redirects=False,
@@ -390,12 +393,18 @@ def test_article_create_variants(marketing_chief_client, app, merch_v2_enabled):
 
 def test_article_variant_list_price_override(marketing_chief_client, app, merch_v2_enabled):
     with app.app_context():
-        from backend.models.merch_v2 import MerchArticle, MerchSupplier, MerchVariant
+        from backend.models.merch_v2 import MerchArticle, MerchColor, MerchSupplier, MerchVariant
+
+        mc_rot = MerchColor(slug='rot', label='rot', sort_order=1)
+        mc_blau = MerchColor(slug='blau', label='blau', sort_order=2)
+        db.session.add_all([mc_rot, mc_blau])
+        db.session.flush()
 
         sup = MerchSupplier(name='Price-Lief')
         db.session.add(sup)
         db.session.flush()
         sid = sup.id
+        cid_rot, cid_blau = mc_rot.id, mc_blau.id
         art = MerchArticle(name='Polo-Preis', supplier_id=sid, list_price_rappen=3000)
         db.session.add(art)
         db.session.flush()
@@ -413,8 +422,8 @@ def test_article_variant_list_price_override(marketing_chief_client, app, merch_
             'supplier_id': sid,
             'description': '',
             'list_price_chf': '30.00',
-            'variant_schema_text': 'farbe: rot, blau',
             'remove_image': False,
+            'color_choice_ids': [str(cid_rot), str(cid_blau)],
             f'variant_list_price_chf_{vid1}': '34.50',
             'submit': 'Speichern',
         },

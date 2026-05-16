@@ -5,6 +5,124 @@
 </svg>
 {%- endmacro %}
 
+{% macro merch_hub_rounds_table(rounds_list, aria_heading_id) -%}
+{% if rounds_list %}
+<div class="data-table-scroll-outer">
+  <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="{{ aria_heading_id }}">
+    <table class="data-table events-index-table">
+      <thead>
+        <tr>
+          <th scope="col">Titel</th>
+          <th scope="col" class="events-index-table__col-status">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rounds_list %}
+        <tr>
+          <td>
+            <a href="{{ url_for('merch_admin.round_detail', round_id=r.id) }}"
+               class="events-index-table__event-link"
+               aria-label="Runde {{ r.title }} öffnen">
+              <span class="events-index-table__event-date">{{ r.title }}</span>
+              {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
+            </a>
+          </td>
+          <td class="events-index-table__col-status">{{ r.status.value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro merch_hub_suppliers_table(suppliers, aria_heading_id) -%}
+{% if suppliers %}
+<div class="data-table-scroll-outer">
+  <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="{{ aria_heading_id }}">
+    <table class="data-table events-index-table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" class="events-index-table__col-restaurant">Kontakt</th>
+          <th scope="col" class="events-index-table__col-organisator">Web</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sup in suppliers %}
+        <tr>
+          <td>
+            <a href="{{ url_for('merch_admin.supplier_edit', supplier_id=sup.id) }}"
+               class="events-index-table__event-link"
+               aria-label="Lieferant {{ sup.name }} bearbeiten">
+              <span class="events-index-table__event-date">{{ sup.name }}</span>
+              {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
+            </a>
+          </td>
+          <td class="events-index-table__col-restaurant">
+            {% if sup.contact_email %}
+            <span class="events-index-table__restaurant-name" title="{{ sup.contact_email }}">{{ sup.contact_email }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td class="events-index-table__col-organisator">
+            {% if sup.website_url %}
+            <a href="{{ sup.website_url }}" rel="noopener noreferrer" target="_blank" class="events-index-table__restaurant-link" title="{{ sup.website_url }}">
+              <span class="events-index-table__restaurant-name">Web</span>
+              {{ lucide_icon('external-link', 'icon events-index-table__restaurant-icon') }}
+            </a>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro merch_sortiment_article_table(articles, aria_heading_id, dims_map) -%}
+{% if articles %}
+<div class="data-table-scroll-outer">
+  <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="{{ aria_heading_id }}">
+    <table class="data-table events-index-table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" class="events-index-table__col-status">Preis</th>
+          <th scope="col" class="events-index-table__col-restaurant">Farben</th>
+          <th scope="col" class="events-index-table__col-restaurant">Grössen</th>
+          <th scope="col" class="events-index-table__col-organisator">Lieferant</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in articles %}
+        {% set dims = dims_map.get(a.id, ('', '')) %}
+        <tr>
+          <td>
+            <a href="{{ url_for('merch_admin.article_edit', article_id=a.id) }}"
+               class="events-index-table__event-link"
+               aria-label="Artikel {{ a.name }} bearbeiten">
+              <span class="events-index-table__event-date">{{ a.name }}</span>
+              {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
+            </a>
+          </td>
+          <td class="events-index-table__col-status">{{ (a.list_price_rappen / 100)|round(2, 'common') }} CHF</td>
+          <td class="events-index-table__col-restaurant"><span class="events-index-table__restaurant-name" title="{{ dims[0] }}">{{ dims[0] if dims[0] else '—' }}</span></td>
+          <td class="events-index-table__col-restaurant"><span class="events-index-table__restaurant-name" title="{{ dims[1] }}">{{ dims[1] if dims[1] else '—' }}</span></td>
+          <td class="events-index-table__col-organisator">
+            {% if a.supplier %}<span title="{{ a.supplier.name }}">{{ a.supplier.name }}</span>{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{%- endmacro %}
+
 {% block title %}Merch-Cockpit - Gourmen{% endblock %}
 
 {% block content %}
@@ -45,22 +163,15 @@
 
     {% elif merch_tab == 'runden' %}
     <div class="form-actions">
-      <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">Neue Runde anlegen</a>
-      <a href="{{ url_for('merch_admin.cockpit', tab='statistik') }}" class="btn btn--secondary">Vereinsjahresstatistik</a>
+      <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">{{ lucide_icon('circle-plus') }}<span>Neue Runde anlegen</span></a>
     </div>
     {% if rounds %}
-    <div class="card card--flat">
-      <div class="card__body">
-        {% for r in rounds %}
-        <p class="card__subtitle">
-          <a href="{{ url_for('merch_admin.round_detail', round_id=r.id) }}"><strong>{{ r.title }}</strong></a>
-          — Status {{ r.status.value }}
-        </p>
-        {% endfor %}
-      </div>
-    </div>
+    <section class="settings-nav__section" aria-labelledby="merch-hub-rounds-list">
+      <h2 id="merch-hub-rounds-list" class="settings-nav__section-title">Runden</h2>
+      {{ merch_hub_rounds_table(rounds, 'merch-hub-rounds-list') }}
+    </section>
     {% else %}
-    <p class="card__subtitle">Noch keine Runde angelegt.</p>
+    <p class="admin-hub__hint">Noch keine Runde angelegt.</p>
     {% endif %}
 
     {% elif merch_tab == 'lieferanten' %}
@@ -71,26 +182,7 @@
     <section class="settings-nav__section" aria-labelledby="sup-active">
       <h2 id="sup-active" class="settings-nav__section-title">Aktiv</h2>
       {% if active_suppliers %}
-      <div class="card card--flat">
-        <div class="card__body">
-          {% for sup in active_suppliers %}
-          <div class="form-row form-row--stacked merch-hub-entity-row">
-            <p class="card__subtitle">
-              <strong>{{ sup.name }}</strong>
-              {% if sup.contact_email %} · {{ sup.contact_email }}{% endif %}
-              {% if sup.website_url %} · <a href="{{ sup.website_url }}" rel="noopener noreferrer" target="_blank">Web</a>{% endif %}
-            </p>
-            <div class="form-actions">
-              <a href="{{ url_for('merch_admin.supplier_edit', supplier_id=sup.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
-              <form method="POST" action="{{ url_for('merch_admin.supplier_archive', supplier_id=sup.id) }}" class="form form--inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn--outline">{{ lucide_icon('archive') }}<span>Archivieren</span></button>
-              </form>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+      {{ merch_hub_suppliers_table(active_suppliers, 'sup-active') }}
       {% else %}
       <p class="admin-hub__hint">Keine aktiven Lieferanten.</p>
       {% endif %}
@@ -99,57 +191,21 @@
     <section class="settings-nav__section" aria-labelledby="sup-arch">
       <h2 id="sup-arch" class="settings-nav__section-title">Archiv</h2>
       {% if archived_suppliers %}
-      <div class="card card--flat">
-        <div class="card__body">
-          {% for sup in archived_suppliers %}
-          <div class="form-row form-row--stacked merch-hub-entity-row">
-            <p class="card__subtitle"><strong>{{ sup.name }}</strong></p>
-            <div class="form-actions">
-              <a href="{{ url_for('merch_admin.supplier_edit', supplier_id=sup.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
-              <form method="POST" action="{{ url_for('merch_admin.supplier_restore', supplier_id=sup.id) }}" class="form form--inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Wieder aktivieren</span></button>
-              </form>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+      {{ merch_hub_suppliers_table(archived_suppliers, 'sup-arch') }}
       {% else %}
       <p class="admin-hub__hint">Keine archivierten Lieferanten.</p>
       {% endif %}
     </section>
 
     {% elif merch_tab == 'sortiment' %}
-    <p class="admin-hub__hint">Artikel: Varianten-Schema und Bild (Drive) im Formular; optional Seed-Script <code>scripts/seed_merch_v2_dev.py</code> für Demodaten.</p>
     <div class="form-actions">
       <a href="{{ url_for('merch_admin.article_new') }}" class="btn btn--primary">{{ lucide_icon('circle-plus') }}<span>Neuer Artikel</span></a>
-      <a href="{{ url_for('merch_admin.lookups_index') }}" class="btn btn--secondary">{{ lucide_icon('swatch-book') }}<span>Farben &amp; Grössen</span></a>
     </div>
 
     <section class="settings-nav__section" aria-labelledby="art-active">
       <h2 id="art-active" class="settings-nav__section-title">Aktiv</h2>
       {% if active_articles %}
-      <div class="card card--flat">
-        <div class="card__body">
-          {% for a in active_articles %}
-          <div class="form-row form-row--stacked merch-hub-entity-row">
-            <p class="card__subtitle">
-              <strong>{{ a.name }}</strong>
-              {% if a.supplier %} · {{ a.supplier.name }}{% endif %}
-              · {{ (a.list_price_rappen / 100)|round(2, 'common') }} CHF
-            </p>
-            <div class="form-actions">
-              <a href="{{ url_for('merch_admin.article_edit', article_id=a.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
-              <form method="POST" action="{{ url_for('merch_admin.article_archive', article_id=a.id) }}" class="form form--inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn--outline">{{ lucide_icon('archive') }}<span>Archivieren</span></button>
-              </form>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+      {{ merch_sortiment_article_table(active_articles, 'art-active', sortiment_article_dimensions) }}
       {% else %}
       <p class="admin-hub__hint">Keine aktiven Artikel.</p>
       {% endif %}
@@ -158,22 +214,7 @@
     <section class="settings-nav__section" aria-labelledby="art-arch">
       <h2 id="art-arch" class="settings-nav__section-title">Archiv</h2>
       {% if archived_articles %}
-      <div class="card card--flat">
-        <div class="card__body">
-          {% for a in archived_articles %}
-          <div class="form-row form-row--stacked merch-hub-entity-row">
-            <p class="card__subtitle"><strong>{{ a.name }}</strong></p>
-            <div class="form-actions">
-              <a href="{{ url_for('merch_admin.article_edit', article_id=a.id) }}" class="btn btn--secondary">{{ lucide_icon('pencil') }}<span>Bearbeiten</span></a>
-              <form method="POST" action="{{ url_for('merch_admin.article_restore', article_id=a.id) }}" class="form form--inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Wieder aktivieren</span></button>
-              </form>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+      {{ merch_sortiment_article_table(archived_articles, 'art-arch', sortiment_article_dimensions) }}
       {% else %}
       <p class="admin-hub__hint">Keine archivierten Artikel.</p>
       {% endif %}

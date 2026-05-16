@@ -19,6 +19,7 @@ from wtforms import (
     DateField,
     DecimalField,
     SelectField,
+    SelectMultipleField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -53,8 +54,9 @@ from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
 from backend.services.merch_sortiment_service import (
     MerchSortimentService,
-    parse_variant_schema_text,
-    variant_schema_to_lines,
+    merged_variant_schema_from_lookups,
+    lookup_color_and_size_field_ids_from_schema,
+    validate_variant_schema_limits,
 )
 from backend.services.merch_statistics_service import (
     build_year_overview,
@@ -156,13 +158,32 @@ class MerchArticleForm(FlaskForm):
         places=2,
         validators=[DataRequired(), NumberRange(min=0)],
     )
-    variant_schema_text = TextAreaField(
-        'Varianten (optional)',
-        validators=[Optional(), Length(max=5000)],
-        description='Eine Zeile pro Dimension, z.B. «farbe: schwarz, weiss».',
+    color_choice_ids = SelectMultipleField(
+        'Farben',
+        coerce=int,
+        validators=[Optional()],
+    )
+    size_choice_ids = SelectMultipleField(
+        'Grössen',
+        coerce=int,
+        validators=[Optional()],
     )
     remove_image = BooleanField('Artikelbild entfernen')
     submit = SubmitField('Speichern')
+
+
+def _populate_merch_article_variant_lookup_choices(form: MerchArticleForm) -> tuple[int, int]:
+    colors = MerchLookupService.list_colors_ordered()
+    sizes = MerchLookupService.list_sizes_ordered()
+    form.color_choice_ids.choices = [(c.id, c.label) for c in colors]
+    form.size_choice_ids.choices = [(s.id, s.label) for s in sizes]
+    return len(colors), len(sizes)
+
+
+def _merch_article_multiselect_rows(n_opts: int) -> int:
+    if n_opts < 1:
+        return 3
+    return max(4, min(14, n_opts + 2))
 
 
 _MERCH_ARTICLE_IMAGE_MIMES = frozenset(
@@ -271,18 +292,22 @@ def cockpit():
             MerchSupplier.query.filter_by(is_archived=True).order_by(MerchSupplier.name.asc()).all()
         )
     elif main_tab == 'sortiment':
-        ctx['active_articles'] = (
+        active_list = (
             MerchArticle.query.filter_by(is_archived=False)
             .options(joinedload(MerchArticle.supplier))
             .order_by(MerchArticle.name.asc())
             .all()
         )
-        ctx['archived_articles'] = (
+        archived_list = (
             MerchArticle.query.filter_by(is_archived=True)
             .options(joinedload(MerchArticle.supplier))
             .order_by(MerchArticle.name.asc())
             .all()
         )
+        ctx['active_articles'] = active_list
+        ctx['archived_articles'] = archived_list
+        aid_sortiment = [a.id for a in active_list] + [a.id for a in archived_list]
+        ctx['sortiment_article_dimensions'] = _article_archive_dimension_strings(aid_sortiment)
     elif main_tab == 'statistik':
         years = _statistics_season_years_list()
         requested = request.args.get('year', type=int)
@@ -479,6 +504,59 @@ def _apply_variant_list_price_overrides(article_id: int) -> str | None:
     return None
 
 
+def _article_archive_dimension_strings(article_ids: list[int]) -> dict[int, tuple[str, str]]:
+    """Pro Artikel: (Farben kommasepariert, Grössen kommasepariert) fuer Archiv-Tabelle."""
+    if not article_ids:
+        return {}
+    variants = (
+        MerchVariant.query.filter(MerchVariant.article_id.in_(article_ids))
+        .options(joinedload(MerchVariant.color), joinedload(MerchVariant.size))
+        .all()
+    )
+    color_rank: dict[int, dict[str, tuple[int, str]]] = defaultdict(dict)
+    size_rank: dict[int, dict[str, tuple[int, str]]] = defaultdict(dict)
+    attr_colors: dict[int, set[str]] = defaultdict(set)
+    attr_sizes: dict[int, set[str]] = defaultdict(set)
+
+    def _take_best(store: dict[str, tuple[int, str]], label: str, sort_order: int) -> None:
+        prev = store.get(label)
+        if prev is None or sort_order < prev[0]:
+            store[label] = (sort_order, label)
+
+    for v in variants:
+        aid = v.article_id
+        if v.color_id and v.color:
+            _take_best(color_rank[aid], v.color.label, int(v.color.sort_order))
+        elif isinstance(v.attributes, dict):
+            raw = v.attributes.get('farbe')
+            if raw is not None and str(raw).strip():
+                attr_colors[aid].add(str(raw).strip())
+
+        if v.size_id and v.size:
+            _take_best(size_rank[aid], v.size.label, int(v.size.sort_order))
+        elif isinstance(v.attributes, dict):
+            raw = v.attributes.get('groesse')
+            if raw is not None and str(raw).strip():
+                attr_sizes[aid].add(str(raw).strip())
+
+    out: dict[int, tuple[str, str]] = {}
+    for aid in article_ids:
+        c_sorted = sorted(color_rank.get(aid, {}).values(), key=lambda t: (t[0], t[1].lower()))
+        color_labels = [t[1] for t in c_sorted]
+        for extra in sorted(attr_colors.get(aid, set()), key=str.lower):
+            if extra not in color_labels:
+                color_labels.append(extra)
+
+        s_sorted = sorted(size_rank.get(aid, {}).values(), key=lambda t: (t[0], t[1].lower()))
+        size_labels = [t[1] for t in s_sorted]
+        for extra in sorted(attr_sizes.get(aid, set()), key=str.lower):
+            if extra not in size_labels:
+                size_labels.append(extra)
+
+        out[aid] = (', '.join(color_labels), ', '.join(size_labels))
+    return out
+
+
 def _article_bulk_color_size_lists(
     article: MerchArticle | None,
 ) -> tuple[list[MerchColor], list[MerchSize]]:
@@ -534,21 +612,28 @@ def article_new():
     require_merch_v2_enabled()
     form = MerchArticleForm()
     form.supplier_id.choices = _supplier_select_choices()
+    n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
     if not form.supplier_id.choices:
         flash('Bitte zuerst mindestens einen aktiven Lieferanten anlegen.', 'warning')
         return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
     if request.method == 'POST':
         form.supplier_id.choices = _supplier_select_choices()
-        schema, s_err = parse_variant_schema_text(form.variant_schema_text.data)
-        if s_err:
-            flash(s_err, 'error')
+        n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
+        merged = merged_variant_schema_from_lookups(
+            color_ids=form.color_choice_ids.data,
+            size_ids=form.size_choice_ids.data,
+            preserved_legacy_schema=None,
+        )
+        v_err = validate_variant_schema_limits(merged)
+        if v_err:
+            flash(v_err, 'error')
         elif form.validate_on_submit():
             art = MerchArticle(is_archived=False)
             _article_apply_core(form, art)
             db.session.add(art)
             db.session.flush()
-            MerchSortimentService.sync_variants_for_article(art, schema)
+            MerchSortimentService.sync_variants_for_article(art, merged)
             db.session.flush()
             price_err = _apply_variant_list_price_overrides(art.id)
             if price_err:
@@ -579,6 +664,9 @@ def article_new():
         variant_pricing_rows=[],
         bulk_colors=[],
         bulk_sizes=[],
+        merch_variant_color_select_rows=_merch_article_multiselect_rows(n_colors),
+        merch_variant_size_select_rows=_merch_article_multiselect_rows(n_sizes),
+        merch_variant_lookups_url=url_for('merch_admin.lookups_index'),
     )
 
 
@@ -593,6 +681,7 @@ def article_edit(article_id: int):
         .filter_by(id=article_id)
         .first_or_404()
     )
+    legacy_schema = art.variant_schema if isinstance(art.variant_schema, dict) else {}
 
     if request.method == 'GET':
         form = MerchArticleForm(
@@ -600,21 +689,31 @@ def article_edit(article_id: int):
             supplier_id=art.supplier_id,
             description=art.description or '',
             list_price_chf=Decimal(art.list_price_rappen) / Decimal('100'),
-            variant_schema_text=variant_schema_to_lines(art.variant_schema),
             remove_image=False,
         )
     else:
         form = MerchArticleForm()
 
     form.supplier_id.choices = _supplier_select_choices(include_supplier_id=art.supplier_id)
+    n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
+
+    if request.method == 'GET':
+        c_sel, s_sel = lookup_color_and_size_field_ids_from_schema(legacy_schema)
+        form.color_choice_ids.data = c_sel
+        form.size_choice_ids.data = s_sel
 
     if request.method == 'POST':
-        schema, s_err = parse_variant_schema_text(form.variant_schema_text.data)
-        if s_err:
-            flash(s_err, 'error')
+        merged = merged_variant_schema_from_lookups(
+            color_ids=form.color_choice_ids.data,
+            size_ids=form.size_choice_ids.data,
+            preserved_legacy_schema=legacy_schema,
+        )
+        v_err = validate_variant_schema_limits(merged)
+        if v_err:
+            flash(v_err, 'error')
         elif form.validate_on_submit():
             _article_apply_core(form, art)
-            MerchSortimentService.sync_variants_for_article(art, schema)
+            MerchSortimentService.sync_variants_for_article(art, merged)
             db.session.flush()
             price_err = _apply_variant_list_price_overrides(art.id)
             if price_err:
@@ -637,7 +736,7 @@ def article_edit(article_id: int):
                         extra_data={'name': art.name},
                     )
                     flash('Artikel gespeichert.', 'success')
-                    return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
+                    return redirect(url_for('merch_admin.article_edit', article_id=art.id))
         else:
             flash('Bitte Eingaben pruefen.', 'error')
     bulk_colors, bulk_sizes = _article_bulk_color_size_lists(art)
@@ -649,6 +748,9 @@ def article_edit(article_id: int):
         variant_pricing_rows=_article_variant_pricing_rows(art),
         bulk_colors=bulk_colors,
         bulk_sizes=bulk_sizes,
+        merch_variant_color_select_rows=_merch_article_multiselect_rows(n_colors),
+        merch_variant_size_select_rows=_merch_article_multiselect_rows(n_sizes),
+        merch_variant_lookups_url=url_for('merch_admin.lookups_index'),
     )
 
 

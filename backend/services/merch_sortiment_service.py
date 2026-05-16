@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from itertools import product
 from typing import Any
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 
 from backend.extensions import db
@@ -130,6 +131,180 @@ def parse_variant_schema_text(raw: str | None) -> tuple[dict[str, list[str]] | N
         )
 
     return result, None
+
+
+def validate_variant_schema_limits(schema: dict[str, list[str]] | None) -> str | None:
+    """Grenzen Dimensionen/Kombinationszahl wie bei Freitext-Parser."""
+    lines = variant_schema_to_lines(schema if schema else None)
+    _schema, err = parse_variant_schema_text(lines)
+    return err
+
+
+def dedupe_integer_ids_preserving(ids: Iterable[Any] | None) -> list[int]:
+    out: list[int] = []
+    seen: set[int] = set()
+    for raw in ids or []:
+        try:
+            i = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if i in seen:
+            continue
+        seen.add(i)
+        out.append(i)
+    return out
+
+
+def collect_color_and_size_labels_from_schema(
+    schema: dict[str, Any] | None,
+) -> tuple[list[str], list[str]]:
+    colors: list[str] = []
+    sizes: list[str] = []
+    seen_c: set[str] = set()
+    seen_s: set[str] = set()
+    if not isinstance(schema, dict):
+        return [], []
+
+    for dim_raw, vals in schema.items():
+        nk = normalized_attr_dimension_key(str(dim_raw))
+        for v in vals or []:
+            part = str(v).strip()
+            if not part:
+                continue
+            pl = part.casefold()
+            if nk in MERCH_COLOR_DIMENSION_KEYS_CF and pl not in seen_c:
+                seen_c.add(pl)
+                colors.append(part)
+            elif nk in MERCH_SIZE_DIMENSION_KEYS_CF and pl not in seen_s:
+                seen_s.add(pl)
+                sizes.append(part)
+    return colors, sizes
+
+
+def extract_legacy_non_color_size_schema(schema: dict[str, Any] | None) -> dict[str, list[str]]:
+    """Schema-Zeilen, die keine Farbe/Groessen-Dimension sind (Freitext-Legacy-Zusatz)."""
+    out: dict[str, list[str]] = {}
+    if not isinstance(schema, dict):
+        return {}
+    for dim_raw, vals in schema.items():
+        nk = normalized_attr_dimension_key(str(dim_raw))
+        if nk in MERCH_COLOR_DIMENSION_KEYS_CF or nk in MERCH_SIZE_DIMENSION_KEYS_CF:
+            continue
+        parts: list[str] = []
+        seen: set[str] = set()
+        for v in vals or []:
+            t = str(v).strip()
+            if not t:
+                continue
+            tl = t.casefold()
+            if tl not in seen:
+                seen.add(tl)
+                parts.append(t)
+        dk = str(dim_raw).strip()
+        if dk and parts:
+            out[dk] = parts
+    return out
+
+
+def resolve_color_lookup_ids(labels: Iterable[str]) -> list[int]:
+    ids: list[int] = []
+    seen: set[int] = set()
+    for lbl_raw in labels:
+        lbl = str(lbl_raw or '').strip()
+        if not lbl:
+            continue
+        slug = slugify_ascii_label(lbl)
+        row = MerchColor.query.filter(
+            or_(MerchColor.slug == slug, func.lower(MerchColor.label) == lbl.casefold())
+        ).first()
+        if row is None or row.id in seen:
+            continue
+        seen.add(row.id)
+        ids.append(row.id)
+    return ids
+
+
+def resolve_size_lookup_ids(labels: Iterable[str]) -> list[int]:
+    ids: list[int] = []
+    seen: set[int] = set()
+    for lbl_raw in labels:
+        lbl = str(lbl_raw or '').strip()
+        if not lbl:
+            continue
+        slug = slugify_ascii_label(lbl)
+        row = MerchSize.query.filter(
+            or_(MerchSize.slug == slug, func.lower(MerchSize.label) == lbl.casefold())
+        ).first()
+        if row is None or row.id in seen:
+            continue
+        seen.add(row.id)
+        ids.append(row.id)
+    return ids
+
+
+def lookup_color_and_size_field_ids_from_schema(
+    schema: dict[str, Any] | None,
+) -> tuple[list[int], list[int]]:
+    cl, sl = collect_color_and_size_labels_from_schema(schema)
+    return resolve_color_lookup_ids(cl), resolve_size_lookup_ids(sl)
+
+
+def variant_schema_from_color_size_lookup_ids(
+    color_ids: Iterable[Any] | None,
+    size_ids: Iterable[Any] | None,
+) -> dict[str, list[str]]:
+    schema: dict[str, list[str]] = {}
+    cids = dedupe_integer_ids_preserving(color_ids)
+    sids = dedupe_integer_ids_preserving(size_ids)
+    if cids:
+        rows = MerchColor.query.filter(MerchColor.id.in_(cids)).all()
+        by_id = {r.id: r for r in rows}
+        labels = []
+        for i in cids:
+            r = by_id.get(i)
+            if r is not None:
+                labels.append(r.label)
+        if labels:
+            schema['farbe'] = labels
+    if sids:
+        rows = MerchSize.query.filter(MerchSize.id.in_(sids)).all()
+        by_id = {r.id: r for r in rows}
+        labels = []
+        for i in sids:
+            r = by_id.get(i)
+            if r is not None:
+                labels.append(r.label)
+        if labels:
+            schema['groesse'] = labels
+    return schema
+
+
+def merged_variant_schema_from_lookups(
+    *,
+    color_ids: Iterable[Any] | None,
+    size_ids: Iterable[Any] | None,
+    preserved_legacy_schema: dict[str, Any] | None,
+) -> dict[str, list[str]]:
+    """Kanonische Keys farbe/groesse aus Lookups plus andere Legacy-Dimensionen."""
+    preserved = extract_legacy_non_color_size_schema(preserved_legacy_schema)
+
+    merged: dict[str, list[str]] = {}
+    for key in sorted(
+        preserved.keys(),
+        key=lambda kk: normalized_attr_dimension_key(str(kk)),
+    ):
+        nm = normalized_attr_dimension_key(str(key))
+        if nm in MERCH_COLOR_DIMENSION_KEYS_CF or nm in MERCH_SIZE_DIMENSION_KEYS_CF:
+            continue
+        merged[str(key)] = list(preserved[str(key)])
+
+    canon = variant_schema_from_color_size_lookup_ids(color_ids, size_ids)
+    if 'farbe' in canon:
+        merged['farbe'] = canon['farbe']
+    if 'groesse' in canon:
+        merged['groesse'] = canon['groesse']
+
+    return merged
 
 
 def _combo_dimension_label(

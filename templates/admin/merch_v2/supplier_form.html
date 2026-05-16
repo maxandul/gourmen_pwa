@@ -46,32 +46,28 @@
             <a href="{{ url_for('merch_admin.cockpit', tab='lieferanten') }}" class="btn btn--outline">Abbrechen</a>
           </div>
         </form>
-      </div>
-    </div>
 
-    {% if supplier %}
-    <div class="card card--flat">
-      <div class="card__body">
+        {% if supplier %}
         {% if supplier.is_archived %}
-        <form method="POST" action="{{ url_for('merch_admin.supplier_restore', supplier_id=supplier.id) }}" class="form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <p class="card__subtitle">Dieser Lieferant ist archiviert.</p>
-          <div class="form-actions">
-            <button type="submit" class="btn btn--secondary">{{ lucide_icon('rotate-ccw') }}<span>Wieder aktivieren</span></button>
-          </div>
-        </form>
+        <p class="form-field__hint">Dieser Lieferant ist archiviert.</p>
+        <div class="form-actions">
+          <form method="POST" action="{{ url_for('merch_admin.supplier_restore', supplier_id=supplier.id) }}" class="form form--inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="btn btn--outline">{{ lucide_icon('rotate-ccw') }}<span>Wieder aktivieren</span></button>
+          </form>
+        </div>
         {% else %}
-        <form method="POST" action="{{ url_for('merch_admin.supplier_archive', supplier_id=supplier.id) }}" class="form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <p class="card__subtitle">Archivierung ist nur ohne aktive Artikel moeglich (siehe Hinweismeldung beim Absenden).</p>
-          <div class="form-actions">
+        <p class="form-field__hint">Archivieren ist nur ohne aktive Artikel möglich (Meldung erscheint beim Absenden, falls noch Artikel aktiv sind).</p>
+        <div class="form-actions">
+          <form method="POST" action="{{ url_for('merch_admin.supplier_archive', supplier_id=supplier.id) }}" class="form form--inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" class="btn btn--outline">{{ lucide_icon('archive') }}<span>Archivieren</span></button>
-          </div>
-        </form>
+          </form>
+        </div>
+        {% endif %}
         {% endif %}
       </div>
     </div>
-    {% endif %}
   </div>
 </div>
 {% endblock %}
