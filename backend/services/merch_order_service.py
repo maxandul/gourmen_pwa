@@ -166,3 +166,165 @@ class MerchOrderService:
         o.status = MerchOrderStatus.CONFIRMED
         o.confirmed_at = datetime.utcnow()
         return {'success': True, 'error': None}
+
+    @classmethod
+    def cancel_order_by_member(cls, order_id: int, member_id: int) -> dict:
+        """Mitglied storniert waehrend Runde OPEN (DRAFT oder CONFIRMED)."""
+        o = db.session.get(MerchOrder, order_id)
+        if not o or o.member_id != member_id:
+            return {'success': False, 'error': 'Bestellung nicht gefunden.'}
+        r = o.round
+        if r.status != MerchRoundStatus.OPEN:
+            return {'success': False, 'error': 'Storno ist nur solange die Runde offen ist moeglich.'}
+        if o.status not in (MerchOrderStatus.DRAFT, MerchOrderStatus.CONFIRMED):
+            return {'success': False, 'error': 'Diese Bestellung kann nicht mehr storniert werden.'}
+
+        now = datetime.utcnow()
+        for line in list(o.order_items):
+            db.session.delete(line)
+        o.status = MerchOrderStatus.CANCELLED
+        o.cancelled_at = now
+        o.cancellation_reason = 'Mitglied'
+        o.gross_amount_rappen = 0
+        o.subsidy_amount_rappen = 0
+        o.member_amount_due_rappen = 0
+        o.confirmed_at = None
+        return {'success': True, 'error': None}
+
+    @classmethod
+    def discard_draft_orders_for_round(cls, round_id: int) -> None:
+        """OPEN -> LOCKED: nicht bestaetigte Warenkoerbe loeschen."""
+        drafts = MerchOrder.query.filter_by(round_id=round_id, status=MerchOrderStatus.DRAFT).all()
+        for o in drafts:
+            db.session.delete(o)
+
+    @classmethod
+    def reset_confirmed_orders_to_draft_for_round(cls, round_id: int) -> None:
+        """LOCKED -> OPEN: CONFIRMED zurueck auf DRAFT (Neu-Bestaetigung)."""
+        orders = MerchOrder.query.filter_by(round_id=round_id, status=MerchOrderStatus.CONFIRMED).all()
+        for o in orders:
+            o.status = MerchOrderStatus.DRAFT
+            o.confirmed_at = None
+            for line in o.order_items:
+                ri = line.round_item
+                unit = cls._preview_unit_rappen(ri)
+                line.unit_price_at_confirm_rappen = unit
+                line.unit_price_final_rappen = None
+            cls.recalculate_draft_totals(o)
+
+    @classmethod
+    def validate_round_items_for_supplier_order(cls, round_obj: MerchRound) -> dict:
+        """Alle Rund-Positionen brauchen Effektiv- und Mitgliederpreis (Rappen)."""
+        for ri in round_obj.round_items:
+            if ri.effective_supplier_price_rappen is None or ri.member_price_rappen is None:
+                return {
+                    'success': False,
+                    'error': 'Jede Sortimentsposition braucht Effektivpreis und Mitgliederpreis.',
+                }
+            if ri.effective_supplier_price_rappen < 0 or ri.member_price_rappen < 0:
+                return {'success': False, 'error': 'Preise duerfen nicht negativ sein.'}
+        return {'success': True, 'error': None}
+
+    @classmethod
+    def invoice_confirmed_orders_for_round(cls, round_obj: MerchRound) -> dict:
+        """
+        LOCKED -> ORDERED_AT_SUPPLIER: CONFIRMED -> INVOICED mit definitiven Mitgliederpreisen.
+        """
+        vr = cls.validate_round_items_for_supplier_order(round_obj)
+        if not vr['success']:
+            return vr
+
+        now = datetime.utcnow()
+        for o in round_obj.orders:
+            if o.status != MerchOrderStatus.CONFIRMED:
+                continue
+            gross = 0
+            for line in o.order_items:
+                mp = line.round_item.member_price_rappen
+                if mp is None:
+                    return {
+                        'success': False,
+                        'error': 'Mitgliederpreis fuer eine Position fehlt.',
+                    }
+                line.unit_price_final_rappen = mp
+                gross += line.quantity * mp
+            cap = round_obj.subsidy_per_member_rappen
+            sub, due = cls.subsidy_and_member_due_rappen(gross, cap)
+            o.gross_amount_rappen = gross
+            o.subsidy_amount_rappen = sub
+            o.member_amount_due_rappen = due
+            o.status = MerchOrderStatus.INVOICED
+            o.invoiced_at = now
+        return {'success': True, 'error': None}
+
+    @classmethod
+    def cancel_active_orders_for_round(cls, round_id: int) -> None:
+        """Runde CANCELLED: aktive Orders stornieren; PAID bleibt PAID."""
+        now = datetime.utcnow()
+        active = (
+            MerchOrder.query.filter_by(round_id=round_id)
+            .filter(
+                MerchOrder.status.in_(
+                    (
+                        MerchOrderStatus.DRAFT,
+                        MerchOrderStatus.CONFIRMED,
+                        MerchOrderStatus.INVOICED,
+                        MerchOrderStatus.PICKED_UP,
+                    )
+                )
+            )
+            .all()
+        )
+        for o in active:
+            o.status = MerchOrderStatus.CANCELLED
+            o.cancelled_at = now
+            o.cancellation_reason = 'Runde storniert'
+
+    @classmethod
+    def mark_picked_up(cls, order_id: int, actor_member_id: int) -> dict:
+        """Marketingchef/Admin: Abholung."""
+        o = db.session.get(MerchOrder, order_id)
+        if not o:
+            return {'success': False, 'error': 'Bestellung nicht gefunden.'}
+        if o.status == MerchOrderStatus.CANCELLED:
+            return {'success': False, 'error': 'Bestellung ist storniert.'}
+        if o.status == MerchOrderStatus.DRAFT or o.status == MerchOrderStatus.CONFIRMED:
+            return {'success': False, 'error': 'Bestellung ist noch nicht fakturiert.'}
+
+        now = datetime.utcnow()
+        o.picked_up_at = now
+        o.picked_up_by_member_id = actor_member_id
+        if o.status == MerchOrderStatus.INVOICED:
+            o.status = MerchOrderStatus.PICKED_UP
+        elif o.status == MerchOrderStatus.PAID:
+            pass
+        return {'success': True, 'error': None}
+
+    @classmethod
+    def mark_paid(cls, order_id: int, actor_member_id: int) -> dict:
+        """Marketingchef/Schatzmeister/Admin: Bezahlt."""
+        o = db.session.get(MerchOrder, order_id)
+        if not o:
+            return {'success': False, 'error': 'Bestellung nicht gefunden.'}
+        if o.status == MerchOrderStatus.CANCELLED:
+            return {'success': False, 'error': 'Bestellung ist storniert.'}
+        if o.status == MerchOrderStatus.DRAFT or o.status == MerchOrderStatus.CONFIRMED:
+            return {'success': False, 'error': 'Bestellung ist noch nicht fakturiert.'}
+
+        now = datetime.utcnow()
+        o.paid_at = now
+        o.paid_by_member_id = actor_member_id
+        o.status = MerchOrderStatus.PAID
+        return {'success': True, 'error': None}
+
+    @classmethod
+    def round_ready_for_auto_close(cls, round_obj: MerchRound) -> bool:
+        """Alle nicht-stornierten Orders haben Abholung und Bezahlung erfasst."""
+        if round_obj.status != MerchRoundStatus.DELIVERED:
+            return False
+        for o in round_obj.orders:
+            if o.status == MerchOrderStatus.CANCELLED:
+                continue
+            if o.picked_up_at is None or o.paid_at is None:
+                return False
+        return True

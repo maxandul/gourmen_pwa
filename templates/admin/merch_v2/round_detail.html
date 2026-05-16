@@ -116,6 +116,200 @@
       {% endif %}
     </section>
 
+    {% if round.status == MerchRoundStatus.OPEN %}
+    <section class="settings-nav__section" aria-labelledby="merch-round-lock">
+      <h2 id="merch-round-lock" class="settings-nav__section-title">Bestellfenster schliessen</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.round_lock', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <p class="card__subtitle">Nach dem Lock sind keine Warenkoerbe mehr moeglich; bestaetigte Bestellungen bleiben erhalten.</p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary">Runde sperren (Lock)</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if round.status == MerchRoundStatus.LOCKED %}
+    <section class="settings-nav__section" aria-labelledby="merch-round-locked">
+      <h2 id="merch-round-locked" class="settings-nav__section-title">Sammelbestellung und Preise</h2>
+      <p class="card__subtitle">
+        <a href="{{ url_for('merch_admin.round_aggregate_csv', round_id=round.id) }}" class="btn btn--secondary">Aggregat als CSV</a>
+      </p>
+      <div class="card card--flat">
+        <div class="card__body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Artikel</th>
+                <th>Variante</th>
+                <th>Stueck</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ri, qty in aggregate_rows %}
+              <tr>
+                <td>{{ ri.variant.article.name }}</td>
+                <td>
+                  {% set attrs = ri.variant.attributes %}
+                  {% if attrs %}
+                    {% for k, v in attrs|dictsort %}
+                      {{ k }}: {{ v }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    Standard
+                  {% endif %}
+                </td>
+                <td>{{ qty }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <h3 class="card__title">Lieferanten- und Mitgliederpreise (CHF)</h3>
+        </div>
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.round_pricing', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            {% for ri, qty in aggregate_rows %}
+            <div class="form-row form-row--stacked">
+              <p class="card__subtitle"><strong>{{ ri.variant.article.name }}</strong> — Stueckzahl {{ qty }}</p>
+              <div class="form-field">
+                <label class="form-field__label" for="eff-{{ ri.id }}">Effektiv Lieferant</label>
+                <input class="form-field__input" id="eff-{{ ri.id }}" name="effective_chf_{{ ri.id }}"
+                       inputmode="decimal"
+                       value="{% if ri.effective_supplier_price_rappen is not none %}{{ '%.2f'|format(ri.effective_supplier_price_rappen / 100.0) }}{% endif %}"/>
+              </div>
+              <div class="form-field">
+                <label class="form-field__label" for="mem-{{ ri.id }}">Mitglied Endpreis</label>
+                <input class="form-field__input" id="mem-{{ ri.id }}" name="member_chf_{{ ri.id }}"
+                       inputmode="decimal"
+                       value="{% if ri.member_price_rappen is not none %}{{ '%.2f'|format(ri.member_price_rappen / 100.0) }}{% endif %}"/>
+              </div>
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+              <button type="submit" name="pricing_action" value="save" class="btn btn--secondary">Preise speichern</button>
+              <button type="submit" name="pricing_action" value="confirm_ordered" class="btn btn--primary">Lieferantenbestellung abschliessen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card card--flat">
+        <div class="card__body">
+          <h3 class="card__title">Runde wieder oeffnen (Re-Open)</h3>
+          <form method="POST" action="{{ url_for('merch_admin.round_reopen', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-field">
+              <label class="form-field__label" for="reopen-reason">Begruendung</label>
+              <textarea class="form-field__textarea" id="reopen-reason" name="reason" rows="3" required></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--secondary">Re-Open</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card card--flat">
+        <div class="card__body">
+          <h3 class="card__title">Runde abbrechen</h3>
+          <form method="POST" action="{{ url_for('merch_admin.round_cancel', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-field">
+              <label class="form-field__label" for="cancel-reason">Begruendung</label>
+              <textarea class="form-field__textarea" id="cancel-reason" name="reason" rows="3" required></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--danger">Runde stornieren</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if round.status == MerchRoundStatus.ORDERED_AT_SUPPLIER %}
+    <section class="settings-nav__section" aria-labelledby="merch-round-ordered">
+      <h2 id="merch-round-ordered" class="settings-nav__section-title">Wareneingang</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.round_delivered', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <p class="card__subtitle">Bestaetigt, dass die Lieferung beim Verein angekommen ist.</p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary">Als geliefert markieren</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if round.status in (MerchRoundStatus.ORDERED_AT_SUPPLIER, MerchRoundStatus.DELIVERED, MerchRoundStatus.CLOSED) %}
+    <section class="settings-nav__section" aria-labelledby="merch-round-orders">
+      <h2 id="merch-round-orders" class="settings-nav__section-title">Mitgliedsbestellungen</h2>
+      {% if orders_sorted %}
+      {% for o in orders_sorted %}
+      {% if o.status != MerchOrderStatus.CANCELLED %}
+      <div class="card card--flat">
+        <div class="card__body">
+          <p class="card__subtitle">
+            <strong>{{ o.member.vorname }} {{ o.member.nachname }}</strong> —
+            {{ o.status.value }} —
+            Forderung CHF {{ '%.2f'|format((o.member_amount_due_rappen or 0) / 100.0) }}
+          </p>
+          {% if round.status == MerchRoundStatus.DELIVERED %}
+          <div class="form-actions">
+            {% if not o.picked_up_at and o.status not in (MerchOrderStatus.DRAFT, MerchOrderStatus.CONFIRMED) %}
+            <form method="POST" action="{{ url_for('merch_admin.order_mark_picked_up', round_id=round.id, order_id=o.id) }}" class="form form--inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn btn--secondary">Abgeholt</button>
+            </form>
+            {% endif %}
+            {% if not o.paid_at and o.status not in (MerchOrderStatus.DRAFT, MerchOrderStatus.CONFIRMED, MerchOrderStatus.CANCELLED) %}
+            <form method="POST" action="{{ url_for('merch_admin.order_mark_paid', round_id=round.id, order_id=o.id) }}" class="form form--inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn btn--secondary">Bezahlt</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% else %}
+      <p class="admin-hub__hint">Noch keine Bestellungen.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if round.status == MerchRoundStatus.DELIVERED %}
+    <section class="settings-nav__section" aria-labelledby="merch-round-close-manual">
+      <h2 id="merch-round-close-manual" class="settings-nav__section-title">Runde manuell abschliessen</h2>
+      <div class="card card--flat">
+        <div class="card__body">
+          <form method="POST" action="{{ url_for('merch_admin.round_close', round_id=round.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <p class="card__subtitle">Schliesst die Runde auch wenn noch nicht alle Bestellungen erledigt sind.</p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--secondary">Manuell auf CLOSED setzen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
     {% if round.status == MerchRoundStatus.DRAFT %}
     <div class="card">
       <div class="card__body">

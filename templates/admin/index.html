@@ -118,6 +118,13 @@
     </p>
     {% endif %}
 
+    {% set _merch_fin = current_user.funktion and current_user.funktion.value in ('MARKETINGCHEF', 'SCHATZMEISTER') %}
+    {% if current_user.is_admin() or _merch_fin %}
+    <p class="admin-hub__hint">
+      <a href="{{ url_for('admin.merch_legacy_receivables') }}">Merch Legacy-Forderungen (read-only)</a>
+    </p>
+    {% endif %}
+
     {% if config.get('DRIVE_FEATURE_ENABLED') and current_user.is_admin() %}
     <section class="admin-hub__drive-resync" aria-labelledby="drive-resync-title">
       <div class="admin-hub__drive-resync-head">

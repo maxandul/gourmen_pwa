@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, current_app, render_template
 from flask_login import login_required, current_user
+from sqlalchemy.orm import joinedload
+
 from backend.models.event import Event
 from backend.models.participation import Participation
 from backend.models.merch_order import MerchLegacyOrderStatus, MerchOrderLegacy
@@ -87,6 +89,48 @@ def index():
         in (MerchLegacyOrderStatus.BESTELLT, MerchLegacyOrderStatus.WIRD_GELIEFERT)
     )
 
+    merch_v2_dashboard = None
+    if current_app.config.get('MERCH_V2_ENABLED'):
+        from backend.models.merch_v2 import MerchOrder, MerchOrderStatus, MerchRoundStatus
+
+        recent_v2 = (
+            MerchOrder.query.options(joinedload(MerchOrder.round))
+            .filter(
+                MerchOrder.member_id == current_user.id,
+                MerchOrder.status != MerchOrderStatus.CANCELLED,
+            )
+            .order_by(MerchOrder.updated_at.desc())
+            .limit(24)
+            .all()
+        )
+        line1 = 'Keine offenen Merch-Bestellungen'
+        line2 = ''
+        round_id = None
+        for o in recent_v2:
+            if o.status == MerchOrderStatus.PAID and o.picked_up_at:
+                continue
+            if o.status == MerchOrderStatus.DRAFT and o.round.status == MerchRoundStatus.OPEN:
+                line1 = f'Warenkorb offen: «{o.round.title}»'
+                line2 = (o.updated_at or o.created_at).strftime('%d.%m.%Y')
+                round_id = o.round_id
+                break
+            if o.status in (
+                MerchOrderStatus.CONFIRMED,
+                MerchOrderStatus.INVOICED,
+                MerchOrderStatus.PICKED_UP,
+            ) or (o.status == MerchOrderStatus.PAID and not o.picked_up_at):
+                line1 = f'«{o.round.title}»: {o.status.value}'
+                if o.member_amount_due_rappen and not o.paid_at:
+                    line2 = (
+                        f'Offen CHF {"%.2f" % (o.member_amount_due_rappen / 100.0)} — '
+                        + (o.updated_at or o.created_at).strftime('%d.%m.%Y')
+                    )
+                else:
+                    line2 = (o.updated_at or o.created_at).strftime('%d.%m.%Y')
+                round_id = o.round_id
+                break
+        merch_v2_dashboard = {'line1': line1, 'line2': line2, 'round_id': round_id}
+
     return render_template(
         'dashboard/index.html',
         next_event=next_event,
@@ -99,6 +143,7 @@ def index():
         restaurant_due_event=restaurant_due_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
+        merch_v2_dashboard=merch_v2_dashboard,
         hamburg2026_visible=hamburg2026_is_visible(),
     )
 

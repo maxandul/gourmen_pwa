@@ -13,6 +13,7 @@ from backend.models.merch_v2 import (
     MerchRoundStatus,
     MerchVariant,
 )
+from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_sortiment_service import MerchSortimentService
 
 
@@ -82,30 +83,50 @@ class MerchRoundService:
         target: MerchRoundStatus,
         *,
         cancellation_reason: str | None = None,
+        transition_reason: str | None = None,
     ) -> dict:
         """
         Setzt neuen Status wenn erlaubt; aktualisiert Zeitstempel.
         Caller macht `commit`. Bei Fehler keine Aenderung am Objekt.
         """
+        old_status = round_obj.status
+
         if target == MerchRoundStatus.CANCELLED:
             reason = (cancellation_reason or '').strip()
             if not reason:
                 return {'success': False, 'error': 'Storno ist nur mit Begruendung moeglich.'}
 
-        if not cls.is_forward_transition(round_obj.status, target):
+        if (
+            target == MerchRoundStatus.OPEN
+            and old_status == MerchRoundStatus.LOCKED
+        ):
+            tr = (transition_reason or '').strip()
+            if not tr:
+                return {'success': False, 'error': 'Re-Open nur mit Begruendung.'}
+
+        if not cls.is_forward_transition(old_status, target):
             return {'success': False, 'error': 'Statusuebergang ist nicht erlaubt.'}
 
-        if target == MerchRoundStatus.OPEN:
+        if target == MerchRoundStatus.OPEN and old_status != MerchRoundStatus.LOCKED:
             if MerchRoundItem.query.filter_by(round_id=round_obj.id).count() == 0:
                 return {
                     'success': False,
                     'error': 'Mindestens eine Sortimentsposition ist noetig.',
                 }
 
+        if target == MerchRoundStatus.LOCKED and old_status == MerchRoundStatus.OPEN:
+            MerchOrderService.discard_draft_orders_for_round(round_obj.id)
+
+        if target == MerchRoundStatus.ORDERED_AT_SUPPLIER and old_status == MerchRoundStatus.LOCKED:
+            inv = MerchOrderService.invoice_confirmed_orders_for_round(round_obj)
+            if not inv['success']:
+                return inv
+
         now = datetime.utcnow()
         round_obj.status = target
         if target == MerchRoundStatus.OPEN:
-            round_obj.opened_at = now
+            if old_status == MerchRoundStatus.DRAFT:
+                round_obj.opened_at = now
         elif target == MerchRoundStatus.LOCKED:
             round_obj.locked_at = now
         elif target == MerchRoundStatus.ORDERED_AT_SUPPLIER:
@@ -117,6 +138,12 @@ class MerchRoundService:
         elif target == MerchRoundStatus.CANCELLED:
             round_obj.cancelled_at = now
             round_obj.cancellation_reason = (cancellation_reason or '').strip()
+
+        if target == MerchRoundStatus.OPEN and old_status == MerchRoundStatus.LOCKED:
+            MerchOrderService.reset_confirmed_orders_to_draft_for_round(round_obj.id)
+
+        if target == MerchRoundStatus.CANCELLED:
+            MerchOrderService.cancel_active_orders_for_round(round_obj.id)
 
         return {'success': True, 'error': None}
 
@@ -178,3 +205,15 @@ class MerchRoundService:
 
         db.session.delete(item)
         return {'success': True, 'error': None}
+
+    @classmethod
+    def try_auto_close_if_complete(cls, round_obj: MerchRound) -> dict:
+        """DELIVERED -> CLOSED wenn alle aktiven Orders abgeholt und bezahlt."""
+        if round_obj.status != MerchRoundStatus.DELIVERED:
+            return {'success': True, 'changed': False}
+        if not MerchOrderService.round_ready_for_auto_close(round_obj):
+            return {'success': True, 'changed': False}
+        res = cls.apply_transition(round_obj, MerchRoundStatus.CLOSED)
+        if not res['success']:
+            return {'success': False, 'changed': False, 'error': res.get('error')}
+        return {'success': True, 'changed': True}

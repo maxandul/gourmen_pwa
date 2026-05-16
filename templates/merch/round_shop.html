@@ -113,6 +113,14 @@
           </div>
         </form>
         {% endif %}
+        {% if round.status == MerchRoundStatus.OPEN and order and order.status.value in ('DRAFT', 'CONFIRMED') %}
+        <form method="POST" action="{{ url_for('merch.round_cancel_order', round_id=round.id) }}" class="form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--secondary">Bestellung stornieren</button>
+          </div>
+        </form>
+        {% endif %}
       </div>
     </div>
     {% elif order and order.status.value != 'DRAFT' %}
@@ -129,6 +137,14 @@
             <dd>CHF {{ '%.2f'|format((order.member_amount_due_rappen or 0) / 100.0) }}</dd>
           </div>
         </dl>
+        {% if round.status == MerchRoundStatus.OPEN and order.status.value == 'CONFIRMED' %}
+        <form method="POST" action="{{ url_for('merch.round_cancel_order', round_id=round.id) }}" class="form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--secondary">Bestellung stornieren</button>
+          </div>
+        </form>
+        {% endif %}
       </div>
     </div>
     {% endif %}

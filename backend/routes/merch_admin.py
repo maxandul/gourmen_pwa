@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
+from io import StringIO
 
-from flask import Blueprint, flash, redirect, render_template, url_for
+import csv
+
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from sqlalchemy.orm import joinedload
@@ -12,16 +16,25 @@ from wtforms import DateField, DecimalField, SelectField, StringField, SubmitFie
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
 from backend.extensions import db, limiter
+from backend.models.audit_event import AuditAction
 from backend.models.merch_v2 import (
     MerchArticle,
+    MerchOrder,
+    MerchOrderStatus,
     MerchRound,
     MerchRoundItem,
     MerchRoundStatus,
     MerchSupplier,
     MerchVariant,
 )
-from backend.routes.merch_access import marketing_chief_or_admin_required, require_merch_v2_enabled
+from backend.routes.merch_access import (
+    marketing_chief_or_admin_required,
+    require_merch_v2_enabled,
+    treasury_marketing_or_admin_required,
+)
+from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
+from backend.services.security import SecurityService
 
 bp = Blueprint('merch_admin', __name__, url_prefix='/admin/merch-v2')
 
@@ -119,8 +132,15 @@ def round_create():
         )
         if result['success']:
             db.session.commit()
+            rid = result['round'].id
+            SecurityService.log_audit_event(
+                AuditAction.MERCH_ROUND_CREATED,
+                'merch_round',
+                rid,
+                extra_data={'title': result['round'].title},
+            )
             flash('Runde angelegt.', 'success')
-            return redirect(url_for('merch_admin.round_detail', round_id=result['round'].id))
+            return redirect(url_for('merch_admin.round_detail', round_id=rid))
         db.session.rollback()
         flash(result.get('error') or 'Runde konnte nicht angelegt werden.', 'error')
     else:
@@ -134,10 +154,28 @@ def _load_round_detail(round_id: int) -> MerchRound:
             joinedload(MerchRound.round_items).joinedload(MerchRoundItem.variant).joinedload(
                 MerchVariant.article
             ),
+            joinedload(MerchRound.orders).joinedload(MerchOrder.order_items),
+            joinedload(MerchRound.orders).joinedload(MerchOrder.member),
         )
         .filter_by(id=round_id)
         .first_or_404()
     )
+
+
+def _round_aggregate_rows(round_obj: MerchRound) -> list[tuple[MerchRoundItem, int]]:
+    qty_by_item: dict[int, int] = defaultdict(int)
+    for o in round_obj.orders:
+        if o.status in (MerchOrderStatus.CANCELLED, MerchOrderStatus.DRAFT):
+            continue
+        for line in o.order_items:
+            qty_by_item[line.round_item_id] += line.quantity
+    rows: list[tuple[MerchRoundItem, int]] = []
+    for ri in sorted(
+        round_obj.round_items,
+        key=lambda x: (x.variant.article.name.lower(), x.variant_id),
+    ):
+        rows.append((ri, qty_by_item.get(ri.id, 0)))
+    return rows
 
 
 @bp.route('/rounds/<int:round_id>', methods=['GET'])
@@ -156,12 +194,20 @@ def round_detail(round_id: int):
         r.round_items,
         key=lambda ri: (ri.variant.article.name.lower(), ri.variant_id),
     )
+    aggregate_rows = _round_aggregate_rows(r)
+    orders_sorted = sorted(
+        [o for o in r.orders],
+        key=lambda o: ((o.member.nachname or '').lower(), (o.member.vorname or '').lower(), o.id),
+    )
     return render_template(
         'admin/merch_v2/round_detail.html',
         round=r,
         MerchRoundStatus=MerchRoundStatus,
+        MerchOrderStatus=MerchOrderStatus,
         add_round_item_form=add_form,
         round_items_sorted=round_items_sorted,
+        aggregate_rows=aggregate_rows,
+        orders_sorted=orders_sorted,
     )
 
 
@@ -216,7 +262,267 @@ def round_open(round_id: int):
     result = MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
     if result['success']:
         db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ROUND_OPENED, 'merch_round', round_id
+        )
         flash('Runde ist jetzt offen fuer Bestellungen.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+def _parse_transition_reason(min_len: int = 3) -> tuple[str | None, str | None]:
+    """Returns (reason, error_message)."""
+    reason = (request.form.get('reason') or '').strip()
+    if len(reason) < min_len:
+        return None, 'Bitte eine Begruendung eingeben (mindestens %s Zeichen).' % min_len
+    return reason, None
+
+
+@bp.route('/rounds/<int:round_id>/lock', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_lock(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(AuditAction.MERCH_ROUND_LOCKED, 'merch_round', round_id)
+        flash('Runde ist geschlossen (Lock). Entwuerfe wurden verworfen.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/reopen', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('20 per minute', methods=['POST'])
+def round_reopen(round_id: int):
+    require_merch_v2_enabled()
+    reason, err = _parse_transition_reason()
+    if err:
+        flash(err, 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(
+        r, MerchRoundStatus.OPEN, transition_reason=reason
+    )
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ROUND_REOPENED,
+            'merch_round',
+            round_id,
+            extra_data={'reason': reason[:500]},
+        )
+        flash('Runde wieder geoeffnet. Mitglieder muessen erneut bestaetigen.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/cancel', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('10 per minute', methods=['POST'])
+def round_cancel(round_id: int):
+    require_merch_v2_enabled()
+    reason, err = _parse_transition_reason()
+    if err:
+        flash(err, 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(
+        r, MerchRoundStatus.CANCELLED, cancellation_reason=reason
+    )
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ROUND_CANCELLED,
+            'merch_round',
+            round_id,
+            extra_data={'reason': reason[:500]},
+        )
+        flash('Runde wurde storniert.', 'warning')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/pricing', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('60 per minute', methods=['POST'])
+def round_pricing(round_id: int):
+    require_merch_v2_enabled()
+    r = _load_round_detail(round_id)
+    if r.status != MerchRoundStatus.LOCKED:
+        flash('Preise sind nur bei gesperrter Runde editierbar.', 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    action = (request.form.get('pricing_action') or '').strip()
+
+    def parse_chf(field: str) -> int | None:
+        raw = (request.form.get(field) or '').strip()
+        if raw == '':
+            return None
+        try:
+            return _subsidy_chf_to_rappen(Decimal(raw.replace(',', '.')))
+        except Exception:
+            return None
+
+    for ri in r.round_items:
+        eff = parse_chf(f'effective_chf_{ri.id}')
+        mem = parse_chf(f'member_chf_{ri.id}')
+        if eff is not None:
+            ri.effective_supplier_price_rappen = eff
+        if mem is not None:
+            ri.member_price_rappen = mem
+
+    if action == 'confirm_ordered':
+        result = MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+        if result['success']:
+            db.session.commit()
+            SecurityService.log_audit_event(
+                AuditAction.MERCH_ROUND_ORDERED_AT_SUPPLIER,
+                'merch_round',
+                round_id,
+            )
+            flash('Lieferantenbestellung bestaetigt; Mitglieder-Forderungen festgeschrieben.', 'success')
+        else:
+            db.session.rollback()
+            flash(result.get('error') or 'Uebergang nicht moeglich.', 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    db.session.commit()
+    flash('Preise gespeichert.', 'success')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/delivered', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_delivered(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(r, MerchRoundStatus.DELIVERED)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ROUND_DELIVERED, 'merch_round', round_id
+        )
+        flash('Wareneingang bestaetigt.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/close', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_close(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(r, MerchRoundStatus.CLOSED)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(AuditAction.MERCH_ROUND_CLOSED, 'merch_round', round_id)
+        flash('Runde abgeschlossen.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/aggregate.csv', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def round_aggregate_csv(round_id: int):
+    require_merch_v2_enabled()
+    r = _load_round_detail(round_id)
+    rows = _round_aggregate_rows(r)
+    buf = StringIO()
+    w = csv.writer(buf, delimiter=';')
+    w.writerow(['Artikel', 'Variante', 'Stueckzahl', 'Listenpreis_CHF', 'Effektiv_CHF', 'Mitglied_CHF'])
+    for ri, qty in rows:
+        attr = _variant_attrs_label(ri.variant.attributes)
+        w.writerow(
+            [
+                ri.variant.article.name,
+                attr,
+                qty,
+                f'{ri.list_price_snapshot_rappen / 100:.2f}',
+                ''
+                if ri.effective_supplier_price_rappen is None
+                else f'{ri.effective_supplier_price_rappen / 100:.2f}',
+                ''
+                if ri.member_price_rappen is None
+                else f'{ri.member_price_rappen / 100:.2f}',
+            ]
+        )
+    data = buf.getvalue().encode('utf-8-sig')
+    resp = Response(data, mimetype='text/csv; charset=utf-8')
+    safe_title = ''.join(c if c.isalnum() or c in '-_' else '_' for c in r.title)[:60]
+    resp.headers['Content-Disposition'] = (
+        f'attachment; filename=merch-runde-{round_id}-{safe_title}-aggregat.csv'
+    )
+    return resp
+
+
+@bp.route('/rounds/<int:round_id>/orders/<int:order_id>/picked_up', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('120 per minute', methods=['POST'])
+def order_mark_picked_up(round_id: int, order_id: int):
+    require_merch_v2_enabled()
+    MerchOrder.query.filter_by(id=order_id, round_id=round_id).first_or_404()
+    result = MerchOrderService.mark_picked_up(order_id, current_user.id)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ORDER_PICKED_UP, 'merch_order', order_id
+        )
+        r2 = db.session.get(MerchRound, round_id)
+        ac = MerchRoundService.try_auto_close_if_complete(r2) if r2 else {'changed': False}
+        if ac.get('changed'):
+            db.session.commit()
+            flash('Abgeholt. Runde automatisch abgeschlossen.', 'success')
+        else:
+            flash('Als abgeholt markiert.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/orders/<int:order_id>/paid', methods=['POST'])
+@login_required
+@treasury_marketing_or_admin_required
+@limiter.limit('120 per minute', methods=['POST'])
+def order_mark_paid(round_id: int, order_id: int):
+    require_merch_v2_enabled()
+    MerchOrder.query.filter_by(id=order_id, round_id=round_id).first_or_404()
+    result = MerchOrderService.mark_paid(order_id, current_user.id)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(AuditAction.MERCH_ORDER_PAID, 'merch_order', order_id)
+        r2 = db.session.get(MerchRound, round_id)
+        ac = MerchRoundService.try_auto_close_if_complete(r2) if r2 else {'changed': False}
+        if ac.get('changed'):
+            db.session.commit()
+            flash('Bezahlt. Runde automatisch abgeschlossen.', 'success')
+        else:
+            flash('Als bezahlt markiert.', 'success')
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')

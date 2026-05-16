@@ -18,6 +18,7 @@ from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, AuditAction, require_step_up
 from backend.services.mail import MailService
+from backend.routes.merch_access import merch_legacy_receivables_required
 
 bp = Blueprint('admin', __name__)
 
@@ -833,6 +834,64 @@ def show_temp_password():
     return render_template('admin/temp_password.html', 
                          member_name=temp_password_data['member_name'],
                          password=temp_password_data['password'])
+
+
+@bp.route('/merch/legacy-receivables')
+@login_required
+@merch_legacy_receivables_required
+def merch_legacy_receivables():
+    """Read-only Aggregat aus merch_orders_legacy (Phase 10)."""
+    from sqlalchemy import func
+
+    from backend.models.merch_order import MerchOrderLegacy
+
+    rows = (
+        db.session.query(
+            MerchOrderLegacy.member_id,
+            func.count(MerchOrderLegacy.id),
+            func.coalesce(func.sum(MerchOrderLegacy.total_member_price_rappen), 0),
+            func.max(MerchOrderLegacy.created_at),
+        )
+        .group_by(MerchOrderLegacy.member_id)
+        .order_by(func.coalesce(func.sum(MerchOrderLegacy.total_member_price_rappen), 0).desc())
+        .all()
+    )
+    member_ids = [r[0] for r in rows]
+    members_by_id = {}
+    if member_ids:
+        members_by_id = {m.id: m for m in Member.query.filter(Member.id.in_(member_ids)).all()}
+    return render_template(
+        'admin/merch/legacy_receivables.html',
+        rows=rows,
+        members_by_id=members_by_id,
+    )
+
+
+@bp.route('/merch/legacy-receivables/<int:member_id>')
+@login_required
+@merch_legacy_receivables_required
+def merch_legacy_receivables_member(member_id: int):
+    from sqlalchemy.orm import joinedload
+
+    from backend.models.merch_order import MerchOrderLegacy
+    from backend.models.merch_order_item import MerchOrderItemLegacy
+
+    member = Member.query.filter_by(id=member_id).first_or_404()
+    orders = (
+        MerchOrderLegacy.query.options(
+            joinedload(MerchOrderLegacy.order_items).joinedload(MerchOrderItemLegacy.article),
+            joinedload(MerchOrderLegacy.order_items).joinedload(MerchOrderItemLegacy.variant),
+        )
+        .filter_by(member_id=member_id)
+        .order_by(MerchOrderLegacy.created_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/merch/legacy_receivables_member.html',
+        member=member,
+        orders=orders,
+    )
+
 
 # Admin Merch Routes
 @bp.route('/merch')

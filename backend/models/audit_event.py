@@ -63,6 +63,26 @@ class AuditAction(Enum):
     CALENDAR_FEED_ENABLED = 'CALENDAR_FEED_ENABLED'
     CALENDAR_FEED_REGENERATED = 'CALENDAR_FEED_REGENERATED'
     CALENDAR_FEED_DISABLED = 'CALENDAR_FEED_DISABLED'
+    # Merch v2 (Phase 10)
+    MERCH_SUPPLIER_CREATED = 'MERCH_SUPPLIER_CREATED'
+    MERCH_SUPPLIER_UPDATED = 'MERCH_SUPPLIER_UPDATED'
+    MERCH_ARTICLE_CREATED = 'MERCH_ARTICLE_CREATED'
+    MERCH_ARTICLE_UPDATED = 'MERCH_ARTICLE_UPDATED'
+    MERCH_ARTICLE_ARCHIVED = 'MERCH_ARTICLE_ARCHIVED'
+    MERCH_ROUND_CREATED = 'MERCH_ROUND_CREATED'
+    MERCH_ROUND_OPENED = 'MERCH_ROUND_OPENED'
+    MERCH_ROUND_LOCKED = 'MERCH_ROUND_LOCKED'
+    MERCH_ROUND_REOPENED = 'MERCH_ROUND_REOPENED'
+    MERCH_ROUND_ORDERED_AT_SUPPLIER = 'MERCH_ROUND_ORDERED_AT_SUPPLIER'
+    MERCH_ROUND_DELIVERED = 'MERCH_ROUND_DELIVERED'
+    MERCH_ROUND_CLOSED = 'MERCH_ROUND_CLOSED'
+    MERCH_ROUND_CANCELLED = 'MERCH_ROUND_CANCELLED'
+    MERCH_ORDER_CONFIRMED = 'MERCH_ORDER_CONFIRMED'
+    MERCH_ORDER_CANCELLED = 'MERCH_ORDER_CANCELLED'
+    MERCH_ORDER_PICKED_UP = 'MERCH_ORDER_PICKED_UP'
+    MERCH_ORDER_PAID = 'MERCH_ORDER_PAID'
+    MERCH_SUPPLIER_INVOICE_UPLOADED = 'MERCH_SUPPLIER_INVOICE_UPLOADED'
+
 
 class AuditEvent(db.Model):
     """Audit event model for security logging"""
@@ -149,6 +169,24 @@ class AuditEvent(db.Model):
             AuditAction.CALENDAR_FEED_ENABLED: 'Kalender-Abo aktiviert',
             AuditAction.CALENDAR_FEED_REGENERATED: 'Kalender-Link neu erzeugt',
             AuditAction.CALENDAR_FEED_DISABLED: 'Kalender-Abo deaktiviert',
+            AuditAction.MERCH_SUPPLIER_CREATED: 'Merch Lieferant angelegt',
+            AuditAction.MERCH_SUPPLIER_UPDATED: 'Merch Lieferant geaendert',
+            AuditAction.MERCH_ARTICLE_CREATED: 'Merch Artikel angelegt',
+            AuditAction.MERCH_ARTICLE_UPDATED: 'Merch Artikel geaendert',
+            AuditAction.MERCH_ARTICLE_ARCHIVED: 'Merch Artikel archiviert',
+            AuditAction.MERCH_ROUND_CREATED: 'Merch Runde angelegt',
+            AuditAction.MERCH_ROUND_OPENED: 'Merch Runde geoeffnet',
+            AuditAction.MERCH_ROUND_LOCKED: 'Merch Runde geschlossen (Lock)',
+            AuditAction.MERCH_ROUND_REOPENED: 'Merch Runde wieder geoeffnet',
+            AuditAction.MERCH_ROUND_ORDERED_AT_SUPPLIER: 'Merch Lieferantenbestellung bestaetigt',
+            AuditAction.MERCH_ROUND_DELIVERED: 'Merch Runde geliefert',
+            AuditAction.MERCH_ROUND_CLOSED: 'Merch Runde abgeschlossen',
+            AuditAction.MERCH_ROUND_CANCELLED: 'Merch Runde storniert',
+            AuditAction.MERCH_ORDER_CONFIRMED: 'Merch Bestellung bestaetigt',
+            AuditAction.MERCH_ORDER_CANCELLED: 'Merch Bestellung storniert',
+            AuditAction.MERCH_ORDER_PICKED_UP: 'Merch Bestellung abgeholt',
+            AuditAction.MERCH_ORDER_PAID: 'Merch Bestellung bezahlt',
+            AuditAction.MERCH_SUPPLIER_INVOICE_UPLOADED: 'Merch Lieferantenbeleg hochgeladen',
         }
         action_value = self.action.value if hasattr(self.action, 'value') else str(self.action)
         return action_names.get(self.action, action_value)

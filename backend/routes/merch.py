@@ -16,6 +16,8 @@ from backend.models.merch_v2 import (
 from backend.routes.merch_access import require_merch_v2_enabled
 from backend.services.merch_image_service import MerchImageService
 from backend.services.merch_order_service import MerchOrderService
+from backend.services.security import SecurityService
+from backend.models.audit_event import AuditAction
 
 bp = Blueprint('merch', __name__)
 
@@ -153,10 +155,36 @@ def round_confirm(round_id: int):
     result = MerchOrderService.confirm_order(oid, current_user.id)
     if result['success']:
         db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ORDER_CONFIRMED, 'merch_order', oid
+        )
         flash('Bestellung bestaetigt.', 'success')
     else:
         db.session.rollback()
         flash(result.get('error') or 'Bestellung fehlgeschlagen.', 'error')
+    return redirect(url_for('merch.round_shop', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/cancel-order', methods=['POST'])
+@login_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_cancel_order(round_id: int):
+    require_merch_v2_enabled()
+    o = MerchOrder.query.filter_by(round_id=round_id, member_id=current_user.id).first()
+    if not o:
+        flash('Keine Bestellung in dieser Runde.', 'error')
+        return redirect(url_for('merch.round_shop', round_id=round_id))
+
+    result = MerchOrderService.cancel_order_by_member(o.id, current_user.id)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ORDER_CANCELLED, 'merch_order', o.id
+        )
+        flash('Bestellung storniert.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Storno nicht moeglich.', 'error')
     return redirect(url_for('merch.round_shop', round_id=round_id))
 
 

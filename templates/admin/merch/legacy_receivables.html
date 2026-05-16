@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Merch Legacy-Forderungen - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('admin.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Admin-Übersicht</span></a>
+    </p>
+    <h1>{{ lucide_icon('archive') }} Merch Legacy-Forderungen</h1>
+  </div>
+
+  <div class="page-content">
+    <p class="card__subtitle">
+      Read-only Übersicht über Bestellungen aus dem alten Shop (<code>merch_orders_legacy</code>). Kein Bezahl-Status — nur Beträge zum Abgleich.
+    </p>
+
+    {% if not rows %}
+    <p class="admin-hub__hint">Keine Legacy-Bestellungen in der Datenbank.</p>
+    {% else %}
+    <div class="card card--flat">
+      <div class="card__body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Mitglied</th>
+              <th>Anzahl Bestellungen</th>
+              <th>Total Mitglied CHF</th>
+              <th>Letzte Bestellung</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member_id, cnt, total_rappen, last_at in rows %}
+            {% set m = members_by_id.get(member_id) %}
+            <tr>
+              <td>
+                {% if m %}
+                <a href="{{ url_for('admin.merch_legacy_receivables_member', member_id=member_id) }}">{{ m.vorname }} {{ m.nachname }}</a>
+                {% else %}
+                Mitglied #{{ member_id }}
+                {% endif %}
+              </td>
+              <td>{{ cnt }}</td>
+              <td>{{ '%.2f'|format((total_rappen or 0) / 100.0) }}</td>
+              <td>{{ last_at.strftime('%d.%m.%Y') if last_at else '–' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

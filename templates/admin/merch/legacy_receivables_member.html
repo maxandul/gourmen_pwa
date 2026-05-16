@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Legacy Merch {{ member.vorname }} {{ member.nachname }} - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('admin.merch_legacy_receivables') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Übersicht</span></a>
+    </p>
+    <h1>{{ lucide_icon('user') }} {{ member.vorname }} {{ member.nachname }}</h1>
+  </div>
+
+  <div class="page-content">
+    {% for order in orders %}
+    <div class="card card--flat">
+      <div class="card__body">
+        <h3 class="card__title">{{ order.order_number }}</h3>
+        <p class="card__subtitle">
+          {{ order.created_at.strftime('%d.%m.%Y') }} — Status: {{ order.status_display }} —
+          Total Mitglied CHF {{ '%.2f'|format(order.total_member_price_chf) }}
+        </p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Artikel</th>
+              <th>Menge</th>
+              <th>Zeile CHF</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for line in order.order_items %}
+            <tr>
+              <td>{{ line.article.name }} — {{ line.variant.color }} / {{ line.variant.size }}</td>
+              <td>{{ line.quantity }}</td>
+              <td>{{ '%.2f'|format(line.total_member_price_chf) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <p class="admin-hub__hint">Keine Bestellungen.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

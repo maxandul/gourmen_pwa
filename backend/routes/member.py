@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
@@ -295,10 +295,15 @@ def technical():
         show_apple_calendar_button=show_apple_calendar_button,
     )
 
+def _abort_if_merch_v2_cutover():
+    if current_app.config.get('MERCH_V2_ENABLED'):
+        abort(404)
+
 @bp.route('/merch')
 @login_required
 def merch():
     """Merch overview page"""
+    _abort_if_merch_v2_cutover()
     from backend.models.merch_article import MerchArticleLegacy
     from backend.models.merch_variant import MerchVariantLegacy
     from backend.models.merch_order import MerchOrderLegacy
@@ -334,6 +339,7 @@ def merch():
 @login_required
 def merch_order():
     """Merch order page"""
+    _abort_if_merch_v2_cutover()
     from backend.models.merch_article import MerchArticleLegacy
     from backend.models.merch_variant import MerchVariantLegacy
     from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus
@@ -428,6 +434,7 @@ def merch_order():
 @login_required
 def merch_orders():
     """User's merch orders"""
+    _abort_if_merch_v2_cutover()
     from backend.models.merch_order import MerchOrderLegacy
     
     orders = MerchOrderLegacy.query.filter_by(member_id=current_user.id).order_by(MerchOrderLegacy.created_at.desc()).all()
@@ -437,6 +444,7 @@ def merch_orders():
 @bp.route('/merch/order/<int:order_id>')
 @login_required
 def merch_order_detail(order_id):
+    _abort_if_merch_v2_cutover()
     """Bestellungen werden im Merch-Bereich (Tab «Meine Bestellungen») angezeigt — Deep-Link-Weiterleitung."""
     from backend.models.merch_order import MerchOrderLegacy
 
@@ -447,6 +455,7 @@ def merch_order_detail(order_id):
 @login_required
 def merch_order_edit(order_id):
     """Edit merch order (only if status is BESTELLT)"""
+    _abort_if_merch_v2_cutover()
     from backend.models.merch_article import MerchArticleLegacy
     from backend.models.merch_variant import MerchVariantLegacy
     from backend.models.merch_order import MerchOrderLegacy, MerchLegacyOrderStatus

@@ -145,13 +145,20 @@
                     url_for('ggl.index', tab='tabelle', season=ggl_stats.season)
                 ) }}
 
+                {% if merch_v2_dashboard %}
+                {% set merch_status_value = merch_v2_dashboard.line1 %}
+                {% set merch_date_line = merch_v2_dashboard.line2 if merch_v2_dashboard.line2 else '–' %}
+                {% set merch_tile_url = url_for('merch.round_shop', round_id=merch_v2_dashboard.round_id) if merch_v2_dashboard.round_id else url_for('merch.shop_index') %}
+                {% else %}
                 {% set merch_status_value = merch_last_order.status_display if merch_last_order else 'TBD' %}
                 {% set merch_date_line = merch_last_order.created_at.strftime('%d.%m.%Y') if merch_last_order else 'TBD' %}
+                {% set merch_tile_url = url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch') %}
+                {% endif %}
                 {{ dashboard_info_tile(
                     'Merch-Status',
                     merch_status_value,
                     merch_date_line,
-                    url_for('member.merch', tab='orders', order_id=merch_last_order.id) if merch_last_order else url_for('member.merch'),
+                    merch_tile_url,
                     'dashboard-info-tile__line--hint'
                 ) }}
             </div>
@@ -163,7 +170,7 @@
                 <section class="settings-nav__section" aria-labelledby="dashboard-explore-list">
                     <ul id="dashboard-explore-list" class="settings-nav__list" role="list">
                         <li>
-                            <a href="{{ url_for('member.merch') }}" class="settings-nav__row">
+                            <a href="{{ url_for('merch.shop_index') if config.get('MERCH_V2_ENABLED') else url_for('member.merch') }}" class="settings-nav__row">
                                 <span class="settings-nav__icon" aria-hidden="true">{{ lucide_icon('shirt', 'icon') }}</span>
                                 <span class="settings-nav__meta">
                                     <span class="settings-nav__label">Merch</span>
