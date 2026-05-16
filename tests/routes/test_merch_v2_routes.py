@@ -329,3 +329,80 @@ def test_supplier_archive_blocked_with_active_article(marketing_chief_client, ap
         from backend.models.merch_v2 import MerchSupplier
 
         assert MerchSupplier.query.filter_by(id=sid).first().is_archived is False
+
+
+def test_articles_index_ok(marketing_chief_client, merch_v2_enabled):
+    rv = marketing_chief_client.get('/admin/merch-v2/articles')
+    assert rv.status_code == 200
+
+
+def test_article_create_variants(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchSupplier
+
+        sup = MerchSupplier(name='Art-Lief')
+        db.session.add(sup)
+        db.session.commit()
+        sid = sup.id
+
+    rv = marketing_chief_client.post(
+        '/admin/merch-v2/articles/new',
+        data={
+            'name': 'Test-Polo',
+            'supplier_id': sid,
+            'description': 'd',
+            'list_price_chf': '39.90',
+            'variant_schema_text': 'farbe: marine, schwarz',
+            'submit': 'Speichern',
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+    assert '/admin/merch-v2/articles/' in rv.headers.get('Location', '')
+    assert '/edit' in rv.headers.get('Location', '')
+
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchVariant
+
+        art = MerchArticle.query.filter_by(name='Test-Polo').first()
+        assert art is not None
+        assert art.list_price_rappen == 3990
+        assert MerchVariant.query.filter_by(article_id=art.id, is_active=True).count() == 2
+
+
+def test_article_variant_list_price_override(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchSupplier, MerchVariant
+
+        sup = MerchSupplier(name='Price-Lief')
+        db.session.add(sup)
+        db.session.flush()
+        sid = sup.id
+        art = MerchArticle(name='Polo-Preis', supplier_id=sid, list_price_rappen=3000)
+        db.session.add(art)
+        db.session.flush()
+        v1 = MerchVariant(article_id=art.id, attributes={'farbe': 'rot'}, is_active=True)
+        v2 = MerchVariant(article_id=art.id, attributes={'farbe': 'blau'}, is_active=True)
+        db.session.add_all([v1, v2])
+        db.session.flush()
+        vid1, aid = v1.id, art.id
+        db.session.commit()
+
+    marketing_chief_client.post(
+        f'/admin/merch-v2/articles/{aid}/edit',
+        data={
+            'name': 'Polo-Preis',
+            'supplier_id': sid,
+            'description': '',
+            'list_price_chf': '30.00',
+            'variant_schema_text': 'farbe: rot, blau',
+            'remove_image': False,
+            f'variant_list_price_chf_{vid1}': '34.50',
+            'submit': 'Speichern',
+        },
+    )
+    with app.app_context():
+        v1b = db.session.get(MerchVariant, vid1)
+        assert v1b.list_price_rappen == 3450
+        v2b = MerchVariant.query.filter_by(article_id=aid, attributes={'farbe': 'blau'}).first()
+        assert v2b.list_price_rappen is None

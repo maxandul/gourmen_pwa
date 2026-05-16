@@ -137,6 +137,10 @@ class Config:
     MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID = os.environ.get(
         'MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID', ''
     ).strip() or None
+    # Drive-Ordner fuer Merch-Artikelbilder (optional; ohne Ordner: Artikel ohne Bild speicherbar)
+    MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID = os.environ.get(
+        'MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID', ''
+    ).strip() or None
     # Warnung wenn Keys nicht gesetzt sind
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
         import warnings

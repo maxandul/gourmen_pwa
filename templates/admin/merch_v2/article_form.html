@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}{{ page_title }} - Merch - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <p class="page-back">
+      <a href="{{ url_for('merch_admin.articles_index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Sortimentsliste</span></a>
+    </p>
+    <h1>{{ lucide_icon('shirt') }} {{ page_title }}</h1>
+  </div>
+
+  {% include 'admin/merch_v2/_subnav.html' %}
+
+  <div class="page-content">
+    <div class="card">
+      <div class="card__body">
+        <form method="POST" enctype="multipart/form-data" class="form">
+          {{ form.hidden_tag() }}
+          <div class="form-field">
+            {{ form.name.label(class='form-field__label') }}
+            {{ form.name(class='form-field__input') }}
+            {% if form.name.errors %}<p class="form-field__error" role="alert">{{ form.name.errors[0] }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            {{ form.supplier_id.label(class='form-field__label') }}
+            {{ form.supplier_id(class='form-field__input') }}
+            {% if form.supplier_id.errors %}<p class="form-field__error" role="alert">{{ form.supplier_id.errors[0] }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            {{ form.description.label(class='form-field__label') }}
+            {{ form.description(class='form-field__textarea') }}
+            {% if form.description.errors %}<p class="form-field__error" role="alert">{{ form.description.errors[0] }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            {{ form.list_price_chf.label(class='form-field__label') }}
+            {{ form.list_price_chf(class='form-field__input') }}
+            {% if form.list_price_chf.errors %}<p class="form-field__error" role="alert">{{ form.list_price_chf.errors[0] }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            {{ form.variant_schema_text.label(class='form-field__label') }}
+            <p class="card__subtitle">Eine Zeile pro Dimension, z.&nbsp;B. <code>farbe: schwarz, weiss</code> und <code>groesse: S, M, L</code>. Leer lassen fuer einen Artikel ohne Varianten (eine Standard-Variante).</p>
+            {{ form.variant_schema_text(class='form-field__textarea') }}
+            {% if form.variant_schema_text.errors %}<p class="form-field__error" role="alert">{{ form.variant_schema_text.errors[0] }}</p>{% endif %}
+          </div>
+
+          <div class="form-field">
+            <span class="form-field__label">Artikelbild</span>
+            <p class="admin-hub__hint">Upload benoetigt <code>MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID</code> (Shared Drive).</p>
+            <input type="file" name="article_image" id="article_image" class="form-field__input" accept="image/jpeg,image/png,image/webp,image/gif,.heic,.heif" />
+            {% if article and article.image_drive_file_id %}
+            <p class="card__subtitle">
+              <img src="{{ url_for('merch.article_image', article_id=article.id) }}" alt="" width="120" height="120" loading="lazy" decoding="async" />
+            </p>
+            <div class="form-field">
+              {{ form.remove_image(class='form-field__checkbox') }}
+              {{ form.remove_image.label(class='form-field__label') }}
+            </div>
+            {% endif %}
+          </div>
+
+          {% if article and variant_pricing_rows %}
+          <div class="card card--flat">
+            <div class="card__body">
+              <h2 class="settings-nav__section-title">Varianten-Listenpreis (optional)</h2>
+              <p class="card__subtitle">Leer lassen fuer den Artikel-Listenpreis (aktuell {{ (article.list_price_rappen / 100)|round(2, 'common') }} CHF). Wird z.&nbsp;B. fuer Groessen-Aufpreise genutzt.</p>
+              {% for v, vlabel in variant_pricing_rows %}
+              <div class="form-field">
+                <label class="form-field__label" for="variant-price-{{ v.id }}">{{ vlabel }}</label>
+                <input type="text" class="form-field__input" id="variant-price-{{ v.id }}" name="variant_list_price_chf_{{ v.id }}" inputmode="decimal" value="{% if v.list_price_rappen is not none %}{{ (v.list_price_rappen / 100)|round(2, 'common') }}{% endif %}" autocomplete="off" />
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="form-actions">
+            {{ form.submit(class='btn btn--primary') }}
+            <a href="{{ url_for('merch_admin.articles_index') }}" class="btn btn--outline">Abbrechen</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

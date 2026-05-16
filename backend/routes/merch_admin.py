@@ -14,7 +14,15 @@ from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
-from wtforms import DateField, DecimalField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms import (
+    BooleanField,
+    DateField,
+    DecimalField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
 from backend.extensions import db, limiter
@@ -35,9 +43,15 @@ from backend.routes.merch_access import (
     require_merch_v2_enabled,
     treasury_marketing_or_admin_required,
 )
-from backend.services.drive_storage import DriveError, DriveStorageService
+from backend.services.drive_storage import DriveError, DriveStorageService, DriveValidationError
+from backend.services.merch_image_service import MerchImageService
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
+from backend.services.merch_sortiment_service import (
+    MerchSortimentService,
+    parse_variant_schema_text,
+    variant_schema_to_lines,
+)
 from backend.services.merch_statistics_service import (
     build_year_overview,
     club_season_utc_bounds,
@@ -106,6 +120,82 @@ class MerchSupplierForm(FlaskForm):
     website_url = StringField('Webseite (URL)', validators=[Optional(), Length(max=500)])
     notes = TextAreaField('Notizen', validators=[Optional(), Length(max=10000)])
     submit = SubmitField('Speichern')
+
+
+class MerchArticleForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=1, max=200)])
+    supplier_id = SelectField('Lieferant', coerce=int, validators=[DataRequired()])
+    description = TextAreaField('Beschreibung', validators=[Optional(), Length(max=10000)])
+    list_price_chf = DecimalField(
+        'Listenpreis (CHF)',
+        places=2,
+        validators=[DataRequired(), NumberRange(min=0)],
+    )
+    variant_schema_text = TextAreaField(
+        'Varianten (optional)',
+        validators=[Optional(), Length(max=5000)],
+        description='Eine Zeile pro Dimension, z.B. «farbe: schwarz, weiss».',
+    )
+    remove_image = BooleanField('Artikelbild entfernen')
+    submit = SubmitField('Speichern')
+
+
+_MERCH_ARTICLE_IMAGE_MIMES = frozenset(
+    {'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'}
+)
+
+
+def _supplier_select_choices(include_supplier_id: int | None = None) -> list[tuple[int, str]]:
+    active = (
+        MerchSupplier.query.filter_by(is_archived=False)
+        .order_by(MerchSupplier.name.asc())
+        .all()
+    )
+    ids = {s.id for s in active}
+    if include_supplier_id and include_supplier_id not in ids:
+        extra = db.session.get(MerchSupplier, include_supplier_id)
+        if extra:
+            active = sorted(active + [extra], key=lambda x: (x.name or '').lower())
+    return [(s.id, s.name) for s in active]
+
+
+def _article_store_image_upload(article: MerchArticle, uf) -> str | None:
+    """Laedt Artikelbild nach Drive. Ohne Datei: None. Bei Fehler: Meldung (Flash durch Caller)."""
+    if uf is None or not getattr(uf, 'filename', None):
+        return None
+    folder_id = (current_app.config.get('MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID') or '').strip()
+    if not folder_id:
+        flash(
+            'MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID fehlt — Bild wurde nicht gespeichert.',
+            'warning',
+        )
+        return None
+    raw = uf.read()
+    if not raw:
+        return 'Leere Datei.'
+    mime = ((uf.mimetype or '') or '').split(';')[0].strip().lower()
+    if mime not in _MERCH_ARTICLE_IMAGE_MIMES:
+        return 'Nur Bilder (JPEG, PNG, WebP, GIF, HEIC) sind erlaubt.'
+    try:
+        doc = DriveStorageService.upload_document(
+            file_stream=io.BytesIO(raw),
+            filename_stem=f'merch-artikel-{article.id}',
+            drive_folder_id=folder_id,
+            uploader=current_user,
+            event_id=None,
+            original_filename=uf.filename,
+            mime_type=mime or 'image/jpeg',
+        )
+        article.image_drive_file_id = doc.drive_file_id
+        MerchImageService.invalidate_article_cache(article.id)
+        return None
+    except DriveValidationError as exc:
+        return str(exc)
+    except DriveError as exc:
+        return str(exc)
+    except Exception as exc:
+        current_app.logger.error('Merch Artikelbild Upload: %s', exc, exc_info=True)
+        return 'Drive-Upload fehlgeschlagen.'
 
 
 @bp.route('/', methods=['GET'])
@@ -255,6 +345,249 @@ def supplier_restore(supplier_id: int):
     )
     flash('Lieferant wieder aktiviert.', 'success')
     return redirect(url_for('merch_admin.suppliers_index'))
+
+
+def _article_apply_core(form: MerchArticleForm, article: MerchArticle) -> None:
+    article.name = (form.name.data or '').strip()
+    article.supplier_id = int(form.supplier_id.data)
+    article.description = (form.description.data or '').strip() or None
+    article.list_price_rappen = _subsidy_chf_to_rappen(form.list_price_chf.data)
+
+
+def _article_active_variant_rows(article: MerchArticle | None) -> list[MerchVariant]:
+    if article is None:
+        return []
+    rows = [v for v in (article.variants or []) if v.is_active]
+    return sorted(rows, key=lambda v: (_variant_attrs_label(v.attributes).lower(), v.id))
+
+
+def _article_variant_pricing_rows(article: MerchArticle | None) -> list[tuple[MerchVariant, str]]:
+    return [(v, _variant_attrs_label(v.attributes)) for v in _article_active_variant_rows(article)]
+
+
+_VARIANT_PRICE_FIELD_PREFIX = 'variant_list_price_chf_'
+
+
+def _apply_variant_list_price_overrides(article_id: int) -> str | None:
+    """POST-Felder variant_list_price_chf_<id>; leer = Artikel-Default (NULL in DB)."""
+    for key in request.form:
+        if not key.startswith(_VARIANT_PRICE_FIELD_PREFIX):
+            continue
+        try:
+            vid = int(key[len(_VARIANT_PRICE_FIELD_PREFIX) :])
+        except ValueError:
+            continue
+        v = db.session.get(MerchVariant, vid)
+        if not v or v.article_id != article_id:
+            continue
+        raw = (request.form.get(key) or '').strip()
+        if raw == '':
+            v.list_price_rappen = None
+            continue
+        try:
+            d = Decimal(raw.replace(',', '.'))
+            if d < 0:
+                return 'Variantenpreis darf nicht negativ sein.'
+            v.list_price_rappen = _subsidy_chf_to_rappen(d)
+        except Exception:
+            return 'Ungueltiger Variantenpreis (CHF).'
+    return None
+
+
+@bp.route('/articles', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def articles_index():
+    require_merch_v2_enabled()
+    active = (
+        MerchArticle.query.filter_by(is_archived=False)
+        .options(joinedload(MerchArticle.supplier))
+        .order_by(MerchArticle.name.asc())
+        .all()
+    )
+    archived = (
+        MerchArticle.query.filter_by(is_archived=True)
+        .options(joinedload(MerchArticle.supplier))
+        .order_by(MerchArticle.name.asc())
+        .all()
+    )
+    return render_template(
+        'admin/merch_v2/articles_index.html',
+        active_articles=active,
+        archived_articles=archived,
+    )
+
+
+@bp.route('/articles/new', methods=['GET', 'POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_new():
+    require_merch_v2_enabled()
+    form = MerchArticleForm()
+    form.supplier_id.choices = _supplier_select_choices()
+    if not form.supplier_id.choices:
+        flash('Bitte zuerst mindestens einen aktiven Lieferanten anlegen.', 'warning')
+        return redirect(url_for('merch_admin.suppliers_index'))
+
+    if request.method == 'POST':
+        form.supplier_id.choices = _supplier_select_choices()
+        schema, s_err = parse_variant_schema_text(form.variant_schema_text.data)
+        if s_err:
+            flash(s_err, 'error')
+        elif form.validate_on_submit():
+            art = MerchArticle(is_archived=False)
+            _article_apply_core(form, art)
+            db.session.add(art)
+            db.session.flush()
+            MerchSortimentService.sync_variants_for_article(art, schema)
+            db.session.flush()
+            price_err = _apply_variant_list_price_overrides(art.id)
+            if price_err:
+                db.session.rollback()
+                flash(price_err, 'error')
+            else:
+                img_err = _article_store_image_upload(art, request.files.get('article_image'))
+                if img_err:
+                    db.session.rollback()
+                    flash(img_err, 'error')
+                else:
+                    db.session.commit()
+                    SecurityService.log_audit_event(
+                        AuditAction.MERCH_ARTICLE_CREATED,
+                        'merch_article',
+                        art.id,
+                        extra_data={'name': art.name},
+                    )
+                    flash('Artikel angelegt. Optional: Variantenpreise anpassen.', 'success')
+                    return redirect(url_for('merch_admin.article_edit', article_id=art.id))
+        else:
+            flash('Bitte Eingaben pruefen.', 'error')
+    return render_template(
+        'admin/merch_v2/article_form.html',
+        form=form,
+        page_title='Neuer Artikel',
+        article=None,
+        variant_pricing_rows=[],
+    )
+
+
+@bp.route('/articles/<int:article_id>/edit', methods=['GET', 'POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_edit(article_id: int):
+    require_merch_v2_enabled()
+    art = (
+        MerchArticle.query.options(joinedload(MerchArticle.variants))
+        .filter_by(id=article_id)
+        .first_or_404()
+    )
+
+    if request.method == 'GET':
+        form = MerchArticleForm(
+            name=art.name,
+            supplier_id=art.supplier_id,
+            description=art.description or '',
+            list_price_chf=Decimal(art.list_price_rappen) / Decimal('100'),
+            variant_schema_text=variant_schema_to_lines(art.variant_schema),
+            remove_image=False,
+        )
+    else:
+        form = MerchArticleForm()
+
+    form.supplier_id.choices = _supplier_select_choices(include_supplier_id=art.supplier_id)
+
+    if request.method == 'POST':
+        schema, s_err = parse_variant_schema_text(form.variant_schema_text.data)
+        if s_err:
+            flash(s_err, 'error')
+        elif form.validate_on_submit():
+            _article_apply_core(form, art)
+            MerchSortimentService.sync_variants_for_article(art, schema)
+            db.session.flush()
+            price_err = _apply_variant_list_price_overrides(art.id)
+            if price_err:
+                db.session.rollback()
+                flash(price_err, 'error')
+            else:
+                if form.remove_image.data:
+                    art.image_drive_file_id = None
+                    MerchImageService.invalidate_article_cache(art.id)
+                img_err = _article_store_image_upload(art, request.files.get('article_image'))
+                if img_err:
+                    db.session.rollback()
+                    flash(img_err, 'error')
+                else:
+                    db.session.commit()
+                    SecurityService.log_audit_event(
+                        AuditAction.MERCH_ARTICLE_UPDATED,
+                        'merch_article',
+                        art.id,
+                        extra_data={'name': art.name},
+                    )
+                    flash('Artikel gespeichert.', 'success')
+                    return redirect(url_for('merch_admin.articles_index'))
+        else:
+            flash('Bitte Eingaben pruefen.', 'error')
+    return render_template(
+        'admin/merch_v2/article_form.html',
+        form=form,
+        page_title='Artikel bearbeiten',
+        article=art,
+        variant_pricing_rows=_article_variant_pricing_rows(art),
+    )
+
+
+@bp.route('/articles/<int:article_id>/archive', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_archive(article_id: int):
+    require_merch_v2_enabled()
+    art = MerchArticle.query.filter_by(id=article_id).first_or_404()
+    if art.is_archived:
+        flash('Artikel ist bereits archiviert.', 'warning')
+        return redirect(url_for('merch_admin.articles_index'))
+    art.is_archived = True
+    for v in art.variants:
+        v.is_active = False
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_ARTICLE_ARCHIVED,
+        'merch_article',
+        art.id,
+        extra_data={'name': art.name},
+    )
+    flash('Artikel archiviert.', 'success')
+    return redirect(url_for('merch_admin.articles_index'))
+
+
+@bp.route('/articles/<int:article_id>/restore', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_restore(article_id: int):
+    require_merch_v2_enabled()
+    art = MerchArticle.query.filter_by(id=article_id).first_or_404()
+    if not art.is_archived:
+        flash('Artikel ist bereits aktiv.', 'warning')
+        return redirect(url_for('merch_admin.articles_index'))
+    if art.supplier and art.supplier.is_archived:
+        flash('Lieferant ist archiviert — bitte zuerst Lieferant wieder aktivieren.', 'error')
+        return redirect(url_for('merch_admin.articles_index'))
+    art.is_archived = False
+    schema = art.variant_schema if isinstance(art.variant_schema, dict) else {}
+    MerchSortimentService.sync_variants_for_article(art, schema)
+    db.session.commit()
+    SecurityService.log_audit_event(
+        AuditAction.MERCH_ARTICLE_UPDATED,
+        'merch_article',
+        art.id,
+        extra_data={'restored': True, 'name': art.name},
+    )
+    flash('Artikel wieder aktiv.', 'success')
+    return redirect(url_for('merch_admin.articles_index'))
 
 
 @bp.route('/rounds/new', methods=['GET'])

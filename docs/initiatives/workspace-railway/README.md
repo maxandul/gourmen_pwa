@@ -94,7 +94,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |
 | 8 | pending | – | – | `PHASE_08_INFOMANIAK_DECOMMISSION.md`; nur abbauen wenn nichts mehr referenziert |
 | 9 | in_progress | `phase/09-workspace-drive-browser-refactor` | 2026-05-15 | Drive-Browser implementiert (Tiles, Breadcrumb, Kebab), Migration Phase 9, `DRIVE_ARCHIVE_FOLDER_ID`. PR/Merge offen; nach `master`-Deploy DB-Migration + Env setzen. Spec: `docs/capabilities/drive.md` §17. |
-| 10 | in_progress | master | 2026-05-16 | Phase 10: Merch v2 (Shop, KPI, Jahr, Beleg), Lieferanten-UI `/admin/merch-v2/suppliers`, Env `MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`. Produktiver Cutover: Migration + MERCH_V2_ENABLED. Sortiment-Artikel-UI Cockpit noch offen; siehe §21.3 `docs/capabilities/merch.md`. |
+| 10 | in_progress | master | 2026-05-16 | Phase 10: Merch v2 MVP (Cockpit inkl. Subnav, Sortiment mit Varianten-Aufpreis, Shop, Statistik, Legacy-Receivables, Flag). Env siehe `env.example`. Abnahme laut §21.3 `docs/capabilities/merch.md`. |
 
 Status-Werte: `pending` / `in_progress` / `done` / `blocked`
 

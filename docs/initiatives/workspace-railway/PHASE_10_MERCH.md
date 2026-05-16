@@ -5,7 +5,7 @@
 > **Strategie-Anker**: [`docs/STRATEGY_2026.md`](../../STRATEGY_2026.md) MVP-Punkt 4
 > **Status**: in_progress auf `master` (MERCH-V2‑Cockpit, Shop, Statistik/Jahresreport, Audit, Legacy‑Receivables; Sortiment/Stammdaten v2 schrittweise). **Aufwand**: ~2 Wochen.
 
-**Umsetzungsstand (laufend, nicht gleich Release):** Lieferantenpflege im Cockpit (`/admin/merch-v2/suppliers`); Runden-KPI + Vereinsjahresstatistik + CSV; Merch-Historie im Admin-Mitglied-Detail; Lieferantenbeleg nach Drive (ENV `MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`). **Offen im MVP:** vollstaendige Artikel/Varianten/Bild-Cockpit-UI (bis dahin z. B. `scripts/seed_merch_v2_dev.py`).
+**Umsetzungsstand (laufend, nicht gleich Release):** Lieferanten- und **Sortimentspflege (Artikel, Varianten, Bild)** im Cockpit (`/admin/merch-v2/suppliers`, `/admin/merch-v2/articles`); Runden-KPI + Vereinsjahresstatistik + CSV; Merch-Historie im Admin-Mitglied-Detail; Lieferantenbeleg nach Drive (`MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID`); Artikelbilder nach Drive (`MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID`). **Feinschliff:** Cockpit-Subnavigation (`_subnav.html`); weiteres Polish nach Bedarf.
 
 ---
 

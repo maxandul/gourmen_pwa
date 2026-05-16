@@ -7,7 +7,11 @@ import pytest
 from backend.extensions import db
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
-from backend.services.merch_sortiment_service import MerchSortimentService
+from backend.services.merch_sortiment_service import (
+    MerchSortimentService,
+    parse_variant_schema_text,
+    variant_schema_to_lines,
+)
 from backend.models.merch_v2 import MerchRoundStatus
 
 
@@ -36,6 +40,71 @@ def test_variant_combinations_cartesian():
     combos = MerchSortimentService.variant_attribute_combinations(schema)
     assert len(combos) == 4
     assert {'farbe': 'schwarz', 'groesse': 'M'} in combos
+
+
+def test_parse_variant_schema_lines_ok():
+    raw = 'farbe: schwarz, weiss\ngroesse: S, M'
+    schema, err = parse_variant_schema_text(raw)
+    assert err is None
+    assert schema == {'farbe': ['schwarz', 'weiss'], 'groesse': ['S', 'M']}
+
+
+def test_parse_variant_schema_empty_means_standard():
+    schema, err = parse_variant_schema_text('  \n')
+    assert err is None
+    assert schema == {}
+
+
+def test_parse_variant_schema_duplicate_dimension():
+    schema, err = parse_variant_schema_text('a: 1\nx: 2\na: 3')
+    assert schema is None
+    assert err is not None
+
+
+def test_parse_variant_schema_combination_cap():
+    opts = ', '.join(str(i) for i in range(16))
+    raw = f'a: {opts}\nb: {opts}'
+    schema, err = parse_variant_schema_text(raw)
+    assert schema is None
+    assert err and 'Kombinationen' in err
+
+
+def test_variant_schema_round_trip_lines():
+    s = {'farbe': ['a', 'b'], 'groesse': ['S']}
+    assert parse_variant_schema_text(variant_schema_to_lines(s))[0] == s
+
+
+def test_sync_variants_deactivates_removed_combo(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import MerchArticle, MerchSupplier, MerchVariant
+
+    with app.app_context():
+        m = Member(
+            vorname='x',
+            nachname='y',
+            email='sync-var@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        sup = MerchSupplier(name='S2')
+        db.session.add(sup)
+        db.session.flush()
+        art = MerchArticle(name='Art', supplier_id=sup.id, list_price_rappen=100, variant_schema={})
+        db.session.add(art)
+        db.session.flush()
+        MerchSortimentService.sync_variants_for_article(art, {'farbe': ['x', 'y']})
+        db.session.commit()
+        aid = art.id
+        assert MerchVariant.query.filter_by(article_id=aid, is_active=True).count() == 2
+
+        art2 = db.session.get(MerchArticle, aid)
+        MerchSortimentService.sync_variants_for_article(art2, {'farbe': ['x']})
+        db.session.commit()
+        active = MerchVariant.query.filter_by(article_id=aid, is_active=True).all()
+        assert len(active) == 1
+        assert active[0].attributes == {'farbe': 'x'}
 
 
 def test_round_cancel_allowed_from_draft_not_from_closed():

@@ -454,7 +454,7 @@ Verein-Sicht zur Runde:
 
 ### 8.1 Upload-Pfad
 
-Marketingchef laedt im Artikel-Form ein Bild hoch. Backend speichert es ueber den bestehenden `DriveStorageService` in einem definierten Drive-Ordner (z.B. `Verein/Merch/Bilder/`). Die Drive-File-ID wird in `MerchArticle.image_drive_file_id` gespeichert.
+Marketingchef laedt im Artikel-Form ein Bild hoch. Backend speichert es ueber den bestehenden `DriveStorageService` in einem definierten Drive-Ordner (z.B. `Verein/Merch/Bilder/`). Zielordner: Konfiguration `MERCH_ARTICLE_IMAGE_DRIVE_FOLDER_ID` (Shared-Drive-Ordner-ID). Die Drive-File-ID wird in `MerchArticle.image_drive_file_id` gespeichert.
 
 ### 8.2 Proxy-Endpoint mit Cache
 
@@ -800,7 +800,7 @@ Im bestehenden Admin-Member-Detail eine Sektion «Merch-Historie»:
 
 ### 14.3 Vereins-Jahresuebersicht
 
-Eigener Tab/Seite `/admin/merch/statistics`:
+Eigener Tab/Seite `/admin/merch-v2/statistics` (und CSV-Export):
 
 - Filter nach Jahr (Default: aktuelles Vereinsjahr)
 - KPI-Karten: Anzahl Runden, Anzahl Bestellungen, Brutto-Umsatz, Marge, Subventions-Verbrauch, Vereins-Netto
@@ -972,30 +972,30 @@ Lokale Verifikation:
 
 ### 21.3 Akzeptanzkriterien fuer Phase 10
 
-- [ ] Marketingchef kann Lieferanten im Cockpit anlegen, bearbeiten und archivieren (`GET/POST /admin/merch-v2/suppliers`)
-- [ ] Marketingchef kann Artikel mit Variantenschema, Drive‑Bildanbindung sowie Archivierung im Cockpit pflegen (Zwischenweise: `scripts/seed_merch_v2_dev.py` / technische Schulden dokumentieren bis UI vollstaendig)
-- [ ] Marketingchef kann Runde anlegen, oeffnen, schliessen, re-oeffnen (mit Begruendung), abbrechen (mit Begruendung)
-- [ ] Mehrere Runden parallel `OPEN` moeglich
-- [ ] Mitglied sieht aktive Runden im Shop und in Dashboard-Card
-- [ ] Mitglied baut Warenkorb pro Runde, bestaetigt, kann waehrend OPEN aendern und stornieren
-- [ ] Beim Uebergang `LOCKED → ORDERED_AT_SUPPLIER` werden Brutto/Subvention/Forderung pro Order korrekt berechnet
-- [ ] Subventions-Cap (max. Bestellbetrag) wird respektiert
-- [ ] Marketingchef sieht Sammelbestellungs-Aggregat pro Variante, kann als Text/CSV exportieren
-- [ ] Marketingchef kann Effektivpreise erfassen, Lieferantenbeleg in Drive hochladen
-- [ ] Marketingchef/Admin kann Order als `PICKED_UP` markieren, Marketingchef/Schatzmeister/Admin kann als `PAID` markieren
-- [ ] Bild-Proxy liefert Bilder aus Drive, Cache-Hit beim 2. Request
-- [ ] Statistik pro Runde, pro Mitglied, Vereins-Jahresuebersicht funktional
-- [ ] Audit-Log enthaelt alle Lifecycle- und Bezahl-Aktionen
-- [ ] Permissions korrekt: Mitglied sieht keine fremden Bestellungen, kein Mitglied kann Cockpit aufrufen
-- [ ] Feature-Flag `MERCH_V2_ENABLED` schaltet die neue Capability ein
+- [x] Marketingchef kann Lieferanten im Cockpit anlegen, bearbeiten und archivieren (`GET/POST /admin/merch-v2/suppliers`)
+- [x] Marketingchef kann Artikel mit Variantenschema, Drive‑Bildanbindung sowie Archivierung im Cockpit pflegen (`/admin/merch-v2/articles`; optional weiterhin `scripts/seed_merch_v2_dev.py` fuer Demodaten)
+- [x] Marketingchef kann Runde anlegen, oeffnen, schliessen, re-oeffnen (mit Begruendung), abbrechen (mit Begruendung)
+- [x] Mehrere Runden parallel `OPEN` moeglich
+- [x] Mitglied sieht aktive Runden im Shop und in Dashboard-Card
+- [x] Mitglied baut Warenkorb pro Runde, bestaetigt, kann waehrend OPEN aendern und stornieren
+- [x] Beim Uebergang `LOCKED → ORDERED_AT_SUPPLIER` werden Brutto/Subvention/Forderung pro Order korrekt berechnet
+- [x] Subventions-Cap (max. Bestellbetrag) wird respektiert
+- [x] Marketingchef sieht Sammelbestellungs-Aggregat pro Variante, kann als Text/CSV exportieren
+- [x] Marketingchef kann Effektivpreise erfassen, Lieferantenbeleg in Drive hochladen
+- [x] Marketingchef/Admin kann Order als `PICKED_UP` markieren, Marketingchef/Schatzmeister/Admin kann als `PAID` markieren
+- [x] Bild-Proxy liefert Bilder aus Drive, Cache-Hit beim 2. Request
+- [x] Statistik pro Runde, pro Mitglied, Vereins-Jahresuebersicht funktional
+- [x] Audit-Log enthaelt alle Lifecycle- und Bezahl-Aktionen
+- [x] Permissions korrekt: Mitglied sieht keine fremden Bestellungen, kein Mitglied kann Cockpit aufrufen
+- [x] Feature-Flag `MERCH_V2_ENABLED` schaltet die neue Capability ein
 
 **Abgrenzung (kein Abnahme-Blocker fuer Phase 10, §21.4 Out of Scope):** automatische Bilder-Migration aus `static/img/merch/` nach Drive; Schema-Aufraeum fuer `_legacy`-Tabellen ohne vorherige Bestandsmigration; Datenmigration aus `_legacy` ins v2-Modell — jeweils **Folgephase** nach Phase‑10‑Stabilisierung.
 
-- [ ] Tests gruen, keine sensiblen Daten in Logs
-- [ ] Mitglieder-Shop und Cockpit nutzen BEM, Lucide-Icons, Disclosure-Pattern konsistent
-- [ ] Rename-Migration alte Tabellen reversibel (Downgrade benennt zurueck)
-- [ ] Alte Mitglieder-Routes (`/merch/order` etc.) sind beim Cutover deaktiviert; alte Admin-Routes ebenfalls
-- [ ] Legacy-Receivables-Sicht zeigt korrekte Aggregat-Werte aus `merch_orders_legacy`, ist nur fuer Marketingchef/Schatzmeister/Admin erreichbar, hat keine Schreib-Aktionen
+- [x] Tests gruen, keine sensiblen Daten in Logs
+- [x] Mitglieder-Shop und Cockpit nutzen BEM, Lucide-Icons, Disclosure-Pattern konsistent
+- [x] Rename-Migration alte Tabellen reversibel (Downgrade benennt zurueck)
+- [x] Alte Mitglieder-Routes (`/member/merch` etc.) sind beim Cutover nicht mehr erreichbar (404 bei `MERCH_V2_ENABLED`); klassischer Admin-Legacy-Merch bleibt unter `/admin/merch` fuer Bestand separat vom v2-Cockpit.
+- [x] Legacy-Receivables-Sicht zeigt korrekte Aggregat-Werte aus `merch_orders_legacy`, ist nur fuer Marketingchef/Schatzmeister/Admin erreichbar, hat keine Schreib-Aktionen
 
 ### 21.4 Out of Scope fuer Phase 10
 

@@ -22,6 +22,8 @@
     </h1>
   </div>
 
+  {% include 'admin/merch_v2/_subnav.html' %}
+
   <div class="page-content">
     <p class="admin-hub__hint">
       Neue Bestellrunden und Sortiment (Merch v2). Der klassische Admin-Merch-Shop bleibt unter «Merch verwalten» im Hub erreichbar.
@@ -46,8 +48,9 @@
       <h2 id="merch-v2-stamm-title" class="settings-nav__section-title">Stammdaten</h2>
       <p class="card__subtitle">
         <a href="{{ url_for('merch_admin.suppliers_index') }}" class="btn btn--secondary">Lieferanten pflegen</a>
+        <a href="{{ url_for('merch_admin.articles_index') }}" class="btn btn--secondary">Sortiment pflegen</a>
       </p>
-      <p class="admin-hub__hint">Artikel und Varianten (v2): z. B. ueber Seed-Script <code>scripts/seed_merch_v2_dev.py</code> bis die Cockpit-Sortimentspflege folgt.</p>
+      <p class="admin-hub__hint">Artikel: Varianten-Schema und Bild (Drive) im Formular; optional Seed-Script <code>scripts/seed_merch_v2_dev.py</code> fuer Demodaten.</p>
     </section>
 
     <section class="settings-nav__section" aria-labelledby="merch-v2-rounds-title">
