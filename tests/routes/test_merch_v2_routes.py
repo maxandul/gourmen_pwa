@@ -436,9 +436,12 @@ def test_article_variant_list_price_override(marketing_chief_client, app, merch_
 
 
 def test_merch_lookups_hub_ok(marketing_chief_client, merch_v2_enabled):
-    rv = marketing_chief_client.get('/admin/merch-v2/lookups')
-    assert rv.status_code == 200
-    assert b'Farben' in rv.data
+    rv = marketing_chief_client.get('/admin/merch-v2/lookups', follow_redirects=False)
+    assert rv.status_code == 302
+    assert '/lookups/colors' in (rv.headers.get('Location') or '')
+    rv2 = marketing_chief_client.get('/admin/merch-v2/lookups/colors')
+    assert rv2.status_code == 200
+    assert 'Farben' in rv2.get_data(as_text=True)
 
 
 def test_merch_lookup_color_create(marketing_chief_client, app, merch_v2_enabled):

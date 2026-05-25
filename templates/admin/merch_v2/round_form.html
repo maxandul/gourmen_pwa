@@ -11,7 +11,7 @@
 <div class="container">
   <div class="page-header">
     <p class="page-back">
-      <a href="{{ url_for('merch_admin.cockpit', tab='runden') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Cockpit</span></a>
+      <a href="{{ url_for('merch_admin.cockpit', tab='runden', _anchor='gourmen-tabs') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Bestellrunden</span></a>
     </p>
     <h1>
       {{ lucide_icon('calendar-plus') }}
@@ -19,13 +19,8 @@
     </h1>
   </div>
 
-  {% include 'admin/merch_v2/_subnav.html' %}
-
-  <div class="page-content">
+  <div class="page-content merch-admin-page--round-form">
     <div class="card">
-      <div class="card__header">
-        <h2 class="card__title">Runden-Daten</h2>
-      </div>
       <div class="card__body">
         <form method="POST" action="{{ url_for('merch_admin.round_create') }}" class="form" novalidate>
           {{ form.hidden_tag() }}

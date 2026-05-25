@@ -153,7 +153,7 @@ Die Capability [`merch.md`](merch.md) beschreibt u.a. `variant_schema` am Artike
 | **Domain** | `MerchColor`, `MerchSize`, erweitertes `MerchVariant` in `backend/models/merch_v2.py`; `before_insert` setzt fehlenden `variant_key` aus FKs/Attributen. |
 | **Keys** | `backend/utils/merch_variant_key.py`; Tests `tests/utils/test_merch_variant_key.py`. |
 | **Sortiment** | `MerchSortimentService` schreibt Lookups + `variant_key`; nested Savepoints bei Lookup-Anlage. |
-| **Stammdaten-UI** | `GET`/POST unter `/admin/merch-v2/lookups` (neu/umbenennen Farbe/Grösse), Template `templates/admin/merch_v2/lookups_hub.html`; Link im Sortiment-Hub. |
+| **Stammdaten-UI** | `GET`/POST Farben: `/admin/merch-v2/lookups/colors` (Template `lookups_colors.html`); Grössen: `…/lookups/sizes` (`lookups_sizes.html`); Alias `GET …/lookups` leitet nach Farben um; Verknüpfung aus der Artikelform. |
 | **Bulk** | `MerchVariantBulkService` in `backend/services/merch_lookup_service.py` + `POST …/articles/<id>/variants/bulk-deactivate-color` bzw. `-size`; Panel im Artikel-Formular. |
 | **Shop** | Mitglied: eine Karte pro Artikel, Ausführung per Dropdown; `static/js/v2/merch-round-shop.js`; Eager Loading `variant.article` / `color` / `size` in `backend/routes/merch.py`. |
 | **Skripte** | `scripts/update_pwa_version.py` ohne Emojis (Windows-Konsole); `scripts/validate_railway_schema.py` um neue Tabellen/Spalten. |

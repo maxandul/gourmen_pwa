@@ -11,7 +11,7 @@
 <div class="container">
   <div class="page-header">
     <p class="page-back">
-      <a href="{{ url_for('merch_admin.cockpit', tab='runden') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Merch-Cockpit</span></a>
+      <a href="{{ url_for('merch_admin.cockpit', tab='runden', _anchor='gourmen-tabs') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Bestellrunden</span></a>
     </p>
     <h1>
       {{ lucide_icon('shirt') }}
@@ -19,9 +19,7 @@
     </h1>
   </div>
 
-  {% include 'admin/merch_v2/_subnav.html' %}
-
-  <div class="page-content">
+  <div class="page-content merch-admin-page--round-detail">
     <div class="card card--flat">
       <div class="card__body">
         <dl class="form-row form-row--stacked">
@@ -53,8 +51,8 @@
       </div>
     </div>
 
-    <section class="settings-nav__section" aria-labelledby="merch-round-kpi-title">
-      <h2 id="merch-round-kpi-title" class="settings-nav__section-title">Statistik diese Runde</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-kpi-title">
+      <h2 id="merch-round-kpi-title" class="card__title merch-admin-round-section__title">Statistik diese Runde</h2>
       <div class="card card--flat">
         <div class="card__body">
           <dl class="form-row form-row--stacked">
@@ -97,8 +95,8 @@
       </div>
     </section>
 
-    <section class="settings-nav__section" aria-labelledby="merch-round-sortiment">
-      <h2 id="merch-round-sortiment" class="settings-nav__section-title">Sortiment dieser Runde</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-sortiment">
+      <h2 id="merch-round-sortiment" class="card__title merch-admin-round-section__title">Sortiment dieser Runde</h2>
       <p class="card__subtitle">
         Listenpreis ist ein Snapshot beim Hinzufuegen (siehe Capability-Doc). Effektiv- und Mitgliederpreise folgen nach «Lock» der Runde.
       </p>
@@ -138,10 +136,8 @@
 
       {% if round.status == MerchRoundStatus.DRAFT and add_round_item_form %}
       <div class="card">
-        <div class="card__header">
-          <h3 class="card__title">Variante hinzufuegen</h3>
-        </div>
         <div class="card__body">
+          <h3 class="card__title">Variante hinzufuegen</h3>
           <form method="POST" action="{{ url_for('merch_admin.round_add_item', round_id=round.id) }}" class="form">
             {{ add_round_item_form.hidden_tag() }}
             <div class="form-field">
@@ -163,8 +159,8 @@
     </section>
 
     {% if round.status == MerchRoundStatus.OPEN %}
-    <section class="settings-nav__section" aria-labelledby="merch-round-lock">
-      <h2 id="merch-round-lock" class="settings-nav__section-title">Bestellfenster schliessen</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-lock">
+      <h2 id="merch-round-lock" class="card__title merch-admin-round-section__title">Bestellfenster schliessen</h2>
       <div class="card card--flat">
         <div class="card__body">
           <form method="POST" action="{{ url_for('merch_admin.round_lock', round_id=round.id) }}" class="form">
@@ -180,15 +176,15 @@
     {% endif %}
 
     {% if round.status == MerchRoundStatus.LOCKED %}
-    <section class="settings-nav__section" aria-labelledby="merch-round-locked">
-      <h2 id="merch-round-locked" class="settings-nav__section-title">Sammelbestellung und Preise</h2>
-      <div class="form-actions">
-        <a href="{{ url_for('merch_admin.round_aggregate_csv', round_id=round.id) }}" class="btn btn--secondary">Aggregat als CSV</a>
-        <button type="button" class="btn btn--outline" id="merch-copy-aggregate">Aggregation kopieren</button>
-      </div>
-      <textarea id="merch-aggregate-tsv" hidden readonly>{{ aggregate_clipboard_text }}</textarea>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-locked">
+      <h2 id="merch-round-locked" class="card__title merch-admin-round-section__title">Sammelbestellung und Preise</h2>
       <div class="card card--flat">
-        <div class="card__body">
+        <div class="card__body stack-vertical">
+          <div class="merch-admin-round-actions">
+            <a href="{{ url_for('merch_admin.round_aggregate_csv', round_id=round.id) }}" class="btn btn--secondary">Aggregat als CSV</a>
+            <button type="button" class="btn btn--outline" id="merch-copy-aggregate">Aggregation kopieren</button>
+          </div>
+          <textarea id="merch-aggregate-tsv" hidden readonly>{{ aggregate_clipboard_text }}</textarea>
           <table class="table">
             <thead>
               <tr>
@@ -220,10 +216,8 @@
       </div>
 
       <div class="card">
-        <div class="card__header">
-          <h3 class="card__title">Lieferanten- und Mitgliederpreise (CHF)</h3>
-        </div>
         <div class="card__body">
+          <h3 class="card__title">Lieferanten- und Mitgliederpreise (CHF)</h3>
           <form method="POST" action="{{ url_for('merch_admin.round_pricing', round_id=round.id) }}" class="form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {% for ri, qty in aggregate_rows %}
@@ -286,8 +280,8 @@
     {% endif %}
 
     {% if round.status in (MerchRoundStatus.LOCKED, MerchRoundStatus.ORDERED_AT_SUPPLIER, MerchRoundStatus.DELIVERED, MerchRoundStatus.CLOSED) %}
-    <section class="settings-nav__section" aria-labelledby="merch-supplier-invoice-title">
-      <h2 id="merch-supplier-invoice-title" class="settings-nav__section-title">Lieferantenbeleg (Drive)</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-supplier-invoice-title">
+      <h2 id="merch-supplier-invoice-title" class="card__title merch-admin-round-section__title">Lieferantenbeleg (Drive)</h2>
       <div class="card card--flat">
         <div class="card__body">
           {% if invoice_web_link %}
@@ -325,8 +319,8 @@
     {% endif %}
 
     {% if round.status == MerchRoundStatus.ORDERED_AT_SUPPLIER %}
-    <section class="settings-nav__section" aria-labelledby="merch-round-ordered">
-      <h2 id="merch-round-ordered" class="settings-nav__section-title">Wareneingang</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-ordered">
+      <h2 id="merch-round-ordered" class="card__title merch-admin-round-section__title">Wareneingang</h2>
       <div class="card card--flat">
         <div class="card__body">
           <form method="POST" action="{{ url_for('merch_admin.round_delivered', round_id=round.id) }}" class="form">
@@ -342,8 +336,8 @@
     {% endif %}
 
     {% if round.status in (MerchRoundStatus.ORDERED_AT_SUPPLIER, MerchRoundStatus.DELIVERED, MerchRoundStatus.CLOSED) %}
-    <section class="settings-nav__section" aria-labelledby="merch-round-orders">
-      <h2 id="merch-round-orders" class="settings-nav__section-title">Mitgliedsbestellungen</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-orders">
+      <h2 id="merch-round-orders" class="card__title merch-admin-round-section__title">Mitgliedsbestellungen</h2>
       {% if orders_sorted %}
       {% for o in orders_sorted %}
       {% if o.status != MerchOrderStatus.CANCELLED %}
@@ -381,8 +375,8 @@
     {% endif %}
 
     {% if round.status == MerchRoundStatus.DELIVERED %}
-    <section class="settings-nav__section" aria-labelledby="merch-round-close-manual">
-      <h2 id="merch-round-close-manual" class="settings-nav__section-title">Runde manuell abschliessen</h2>
+    <section class="merch-admin-round-section" aria-labelledby="merch-round-close-manual">
+      <h2 id="merch-round-close-manual" class="card__title merch-admin-round-section__title">Runde manuell abschliessen</h2>
       <div class="card card--flat">
         <div class="card__body">
           <form method="POST" action="{{ url_for('merch_admin.round_close', round_id=round.id) }}" class="form">

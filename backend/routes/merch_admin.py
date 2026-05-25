@@ -180,12 +180,6 @@ def _populate_merch_article_variant_lookup_choices(form: MerchArticleForm) -> tu
     return len(colors), len(sizes)
 
 
-def _merch_article_multiselect_rows(n_opts: int) -> int:
-    if n_opts < 1:
-        return 3
-    return max(4, min(14, n_opts + 2))
-
-
 _MERCH_ARTICLE_IMAGE_MIMES = frozenset(
     {'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'}
 )
@@ -354,8 +348,8 @@ def suppliers_index():
 @limiter.limit('30 per minute', methods=['POST'])
 def supplier_new():
     require_merch_v2_enabled()
-    form = MerchSupplierForm()
     if request.method == 'POST':
+        form = MerchSupplierForm(formdata=request.form)
         if form.validate_on_submit():
             s = MerchSupplier(is_archived=False)
             _supplier_apply_form(form, s)
@@ -370,6 +364,8 @@ def supplier_new():
             flash('Lieferant angelegt.', 'success')
             return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
         flash('Bitte Eingaben pruefen.', 'error')
+    else:
+        form = MerchSupplierForm()
     return render_template(
         'admin/merch_v2/supplier_form.html',
         form=form,
@@ -386,7 +382,7 @@ def supplier_edit(supplier_id: int):
     require_merch_v2_enabled()
     s = MerchSupplier.query.filter_by(id=supplier_id).first_or_404()
     if request.method == 'POST':
-        form = MerchSupplierForm()
+        form = MerchSupplierForm(formdata=request.form, obj=s)
         if form.validate_on_submit():
             _supplier_apply_form(form, s)
             db.session.commit()
@@ -560,7 +556,7 @@ def _article_archive_dimension_strings(article_ids: list[int]) -> dict[int, tupl
 def _article_bulk_color_size_lists(
     article: MerchArticle | None,
 ) -> tuple[list[MerchColor], list[MerchSize]]:
-    """Distinct Farben/Groessen, die bei Varianten dieses Artikels vorkommen."""
+    """Distinct Farben/Grössen, die bei Varianten dieses Artikels vorkommen."""
     if article is None:
         return [], []
     c_ids = list(
@@ -610,16 +606,17 @@ def articles_index():
 @limiter.limit('30 per minute', methods=['POST'])
 def article_new():
     require_merch_v2_enabled()
-    form = MerchArticleForm()
+    if request.method == 'POST':
+        form = MerchArticleForm(formdata=request.form)
+    else:
+        form = MerchArticleForm()
     form.supplier_id.choices = _supplier_select_choices()
-    n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
+    _populate_merch_article_variant_lookup_choices(form)
     if not form.supplier_id.choices:
         flash('Bitte zuerst mindestens einen aktiven Lieferanten anlegen.', 'warning')
         return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
 
     if request.method == 'POST':
-        form.supplier_id.choices = _supplier_select_choices()
-        n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
         merged = merged_variant_schema_from_lookups(
             color_ids=form.color_choice_ids.data,
             size_ids=form.size_choice_ids.data,
@@ -664,9 +661,8 @@ def article_new():
         variant_pricing_rows=[],
         bulk_colors=[],
         bulk_sizes=[],
-        merch_variant_color_select_rows=_merch_article_multiselect_rows(n_colors),
-        merch_variant_size_select_rows=_merch_article_multiselect_rows(n_sizes),
-        merch_variant_lookups_url=url_for('merch_admin.lookups_index'),
+        merch_lookup_colors_url=url_for('merch_admin.lookups_colors'),
+        merch_lookup_sizes_url=url_for('merch_admin.lookups_sizes'),
     )
 
 
@@ -692,7 +688,7 @@ def article_edit(article_id: int):
             remove_image=False,
         )
     else:
-        form = MerchArticleForm()
+        form = MerchArticleForm(formdata=request.form)
 
     form.supplier_id.choices = _supplier_select_choices(include_supplier_id=art.supplier_id)
     n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
@@ -748,9 +744,8 @@ def article_edit(article_id: int):
         variant_pricing_rows=_article_variant_pricing_rows(art),
         bulk_colors=bulk_colors,
         bulk_sizes=bulk_sizes,
-        merch_variant_color_select_rows=_merch_article_multiselect_rows(n_colors),
-        merch_variant_size_select_rows=_merch_article_multiselect_rows(n_sizes),
-        merch_variant_lookups_url=url_for('merch_admin.lookups_index'),
+        merch_lookup_colors_url=url_for('merch_admin.lookups_colors'),
+        merch_lookup_sizes_url=url_for('merch_admin.lookups_sizes'),
     )
 
 
@@ -810,12 +805,28 @@ def article_restore(article_id: int):
 @marketing_chief_or_admin_required
 def lookups_index():
     require_merch_v2_enabled()
+    return redirect(url_for('merch_admin.lookups_colors'))
+
+
+@bp.route('/lookups/colors', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def lookups_colors():
+    require_merch_v2_enabled()
     return render_template(
-        'admin/merch_v2/lookups_hub.html',
-        page_title='Farben und Groessen',
+        'admin/merch_v2/lookups_colors.html',
         colors=MerchLookupService.list_colors_ordered(),
+    )
+
+
+@bp.route('/lookups/sizes', methods=['GET'])
+@login_required
+@marketing_chief_or_admin_required
+def lookups_sizes():
+    require_merch_v2_enabled()
+    return render_template(
+        'admin/merch_v2/lookups_sizes.html',
         sizes=MerchLookupService.list_sizes_ordered(),
-        merch_tab='sortiment',
     )
 
 
@@ -832,7 +843,7 @@ def lookups_color_new():
     else:
         db.session.rollback()
         flash(res.get('error') or 'Farbe konnte nicht angelegt werden.', 'error')
-    return redirect(url_for('merch_admin.lookups_index'))
+    return redirect(url_for('merch_admin.lookups_colors'))
 
 
 @bp.route('/lookups/colors/<int:color_id>/rename', methods=['POST'])
@@ -848,7 +859,7 @@ def lookups_color_rename(color_id: int):
     else:
         db.session.rollback()
         flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
-    return redirect(url_for('merch_admin.lookups_index'))
+    return redirect(url_for('merch_admin.lookups_colors'))
 
 
 @bp.route('/lookups/sizes/new', methods=['POST'])
@@ -864,7 +875,7 @@ def lookups_size_new():
     else:
         db.session.rollback()
         flash(res.get('error') or 'Grösse konnte nicht angelegt werden.', 'error')
-    return redirect(url_for('merch_admin.lookups_index'))
+    return redirect(url_for('merch_admin.lookups_sizes'))
 
 
 @bp.route('/lookups/sizes/<int:size_id>/rename', methods=['POST'])
@@ -880,7 +891,7 @@ def lookups_size_rename(size_id: int):
     else:
         db.session.rollback()
         flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
-    return redirect(url_for('merch_admin.lookups_index'))
+    return redirect(url_for('merch_admin.lookups_sizes'))
 
 
 @bp.route('/articles/<int:article_id>/variants/bulk-deactivate-color', methods=['POST'])

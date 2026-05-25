@@ -22,7 +22,7 @@
           <td>
             <a href="{{ url_for('merch_admin.round_detail', round_id=r.id) }}"
                class="events-index-table__event-link"
-               aria-label="Runde {{ r.title }} öffnen">
+               aria-label="Bestellrunde {{ r.title }} öffnen">
               <span class="events-index-table__event-date">{{ r.title }}</span>
               {{ lucide_icon('chevron-right', 'icon events-index-table__event-chev') }}
             </a>
@@ -163,15 +163,15 @@
 
     {% elif merch_tab == 'runden' %}
     <div class="form-actions">
-      <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">{{ lucide_icon('circle-plus') }}<span>Neue Runde anlegen</span></a>
+      <a href="{{ url_for('merch_admin.round_new') }}" class="btn btn--primary">{{ lucide_icon('circle-plus') }}<span>Neue Bestellrunde anlegen</span></a>
     </div>
     {% if rounds %}
     <section class="settings-nav__section" aria-labelledby="merch-hub-rounds-list">
-      <h2 id="merch-hub-rounds-list" class="settings-nav__section-title">Runden</h2>
+      <h2 id="merch-hub-rounds-list" class="settings-nav__section-title">Bestellrunden</h2>
       {{ merch_hub_rounds_table(rounds, 'merch-hub-rounds-list') }}
     </section>
     {% else %}
-    <p class="admin-hub__hint">Noch keine Runde angelegt.</p>
+    <p class="admin-hub__hint">Noch keine Bestellrunde angelegt.</p>
     {% endif %}
 
     {% elif merch_tab == 'lieferanten' %}

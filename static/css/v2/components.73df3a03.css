@@ -1442,17 +1442,6 @@ a.btn:active {
   margin-top: var(--space-2);
 }
 
-/* Artikel-Form: zweite Bulk-Zeile (Farbe / Grösse) optisch getrennt, ohne Aktions-Leiste-Umrandung */
-.merch-article-bulk__row .form-actions {
-  border-top: none;
-  padding-top: 0;
-  margin-top: var(--space-2);
-}
-
-.merch-article-bulk__row + .merch-article-bulk__row {
-  margin-top: var(--space-5);
-}
-
 .page-content--merch-shop-round .merch-round-shop-variant-stack.merch-round-shop-config {
   gap: var(--space-4);
 }
@@ -2094,6 +2083,217 @@ a.btn:active {
   margin-top: var(--space-2);
   color: var(--color-error);
   font-size: var(--text-sm);
+}
+
+/* Merch Artikel: Farben / Grössen als antippbare Pillen statt mehrzeiliges Mehrfach-<select> */
+.merch-variant-picks {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-inline-size: 0;
+}
+
+.merch-variant-picks__legend {
+  float: unset;
+  width: auto;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+.merch-variant-picks__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.merch-variant-picks__item {
+  margin: 0;
+}
+
+.merch-variant-picks__pill {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.merch-variant-picks__face {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-border-default);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  transition: border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.merch-variant-picks__pill:hover .merch-variant-picks__face {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
+}
+
+/* Fokus sichtbar auf der Pille; natives Kontrollfeld bleibt screenreader-tauglich (sr-only) */
+.merch-variant-picks__native:focus,
+.merch-variant-picks__native:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.merch-variant-picks__native:focus-visible + .merch-variant-picks__face {
+  outline: 2px solid var(--color-interactive-primary);
+  outline-offset: 2px;
+}
+
+.merch-variant-picks__native:checked + .merch-variant-picks__face {
+  border-color: var(--color-interactive-primary);
+  background: color-mix(in srgb, var(--color-interactive-primary) 18%, var(--color-surface));
+  font-weight: var(--font-medium);
+}
+
+[data-theme='dark'] .merch-variant-picks__native:checked + .merch-variant-picks__face {
+  background: color-mix(in srgb, var(--color-interactive-primary) 28%, transparent);
+}
+
+.merch-variant-picks__edit {
+  margin: 0;
+}
+
+.merch-variant-picks__edit .btn {
+  width: fit-content;
+}
+
+/* Merch Admin: Formularseiten ohne übermässige Trennlinien bei .form-actions */
+.merch-admin-page--article-edit .form-actions,
+.merch-admin-page--lookups .form-actions,
+.merch-admin-page--round-form .form-actions {
+  border-top: none;
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.merch-admin-page--article-edit .form-actions:last-of-type {
+  margin-bottom: 0;
+}
+
+.merch-admin-page--round-detail > .card:first-child {
+  margin-bottom: 0;
+}
+
+.merch-admin-page--round-detail .form-actions {
+  border-top: none;
+  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.merch-admin-round-section {
+  margin-top: var(--space-6);
+}
+
+.merch-admin-round-section__title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.merch-admin-round-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.merch-admin-form-block {
+  margin-top: var(--space-6);
+}
+
+.merch-admin-form-block__title {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.merch-admin-form-block--danger-tone .merch-admin-form-block__title {
+  color: var(--color-text-primary);
+}
+
+.merch-admin-bulk-deactivate__actions.form-actions {
+  justify-content: flex-start;
+  padding-top: 0;
+  margin-top: var(--space-2);
+}
+
+.merch-admin-bulk-deactivate + .merch-admin-bulk-deactivate {
+  margin-top: var(--space-4);
+}
+
+/* Merch Stammdaten Farben/Grössen: kompakte Zeilen statt Tabellen */
+.merch-lookup-create__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.merch-lookup-create__field {
+  flex: 1 1 min(16rem, 100%);
+  margin-bottom: 0;
+}
+
+.merch-lookup-create__actions.form-actions {
+  flex: 0 0 auto;
+  padding-top: 0;
+  margin-top: 0;
+  justify-content: flex-start;
+}
+
+.merch-lookup-list {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.merch-lookup-list__item {
+  margin: 0;
+}
+
+.merch-lookup-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.merch-lookup-row__slug {
+  flex: 0 0 auto;
+  min-width: min(6rem, 28vw);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.merch-lookup-row__field {
+  flex: 1 1 min(12rem, 100%);
+  margin-bottom: 0;
+}
+
+.merch-lookup-row__actions.form-actions {
+  flex: 0 0 auto;
+  padding-top: 0;
+  margin-top: 0;
+  justify-content: flex-start;
 }
 
 .form-field__help {

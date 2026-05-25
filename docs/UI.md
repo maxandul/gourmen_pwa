@@ -226,6 +226,17 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.form-field` | – | Form-Feld (Label + Input + Error) |
 | `.form-field__required` | – | Pflichtfeld-Kennzeichnung (z.B. roter Stern direkt am Label; `aria-hidden` wenn ergänzend zu serverseitiger Validierung) |
 | `.form-actions` | – | Buttons-Container am Form-Ende |
+| `.merch-variant-picks` | `__legend`, `__list`, `__item`, `__pill`, `__native` (mit `.sr-only`), `__face`, `__edit` | Merch-Artikelform: Farben/Grössen als **Pillen**; Verknüpfung zu Stammdaten-Seiten; `templates/admin/merch_v2/article_form.html` |
+| `.merch-admin-page--round-detail` | – | Rundendetail (`round_detail.html`): Sektionen mit `.merch-admin-round-section`; reduzierte Striche bei `.form-actions` |
+| `.merch-admin-round-section` | `__title` | Überschrift + Abstand zwischen logischen Bereichen einer Bestellrunde |
+| `.merch-admin-round-actions` | – | Aggregat CSV / Kopieren oberhalb der Stück-Tabelle (ohne `.form-actions`-Top-Border) |
+| `.merch-admin-page--round-form` | – | Neue Bestellrunde (`round_form.html`), gleicher Effekt wie oben |
+| `.merch-admin-page--lookups` | – | Modifier auf `page-content`: Stammdaten Farben/Grössen; keine Aktions-Trennlinie wie oben |
+| `.merch-admin-form-block` | `__title`; `--danger-tone` (optional) | Sektion ohne verschachtelte `card--flat` innerhalb der Merch-Artikelform (Abstand via `margin-top`) |
+| `.merch-admin-bulk-deactivate` | `__actions` | Unterformulare Massen-Deaktivierung: kompakte Aktionen ohne Trennlinie |
+| `.merch-lookup-list` | `__item` | Farben/Grössen-Stammdaten: Liste statt Tabelle |
+| `.merch-lookup-create` | `__row`, `__field`, `__actions` | Neue Zeile Stammdaten (Eingabe + Anlegen nebeneinander) |
+| `.merch-lookup-row` | `__slug`, `__field`, `__actions` | Umbenennen-Zeile pro Eintrag |
 | `partials/_form_macros.html` | `required_mark(field)`, `field_errors(field)` | Wiederverwendbare Jinja-Makros für Pflicht-Stern (über `field.flags.required`) und erste Validierungsmeldung |
 
 ### 5.7 Tabs / Disclosure
