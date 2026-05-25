@@ -1,0 +1,27 @@
+{% if round.status in (MerchRoundStatus.LOCKED, MerchRoundStatus.ORDERED_AT_SUPPLIER) %}
+<div class="merch-admin-form-block merch-admin-form-block--danger-tone">
+  <h3 class="card__title">Erweitert</h3>
+  {% if round.status == MerchRoundStatus.LOCKED %}
+  <form method="POST" action="{{ url_for('merch_admin.round_reopen', round_id=round.id) }}" class="form stack-vertical">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="form-field">
+      <label class="form-field__label" for="reopen-reason">Runde wieder öffnen — Begründung</label>
+      <textarea class="form-field__textarea" id="reopen-reason" name="reason" rows="2" required></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--outline">Re-Open</button>
+    </div>
+  </form>
+  {% endif %}
+  <form method="POST" action="{{ url_for('merch_admin.round_cancel', round_id=round.id) }}" class="form stack-vertical">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="form-field">
+      <label class="form-field__label" for="cancel-reason">Runde stornieren — Begründung</label>
+      <textarea class="form-field__textarea" id="cancel-reason" name="reason" rows="2" required></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--danger">Runde stornieren</button>
+    </div>
+  </form>
+</div>
+{% endif %}

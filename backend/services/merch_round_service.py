@@ -249,6 +249,27 @@ class MerchRoundService:
         return {'success': True, 'changed': True}
 
     @classmethod
+    def _clear_supplier_invoice(cls, round_obj: MerchRound) -> None:
+        round_obj.supplier_invoice_drive_file_id = None
+        round_obj.supplier_invoice_total_rappen = None
+        round_obj.supplier_invoice_completed_at = None
+
+    @classmethod
+    def complete_supplier_invoice_step(cls, round_obj: MerchRound) -> dict:
+        """Beleg-Schritt abschliessen (optional ohne Upload). Caller macht commit."""
+        from backend.services.merch_round_workflow import round_orders_invoiced
+
+        if round_obj.status != MerchRoundStatus.ORDERED_AT_SUPPLIER:
+            return {'success': False, 'error': 'Beleg ist in diesem Status nicht moeglich.'}
+        if not round_orders_invoiced(round_obj):
+            return {
+                'success': False,
+                'error': 'Erst Preise erfassen und Forderungen berechnen.',
+            }
+        round_obj.supplier_invoice_completed_at = datetime.utcnow()
+        return {'success': True, 'error': None}
+
+    @classmethod
     def revert_workflow_step(
         cls,
         round_obj: MerchRound,
@@ -263,11 +284,13 @@ class MerchRoundService:
         if phase == 2:
             round_obj.status = MerchRoundStatus.DRAFT
             round_obj.opened_at = None
+            MerchOrderService.reset_confirmed_orders_to_draft_for_round(round_obj.id)
             return {'success': True, 'error': None}
 
         if phase == 3:
             round_obj.status = MerchRoundStatus.OPEN
             round_obj.locked_at = None
+            MerchOrderService.reset_confirmed_orders_to_draft_for_round(round_obj.id)
             return {'success': True, 'error': None}
 
         if phase == 4:
@@ -277,16 +300,11 @@ class MerchRoundService:
 
         if phase == 5:
             MerchOrderService.reset_invoiced_orders_to_confirmed_for_round(round_obj.id)
-            round_obj.supplier_invoice_drive_file_id = None
-            round_obj.supplier_invoice_total_rappen = None
             db.session.flush()
             return {'success': True, 'error': None}
 
         if phase == 6:
-            round_obj.supplier_invoice_drive_file_id = None
-            round_obj.supplier_invoice_total_rappen = None
-            MerchOrderService.reset_invoiced_orders_to_confirmed_for_round(round_obj.id)
-            db.session.flush()
+            round_obj.supplier_invoice_completed_at = None
             return {'success': True, 'error': None}
 
         if phase == 7:
@@ -296,6 +314,7 @@ class MerchRoundService:
             return {'success': True, 'error': None}
 
         if phase == 8:
+            MerchOrderService.reset_pickup_for_round(round_obj.id)
             round_obj.status = MerchRoundStatus.DELIVERED
             round_obj.closed_at = None
             return {'success': True, 'error': None}

@@ -1,0 +1,34 @@
+{% if closed_line_rows %}
+<div class="data-table-scroll-outer">
+  <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="{{ closed_table_title_id|default('merch-round-closed-title') }}">
+    <table class="data-table events-index-table merch-round-table">
+      <thead>
+        <tr>
+          <th scope="col" class="merch-round-table__col-member">Member</th>
+          <th scope="col">Artikel</th>
+          <th scope="col">Farbe</th>
+          <th scope="col">Grösse</th>
+          <th scope="col">Lieferantenpreis</th>
+          <th scope="col">Member-Preis</th>
+          <th scope="col">Subvention</th>
+          <th scope="col">Zu zahlen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in closed_line_rows %}
+        <tr>
+          <td class="merch-round-table__col-member">{% if row.show_order_totals %}{{ row.member_display }}{% endif %}</td>
+          <td>{{ row.article_label }}</td>
+          <td>{{ row.color_label }}</td>
+          <td>{{ row.size_label }}</td>
+          <td>{% if row.supplier_line_chf != '—' %}{{ row.supplier_line_chf }} CHF{% else %}—{% endif %}</td>
+          <td>{% if row.member_line_chf != '—' %}{{ row.member_line_chf }} CHF{% else %}—{% endif %}</td>
+          <td>{% if row.subsidy_chf %}CHF {{ row.subsidy_chf }}{% endif %}</td>
+          <td>{% if row.due_chf %}CHF {{ row.due_chf }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}

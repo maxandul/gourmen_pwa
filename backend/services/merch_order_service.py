@@ -212,18 +212,26 @@ class MerchOrderService:
                 line.unit_price_final_rappen = None
             cls.recalculate_draft_totals(o)
 
+
     @classmethod
     def reset_invoiced_orders_to_confirmed_for_round(cls, round_id: int) -> None:
         """Fakturierte Bestellungen zurueck auf bestaetigt (Schritt zurueck vor Beleg)."""
-        orders = MerchOrder.query.filter_by(
-            round_id=round_id,
-            status=MerchOrderStatus.INVOICED,
+        orders = MerchOrder.query.filter_by(round_id=round_id).filter(
+            MerchOrder.status.in_(
+                (
+                    MerchOrderStatus.INVOICED,
+                    MerchOrderStatus.PICKED_UP,
+                )
+            )
         ).all()
         for o in orders:
             o.status = MerchOrderStatus.CONFIRMED
             o.invoiced_at = None
+            o.picked_up_at = None
+            o.picked_up_by_member_id = None
             for line in o.order_items:
                 line.unit_price_final_rappen = None
+                line.unit_price_at_confirm_rappen = cls._preview_unit_rappen(line.round_item)
             cls.recalculate_draft_totals(o)
 
     @classmethod
@@ -242,14 +250,24 @@ class MerchOrderService:
 
     @classmethod
     def validate_round_items_for_supplier_order(cls, round_obj: MerchRound) -> dict:
-        """Alle Rund-Positionen brauchen Effektiv- und Mitgliederpreis (Rappen)."""
-        for ri in round_obj.round_items:
-            if ri.effective_supplier_price_rappen is None or ri.member_price_rappen is None:
+        """Bestellte Rund-Positionen brauchen fakturierten Lieferantenpreis (Rappen)."""
+        from backend.services.merch_round_workflow import ordered_round_item_ids
+
+        ordered_ids = ordered_round_item_ids(round_obj)
+        if not ordered_ids:
+            return {'success': False, 'error': 'Keine bestellten Positionen.'}
+        by_id = {ri.id: ri for ri in round_obj.round_items}
+        for item_id in ordered_ids:
+            ri = by_id.get(item_id)
+            if ri is None or ri.effective_supplier_price_rappen is None:
                 return {
                     'success': False,
-                    'error': 'Jede Sortimentsposition braucht Effektivpreis und Mitgliederpreis.',
+                    'error': 'Jede bestellte Position braucht einen fakturierten Lieferantenpreis.',
                 }
-            if ri.effective_supplier_price_rappen < 0 or ri.member_price_rappen < 0:
+            member = ri.member_price_rappen
+            if member is None:
+                member = ri.effective_supplier_price_rappen
+            if ri.effective_supplier_price_rappen < 0 or member < 0:
                 return {'success': False, 'error': 'Preise duerfen nicht negativ sein.'}
         return {'success': True, 'error': None}
 
@@ -270,10 +288,14 @@ class MerchOrderService:
             for line in o.order_items:
                 mp = line.round_item.member_price_rappen
                 if mp is None:
+                    mp = line.round_item.effective_supplier_price_rappen
+                if mp is None:
                     return {
                         'success': False,
-                        'error': 'Mitgliederpreis fuer eine Position fehlt.',
+                        'error': 'Fakturierter Preis fuer eine Position fehlt.',
                     }
+                if line.round_item.member_price_rappen is None:
+                    line.round_item.member_price_rappen = mp
                 line.unit_price_final_rappen = mp
                 gross += line.quantity * mp
             cap = round_obj.subsidy_per_member_rappen

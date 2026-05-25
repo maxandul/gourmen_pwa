@@ -207,41 +207,43 @@
       {% endif %}
     </section>
 
-    {% else %}
-    <div class="card card--flat" id="merch-round-step-panel">
-      <div class="card__body stack-vertical">
-
-        {% if workflow_phase == 4 %}
-        <h2 class="card__title">Effektive Preise erfassen</h2>
-        <p class="form-field__hint">Member-Preis ist der Endbetrag pro Stück für das Mitglied — ohne Vereinssubvention (die wird pro Bestellung separat angerechnet).</p>
-        <form method="POST" action="{{ url_for('merch_admin.round_pricing', round_id=round.id) }}" class="form stack-vertical">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          {% for group in pricing_article_groups %}
-          {% set first = group.items[0] %}
-          {% set eff_val = '' %}
-          {% set mem_val = '' %}
-          {% if first.effective_supplier_price_rappen is not none %}
-            {% set eff_val = '%.2f'|format(first.effective_supplier_price_rappen / 100.0) %}
-          {% endif %}
-          {% if first.member_price_rappen is not none %}
-            {% set mem_val = '%.2f'|format(first.member_price_rappen / 100.0) %}
-          {% endif %}
-          <div class="merch-admin-form-block">
-            <h3 class="card__title">{{ group.article_name }}</h3>
-            <div class="form-row form-row--stacked">
-              <div class="form-field">
-                <label class="form-field__label" for="article-eff-{{ group.article_id }}">Fakturiert (Lieferant) CHF</label>
-                <input class="form-field__input" id="article-eff-{{ group.article_id }}" name="article_eff_chf_{{ group.article_id }}" inputmode="decimal" value="{{ eff_val }}" autocomplete="off"/>
-              </div>
-              <div class="form-field">
-                <label class="form-field__label" for="article-mem-{{ group.article_id }}">Member-Preis CHF</label>
-                <input class="form-field__input" id="article-mem-{{ group.article_id }}" name="article_mem_chf_{{ group.article_id }}" inputmode="decimal" value="{{ mem_val }}" autocomplete="off"/>
-              </div>
+    {% elif workflow_phase == 4 %}
+    <section class="settings-nav__section merch-round-pricing-section" id="merch-round-step-panel" aria-labelledby="merch-round-pricing-title">
+      <h2 id="merch-round-pricing-title" class="settings-nav__section-title">Effektive Preise erfassen</h2>
+      <p class="form-field__hint">Trage den fakturierten Lieferantenpreis pro bestellter Position ein. Member-Preis optional — bleibt das Feld leer, entspricht er dem fakturierten Preis. Der Member-Preis ist der Endbetrag pro Stück für das Mitglied, ohne Vereinssubvention (die wird pro Bestellung separat angerechnet).</p>
+      {% if pricing_article_groups %}
+      <form method="POST" action="{{ url_for('merch_admin.round_pricing', round_id=round.id) }}" class="form stack-vertical">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {% for group in pricing_article_groups %}
+        {% set first = group.items[0] %}
+        {% set eff_val = '' %}
+        {% set mem_val = '' %}
+        {% if first.effective_supplier_price_rappen is not none %}
+          {% set eff_val = '%.2f'|format(first.effective_supplier_price_rappen / 100.0) %}
+        {% endif %}
+        {% if first.member_price_rappen is not none %}
+          {% set mem_val = '%.2f'|format(first.member_price_rappen / 100.0) %}
+        {% endif %}
+        <div class="merch-admin-form-block">
+          <h3 class="card__title">{{ group.article_name }}</h3>
+          <div class="form-row form-row--stacked">
+            <div class="form-field">
+              <label class="form-field__label" for="article-eff-{{ group.article_id }}">Fakturiert (Lieferant) CHF</label>
+              <input class="form-field__input" id="article-eff-{{ group.article_id }}" name="article_eff_chf_{{ group.article_id }}" inputmode="decimal" value="{{ eff_val }}" autocomplete="off"/>
             </div>
-            {% if group.items|length > 1 %}
-            <details class="merch-round-pricing-details"{% if not group.uniform_pricing %} open{% endif %}>
-              <summary class="merch-round-pricing-details__summary">Abweichende Variantenpreise</summary>
-              <ul class="stack-vertical merch-round-pricing-details__list">
+            <div class="form-field">
+              <label class="form-field__label" for="article-mem-{{ group.article_id }}">Member-Preis CHF (optional)</label>
+              <input class="form-field__input" id="article-mem-{{ group.article_id }}" name="article_mem_chf_{{ group.article_id }}" inputmode="decimal" value="{{ mem_val }}" autocomplete="off" placeholder="wie fakturiert"/>
+            </div>
+          </div>
+          {% if group.items|length > 1 %}
+          <details class="disclosure merch-round-pricing-disclosure"{% if not group.uniform_pricing %} open{% endif %}>
+            <summary class="disclosure__summary">
+              {{ lucide_icon('chevron-down') }}
+              <span>Abweichende Lieferantenpreise</span>
+            </summary>
+            <div class="disclosure__content">
+              <ul class="stack-vertical merch-round-pricing-disclosure__list">
                 {% for ri in group.items %}
                 {% set v = ri.variant %}
                 <li class="form-row form-row--stacked">
@@ -252,24 +254,30 @@
                            value="{% if ri.effective_supplier_price_rappen is not none %}{{ '%.2f'|format(ri.effective_supplier_price_rappen / 100.0) }}{% endif %}" autocomplete="off"/>
                   </div>
                   <div class="form-field">
-                    <label class="form-field__label" for="variant-mem-{{ ri.id }}">Member CHF</label>
+                    <label class="form-field__label" for="variant-mem-{{ ri.id }}">Member CHF (optional)</label>
                     <input class="form-field__input" id="variant-mem-{{ ri.id }}" name="variant_mem_chf_{{ ri.id }}" inputmode="decimal"
-                           value="{% if ri.member_price_rappen is not none %}{{ '%.2f'|format(ri.member_price_rappen / 100.0) }}{% endif %}" autocomplete="off"/>
+                           value="{% if ri.member_price_rappen is not none %}{{ '%.2f'|format(ri.member_price_rappen / 100.0) }}{% endif %}" autocomplete="off" placeholder="wie fakturiert"/>
                   </div>
                 </li>
                 {% endfor %}
               </ul>
-            </details>
-            {% endif %}
-          </div>
-          {% endfor %}
-          <div class="form-actions">
-            <button type="submit" name="pricing_action" value="save" class="btn btn--secondary">Preise speichern</button>
-            <button type="submit" name="pricing_action" value="apply_invoicing" class="btn btn--primary">Preise speichern und Forderungen berechnen</button>
-          </div>
-        </form>
+            </div>
+          </details>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">Preise speichern und Forderungen berechnen</button>
+        </div>
+      </form>
+      {% else %}
+      <p class="admin-hub__hint">Keine bestellten Positionen — Preise können nicht erfasst werden.</p>
+      {% endif %}
+    </section>
 
-        {% elif workflow_phase == 5 %}
+    {% elif workflow_phase == 5 %}
+    <div class="card card--flat" id="merch-round-step-panel">
+      <div class="card__body stack-vertical">
         <h2 class="card__title">Lieferantenbeleg</h2>
         {% if invoice_web_link %}
         <p class="card__subtitle">
@@ -297,111 +305,90 @@
             <button type="submit" class="btn btn--primary">Speichern</button>
           </div>
         </form>
-
-        {% elif workflow_phase == 6 %}
-        <h2 class="card__title">Wareneingang</h2>
-        <p class="card__subtitle">Bestätige, dass die Lieferung beim Verein angekommen ist.</p>
-        <div class="form-actions">
-          <form method="POST" action="{{ url_for('merch_admin.round_delivered', round_id=round.id) }}" class="form form--inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <button type="submit" class="btn btn--primary">Als geliefert markieren</button>
-          </form>
-        </div>
-
-        {% elif workflow_phase == 7 %}
-        <h2 class="card__title">Auslieferung an Mitglieder</h2>
-        {% if distribution_line_rows %}
-        <div class="data-table-scroll-outer">
-          <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Auslieferung">
-            <table class="data-table merch-round-table">
-              <thead>
-                <tr>
-                  <th scope="col" class="merch-round-table__col-member">Member</th>
-                  <th scope="col">Artikel</th>
-                  <th scope="col">Farbe</th>
-                  <th scope="col">Grösse</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for row in distribution_line_rows %}
-                <tr>
-                  <td class="merch-round-table__col-member">{{ row.member_display }}</td>
-                  <td>{{ row.article_label }}</td>
-                  <td>{{ row.color_label }}</td>
-                  <td>{{ row.size_label }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+        <form method="POST" action="{{ url_for('merch_admin.round_beleg_complete', round_id=round.id) }}" class="form form--inline merch-round-beleg-advance">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--secondary">Weiter zum Wareneingang</button>
           </div>
-        </div>
-        {% else %}
-        <p class="admin-hub__hint">Alle Bestellungen sind bereits als verteilt markiert.</p>
-        {% endif %}
-        <div class="form-actions">
-          <form method="POST" action="{{ url_for('merch_admin.round_distribute_all', round_id=round.id) }}" class="form form--inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <button type="submit" class="btn btn--primary">Artikel verteilt</button>
-          </form>
-          <form method="POST" action="{{ url_for('merch_admin.round_close', round_id=round.id) }}" class="form form--inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <button type="submit" class="btn btn--outline">Runde abschliessen</button>
-          </form>
-        </div>
-
-        {% elif workflow_phase == 8 %}
-        <div class="metrics-spotlight" aria-label="Rundenabschluss">
-          <div class="metrics-spotlight__hero">
-            <div class="metrics-spotlight__metric">
-              <span class="metrics-spotlight__metric-label">Rechnungsbetrag</span>
-              <span class="metrics-spotlight__metric-value">
-                CHF {{ '%.2f'|format((round.supplier_invoice_total_rappen or round_stats.supplier_cost_rappen) / 100.0) }}
-              </span>
-            </div>
-            <div class="metrics-spotlight__metric">
-              <span class="metrics-spotlight__metric-label">Subvention</span>
-              <span class="metrics-spotlight__metric-value">CHF {{ '%.2f'|format(round_stats.subsidy_rappen / 100.0) }}</span>
-            </div>
-          </div>
-        </div>
-        {% if closed_line_rows %}
-        <div class="data-table-scroll-outer">
-          <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Abschlussübersicht">
-            <table class="data-table merch-round-table">
-              <thead>
-                <tr>
-                  <th scope="col" class="merch-round-table__col-member">Member</th>
-                  <th scope="col">Artikel</th>
-                  <th scope="col">Farbe</th>
-                  <th scope="col">Grösse</th>
-                  <th scope="col">Lieferantenpreis</th>
-                  <th scope="col">Member-Preis</th>
-                  <th scope="col">Subvention</th>
-                  <th scope="col">Zu zahlen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for row in closed_line_rows %}
-                <tr>
-                  <td class="merch-round-table__col-member">{% if row.show_order_totals %}{{ row.member_display }}{% endif %}</td>
-                  <td>{{ row.article_label }}</td>
-                  <td>{{ row.color_label }}</td>
-                  <td>{{ row.size_label }}</td>
-                  <td>{% if row.supplier_line_chf != '—' %}{{ row.supplier_line_chf }} CHF{% else %}—{% endif %}</td>
-                  <td>{% if row.member_line_chf != '—' %}{{ row.member_line_chf }} CHF{% else %}—{% endif %}</td>
-                  <td>{% if row.subsidy_chf %}CHF {{ row.subsidy_chf }}{% endif %}</td>
-                  <td>{% if row.due_chf %}CHF {{ row.due_chf }}{% endif %}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {% endif %}
-        {% endif %}
-
+        </form>
       </div>
     </div>
+
+    {% elif workflow_phase == 6 %}
+    <div class="form-actions merch-round-prep-open" id="merch-round-step-panel">
+      <form method="POST" action="{{ url_for('merch_admin.round_delivered', round_id=round.id) }}" class="form form--inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button type="submit" class="btn btn--primary">Als geliefert markieren</button>
+      </form>
+    </div>
+
+    <section class="settings-nav__section merch-round-closed-section" aria-labelledby="merch-round-closed-title">
+      <h2 id="merch-round-closed-title" class="settings-nav__section-title">Bestellübersicht</h2>
+      {% set closed_table_title_id = 'merch-round-closed-title' %}
+      {% include 'admin/merch_v2/_round_detail_closed_table.html' %}
+    </section>
+
+    {% elif workflow_phase == 7 %}
+    <div class="form-actions merch-round-prep-open" id="merch-round-step-panel">
+      <form method="POST" action="{{ url_for('merch_admin.round_distribute_all', round_id=round.id) }}" class="form form--inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button type="submit" class="btn btn--primary">Artikel verteilt</button>
+      </form>
+    </div>
+
+    <section class="settings-nav__section merch-round-distribution-section" aria-labelledby="merch-round-distribution-title">
+      <h2 id="merch-round-distribution-title" class="settings-nav__section-title">Auslieferung an Mitglieder</h2>
+      {% if distribution_line_rows %}
+      <div class="data-table-scroll-outer">
+        <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="merch-round-distribution-title">
+          <table class="data-table events-index-table merch-round-table">
+            <thead>
+              <tr>
+                <th scope="col" class="merch-round-table__col-member">Member</th>
+                <th scope="col">Artikel</th>
+                <th scope="col">Farbe</th>
+                <th scope="col">Grösse</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in distribution_line_rows %}
+              <tr>
+                <td class="merch-round-table__col-member">{{ row.member_display }}</td>
+                <td>{{ row.article_label }}</td>
+                <td>{{ row.color_label }}</td>
+                <td>{{ row.size_label }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-hub__hint">Alle Bestellungen sind bereits als verteilt markiert.</p>
+      {% endif %}
+    </section>
+
+    {% elif workflow_phase == 8 %}
+    <div class="metrics-spotlight" id="merch-round-step-panel" aria-label="Rundenabschluss">
+      <div class="metrics-spotlight__hero">
+        <div class="metrics-spotlight__metric">
+          <span class="metrics-spotlight__metric-label">Rechnungsbetrag</span>
+          <span class="metrics-spotlight__metric-value">
+            CHF {{ '%.2f'|format((round.supplier_invoice_total_rappen or round_stats.supplier_cost_rappen) / 100.0) }}
+          </span>
+        </div>
+        <div class="metrics-spotlight__metric">
+          <span class="metrics-spotlight__metric-label">Subvention</span>
+          <span class="metrics-spotlight__metric-value">CHF {{ '%.2f'|format(round_stats.subsidy_rappen / 100.0) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="settings-nav__section merch-round-closed-section" aria-labelledby="merch-round-closed-title">
+      <h2 id="merch-round-closed-title" class="settings-nav__section-title">Bestellübersicht</h2>
+      {% set closed_table_title_id = 'merch-round-closed-title' %}
+      {% include 'admin/merch_v2/_round_detail_closed_table.html' %}
+    </section>
     {% endif %}
 
     {% include 'admin/merch_v2/_round_detail_step_footer.html' %}

@@ -105,11 +105,26 @@ def _chf_from_rappen(rappen: int | None) -> str:
     return f'{(rappen / 100):.2f}'
 
 
+def ordered_round_item_ids(round_obj: MerchRound) -> set[int]:
+    """Round-Item-IDs mit mindestens einer bestellten Menge."""
+    ids: set[int] = set()
+    for o in round_obj.orders:
+        if o.status in (MerchOrderStatus.CANCELLED, MerchOrderStatus.DRAFT):
+            continue
+        for line in o.order_items:
+            if line.quantity > 0:
+                ids.add(line.round_item_id)
+    return ids
+
+
 def round_prices_complete(round_obj: MerchRound) -> bool:
-    if not round_obj.round_items:
+    ordered_ids = ordered_round_item_ids(round_obj)
+    if not ordered_ids:
         return False
-    for ri in round_obj.round_items:
-        if ri.effective_supplier_price_rappen is None or ri.member_price_rappen is None:
+    by_id = {ri.id: ri for ri in round_obj.round_items}
+    for item_id in ordered_ids:
+        ri = by_id.get(item_id)
+        if ri is None or ri.effective_supplier_price_rappen is None:
             return False
     return True
 
@@ -132,6 +147,10 @@ def round_invoice_recorded(round_obj: MerchRound) -> bool:
     if round_obj.supplier_invoice_drive_file_id:
         return True
     return round_obj.supplier_invoice_total_rappen is not None
+
+
+def round_beleg_step_complete(round_obj: MerchRound) -> bool:
+    return round_obj.supplier_invoice_completed_at is not None
 
 
 def round_all_picked_up(round_obj: MerchRound) -> bool:
@@ -161,7 +180,7 @@ def compute_round_workflow_phase(round_obj: MerchRound) -> int:
     if st == MerchRoundStatus.ORDERED_AT_SUPPLIER:
         if not round_orders_invoiced(round_obj):
             return 4
-        if not round_invoice_recorded(round_obj):
+        if not round_beleg_step_complete(round_obj):
             return 5
         return 6
     if st == MerchRoundStatus.LOCKED:
@@ -189,7 +208,10 @@ def workflow_hint(round_obj: MerchRound, *, phase: int, orders_count: int, buyer
         return 'Exportiere die Sammelbestellung und gib sie beim Lieferanten auf. Bestätige danach die Bestellung.'
     if phase == 4:
         if not round_prices_complete(round_obj):
-            return 'Trage Fakturierungs- und Member-Preise ein. Der Member-Preis ist der Endbetrag pro Stück — ohne Vereinssubvention.'
+            return (
+                'Trage den fakturierten Lieferantenpreis pro bestellter Position ein. '
+                'Member-Preis optional — leer lassen entspricht dem fakturierten Preis.'
+            )
         return 'Preise vollständig — speichere und berechne die Mitglieder-Forderungen.'
     if phase == 5:
         return 'Lade optional den Lieferantenbeleg hoch und erfasse die Rechnungssumme.'
@@ -353,7 +375,11 @@ def build_closed_line_rows(orders: list[MerchOrder]) -> list[MerchRoundClosedLin
             ri = line.round_item
             v = ri.variant
             eff = ri.effective_supplier_price_rappen
-            mem = line.unit_price_final_rappen or ri.member_price_rappen
+            mem = (
+                line.unit_price_final_rappen
+                or ri.member_price_rappen
+                or ri.effective_supplier_price_rappen
+            )
             rows.append(
                 MerchRoundClosedLineRow(
                     member_display=member_display,

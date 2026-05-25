@@ -1191,6 +1191,10 @@ def _round_detail_redirect(round_id: int):
 
 
 def _apply_round_pricing_from_form(round_obj: MerchRound) -> None:
+    from backend.services.merch_round_workflow import ordered_round_item_ids
+
+    ordered_ids = ordered_round_item_ids(round_obj)
+
     def parse_chf(raw: str | None) -> int | None:
         raw = (raw or '').strip()
         if raw == '':
@@ -1203,6 +1207,8 @@ def _apply_round_pricing_from_form(round_obj: MerchRound) -> None:
     article_eff: dict[int, int | None] = {}
     article_mem: dict[int, int | None] = {}
     for ri in round_obj.round_items:
+        if ri.id not in ordered_ids:
+            continue
         aid = ri.variant.article_id
         if aid not in article_eff and f'article_eff_chf_{aid}' in request.form:
             article_eff[aid] = parse_chf(request.form.get(f'article_eff_chf_{aid}'))
@@ -1210,6 +1216,8 @@ def _apply_round_pricing_from_form(round_obj: MerchRound) -> None:
             article_mem[aid] = parse_chf(request.form.get(f'article_mem_chf_{aid}'))
 
     for ri in round_obj.round_items:
+        if ri.id not in ordered_ids:
+            continue
         aid = ri.variant.article_id
         eff = parse_chf(request.form.get(f'variant_eff_chf_{ri.id}'))
         mem = parse_chf(request.form.get(f'variant_mem_chf_{ri.id}'))
@@ -1221,6 +1229,8 @@ def _apply_round_pricing_from_form(round_obj: MerchRound) -> None:
             ri.effective_supplier_price_rappen = eff
         if mem is not None:
             ri.member_price_rappen = mem
+        elif eff is not None:
+            ri.member_price_rappen = eff
 
 
 def _load_round_detail(round_id: int) -> MerchRound:
@@ -1342,7 +1352,13 @@ def round_detail(round_id: int):
         sortiment_table_rows=build_sortiment_rows(round_items_sorted),
         order_line_rows=build_order_line_rows(orders_sorted),
         aggregate_table_rows=build_aggregate_rows(aggregate_rows),
-        pricing_article_groups=build_pricing_article_groups(round_items_sorted),
+        pricing_article_groups=build_pricing_article_groups(
+            [
+                ri
+                for ri in round_items_sorted
+                if ri.id in {agg_id for agg_id, qty in aggregate_rows if qty > 0}
+            ]
+        ),
         distribution_line_rows=build_distribution_line_rows(orders_sorted),
         closed_line_rows=build_closed_line_rows(orders_sorted),
         prices_complete=round_prices_complete(r),
@@ -1586,21 +1602,14 @@ def round_pricing(round_id: int):
         flash('Forderungen sind bereits berechnet.', 'warning')
         return _round_detail_redirect(round_id)
 
-    action = (request.form.get('pricing_action') or '').strip()
     _apply_round_pricing_from_form(r)
-
-    if action == 'apply_invoicing':
-        inv = MerchOrderService.invoice_confirmed_orders_for_round(r)
-        if inv['success']:
-            db.session.commit()
-            flash('Preise gespeichert; Mitglieder-Forderungen berechnet.', 'success')
-        else:
-            db.session.rollback()
-            flash(inv.get('error') or 'Forderungen konnten nicht berechnet werden.', 'error')
-        return _round_detail_redirect(round_id)
-
-    db.session.commit()
-    flash('Preise gespeichert.', 'success')
+    inv = MerchOrderService.invoice_confirmed_orders_for_round(r)
+    if inv['success']:
+        db.session.commit()
+        flash('Preise gespeichert; Mitglieder-Forderungen berechnet.', 'success')
+    else:
+        db.session.rollback()
+        flash(inv.get('error') or 'Forderungen konnten nicht berechnet werden.', 'error')
     return _round_detail_redirect(round_id)
 
 
@@ -1632,13 +1641,38 @@ def round_distribute_all(round_id: int):
     return _round_detail_redirect(round_id)
 
 
+@bp.route('/rounds/<int:round_id>/beleg-complete', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_beleg_complete(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.complete_supplier_invoice_step(r)
+    if result['success']:
+        db.session.commit()
+        flash('Weiter zum Wareneingang.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return _round_detail_redirect(round_id)
+
+
 @bp.route('/rounds/<int:round_id>/delivered', methods=['POST'])
 @login_required
 @marketing_chief_or_admin_required
 @limiter.limit('30 per minute', methods=['POST'])
 def round_delivered(round_id: int):
     require_merch_v2_enabled()
+    from backend.services.merch_round_workflow import round_beleg_step_complete
+
     r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    if r.status != MerchRoundStatus.ORDERED_AT_SUPPLIER:
+        flash('Wareneingang ist in diesem Status nicht moeglich.', 'error')
+        return _round_detail_redirect(round_id)
+    if not round_beleg_step_complete(r):
+        flash('Bitte zuerst den Beleg-Schritt abschliessen.', 'error')
+        return _round_detail_redirect(round_id)
     result = MerchRoundService.apply_transition(r, MerchRoundStatus.DELIVERED)
     if result['success']:
         db.session.commit()
@@ -1834,6 +1868,11 @@ def round_supplier_invoice(round_id: int):
             return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
     if changed:
+        step = MerchRoundService.complete_supplier_invoice_step(r)
+        if not step['success']:
+            db.session.rollback()
+            flash(step.get('error') or 'Beleg-Schritt konnte nicht abgeschlossen werden.', 'error')
+            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
         db.session.commit()
         if invoice_upload:
             SecurityService.log_audit_event(
