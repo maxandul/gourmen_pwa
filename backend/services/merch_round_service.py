@@ -8,12 +8,16 @@ from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
 from backend.models.merch_v2 import (
+    MerchArticle,
     MerchRound,
     MerchRoundItem,
     MerchRoundStatus,
     MerchVariant,
 )
 from backend.services.merch_order_service import MerchOrderService
+from backend.services.merch_round_workflow import (
+    compute_round_workflow_phase,
+)
 from backend.services.merch_sortiment_service import MerchSortimentService
 
 
@@ -118,9 +122,7 @@ class MerchRoundService:
             MerchOrderService.discard_draft_orders_for_round(round_obj.id)
 
         if target == MerchRoundStatus.ORDERED_AT_SUPPLIER and old_status == MerchRoundStatus.LOCKED:
-            inv = MerchOrderService.invoice_confirmed_orders_for_round(round_obj)
-            if not inv['success']:
-                return inv
+            pass
 
         now = datetime.utcnow()
         round_obj.status = target
@@ -191,6 +193,34 @@ class MerchRoundService:
         return {'success': True, 'error': None, 'item': item}
 
     @classmethod
+    def add_all_available_variants_to_round(cls, round_id: int) -> dict:
+        """Alle noch nicht enthaltenen aktiven Varianten hinzufuegen. Nur DRAFT."""
+        r = db.session.get(MerchRound, round_id)
+        if not r:
+            return {'success': False, 'error': 'Runde nicht gefunden.', 'added': 0}
+        if r.status != MerchRoundStatus.DRAFT:
+            return {
+                'success': False,
+                'error': 'Sortiment ist nur bei Entwurf-Runden aenderbar.',
+                'added': 0,
+            }
+        used = {ri.variant_id for ri in r.round_items}
+        variants = (
+            MerchVariant.query.join(MerchArticle)
+            .filter(MerchArticle.is_archived.is_(False), MerchVariant.is_active.is_(True))
+            .order_by(MerchArticle.name, MerchVariant.id)
+            .all()
+        )
+        added = 0
+        for v in variants:
+            if v.id in used:
+                continue
+            res = cls.add_variant_to_round(round_id, v.id)
+            if res['success']:
+                added += 1
+        return {'success': True, 'error': None, 'added': added}
+
+    @classmethod
     def remove_round_item(cls, round_id: int, round_item_id: int) -> dict:
         """Entfernt eine Position aus der Runde. Nur DRAFT."""
         r = db.session.get(MerchRound, round_id)
@@ -217,3 +247,71 @@ class MerchRoundService:
         if not res['success']:
             return {'success': False, 'changed': False, 'error': res.get('error')}
         return {'success': True, 'changed': True}
+
+    @classmethod
+    def revert_workflow_step(
+        cls,
+        round_obj: MerchRound,
+        *,
+        transition_reason: str | None = None,
+    ) -> dict:
+        """Einen Workflow-Schritt zurueck (Caller macht commit)."""
+        phase = compute_round_workflow_phase(round_obj)
+        if phase <= 1:
+            return {'success': False, 'error': 'Kein vorheriger Schritt.'}
+
+        if phase == 2:
+            round_obj.status = MerchRoundStatus.DRAFT
+            round_obj.opened_at = None
+            return {'success': True, 'error': None}
+
+        if phase == 3:
+            round_obj.status = MerchRoundStatus.OPEN
+            round_obj.locked_at = None
+            return {'success': True, 'error': None}
+
+        if phase == 4:
+            round_obj.status = MerchRoundStatus.LOCKED
+            round_obj.ordered_at = None
+            return {'success': True, 'error': None}
+
+        if phase == 5:
+            MerchOrderService.reset_invoiced_orders_to_confirmed_for_round(round_obj.id)
+            round_obj.supplier_invoice_drive_file_id = None
+            round_obj.supplier_invoice_total_rappen = None
+            db.session.flush()
+            return {'success': True, 'error': None}
+
+        if phase == 6:
+            round_obj.supplier_invoice_drive_file_id = None
+            round_obj.supplier_invoice_total_rappen = None
+            MerchOrderService.reset_invoiced_orders_to_confirmed_for_round(round_obj.id)
+            db.session.flush()
+            return {'success': True, 'error': None}
+
+        if phase == 7:
+            MerchOrderService.reset_pickup_for_round(round_obj.id)
+            round_obj.status = MerchRoundStatus.ORDERED_AT_SUPPLIER
+            round_obj.delivered_at = None
+            return {'success': True, 'error': None}
+
+        if phase == 8:
+            round_obj.status = MerchRoundStatus.DELIVERED
+            round_obj.closed_at = None
+            return {'success': True, 'error': None}
+
+        return {'success': False, 'error': 'Aktion nicht moeglich.'}
+
+    @classmethod
+    def delete_draft_round(cls, round_id: int) -> dict:
+        """Entwurf-Runde endgueltig loeschen (Caller macht commit)."""
+        r = db.session.get(MerchRound, round_id)
+        if not r:
+            return {'success': False, 'error': 'Runde nicht gefunden.'}
+        if r.status != MerchRoundStatus.DRAFT:
+            return {
+                'success': False,
+                'error': 'Nur Entwuerfe koennen geloescht werden.',
+            }
+        db.session.delete(r)
+        return {'success': True, 'error': None}

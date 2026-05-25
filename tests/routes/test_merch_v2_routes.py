@@ -142,7 +142,7 @@ def test_round_create_and_open(marketing_chief_client, app, merch_v2_enabled):
         f'/admin/merch-v2/rounds/{rid}/items',
         data={
             'variant_id': vid,
-            'submit': 'Position hinzufuegen',
+            'submit': 'Variante hinzufügen',
         },
         follow_redirects=False,
     )
@@ -155,7 +155,7 @@ def test_round_create_and_open(marketing_chief_client, app, merch_v2_enabled):
 
     rv2 = marketing_chief_client.post(f'/admin/merch-v2/rounds/{rid}/open', follow_redirects=True)
     assert rv2.status_code == 200
-    assert b'OPEN' in rv2.data
+    assert 'Bestellungen sammeln'.encode('utf-8') in rv2.data
 
     with app.app_context():
         from backend.models.merch_v2 import MerchRound
@@ -287,7 +287,7 @@ def test_round_remove_item(marketing_chief_client, app, merch_v2_enabled):
 
     marketing_chief_client.post(
         f'/admin/merch-v2/rounds/{rid}/items',
-        data={'variant_id': vid, 'submit': 'Position hinzufuegen'},
+        data={'variant_id': vid, 'submit': 'Variante hinzufügen'},
         follow_redirects=True,
     )
 
@@ -302,6 +302,148 @@ def test_round_remove_item(marketing_chief_client, app, merch_v2_enabled):
 
     with app.app_context():
         assert MerchRoundItem.query.filter_by(round_id=rid).count() == 0
+
+
+def test_round_add_all_items(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchSupplier, MerchVariant
+
+        s = MerchSupplier(name='AddAll-Lief')
+        db.session.add(s)
+        db.session.flush()
+        art1 = MerchArticle(name='Hoodie', supplier_id=s.id, list_price_rappen=5000)
+        art2 = MerchArticle(name='Cap', supplier_id=s.id, list_price_rappen=1500)
+        db.session.add_all([art1, art2])
+        db.session.flush()
+        v1 = MerchVariant(article_id=art1.id, attributes={}, is_active=True)
+        v2 = MerchVariant(article_id=art2.id, attributes={}, is_active=True)
+        db.session.add_all([v1, v2])
+        db.session.commit()
+
+    marketing_chief_client.post(
+        '/admin/merch-v2/rounds',
+        data={'title': 'AddAll-R', 'subsidy_chf': '0', 'submit': 'Runde speichern'},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        from backend.models.merch_v2 import MerchRound, MerchRoundItem
+
+        rid = MerchRound.query.filter_by(title='AddAll-R').first().id
+        assert MerchRoundItem.query.filter_by(round_id=rid).count() == 0
+
+    rv = marketing_chief_client.post(
+        f'/admin/merch-v2/rounds/{rid}/items/add-all',
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+
+    with app.app_context():
+        from backend.models.merch_v2 import MerchRoundItem
+
+        assert MerchRoundItem.query.filter_by(round_id=rid).count() == 2
+
+
+def test_round_step_back_from_open(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchRound, MerchSupplier, MerchVariant
+
+        s = MerchSupplier(name='Back-Lief')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Back-Art', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+        vid = v.id
+        db.session.commit()
+
+    marketing_chief_client.post(
+        '/admin/merch-v2/rounds',
+        data={'title': 'Back-R', 'subsidy_chf': '0', 'submit': 'Runde speichern'},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        rid = MerchRound.query.filter_by(title='Back-R').first().id
+
+    marketing_chief_client.post(
+        f'/admin/merch-v2/rounds/{rid}/items',
+        data={'variant_id': vid, 'submit': 'Variante hinzufügen'},
+        follow_redirects=True,
+    )
+    marketing_chief_client.post(f'/admin/merch-v2/rounds/{rid}/open', follow_redirects=True)
+
+    rv = marketing_chief_client.post(
+        f'/admin/merch-v2/rounds/{rid}/step-back',
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert 'Schritt zurück'.encode('utf-8') in rv.data
+
+    with app.app_context():
+        r = db.session.get(MerchRound, rid)
+        assert r.status.value == 'DRAFT'
+
+
+def test_round_delete_draft(marketing_chief_client, app, merch_v2_enabled):
+    marketing_chief_client.post(
+        '/admin/merch-v2/rounds',
+        data={'title': 'Del-R', 'subsidy_chf': '0', 'submit': 'Runde speichern'},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        from backend.models.merch_v2 import MerchRound
+
+        rid = MerchRound.query.filter_by(title='Del-R').first().id
+
+    rv = marketing_chief_client.post(
+        f'/admin/merch-v2/rounds/{rid}/delete',
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    with app.app_context():
+        from backend.models.merch_v2 import MerchRound
+
+        assert MerchRound.query.filter_by(id=rid).first() is None
+
+
+def test_open_round_shows_bestellrunde_schliessen(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchRound, MerchSupplier, MerchVariant
+
+        s = MerchSupplier(name='Ui-Lief')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Ui-Art', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+        vid = v.id
+        db.session.commit()
+
+    marketing_chief_client.post(
+        '/admin/merch-v2/rounds',
+        data={'title': 'Ui-R', 'subsidy_chf': '0', 'submit': 'Runde speichern'},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        rid = MerchRound.query.filter_by(title='Ui-R').first().id
+
+    marketing_chief_client.post(
+        f'/admin/merch-v2/rounds/{rid}/items',
+        data={'variant_id': vid, 'submit': 'Variante hinzufügen'},
+        follow_redirects=True,
+    )
+    marketing_chief_client.post(f'/admin/merch-v2/rounds/{rid}/open', follow_redirects=True)
+
+    rv = marketing_chief_client.get(f'/admin/merch-v2/rounds/{rid}')
+    assert rv.status_code == 200
+    assert b'Bestellrunde schliessen' in rv.data
+    assert b'merch-round-orders-section' in rv.data
 
 
 def test_suppliers_index_ok(marketing_chief_client, merch_v2_enabled):
@@ -458,6 +600,34 @@ def test_merch_lookup_color_create(marketing_chief_client, app, merch_v2_enabled
         assert row.label == 'Testfarbe'
 
 
+def test_merch_lookup_colors_bulk_save(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchColor
+
+        c1 = MerchColor(slug='rot-save', label='rot', sort_order=1)
+        c2 = MerchColor(slug='blau-save', label='blau', sort_order=2)
+        db.session.add_all([c1, c2])
+        db.session.commit()
+        id1, id2 = c1.id, c2.id
+
+    rv = marketing_chief_client.post(
+        '/admin/merch-v2/lookups/colors/save',
+        data={
+            f'label_{id1}': 'Rot neu',
+            f'label_{id2}': 'Blau neu',
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert b'Farben gespeichert' in rv.data
+
+    with app.app_context():
+        from backend.models.merch_v2 import MerchColor
+
+        assert MerchColor.query.filter_by(id=id1).first().label == 'Rot neu'
+        assert MerchColor.query.filter_by(id=id2).first().label == 'Blau neu'
+
+
 def test_article_bulk_deactivate_color(marketing_chief_client, app, merch_v2_enabled):
     with app.app_context():
         from backend.models.merch_v2 import MerchArticle, MerchColor, MerchSupplier, MerchVariant
@@ -490,3 +660,75 @@ def test_article_bulk_deactivate_color(marketing_chief_client, app, merch_v2_ena
     with app.app_context():
         v = db.session.get(MerchVariant, vid)
         assert v.is_active is False
+
+
+def test_article_new_stash_supplier_and_return(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchColor, MerchSupplier
+
+        sup = MerchSupplier(name='Bestehend-Lief')
+        col = MerchColor(slug='gruen-stash', label='gruen', sort_order=1)
+        db.session.add_all([sup, col])
+        db.session.commit()
+        sid = sup.id
+        cid = col.id
+
+    rv = marketing_chief_client.post(
+        '/admin/merch-v2/articles/new/stash-for-supplier',
+        data={
+            'name': 'Draft-Artikel',
+            'supplier_id': sid,
+            'description': 'Entwurfstext',
+            'list_price_chf': '25.50',
+            'color_choice_ids': [str(cid)],
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert b'Neuer Lieferant' in rv.data
+    assert b'Zur' in rv.data and b'ck zum Artikel' in rv.data
+
+    rv = marketing_chief_client.post(
+        '/admin/merch-v2/suppliers/new',
+        data={
+            'name': 'Frisch-Erfasst',
+            'contact_email': '',
+            'website_url': '',
+            'notes': '',
+            'submit': 'Speichern',
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert b'Draft-Artikel' in rv.data
+    assert b'Entwurfstext' in rv.data
+    assert b'Frisch-Erfasst' in rv.data
+    assert b'Lieferant erfassen' in rv.data
+
+
+def test_article_edit_stash_supplier_cancel_restores_draft(marketing_chief_client, app, merch_v2_enabled):
+    with app.app_context():
+        from backend.models.merch_v2 import MerchArticle, MerchSupplier
+
+        sup = MerchSupplier(name='Edit-Lief')
+        db.session.add(sup)
+        db.session.flush()
+        art = MerchArticle(name='Original-Name', supplier_id=sup.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.commit()
+        aid, sid = art.id, sup.id
+
+    marketing_chief_client.post(
+        f'/admin/merch-v2/articles/{aid}/stash-for-supplier',
+        data={
+            'name': 'Geaendert im Entwurf',
+            'supplier_id': sid,
+            'description': 'Neue Beschreibung',
+            'list_price_chf': '12.00',
+        },
+        follow_redirects=True,
+    )
+    rv = marketing_chief_client.get(f'/admin/merch-v2/articles/{aid}/edit', follow_redirects=True)
+    assert rv.status_code == 200
+    assert b'Geaendert im Entwurf' in rv.data
+    assert b'Neue Beschreibung' in rv.data

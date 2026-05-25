@@ -9,7 +9,20 @@ from io import StringIO
 
 import csv
 
-from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_wtf.csrf import validate_csrf
+from wtforms.validators import ValidationError
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from sqlalchemy import distinct, func, select
@@ -33,6 +46,7 @@ from backend.models.merch_v2 import (
     MerchArticle,
     MerchColor,
     MerchOrder,
+    MerchOrderItem,
     MerchOrderStatus,
     MerchRound,
     MerchRoundItem,
@@ -52,6 +66,22 @@ from backend.services.merch_image_service import MerchImageService
 from backend.services.merch_lookup_service import MerchLookupService, MerchVariantBulkService
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.merch_round_service import MerchRoundService
+from backend.services.merch_round_workflow import (
+    WORKFLOW_STEP_LABELS,
+    build_aggregate_rows,
+    build_closed_line_rows,
+    build_distribution_line_rows,
+    build_order_line_rows,
+    build_pricing_article_groups,
+    build_sortiment_rows,
+    compute_round_workflow_phase,
+    round_can_delete,
+    round_delete_is_hard,
+    round_orders_invoiced,
+    round_prices_complete,
+    step_back_available,
+    workflow_hint,
+)
 from backend.services.merch_sortiment_service import (
     MerchSortimentService,
     merged_variant_schema_from_lookups,
@@ -137,8 +167,8 @@ class MerchRoundForm(FlaskForm):
 
 
 class AddRoundItemForm(FlaskForm):
-    variant_id = SelectField('Variante', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Position hinzufuegen')
+    variant_id = SelectField('Einzelne Variante', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Variante hinzufügen')
 
 
 class MerchSupplierForm(FlaskForm):
@@ -197,6 +227,107 @@ def _supplier_select_choices(include_supplier_id: int | None = None) -> list[tup
         if extra:
             active = sorted(active + [extra], key=lambda x: (x.name or '').lower())
     return [(s.id, s.name) for s in active]
+
+
+_MERCH_ARTICLE_DRAFT_SESSION_KEY = 'merch_article_form_draft'
+_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY = 'merch_article_draft_new_supplier_id'
+
+
+def _validate_merch_csrf_or_403() -> None:
+    if not current_app.config.get('WTF_CSRF_ENABLED', True):
+        return
+    token = (
+        request.form.get('csrf_token')
+        or request.headers.get('X-CSRFToken')
+        or request.headers.get('X-CSRF-Token')
+    )
+    try:
+        validate_csrf(token)
+    except (ValidationError, Exception):
+        abort(403)
+
+
+def _merch_article_draft_from_request(*, article_id: int | None) -> dict:
+    variant_list_prices = {
+        key: request.form.get(key, '')
+        for key in request.form
+        if key.startswith('variant_list_price_chf_')
+    }
+    return {
+        'return_endpoint': 'merch_admin.article_edit' if article_id else 'merch_admin.article_new',
+        'return_kwargs': {'article_id': article_id} if article_id else {},
+        'fields': {
+            'name': request.form.get('name', ''),
+            'supplier_id': request.form.get('supplier_id', ''),
+            'description': request.form.get('description', ''),
+            'list_price_chf': request.form.get('list_price_chf', ''),
+            'color_choice_ids': request.form.getlist('color_choice_ids'),
+            'size_choice_ids': request.form.getlist('size_choice_ids'),
+            'remove_image': request.form.get('remove_image') == 'y',
+        },
+        'variant_list_prices': variant_list_prices,
+    }
+
+
+def _merch_apply_article_draft(
+    form: MerchArticleForm,
+    draft: dict,
+    *,
+    new_supplier_id: int | None = None,
+) -> dict[str, str]:
+    fields = draft.get('fields') or {}
+    form.name.data = fields.get('name') or ''
+    form.description.data = fields.get('description') or ''
+    raw_price = (fields.get('list_price_chf') or '').strip()
+    if raw_price:
+        try:
+            form.list_price_chf.data = Decimal(str(raw_price).replace(',', '.'))
+        except Exception:
+            form.list_price_chf.data = None
+    else:
+        form.list_price_chf.data = None
+    form.color_choice_ids.data = [
+        int(value)
+        for value in (fields.get('color_choice_ids') or [])
+        if str(value).isdigit()
+    ]
+    form.size_choice_ids.data = [
+        int(value)
+        for value in (fields.get('size_choice_ids') or [])
+        if str(value).isdigit()
+    ]
+    form.remove_image.data = bool(fields.get('remove_image'))
+    if new_supplier_id is not None:
+        form.supplier_id.data = new_supplier_id
+    elif fields.get('supplier_id') and str(fields['supplier_id']).isdigit():
+        form.supplier_id.data = int(fields['supplier_id'])
+    return dict(draft.get('variant_list_prices') or {})
+
+
+def _merch_restore_article_draft_if_present(form: MerchArticleForm) -> tuple[dict[str, str], bool]:
+    draft = session.pop(_MERCH_ARTICLE_DRAFT_SESSION_KEY, None)
+    if not draft:
+        session.pop(_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY, None)
+        return {}, False
+    new_supplier_id = None
+    if request.args.get('supplier_created'):
+        new_supplier_id = session.pop(_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY, None)
+    else:
+        session.pop(_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY, None)
+    prices = _merch_apply_article_draft(form, draft, new_supplier_id=new_supplier_id)
+    return prices, True
+
+
+def _merch_clear_article_draft_session() -> None:
+    session.pop(_MERCH_ARTICLE_DRAFT_SESSION_KEY, None)
+    session.pop(_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY, None)
+    session.modified = True
+
+
+def _merch_supplier_form_return_url(draft: dict | None) -> str | None:
+    if not draft:
+        return None
+    return url_for(draft['return_endpoint'], **draft.get('return_kwargs') or {})
 
 
 def _article_store_image_upload(article: MerchArticle, uf) -> str | None:
@@ -302,25 +433,6 @@ def cockpit():
         ctx['archived_articles'] = archived_list
         aid_sortiment = [a.id for a in active_list] + [a.id for a in archived_list]
         ctx['sortiment_article_dimensions'] = _article_archive_dimension_strings(aid_sortiment)
-    elif main_tab == 'statistik':
-        years = _statistics_season_years_list()
-        requested = request.args.get('year', type=int)
-        year = requested if requested is not None else current_club_season_label_year()
-        if years and year not in years:
-            year = years[0]
-        overview = build_year_overview(year)
-        qty_top = top_articles_by_quantity_for_round_ids(overview.round_ids, limit=5)
-        marg_top = top_articles_by_margin_for_round_ids(overview.round_ids, limit=5)
-        season_start, season_end = club_season_utc_bounds(year)
-        ctx.update(
-            season_year=year,
-            season_years=years,
-            overview=overview,
-            top_qty=qty_top,
-            top_margin=marg_top,
-            season_start=season_start.date(),
-            season_end=season_end.date(),
-        )
 
     return render_template('admin/merch_v2/merch_hub.html', **ctx)
 
@@ -348,6 +460,8 @@ def suppliers_index():
 @limiter.limit('30 per minute', methods=['POST'])
 def supplier_new():
     require_merch_v2_enabled()
+    article_draft = session.get(_MERCH_ARTICLE_DRAFT_SESSION_KEY)
+    return_url = _merch_supplier_form_return_url(article_draft)
     if request.method == 'POST':
         form = MerchSupplierForm(formdata=request.form)
         if form.validate_on_submit():
@@ -362,6 +476,17 @@ def supplier_new():
                 extra_data={'name': s.name},
             )
             flash('Lieferant angelegt.', 'success')
+            draft = session.get(_MERCH_ARTICLE_DRAFT_SESSION_KEY)
+            if draft:
+                session[_MERCH_ARTICLE_DRAFT_NEW_SUPPLIER_KEY] = s.id
+                session.modified = True
+                return redirect(
+                    url_for(
+                        draft['return_endpoint'],
+                        **draft.get('return_kwargs') or {},
+                        supplier_created=1,
+                    )
+                )
             return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
         flash('Bitte Eingaben pruefen.', 'error')
     else:
@@ -371,6 +496,7 @@ def supplier_new():
         form=form,
         page_title='Neuer Lieferant',
         supplier=None,
+        supplier_return_url=return_url,
     )
 
 
@@ -600,6 +726,31 @@ def articles_index():
     return redirect(url_for('merch_admin.cockpit', tab='sortiment'))
 
 
+@bp.route('/articles/new/stash-for-supplier', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_new_stash_for_supplier():
+    require_merch_v2_enabled()
+    _validate_merch_csrf_or_403()
+    session[_MERCH_ARTICLE_DRAFT_SESSION_KEY] = _merch_article_draft_from_request(article_id=None)
+    session.modified = True
+    return redirect(url_for('merch_admin.supplier_new'))
+
+
+@bp.route('/articles/<int:article_id>/stash-for-supplier', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def article_edit_stash_for_supplier(article_id: int):
+    require_merch_v2_enabled()
+    MerchArticle.query.filter_by(id=article_id).first_or_404()
+    _validate_merch_csrf_or_403()
+    session[_MERCH_ARTICLE_DRAFT_SESSION_KEY] = _merch_article_draft_from_request(article_id=article_id)
+    session.modified = True
+    return redirect(url_for('merch_admin.supplier_new'))
+
+
 @bp.route('/articles/new', methods=['GET', 'POST'])
 @login_required
 @marketing_chief_or_admin_required
@@ -612,6 +763,11 @@ def article_new():
         form = MerchArticleForm()
     form.supplier_id.choices = _supplier_select_choices()
     _populate_merch_article_variant_lookup_choices(form)
+    article_draft_variant_prices: dict[str, str] = {}
+    if request.method == 'GET':
+        article_draft_variant_prices, draft_restored = _merch_restore_article_draft_if_present(form)
+        if draft_restored and request.args.get('supplier_created'):
+            flash('Artikeleingaben wiederhergestellt.', 'info')
     if not form.supplier_id.choices:
         flash('Bitte zuerst mindestens einen aktiven Lieferanten anlegen.', 'warning')
         return redirect(url_for('merch_admin.cockpit', tab='lieferanten'))
@@ -650,6 +806,7 @@ def article_new():
                         extra_data={'name': art.name},
                     )
                     flash('Artikel angelegt. Optional: Variantenpreise anpassen.', 'success')
+                    _merch_clear_article_draft_session()
                     return redirect(url_for('merch_admin.article_edit', article_id=art.id))
         else:
             flash('Bitte Eingaben pruefen.', 'error')
@@ -663,6 +820,8 @@ def article_new():
         bulk_sizes=[],
         merch_lookup_colors_url=url_for('merch_admin.lookups_colors'),
         merch_lookup_sizes_url=url_for('merch_admin.lookups_sizes'),
+        supplier_stash_url=url_for('merch_admin.article_new_stash_for_supplier'),
+        article_draft_variant_prices=article_draft_variant_prices,
     )
 
 
@@ -692,11 +851,16 @@ def article_edit(article_id: int):
 
     form.supplier_id.choices = _supplier_select_choices(include_supplier_id=art.supplier_id)
     n_colors, n_sizes = _populate_merch_article_variant_lookup_choices(form)
+    article_draft_variant_prices: dict[str, str] = {}
 
     if request.method == 'GET':
-        c_sel, s_sel = lookup_color_and_size_field_ids_from_schema(legacy_schema)
-        form.color_choice_ids.data = c_sel
-        form.size_choice_ids.data = s_sel
+        article_draft_variant_prices, draft_restored = _merch_restore_article_draft_if_present(form)
+        if not draft_restored:
+            c_sel, s_sel = lookup_color_and_size_field_ids_from_schema(legacy_schema)
+            form.color_choice_ids.data = c_sel
+            form.size_choice_ids.data = s_sel
+        elif request.args.get('supplier_created'):
+            flash('Artikeleingaben wiederhergestellt.', 'info')
 
     if request.method == 'POST':
         merged = merged_variant_schema_from_lookups(
@@ -732,6 +896,7 @@ def article_edit(article_id: int):
                         extra_data={'name': art.name},
                     )
                     flash('Artikel gespeichert.', 'success')
+                    _merch_clear_article_draft_session()
                     return redirect(url_for('merch_admin.article_edit', article_id=art.id))
         else:
             flash('Bitte Eingaben pruefen.', 'error')
@@ -746,6 +911,8 @@ def article_edit(article_id: int):
         bulk_sizes=bulk_sizes,
         merch_lookup_colors_url=url_for('merch_admin.lookups_colors'),
         merch_lookup_sizes_url=url_for('merch_admin.lookups_sizes'),
+        supplier_stash_url=url_for('merch_admin.article_edit_stash_for_supplier', article_id=art.id),
+        article_draft_variant_prices=article_draft_variant_prices,
     )
 
 
@@ -846,19 +1013,19 @@ def lookups_color_new():
     return redirect(url_for('merch_admin.lookups_colors'))
 
 
-@bp.route('/lookups/colors/<int:color_id>/rename', methods=['POST'])
+@bp.route('/lookups/colors/save', methods=['POST'])
 @login_required
 @marketing_chief_or_admin_required
 @limiter.limit('30 per minute', methods=['POST'])
-def lookups_color_rename(color_id: int):
+def lookups_colors_save():
     require_merch_v2_enabled()
-    res = MerchLookupService.rename_color(color_id, request.form.get('label', ''))
+    res = MerchLookupService.save_color_labels_from_form(request.form)
     if res['success']:
         db.session.commit()
-        flash('Farbe umbenannt.', 'success')
+        flash('Farben gespeichert.', 'success')
     else:
         db.session.rollback()
-        flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
+        flash(res.get('error') or 'Speichern fehlgeschlagen.', 'error')
     return redirect(url_for('merch_admin.lookups_colors'))
 
 
@@ -878,19 +1045,19 @@ def lookups_size_new():
     return redirect(url_for('merch_admin.lookups_sizes'))
 
 
-@bp.route('/lookups/sizes/<int:size_id>/rename', methods=['POST'])
+@bp.route('/lookups/sizes/save', methods=['POST'])
 @login_required
 @marketing_chief_or_admin_required
 @limiter.limit('30 per minute', methods=['POST'])
-def lookups_size_rename(size_id: int):
+def lookups_sizes_save():
     require_merch_v2_enabled()
-    res = MerchLookupService.rename_size(size_id, request.form.get('label', ''))
+    res = MerchLookupService.save_size_labels_from_form(request.form)
     if res['success']:
         db.session.commit()
-        flash('Grösse umbenannt.', 'success')
+        flash('Grössen gespeichert.', 'success')
     else:
         db.session.rollback()
-        flash(res.get('error') or 'Umbenennen fehlgeschlagen.', 'error')
+        flash(res.get('error') or 'Speichern fehlgeschlagen.', 'error')
     return redirect(url_for('merch_admin.lookups_sizes'))
 
 
@@ -1017,13 +1184,64 @@ def round_create():
     return render_template('admin/merch_v2/round_form.html', form=form)
 
 
+def _round_detail_redirect(round_id: int):
+    return redirect(
+        url_for('merch_admin.round_detail', round_id=round_id, _anchor='merch-round-step-panel')
+    )
+
+
+def _apply_round_pricing_from_form(round_obj: MerchRound) -> None:
+    def parse_chf(raw: str | None) -> int | None:
+        raw = (raw or '').strip()
+        if raw == '':
+            return None
+        try:
+            return _subsidy_chf_to_rappen(Decimal(raw.replace(',', '.')))
+        except Exception:
+            return None
+
+    article_eff: dict[int, int | None] = {}
+    article_mem: dict[int, int | None] = {}
+    for ri in round_obj.round_items:
+        aid = ri.variant.article_id
+        if aid not in article_eff and f'article_eff_chf_{aid}' in request.form:
+            article_eff[aid] = parse_chf(request.form.get(f'article_eff_chf_{aid}'))
+        if aid not in article_mem and f'article_mem_chf_{aid}' in request.form:
+            article_mem[aid] = parse_chf(request.form.get(f'article_mem_chf_{aid}'))
+
+    for ri in round_obj.round_items:
+        aid = ri.variant.article_id
+        eff = parse_chf(request.form.get(f'variant_eff_chf_{ri.id}'))
+        mem = parse_chf(request.form.get(f'variant_mem_chf_{ri.id}'))
+        if eff is None:
+            eff = article_eff.get(aid)
+        if mem is None:
+            mem = article_mem.get(aid)
+        if eff is not None:
+            ri.effective_supplier_price_rappen = eff
+        if mem is not None:
+            ri.member_price_rappen = mem
+
+
 def _load_round_detail(round_id: int) -> MerchRound:
     return (
         MerchRound.query.options(
+            joinedload(MerchRound.round_items)
+            .joinedload(MerchRoundItem.variant)
+            .joinedload(MerchVariant.article)
+            .joinedload(MerchArticle.supplier),
             joinedload(MerchRound.round_items).joinedload(MerchRoundItem.variant).joinedload(
-                MerchVariant.article
+                MerchVariant.color
             ),
-            joinedload(MerchRound.orders).joinedload(MerchOrder.order_items),
+            joinedload(MerchRound.round_items).joinedload(MerchRoundItem.variant).joinedload(
+                MerchVariant.size
+            ),
+            joinedload(MerchRound.orders).joinedload(MerchOrder.order_items).joinedload(
+                MerchOrderItem.round_item
+            ).joinedload(MerchRoundItem.variant).joinedload(MerchVariant.color),
+            joinedload(MerchRound.orders).joinedload(MerchOrder.order_items).joinedload(
+                MerchOrderItem.round_item
+            ).joinedload(MerchRoundItem.variant).joinedload(MerchVariant.size),
             joinedload(MerchRound.orders).joinedload(MerchOrder.member),
         )
         .filter_by(id=round_id)
@@ -1056,31 +1274,6 @@ def _supplier_invoice_web_link_safe(file_id: str | None) -> str | None:
         return ln or None
     except DriveError:
         return None
-
-
-def _aggregate_clipboard_columns(aggregate_rows: list[tuple[MerchRoundItem, int]]) -> str:
-    sep = ';'
-    header = sep.join(['Artikel', 'Variante', 'Stueckzahl', 'Listenpreis_CHF', 'Effektiv_CHF', 'Mitglied_CHF'])
-    lines = [header]
-    for ri, qty in aggregate_rows:
-        attr = _variant_attrs_label(ri.variant.attributes)
-        lines.append(
-            sep.join(
-                [
-                    ri.variant.article.name,
-                    attr,
-                    str(qty),
-                    f'{ri.list_price_snapshot_rappen / 100:.2f}',
-                    ''
-                    if ri.effective_supplier_price_rappen is None
-                    else f'{ri.effective_supplier_price_rappen / 100:.2f}',
-                    ''
-                    if ri.member_price_rappen is None
-                    else f'{ri.member_price_rappen / 100:.2f}',
-                ]
-            )
-        )
-    return '\n'.join(lines)
 
 
 def _statistics_season_years_list() -> list[int]:
@@ -1116,11 +1309,16 @@ def round_detail(round_id: int):
     invoice_folder_configured = bool(
         (current_app.config.get('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID') or '').strip()
     )
-    aggregate_clipboard_text = _aggregate_clipboard_columns(aggregate_rows)
     orders_sorted = sorted(
         [o for o in r.orders],
         key=lambda o: ((o.member.nachname or '').lower(), (o.member.vorname or '').lower(), o.id),
     )
+    workflow_phase = compute_round_workflow_phase(r)
+    active_orders = [
+        o
+        for o in r.orders
+        if o.status not in (MerchOrderStatus.CANCELLED, MerchOrderStatus.DRAFT)
+    ]
     return render_template(
         'admin/merch_v2/round_detail.html',
         round=r,
@@ -1130,10 +1328,28 @@ def round_detail(round_id: int):
         round_items_sorted=round_items_sorted,
         aggregate_rows=aggregate_rows,
         round_stats=round_stats,
-        aggregate_clipboard_text=aggregate_clipboard_text,
         invoice_web_link=invoice_web_link,
         invoice_folder_configured=invoice_folder_configured,
         orders_sorted=orders_sorted,
+        workflow_phase=workflow_phase,
+        workflow_step_labels=WORKFLOW_STEP_LABELS,
+        workflow_hint_text=workflow_hint(
+            r,
+            phase=workflow_phase,
+            orders_count=len(active_orders),
+            buyers_count=len({o.member_id for o in active_orders}),
+        ),
+        sortiment_table_rows=build_sortiment_rows(round_items_sorted),
+        order_line_rows=build_order_line_rows(orders_sorted),
+        aggregate_table_rows=build_aggregate_rows(aggregate_rows),
+        pricing_article_groups=build_pricing_article_groups(round_items_sorted),
+        distribution_line_rows=build_distribution_line_rows(orders_sorted),
+        closed_line_rows=build_closed_line_rows(orders_sorted),
+        prices_complete=round_prices_complete(r),
+        orders_invoiced=round_orders_invoiced(r),
+        step_back_available=step_back_available(r),
+        round_can_delete=round_can_delete(r),
+        round_delete_is_hard=round_delete_is_hard(r),
     )
 
 
@@ -1147,19 +1363,39 @@ def round_add_item(round_id: int):
     form = AddRoundItemForm()
     form.variant_id.choices = _round_item_add_choices(r)
     if not form.variant_id.choices:
-        flash('Keine weiteren Varianten verfuegbar.', 'error')
-        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        flash('Keine weiteren Artikel verfügbar.', 'error')
+        return _round_detail_redirect(round_id)
     if form.validate_on_submit():
         result = MerchRoundService.add_variant_to_round(round_id, form.variant_id.data)
         if result['success']:
             db.session.commit()
-            flash('Position hinzugefuegt.', 'success')
+            flash('Artikel hinzugefügt.', 'success')
         else:
             db.session.rollback()
-            flash(result.get('error') or 'Position konnte nicht hinzugefuegt werden.', 'error')
+            flash(result.get('error') or 'Artikel konnte nicht hinzugefügt werden.', 'error')
     else:
-        flash('Bitte Variante waehlen.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        flash('Bitte Artikel wählen.', 'error')
+    return _round_detail_redirect(round_id)
+
+
+@bp.route('/rounds/<int:round_id>/items/add-all', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_add_all_items(round_id: int):
+    require_merch_v2_enabled()
+    result = MerchRoundService.add_all_available_variants_to_round(round_id)
+    if result['success']:
+        db.session.commit()
+        added = int(result.get('added') or 0)
+        if added:
+            flash(f'{added} Artikel hinzugefügt.', 'success')
+        else:
+            flash('Keine weiteren aktiven Artikel verfügbar.', 'info')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Artikel konnten nicht hinzugefügt werden.', 'error')
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/rounds/<int:round_id>/items/<int:item_id>/remove', methods=['POST'])
@@ -1171,11 +1407,11 @@ def round_remove_item(round_id: int, item_id: int):
     result = MerchRoundService.remove_round_item(round_id, item_id)
     if result['success']:
         db.session.commit()
-        flash('Position entfernt.', 'success')
+        flash('Artikel entfernt.', 'success')
     else:
         db.session.rollback()
-        flash(result.get('error') or 'Position konnte nicht entfernt werden.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        flash(result.get('error') or 'Artikel konnte nicht entfernt werden.', 'error')
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/rounds/<int:round_id>/open', methods=['POST'])
@@ -1195,7 +1431,7 @@ def round_open(round_id: int):
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
 
 
 def _parse_transition_reason(min_len: int = 3) -> tuple[str | None, str | None]:
@@ -1217,11 +1453,11 @@ def round_lock(round_id: int):
     if result['success']:
         db.session.commit()
         SecurityService.log_audit_event(AuditAction.MERCH_ROUND_LOCKED, 'merch_round', round_id)
-        flash('Runde ist geschlossen (Lock). Entwuerfe wurden verworfen.', 'success')
+        flash('Bestellrunde geschlossen. Entwürfe wurden verworfen.', 'success')
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/rounds/<int:round_id>/reopen', methods=['POST'])
@@ -1259,10 +1495,7 @@ def round_reopen(round_id: int):
 @limiter.limit('10 per minute', methods=['POST'])
 def round_cancel(round_id: int):
     require_merch_v2_enabled()
-    reason, err = _parse_transition_reason()
-    if err:
-        flash(err, 'error')
-        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    reason = (request.form.get('reason') or '').strip() or 'Storniert.'
     r = MerchRound.query.filter_by(id=round_id).first_or_404()
     result = MerchRoundService.apply_transition(
         r, MerchRoundStatus.CANCELLED, cancellation_reason=reason
@@ -1282,6 +1515,63 @@ def round_cancel(round_id: int):
     return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
 
+@bp.route('/rounds/<int:round_id>/step-back', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('20 per minute', methods=['POST'])
+def round_step_back(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.revert_workflow_step(r)
+    if result['success']:
+        db.session.commit()
+        flash('Zurück zum vorherigen Schritt.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return _round_detail_redirect(round_id)
+
+
+@bp.route('/rounds/<int:round_id>/delete', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('10 per minute', methods=['POST'])
+def round_delete(round_id: int):
+    require_merch_v2_enabled()
+    result = MerchRoundService.delete_draft_round(round_id)
+    if result['success']:
+        db.session.commit()
+        flash('Runde gelöscht.', 'success')
+        return redirect(
+            url_for('merch_admin.cockpit', tab='runden', _anchor='gourmen-tabs')
+        )
+    db.session.rollback()
+    flash(result.get('error') or 'Runde konnte nicht gelöscht werden.', 'error')
+    return _round_detail_redirect(round_id)
+
+
+@bp.route('/rounds/<int:round_id>/confirm-supplier-order', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_confirm_supplier_order(round_id: int):
+    require_merch_v2_enabled()
+    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    result = MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ROUND_ORDERED_AT_SUPPLIER,
+            'merch_round',
+            round_id,
+        )
+        flash('Bestellung als aufgegeben markiert.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return _round_detail_redirect(round_id)
+
+
 @bp.route('/rounds/<int:round_id>/pricing', methods=['POST'])
 @login_required
 @marketing_chief_or_admin_required
@@ -1289,47 +1579,57 @@ def round_cancel(round_id: int):
 def round_pricing(round_id: int):
     require_merch_v2_enabled()
     r = _load_round_detail(round_id)
-    if r.status != MerchRoundStatus.LOCKED:
-        flash('Preise sind nur bei gesperrter Runde editierbar.', 'error')
-        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    if r.status != MerchRoundStatus.ORDERED_AT_SUPPLIER:
+        flash('Preise sind nach der Lieferantenbestellung editierbar.', 'error')
+        return _round_detail_redirect(round_id)
+    if round_orders_invoiced(r):
+        flash('Forderungen sind bereits berechnet.', 'warning')
+        return _round_detail_redirect(round_id)
 
     action = (request.form.get('pricing_action') or '').strip()
+    _apply_round_pricing_from_form(r)
 
-    def parse_chf(field: str) -> int | None:
-        raw = (request.form.get(field) or '').strip()
-        if raw == '':
-            return None
-        try:
-            return _subsidy_chf_to_rappen(Decimal(raw.replace(',', '.')))
-        except Exception:
-            return None
-
-    for ri in r.round_items:
-        eff = parse_chf(f'effective_chf_{ri.id}')
-        mem = parse_chf(f'member_chf_{ri.id}')
-        if eff is not None:
-            ri.effective_supplier_price_rappen = eff
-        if mem is not None:
-            ri.member_price_rappen = mem
-
-    if action == 'confirm_ordered':
-        result = MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
-        if result['success']:
+    if action == 'apply_invoicing':
+        inv = MerchOrderService.invoice_confirmed_orders_for_round(r)
+        if inv['success']:
             db.session.commit()
-            SecurityService.log_audit_event(
-                AuditAction.MERCH_ROUND_ORDERED_AT_SUPPLIER,
-                'merch_round',
-                round_id,
-            )
-            flash('Lieferantenbestellung bestaetigt; Mitglieder-Forderungen festgeschrieben.', 'success')
+            flash('Preise gespeichert; Mitglieder-Forderungen berechnet.', 'success')
         else:
             db.session.rollback()
-            flash(result.get('error') or 'Uebergang nicht moeglich.', 'error')
-        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+            flash(inv.get('error') or 'Forderungen konnten nicht berechnet werden.', 'error')
+        return _round_detail_redirect(round_id)
 
     db.session.commit()
     flash('Preise gespeichert.', 'success')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
+
+
+@bp.route('/rounds/<int:round_id>/distribute-all', methods=['POST'])
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_distribute_all(round_id: int):
+    require_merch_v2_enabled()
+    r = _load_round_detail(round_id)
+    if r.status != MerchRoundStatus.DELIVERED:
+        flash('Auslieferung ist erst nach Wareneingang moeglich.', 'error')
+        return _round_detail_redirect(round_id)
+    result = MerchOrderService.mark_all_distributed_for_round(r, current_user.id)
+    if result['success']:
+        db.session.commit()
+        touched = int(result.get('touched') or 0)
+        ac = MerchRoundService.try_auto_close_if_complete(r)
+        if ac.get('changed'):
+            db.session.commit()
+            flash('Artikel verteilt. Runde automatisch abgeschlossen.', 'success')
+        elif touched:
+            flash('Artikel verteilt.', 'success')
+        else:
+            flash('Alle Bestellungen waren bereits als verteilt markiert.', 'info')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/rounds/<int:round_id>/delivered', methods=['POST'])
@@ -1345,11 +1645,11 @@ def round_delivered(round_id: int):
         SecurityService.log_audit_event(
             AuditAction.MERCH_ROUND_DELIVERED, 'merch_round', round_id
         )
-        flash('Wareneingang bestaetigt.', 'success')
+        flash('Wareneingang bestätigt.', 'success')
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/rounds/<int:round_id>/close', methods=['POST'])
@@ -1367,40 +1667,57 @@ def round_close(round_id: int):
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktion nicht moeglich.', 'error')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
 
 
-@bp.route('/rounds/<int:round_id>/aggregate.csv', methods=['GET'])
+@bp.route('/rounds/<int:round_id>/aggregate.xlsx', methods=['GET'])
 @login_required
 @marketing_chief_or_admin_required
-def round_aggregate_csv(round_id: int):
+def round_aggregate_xlsx(round_id: int):
     require_merch_v2_enabled()
+    from openpyxl import Workbook
+
     r = _load_round_detail(round_id)
     rows = _round_aggregate_rows(r)
-    buf = StringIO()
-    w = csv.writer(buf, delimiter=';')
-    w.writerow(['Artikel', 'Variante', 'Stueckzahl', 'Listenpreis_CHF', 'Effektiv_CHF', 'Mitglied_CHF'])
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Bestellung'
+    ws.append(
+        [
+            'Artikel',
+            'Variante',
+            'Stückzahl',
+            'Listenpreis CHF',
+            'Effektiv CHF',
+            'Member CHF',
+        ]
+    )
     for ri, qty in rows:
         attr = _variant_attrs_label(ri.variant.attributes)
-        w.writerow(
+        ws.append(
             [
                 ri.variant.article.name,
                 attr,
                 qty,
-                f'{ri.list_price_snapshot_rappen / 100:.2f}',
-                ''
+                ri.list_price_snapshot_rappen / 100.0,
+                None
                 if ri.effective_supplier_price_rappen is None
-                else f'{ri.effective_supplier_price_rappen / 100:.2f}',
-                ''
+                else ri.effective_supplier_price_rappen / 100.0,
+                None
                 if ri.member_price_rappen is None
-                else f'{ri.member_price_rappen / 100:.2f}',
+                else ri.member_price_rappen / 100.0,
             ]
         )
-    data = buf.getvalue().encode('utf-8-sig')
-    resp = Response(data, mimetype='text/csv; charset=utf-8')
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
     safe_title = ''.join(c if c.isalnum() or c in '-_' else '_' for c in r.title)[:60]
+    resp = Response(
+        buf.getvalue(),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
     resp.headers['Content-Disposition'] = (
-        f'attachment; filename=merch-runde-{round_id}-{safe_title}-aggregat.csv'
+        f'attachment; filename=merch-runde-{round_id}-{safe_title}-bestellung.xlsx'
     )
     return resp
 
@@ -1526,7 +1843,7 @@ def round_supplier_invoice(round_id: int):
                 extra_data={'drive_file_id': r.supplier_invoice_drive_file_id},
             )
         flash('Lieferantenbeleg / Summe aktualisiert.', 'success')
-    return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+    return _round_detail_redirect(round_id)
 
 
 @bp.route('/statistics', methods=['GET'])

@@ -213,6 +213,34 @@ class MerchOrderService:
             cls.recalculate_draft_totals(o)
 
     @classmethod
+    def reset_invoiced_orders_to_confirmed_for_round(cls, round_id: int) -> None:
+        """Fakturierte Bestellungen zurueck auf bestaetigt (Schritt zurueck vor Beleg)."""
+        orders = MerchOrder.query.filter_by(
+            round_id=round_id,
+            status=MerchOrderStatus.INVOICED,
+        ).all()
+        for o in orders:
+            o.status = MerchOrderStatus.CONFIRMED
+            o.invoiced_at = None
+            for line in o.order_items:
+                line.unit_price_final_rappen = None
+            cls.recalculate_draft_totals(o)
+
+    @classmethod
+    def reset_pickup_for_round(cls, round_id: int) -> None:
+        """Auslieferungs-Markierungen zuruecksetzen (Schritt zurueck vor Verteilung)."""
+        orders = (
+            MerchOrder.query.filter_by(round_id=round_id)
+            .filter(MerchOrder.picked_up_at.isnot(None))
+            .all()
+        )
+        for o in orders:
+            o.picked_up_at = None
+            o.picked_up_by_member_id = None
+            if o.status == MerchOrderStatus.PICKED_UP:
+                o.status = MerchOrderStatus.INVOICED
+
+    @classmethod
     def validate_round_items_for_supplier_order(cls, round_obj: MerchRound) -> dict:
         """Alle Rund-Positionen brauchen Effektiv- und Mitgliederpreis (Rappen)."""
         for ri in round_obj.round_items:
@@ -319,12 +347,36 @@ class MerchOrderService:
 
     @classmethod
     def round_ready_for_auto_close(cls, round_obj: MerchRound) -> bool:
-        """Alle nicht-stornierten Orders haben Abholung und Bezahlung erfasst."""
+        """Alle nicht-stornierten fakturierten Orders sind abgeholt."""
         if round_obj.status != MerchRoundStatus.DELIVERED:
             return False
         for o in round_obj.orders:
             if o.status == MerchOrderStatus.CANCELLED:
                 continue
-            if o.picked_up_at is None or o.paid_at is None:
+            if o.status in (
+                MerchOrderStatus.DRAFT,
+                MerchOrderStatus.CONFIRMED,
+            ):
+                continue
+            if o.picked_up_at is None:
                 return False
         return True
+
+    @classmethod
+    def mark_all_distributed_for_round(cls, round_obj: MerchRound, actor_member_id: int) -> dict:
+        """Alle fakturierten, noch nicht abgeholten Orders als verteilt markieren."""
+        touched = 0
+        for o in round_obj.orders:
+            if o.status not in (
+                MerchOrderStatus.INVOICED,
+                MerchOrderStatus.PICKED_UP,
+                MerchOrderStatus.PAID,
+            ):
+                continue
+            if o.picked_up_at is not None:
+                continue
+            res = cls.mark_picked_up(o.id, actor_member_id)
+            if not res['success']:
+                return res
+            touched += 1
+        return {'success': True, 'error': None, 'touched': touched}

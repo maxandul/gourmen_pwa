@@ -143,6 +143,455 @@ def test_round_cancel_requires_reason(app):
         db.session.commit()
 
 
+def test_revert_workflow_step_from_locked_preserves_confirmed_orders(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRound,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-locked@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-back')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-back', supplier_id=s.id, list_price_rappen=1500)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Back-Locked', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        db.session.commit()
+
+        o = MerchOrder(round_id=r.id, member_id=m.id, status=MerchOrderStatus.CONFIRMED)
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=2,
+                unit_price_at_confirm_rappen=1500,
+            )
+        )
+        o.gross_amount_rappen = 3000
+        o.subsidy_amount_rappen = 0
+        o.member_amount_due_rappen = 3000
+        db.session.commit()
+        oid = o.id
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+        db.session.commit()
+
+        res = MerchRoundService.revert_workflow_step(r)
+        assert res['success']
+        db.session.commit()
+
+        r2 = db.session.get(MerchRound, r.id)
+        o2 = db.session.get(MerchOrder, oid)
+        assert r2.status == MerchRoundStatus.OPEN
+        assert r2.locked_at is None
+        assert o2.status == MerchOrderStatus.CONFIRMED
+
+
+def test_revert_workflow_step_from_open_preserves_orders(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-open@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-open-back')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-open', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Back-Open', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        db.session.commit()
+
+        o = MerchOrder(round_id=r.id, member_id=m.id, status=MerchOrderStatus.CONFIRMED)
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=1,
+                unit_price_at_confirm_rappen=1000,
+            )
+        )
+        db.session.commit()
+        oid = o.id
+
+        res = MerchRoundService.revert_workflow_step(r)
+        assert res['success']
+        db.session.commit()
+
+        assert r.status == MerchRoundStatus.DRAFT
+        o2 = db.session.get(MerchOrder, oid)
+        assert o2.status == MerchOrderStatus.CONFIRMED
+
+
+def test_revert_workflow_step_from_ordered_at_supplier_preserves_confirmed_orders(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+    from backend.services.merch_round_workflow import compute_round_workflow_phase
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-ordered@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-ord-back')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-ord', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Back-Ordered', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+        db.session.commit()
+
+        o = MerchOrder(round_id=r.id, member_id=m.id, status=MerchOrderStatus.CONFIRMED)
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=1,
+                unit_price_at_confirm_rappen=1000,
+            )
+        )
+        db.session.commit()
+        oid = o.id
+
+        assert compute_round_workflow_phase(r) == 4
+
+        res = MerchRoundService.revert_workflow_step(r)
+        assert res['success']
+        db.session.commit()
+
+        assert r.status == MerchRoundStatus.LOCKED
+        assert r.ordered_at is None
+        o2 = db.session.get(MerchOrder, oid)
+        assert o2.status == MerchOrderStatus.CONFIRMED
+
+
+def test_revert_workflow_step_from_invoiced_keeps_orders_as_confirmed(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+    from backend.services.merch_round_workflow import compute_round_workflow_phase
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-invoiced@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-inv-back')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-inv', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Back-Inv', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+        ri.effective_supplier_price_rappen = 800
+        ri.member_price_rappen = 1000
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+        db.session.commit()
+
+        o = MerchOrder(round_id=r.id, member_id=m.id, status=MerchOrderStatus.CONFIRMED)
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=1,
+                unit_price_at_confirm_rappen=1000,
+            )
+        )
+        db.session.commit()
+
+        inv = MerchOrderService.invoice_confirmed_orders_for_round(r)
+        assert inv['success']
+        db.session.commit()
+        oid = o.id
+
+        assert compute_round_workflow_phase(r) == 5
+
+        res = MerchRoundService.revert_workflow_step(r)
+        assert res['success']
+        db.session.commit()
+
+        assert r.status == MerchRoundStatus.ORDERED_AT_SUPPLIER
+        o2 = db.session.get(MerchOrder, oid)
+        assert o2.status == MerchOrderStatus.CONFIRMED
+        assert o2.invoiced_at is None
+
+
+def test_revert_workflow_step_from_beleg_with_saved_total_returns_to_beleg_then_pricing(app):
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+    from backend.services.merch_round_workflow import compute_round_workflow_phase
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-beleg-saved@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-beleg-saved')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-beleg', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Beleg-Saved', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+        ri.effective_supplier_price_rappen = 800
+        ri.member_price_rappen = 1000
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+        db.session.commit()
+
+        o = MerchOrder(round_id=r.id, member_id=m.id, status=MerchOrderStatus.CONFIRMED)
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=1,
+                unit_price_at_confirm_rappen=1000,
+            )
+        )
+        db.session.commit()
+        MerchOrderService.invoice_confirmed_orders_for_round(r)
+        r.supplier_invoice_total_rappen = 12345
+        db.session.commit()
+
+        assert compute_round_workflow_phase(r) == 6
+
+        res6 = MerchRoundService.revert_workflow_step(r)
+        assert res6['success']
+        db.session.commit()
+        assert compute_round_workflow_phase(r) == 4
+        assert r.supplier_invoice_total_rappen is None
+        o2 = db.session.get(MerchOrder, o.id)
+        assert o2.status == MerchOrderStatus.CONFIRMED
+
+
+def test_revert_workflow_step_from_delivered_preserves_invoiced_orders(app):
+    from datetime import datetime
+
+    from werkzeug.security import generate_password_hash
+
+    from backend.models.member import Member
+    from backend.models.merch_v2 import (
+        MerchArticle,
+        MerchOrder,
+        MerchOrderItem,
+        MerchOrderStatus,
+        MerchRoundItem,
+        MerchRoundStatus,
+        MerchSupplier,
+        MerchVariant,
+    )
+    from backend.services.merch_round_workflow import compute_round_workflow_phase
+
+    with app.app_context():
+        m = Member(
+            vorname='a',
+            nachname='b',
+            email='step-back-delivered@test',
+            passwort_hash=generate_password_hash('TestPasswortMind12'),
+        )
+        db.session.add(m)
+        db.session.flush()
+        s = MerchSupplier(name='S-del-back')
+        db.session.add(s)
+        db.session.flush()
+        art = MerchArticle(name='Art-del', supplier_id=s.id, list_price_rappen=1000)
+        db.session.add(art)
+        db.session.flush()
+        v = MerchVariant(article_id=art.id, attributes={}, is_active=True)
+        db.session.add(v)
+        db.session.flush()
+
+        cr = MerchRoundService.create_draft_round(title='Back-Del', marketing_chief_id=m.id)
+        r = cr['round']
+        MerchRoundService.add_variant_to_round(r.id, v.id)
+        db.session.commit()
+        ri = MerchRoundItem.query.filter_by(round_id=r.id).one()
+
+        MerchRoundService.apply_transition(r, MerchRoundStatus.OPEN)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.LOCKED)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.ORDERED_AT_SUPPLIER)
+        MerchRoundService.apply_transition(r, MerchRoundStatus.DELIVERED)
+        db.session.commit()
+
+        o = MerchOrder(
+            round_id=r.id,
+            member_id=m.id,
+            status=MerchOrderStatus.PICKED_UP,
+            picked_up_at=datetime.utcnow(),
+            picked_up_by_member_id=m.id,
+        )
+        db.session.add(o)
+        db.session.flush()
+        db.session.add(
+            MerchOrderItem(
+                order_id=o.id,
+                round_item_id=ri.id,
+                quantity=1,
+                unit_price_at_confirm_rappen=1000,
+                unit_price_final_rappen=1000,
+            )
+        )
+        db.session.commit()
+        oid = o.id
+
+        assert compute_round_workflow_phase(r) == 7
+
+        res = MerchRoundService.revert_workflow_step(r)
+        assert res['success']
+        db.session.commit()
+
+        assert r.status == MerchRoundStatus.ORDERED_AT_SUPPLIER
+        assert r.delivered_at is None
+        o2 = db.session.get(MerchOrder, oid)
+        assert o2.status == MerchOrderStatus.INVOICED
+        assert o2.picked_up_at is None
+
+
 def test_round_item_add_duplicate_and_open_blocks_second_add(app):
     from werkzeug.security import generate_password_hash
 

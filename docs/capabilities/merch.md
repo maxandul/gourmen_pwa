@@ -608,7 +608,7 @@ POST /admin/merch/rounds/<round_id>/invoice    → Lieferantenbeleg-Upload
 POST /admin/merch/rounds/<round_id>/delivered  → ORDERED → DELIVERED
 POST /admin/merch/rounds/<round_id>/cancel     → → CANCELLED (mit Begruendung)
 POST /admin/merch/rounds/<round_id>/close      → DELIVERED → CLOSED
-GET  /admin/merch/rounds/<round_id>/aggregate.csv → CSV-Export Sammelbestellung
+GET  /admin/merch/rounds/<round_id>/aggregate.xlsx → Excel-Export Sammelbestellung
 
 GET  /admin/merch/articles                     → Sortimentsuebersicht
 GET  /admin/merch/articles/new                 → Neuer Artikel

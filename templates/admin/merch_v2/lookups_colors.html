@@ -17,8 +17,6 @@
   </div>
 
   <div class="page-content merch-admin-page--lookups">
-    <p class="form-field__hint">Nur der Anzeigename ist änderbar; der technische Kurzcode bleibt für bestehende Verknüpfungen stabil. Zur Pflege der <a href="{{ url_for('merch_admin.lookups_sizes') }}">Stammdaten «Grössen»</a>.</p>
-
     <div class="card">
       <div class="card__body stack-vertical">
         <h2 class="card__title">Neue Farbe</h2>
@@ -36,23 +34,26 @@
         </form>
 
         {% if colors %}
-        <ul class="merch-lookup-list" role="list">
-          {% for c in colors %}
-          <li class="merch-lookup-list__item">
-            <form method="POST" action="{{ url_for('merch_admin.lookups_color_rename', color_id=c.id) }}" class="form merch-lookup-row">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <code class="merch-lookup-row__slug" title="Kurzcode">{{ c.slug }}</code>
-              <div class="form-field merch-lookup-row__field">
-                <label class="form-field__label sr-only" for="color-label-{{ c.id }}">Anzeige</label>
-                <input class="form-field__input" id="color-label-{{ c.id }}" name="label" type="text" value="{{ c.label }}" maxlength="160" autocomplete="off"/>
+        <h2 class="card__title">Bestehende Farben</h2>
+        <form method="POST" action="{{ url_for('merch_admin.lookups_colors_save') }}" class="form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <ul class="merch-lookup-list" role="list">
+            {% for c in colors %}
+            <li class="merch-lookup-list__item">
+              <div class="merch-lookup-row">
+                <code class="merch-lookup-row__slug" title="Kurzcode">{{ c.slug }}</code>
+                <div class="form-field merch-lookup-row__field">
+                  <label class="form-field__label sr-only" for="color-label-{{ c.id }}">Anzeige</label>
+                  <input class="form-field__input" id="color-label-{{ c.id }}" name="label_{{ c.id }}" type="text" value="{{ c.label }}" maxlength="160" autocomplete="off"/>
+                </div>
               </div>
-              <div class="form-actions merch-lookup-row__actions">
-                <button type="submit" class="btn btn--secondary">Speichern</button>
-              </div>
-            </form>
-          </li>
-          {% endfor %}
-        </ul>
+            </li>
+            {% endfor %}
+          </ul>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Speichern</button>
+          </div>
+        </form>
         {% else %}
         <p class="admin-hub__hint">Noch keine Farben.</p>
         {% endif %}

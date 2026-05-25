@@ -1,0 +1,27 @@
+<section class="merch-round-step-footer" aria-label="Schritt-Aktionen">
+  <div class="merch-round-step-footer__grid">
+    {% if step_back_available %}
+    <form method="POST" action="{{ url_for('merch_admin.round_step_back', round_id=round.id) }}" class="merch-round-step-footer__form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="form-actions merch-round-step-footer__actions">
+        <button type="submit" class="btn btn--outline">{{ lucide_icon('step-back') }}<span>Schritt zurück</span></button>
+      </div>
+    </form>
+    {% endif %}
+
+    {% if round_can_delete %}
+    <form method="POST"
+          action="{{ url_for('merch_admin.round_delete', round_id=round.id) if round_delete_is_hard else url_for('merch_admin.round_cancel', round_id=round.id) }}"
+          class="merch-round-step-footer__form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="form-actions merch-round-step-footer__actions">
+        <button type="submit"
+                class="btn btn--danger"
+                {% if round_delete_is_hard %}onclick="return confirm('Runde endgültig löschen?');"{% else %}onclick="return confirm('Runde wirklich löschen?');"{% endif %}>
+          {{ lucide_icon('trash-2') }}<span>Löschen</span>
+        </button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</section>

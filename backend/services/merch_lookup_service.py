@@ -123,6 +123,41 @@ class MerchLookupService:
         row.label = lbl
         return {'success': True}
 
+    @staticmethod
+    def _label_updates_from_form(form_data, *, prefix: str) -> dict[int, str]:
+        updates: dict[int, str] = {}
+        for key in form_data:
+            if not key.startswith(prefix):
+                continue
+            try:
+                row_id = int(key[len(prefix):])
+            except ValueError:
+                continue
+            updates[row_id] = form_data.get(key, '')
+        return updates
+
+    @staticmethod
+    def save_color_labels_from_form(form_data) -> dict:
+        updates = MerchLookupService._label_updates_from_form(form_data, prefix='label_')
+        if not updates:
+            return {'success': True, 'changed': 0}
+        for color_id, label in updates.items():
+            res = MerchLookupService.rename_color(color_id, label)
+            if not res['success']:
+                return {'success': False, 'error': res.get('error') or 'Speichern fehlgeschlagen.'}
+        return {'success': True, 'changed': len(updates)}
+
+    @staticmethod
+    def save_size_labels_from_form(form_data) -> dict:
+        updates = MerchLookupService._label_updates_from_form(form_data, prefix='label_')
+        if not updates:
+            return {'success': True, 'changed': 0}
+        for size_id, label in updates.items():
+            res = MerchLookupService.rename_size(size_id, label)
+            if not res['success']:
+                return {'success': False, 'error': res.get('error') or 'Speichern fehlgeschlagen.'}
+        return {'success': True, 'changed': len(updates)}
+
 
 class MerchVariantBulkService:
     """Bulk-Aktionen auf Variantenebene fuer einen Artikel."""

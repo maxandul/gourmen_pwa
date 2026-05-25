@@ -330,6 +330,9 @@ Verhalten:
 | Klasse | Zweck |
 |---|---|
 | `.billbro-workflow` | Workflow-Container mit `__step`, `__step--done`, `__step--current`, `__index` |
+| `.merch-round-workflow` | Modifier: horizontale Scroll-Leiste für 8 Merch-Runden-Schritte |
+| `.merch-round-table` | Admin Runden-Detail: `data-table` mit sticky `__col-article` / `__col-member` |
+| `.merch-round-prep-open`, `.merch-round-prep-add-all-block`, `.merch-round-prep-add-all`, `.merch-round-prep-add-card`, `.merch-round-sortiment-section`, `.merch-round-orders-section`, `.merch-round-aggregate-section`, `.merch-round-aggregate-export`, `.merch-round-step-footer` | – | Runden-Detail: Primary unter Workflow; Tabellen volle Breite; Excel-Export unter Übersicht; Footer «Schritt zurück» / «Löschen» |
 
 #### Cleanup-Workflows
 
