@@ -166,6 +166,7 @@ class MerchRound(db.Model):
     subsidy_per_member_rappen = db.Column(db.Integer, default=0, nullable=False)
     supplier_invoice_drive_file_id = db.Column(db.String(200))
     supplier_invoice_total_rappen = db.Column(db.Integer)
+    supplier_invoice_completed_at = db.Column(db.DateTime)
     notes = db.Column(db.Text)
     cancellation_reason = db.Column(db.Text)
     marketing_chief_id = db.Column(
