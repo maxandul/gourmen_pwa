@@ -18,7 +18,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.f8aaa6fd.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.604da1b3.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen-Hitlist{% endblock %}
@@ -44,6 +44,7 @@
                     <label class="landing-hitlist-controls__label" for="hitlist-search">Suche</label>
                     <div class="landing-hitlist-filter__field landing-hitlist-filter__field--row landing-hitlist-filter__field--grow">
                         <input id="hitlist-search" name="q" type="search" class="form-field__input" value="{{ table_query|e }}" placeholder="Suche…" autocomplete="off">
+                        <button type="submit" class="btn btn--outline btn--sm landing-hitlist-filter__submit">Suchen</button>
                         {% if table_query %}
                         <a href="{{ hitlist_clear_search_url }}" class="btn btn--outline btn--sm landing-hitlist-filter__clear">Zurücksetzen</a>
                         {% endif %}
@@ -186,8 +187,6 @@
     return u.pathname + u.search;
   };
 
-  let searchDebounce = null;
-
   const keepScrollPosition = async (updater) => {
     const beforeTop = block.getBoundingClientRect().top;
     await updater();
@@ -245,18 +244,10 @@
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    clearTimeout(searchDebounce);
     loadTablePage(buildHitlistUrl(1));
-  });
-  input.addEventListener('input', () => {
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => {
-      loadTablePage(buildHitlistUrl(1));
-    }, 300);
   });
   if (sortSel) {
     sortSel.addEventListener('change', () => {
-      clearTimeout(searchDebounce);
       loadTablePage(buildHitlistUrl(1));
     });
   }

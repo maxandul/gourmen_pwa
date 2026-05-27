@@ -545,9 +545,11 @@
     transition: margin-left var(--transition-normal);
   }
 
-  /* Public-Shell: keine Sidebar im Markup – volle Content-Breite */
+  /* Public-Shell: keine Sidebar – Inhalt horizontal zentrieren (nicht nur margin-left: 0,
+     sonst bleibt margin-right: auto vom Member-Layout und der Block klebt links). */
   body[data-layout="public"] .main-content {
-    margin-left: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 

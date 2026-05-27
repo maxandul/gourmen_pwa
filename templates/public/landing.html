@@ -7,7 +7,7 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.f8aaa6fd.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.604da1b3.css') }}">
 {% endblock %}
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
@@ -31,10 +31,7 @@
     </section>
 
     <section class="landing-stat-strip card" aria-labelledby="landing-stats-heading">
-        <h2 id="landing-stats-heading" class="sr-only">Kennzahlen und Kurzportrait</h2>
-        <p class="landing-stat-strip__pitch">
-            Wir sind ein kulinarischer Verein aus Zürich: Gemeinsam Restaurants entdecken, Freundschaft pflegen und das Leben geniessen.
-        </p>
+        <h2 id="landing-stats-heading" class="sr-only">Kennzahlen</h2>
         <div class="metrics-spotlight" aria-label="Kennzahlen Verein">
             <div class="metrics-spotlight__hero">
                 <div class="metrics-spotlight__metric">
@@ -65,13 +62,9 @@
                 </div>
             </div>
         </div>
-        <div class="landing-stat-strip__cta">
-            <a href="{{ url_for('public.about') }}" class="btn btn--outline btn--sm">
-                {{ lucide_icon('chevron-right', 'icon') }}
-                Über uns
-            </a>
-        </div>
     </section>
+
+    {% include 'partials/_landing_instagram.html' %}
 
     <section class="landing-restaurants" aria-labelledby="landing-restaurants-heading">
         <h2 id="landing-restaurants-heading" class="landing-section-title">
@@ -154,4 +147,8 @@
         </div>
     </footer>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script async src="https://www.instagram.com/embed.js"></script>
 {% endblock %}

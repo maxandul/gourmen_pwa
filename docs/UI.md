@@ -14,7 +14,7 @@ Verbindliche UI-Konventionen für Gourmen PWA. Vor jeder Template-, CSS- oder JS
 | **Breadcrumbs** | Keine. Nutzung von `.page-back` zum Elternziel |
 | **Page-Header** | Nur `h1`, kein zusätzliches Subtitle |
 | **Layout** | Mobile-first, Bottom-Nav (4 Bereiche) + Sidebar ab 1024px; **horizontales Dokument-Overflow**: `html { overflow-x: clip; }`, `main.main-content` und `.container` mit `width: 100%`, `min-width: 0` damit breite Tabellen nicht die Seite aufblasen |
-| **Templates** | `base.html` + Partials in `templates/partials/` |
+| **Nutzt deutscher UI-Text** | Umlaute **ä, ö, ü**; kein Eszett-Zeichen, immer **ss** (`AGENTS.md`). Keine **ae / oe / ue** in sichtbarem Text. Technische Identifier (URLs/Parameter, Code-Symbole, BEM-Klassen): ASCII |
 
 Eine **Abweichung** von einer Grundsatz-Entscheidung erfordert User-Auftrag und einen Eintrag im Entscheidungslog (siehe Sektion 8 unten).
 
@@ -85,7 +85,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 - `--color-success`, `--color-warning`, `--color-error`, `--color-info`
 - `--shadow-sm/md/lg/xl`
 
-**Regel**: Komponenten verwenden **semantische Tokens**, niemals direkt Brand-Paletten oder Logo-Farben (außer in `tokens.css` selbst).
+**Regel**: Komponenten verwenden **semantische Tokens**, niemals direkt Brand-Paletten oder Logo-Farben (ausser in `tokens.css` selbst).
 
 ## 4. Decision Tree – Brauche ich eine neue Klasse?
 
@@ -149,7 +149,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.pill-tabs` | `--row` fuer horizontale Reihe | Oeffentliche Nav-Pills: Start → `public.landing`, Über uns → `public.about` (`/ueber-uns`), Hitlist → `public.restaurants` (`/restaurants`); `__tab`, `__tab--active`. |
 | `.landing-hitlist-intro` | – | Einleitung unter dem Seitentitel auf `public.restaurants` (Kontext zur Voll-Hitlist). |
 | `.landing-hitlist-meta` | mit `landing-hitlist-meta__sep` | Treffer- bzw. Gesamtzahl-Zeile über der Tabelle auf `public.restaurants` (`aria-live`). |
-| `.landing-hitlist-toolbar--split` | – | Toolbar auf `public.restaurants`: Suche und Sortierung nebeneinander (unter 768px gestapelt). |
+| `.landing-hitlist-toolbar--split` | – | Toolbar auf `public.restaurants`: Suche und Sortierung nebeneinander linksbündig (unter 768px gestapelt). |
+| `.landing-hitlist-filter__submit` | – | «Suchen»-Button in der Hitlist-Toolbar; Suche per Klick oder Enter, nicht bei jedem Tastendruck. |
 | `.landing-hitlist-controls` | mit `landing-hitlist-controls__label`, `landing-hitlist-controls__select` | Spalte in der Hitlist-Toolbar: Label oben, Sucheingabe bzw. Sortier-Dropdown darunter (`flex-direction: column`). |
 | `.landing-hitlist-filter__field--row` | – | Suchfeld und «Zurücksetzen» in einer flexiblen Zeile. |
 | `.landing-hitlist-filter__field--grow` | – | Flexible Breite des Suchfeldblocks neben dem Label «Suche» (Toolbar). |
@@ -161,7 +162,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.events-today-hero` | `--stacked` (zweiter+ Hero, falls mehrere Events am selben Tag); `__title`, `__title-icon`, `__title-date`, `__actions` | Hero im Tab "Heutiges Event" (`events.index?tab=heute`): nutzt `.dashboard-intent` als Container + `.dashboard-info-grid` mit den Kacheln Teilnahme/Restaurant/(optional) Notizen + Schnellzugriff-Buttons (BillBro / Bewerten) ueber `.page-actions` (Mobile column, Desktop row). Tab + Default-Auswahl wird in `events.index` serverseitig gesetzt, wenn `today_events` existieren. |
 | `.landing-hitlist-cta` | – | Zentrierter CTA unter der Top-5-Tabelle auf der Landing (`public.landing`) und auf `public.about` (Link zur Hitlist). |
 | `.landing-section-title--page` | – | Pagetitle (`h1.landing-section-title`) auf `public.restaurants` und `public.about`. |
-| `.landing-stat-strip` | mit `landing-stat-strip__pitch`, `landing-stat-strip__cta` | Zweite Marketing-Card auf `public.landing`: Kurzportrait-Text, KPIs (`metrics-spotlight`), Link **Über uns**. |
+| `.landing-stat-strip` | – | KPI-Card auf `public.landing`: Kennzahl-Kacheln (`metrics-spotlight__hero`). Mobile/Tablet: Mitglieder + Restaurant-Count oben (2 Spalten), «nächstes Essen» darunter volle Breite; ab 769px drei Spalten in einer Zeile. |
+| `.landing-instagram` | mit `landing-instagram__grid`, `landing-instagram__embed` | Instagram-Sektion auf `public.landing` (zwischen KPI und Hitlist): zwei offizielle Embeds (`blockquote.instagram-media` + `embed.js` nur auf der Landing). Fallback-Link im Blockquote für No-JS. |
 | `.public-about` | – | Zusaetzlicher Wrapper auf `public.about` (mit `landing`): Typo/Abstaende fuer Fliesstext und Listen in `.card__body`. |
 | `#top-notifications` | – | Am Anfang von `main.main-content`; **nicht** `position: fixed` — dort erscheinen nur **temporäre** PWA-Alerts aus `static/js/pwa.js` (Installieren im Browser / Push in **Standalone**). |
 | `.app-shell-banner__settings-hint`, `.app-shell-banner__settings-link` | – | Fusstext in PWA-Alerts mit Verweis auf **Einstellungen → Technik** (`member.technical`). |
@@ -196,6 +198,10 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.data-table` | – | Standard-Tabelle (BEM-aligned) |
 | `.admin-members-table` | `__row--inactive`, `__col-email`, `__col-adresse`, `__col-kleider`, `__col-fuehrerschein`, `__col-status`, `__status-chips`, `__actions`, `__actions-inner` | Admin Mitgliederliste (`admin/members.html`): alle Mitgliedsfelder als Spalten; `data-table-scroll-*`; erste Spalte (Rufname) sticky; inaktive Zeilen gedimmt |
 | `.page-content--admin-members-table` | – | Modifier: `min-width: 0` auf Flex-Spalte + Scroll-Hülle, damit horizontale Tabelle nicht die Seitenbreite aufbläht |
+| `.page-content--merch-hub` | – | Merch-Admin Hub: `min-width: 0`; gemeinsamer `.tabs__content`-Panel unter Haupt-Tabs; Scroll-Hüllen/`overscroll-behavior-x` für Statistik-Tabellen; erste Toolbar-`.form-actions` ohne Oberstrich |
+| `.merch-hub-entity-row` | – | Zeilen-Wrapper Lieferanten/Sortiment im Hub: unterdrückt `border-top` auf verschachtelten `.form-actions` (keine Strich-Trennung vor Bearbeiten/Archiv) |
+| `.page-content--merch-shop-round` / `.merch-round-shop-variant-stack` / `.merch-round-shop-config` | – | Rundenshop (`round_shop`): **Konfigurator** pro Artikel (Dropdown «Ausführung» wenn mehrere `MerchRoundItem`, sonst verborgenes `round_item_id`); Styling für Warenkorb-Zeilenformular und Read-only-Liste |
+| `.merch-round-shop-cart-form`, `.merch-round-shop-cart-form__actions`, `.merch-round-shop-readonly-list`, `.merch-round-shop-readonly-list__*` | – | Rundenshop: keine Standard-`.form-actions`-Trennlinie an «Übernehmen»; Read-only Liste für geschlossene Runden |
 | `.events-index-table__event-link` | mit `__event-icon`, `__event-date`, `__event-chev` | Erste Spalte ("Event") in `events.index` Kommend/Archiv: Typ-Icon + Datum + Chevron als ein klickbares Element zum Event-Detail; nowrap, sticky-Spalte schrumpft auf Inhalt |
 | `.events-index-table__restaurant-link` | mit `__restaurant-name`, `__restaurant-icon` | Restaurant-Spalte in `events.index`: optionaler externer Link auf `event.place_website` (`target="_blank"` + Lucide `external-link`); Name mit Ellipsis bei `--col-restaurant` Max-Width |
 | `.events-index-table__col-restaurant` / `__col-status` / `__col-organisator` | – | Spalten-Constraints fuer `events-index-table`: Restaurant/Organisator gedeckelt mit Ellipsis (sinnvolles Maximum), Status (Teilnahme/Bewertung) `width: 1%` + `nowrap` |
@@ -211,7 +217,7 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | Klasse | Modifikatoren | Zweck |
 |---|---|---|
 | `.hub-grid` | – | Auto-Fit-Grid für Hub-Seiten (Member, Settings); Admin-Übersicht nutzt `admin-hub` |
-| `.admin-hub`, `.admin-hub__hero`, `.admin-hub__metrics`, `.admin-hub__cta` | – | Admin-Dashboard (`admin/index`): grosse verlinkte Hero-Kacheln mit Kennzahlen statt `hub-card` |
+| `.admin-hub`, `.admin-hub__hero`, `.admin-hub__metrics`, `.admin-hub__cta` | – | Wird in Merch-Cockpit und verwandten Admin-Seiten fuer **Hinweise** (`admin-hub__hint`) genutzt; es gibt keine separate Admin-**Uebersichts**-Seite mehr (`GET /admin` leitet zum Verein-Hub um). |
 | `.hub-card` | `--featured` | Kachel auf Hub-Grid (kombiniert mit `.card`) |
 
 ### 5.6 Forms
@@ -222,6 +228,17 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 | `.form-field` | – | Form-Feld (Label + Input + Error) |
 | `.form-field__required` | – | Pflichtfeld-Kennzeichnung (z.B. roter Stern direkt am Label; `aria-hidden` wenn ergänzend zu serverseitiger Validierung) |
 | `.form-actions` | – | Buttons-Container am Form-Ende |
+| `.merch-variant-picks` | `__legend`, `__list`, `__item`, `__pill`, `__native` (mit `.sr-only`), `__face`, `__edit` | Merch-Artikelform: Farben/Grössen als **Pillen**; Verknüpfung zu Stammdaten-Seiten; `templates/admin/merch_v2/article_form.html` |
+| `.merch-admin-page--round-detail` | – | Rundendetail (`round_detail.html`): Sektionen mit `.merch-admin-round-section`; reduzierte Striche bei `.form-actions` |
+| `.merch-admin-round-section` | `__title` | Überschrift + Abstand zwischen logischen Bereichen einer Bestellrunde |
+| `.merch-admin-round-actions` | – | Aggregat CSV / Kopieren oberhalb der Stück-Tabelle (ohne `.form-actions`-Top-Border) |
+| `.merch-admin-page--round-form` | – | Neue Bestellrunde (`round_form.html`), gleicher Effekt wie oben |
+| `.merch-admin-page--lookups` | – | Modifier auf `page-content`: Stammdaten Farben/Grössen; keine Aktions-Trennlinie wie oben |
+| `.merch-admin-form-block` | `__title`; `--danger-tone` (optional) | Sektion ohne verschachtelte `card--flat` innerhalb der Merch-Artikelform (Abstand via `margin-top`) |
+| `.merch-admin-bulk-deactivate` | `__actions` | Unterformulare Massen-Deaktivierung: kompakte Aktionen ohne Trennlinie |
+| `.merch-lookup-list` | `__item` | Farben/Grössen-Stammdaten: Liste statt Tabelle |
+| `.merch-lookup-create` | `__row`, `__field`, `__actions` | Neue Zeile Stammdaten (Eingabe + Anlegen nebeneinander) |
+| `.merch-lookup-row` | `__slug`, `__field`, `__actions` | Umbenennen-Zeile pro Eintrag |
 | `partials/_form_macros.html` | `required_mark(field)`, `field_errors(field)` | Wiederverwendbare Jinja-Makros für Pflicht-Stern (über `field.flags.required`) und erste Validierungsmeldung |
 
 ### 5.7 Tabs / Disclosure
@@ -274,7 +291,7 @@ Sekundäre Toolleisten (Filter, Planung etc.) verwenden ein einheitliches Muster
 ```
 
 Verhalten:
-- **Standardmäßig eingeklappt**
+- **Standardmässig eingeklappt**
 - **Nach GET-Submit „Filtern"**: einklappen + State in `sessionStorage`
 
 ### 5.9 Bereichs-spezifische Komponenten
@@ -315,6 +332,9 @@ Verhalten:
 | Klasse | Zweck |
 |---|---|
 | `.billbro-workflow` | Workflow-Container mit `__step`, `__step--done`, `__step--current`, `__index` |
+| `.merch-round-workflow` | Modifier: horizontale Scroll-Leiste für 8 Merch-Runden-Schritte |
+| `.merch-round-table` | Admin Runden-Detail: `data-table` mit sticky `__col-article` / `__col-member` |
+| `.merch-round-prep-open`, `.merch-round-prep-add-all-block`, `.merch-round-prep-add-all`, `.merch-round-prep-add-card`, `.merch-round-sortiment-section`, `.merch-round-orders-section`, `.merch-round-aggregate-section`, `.merch-round-aggregate-export`, `.merch-round-step-footer` | – | Runden-Detail: Primary unter Workflow; Tabellen volle Breite; Excel-Export unter Übersicht; Footer «Schritt zurück» / «Löschen» |
 
 #### Cleanup-Workflows
 
@@ -343,7 +363,7 @@ Verhalten:
 | `.docs-detail` | mit `__meta`, `__meta-grid`, `__actions`, `__history` | Dokument-Detail (`docs/detail.html`): Metadaten, sekundaere Aktionen/Audit-Historie. |
 | `.docs-upload-modal` | mit `__dropzone`, `__dropzone--active`, `__hint`; `dialog` viewport-zentriert (`inset:0`, `margin:auto`) | Upload-Modal mit Drag-and-Drop-Zone und Datei-Picker. |
 | `.docs-action-modal` | –; `dialog` wie Upload-Modal zentriert | Sekundaere Modals fuer Rename/Move/Hard-Delete (eigenstaendige `<dialog>` pro Aktion). |
-| `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | Re-Sync-Karte am Ende des Admin-Hubs (`admin/index.html`); nur sichtbar bei `DRIVE_FEATURE_ENABLED=true` und `Role.ADMIN`. |
+| `.admin-hub__drive-resync` | mit `__drive-resync-head`, `__drive-resync-title`, `__drive-resync-lede` | **Entfernt (2026-05):** frueher Re-Sync-Karte auf der Admin-Uebersicht. CSS-Klassen duerfen noch in aelterem CSS vorkommen; keine aktive Verwendung. |
 | `.profile-google-section` | mit `__status-row`, `__status`, `__status--verified`, `__status--pending` | Karte im Member-Profil fuer die Google-Login-Adresse + Verifikations-Status. Eigene Form, separater POST. |
 | `.calendar-subscribe-card` | – | iCal-Abo; nutzt äussere `.card` |
 | `.calendar-subscribe__url-row` | mit `__url-input`, `__copy-btn` | HTTPS-Feed-URL + Kopieren |
@@ -365,11 +385,11 @@ Komponenten ohne Verwendung in Templates können ohne Diskussion gelöscht werde
 
 ## 6. Verbote
 
-- ❌ **Keine Inline-Styles** in HTML außer mit explizitem User-OK + Begründung im Commit
+- ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit
 - ❌ **Keine Hardcode-Farben** (`#FFAA00`) – Token verwenden
 - ❌ **Keine Hardcode-Pixel** für Spacing – `--space-*` verwenden
 - ❌ **Keine generischen Klassennamen** wie `.btn-blue`, `.card-2`, `.text-bold`
-- ❌ **Keine `!important`** außer dokumentiert (siehe `[hidden]` in `base.css` als Beispiel)
+- ❌ **Keine `!important`** ausser dokumentiert (siehe `[hidden]` in `base.css` als Beispiel)
 - ❌ **Kein Tailwind, DaisyUI, Bootstrap o.ä.** ohne User-Auftrag
 - ❌ **Keine neuen Pattern** ohne User-OK + Registry-Update
 - ❌ **Keine Brand-Farben direkt** in Komponenten – nur semantische Tokens
