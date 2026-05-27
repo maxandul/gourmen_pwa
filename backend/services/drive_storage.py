@@ -905,6 +905,13 @@ class DriveStorageService:
             )
 
     @classmethod
+    def delete_drive_file(cls, file_id: str | None) -> None:
+        if not (file_id or '').strip():
+            return
+        drive = cls._drive_client()
+        cls._safe_delete_drive_file(drive, file_id.strip())
+
+    @classmethod
     def _resolve_filename_collision(
         cls, drive, folder_id: str, filename: str
     ) -> str:

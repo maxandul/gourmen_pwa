@@ -144,6 +144,8 @@ def round_orders_invoiced(round_obj: MerchRound) -> bool:
 
 
 def round_invoice_recorded(round_obj: MerchRound) -> bool:
+    if round_obj.supplier_invoices:
+        return True
     if round_obj.supplier_invoice_drive_file_id:
         return True
     return round_obj.supplier_invoice_total_rappen is not None
@@ -207,10 +209,17 @@ def workflow_hint(round_obj: MerchRound, *, phase: int, orders_count: int, buyer
     if phase == 3:
         return 'Exportiere die Sammelbestellung und gib sie beim Lieferanten auf. Bestätige danach die Bestellung.'
     if phase == 4:
+        ordered_ids = ordered_round_item_ids(round_obj)
+        if not ordered_ids:
+            return (
+                'Es liegen keine bestellten Positionen vor — '
+                'ohne Bestellungen können keine Preise erfasst werden.'
+            )
         if not round_prices_complete(round_obj):
             return (
                 'Trage den fakturierten Lieferantenpreis pro bestellter Position ein. '
-                'Member-Preis optional — leer lassen entspricht dem fakturierten Preis.'
+                'Member-Preis optional — leer lassen entspricht dem fakturierten Preis '
+                '(Endbetrag pro Stück ohne Subvention).'
             )
         return 'Preise vollständig — speichere und berechne die Mitglieder-Forderungen.'
     if phase == 5:

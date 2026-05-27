@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
+
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
 from backend.models.merch_v2 import (
@@ -12,11 +16,169 @@ from backend.models.merch_v2 import (
     MerchRound,
     MerchRoundItem,
     MerchRoundStatus,
+    MerchVariant,
 )
+
+
+@dataclass(frozen=True)
+class MerchMemberShopIndexRow:
+    round_id: int
+    round_title: str
+    status_value: str
+    deadline_display: str
+    article_lines: tuple[str, ...]
+    list_total_chf: str | None
+    member_total_chf: str | None
+    subsidy_chf: str | None
+    due_chf: str | None
 
 
 class MerchOrderService:
     """Gemaess docs/capabilities/merch.md Sektion 7 (Preise, Subvention)."""
+
+    @staticmethod
+    def _chf_display(rappen: int | None) -> str | None:
+        if rappen is None:
+            return None
+        return f'{(rappen / 100):.2f}'
+
+    @classmethod
+    def build_member_shop_index_rows(cls, member_id: int) -> list[MerchMemberShopIndexRow]:
+        """Shop-Uebersicht: offene Runden plus Runden mit eigener Bestellung."""
+        from backend.services.merch_round_workflow import variant_color_label, variant_size_label
+
+        order_round_ids = [
+            row[0]
+            for row in db.session.query(MerchOrder.round_id)
+            .filter(
+                MerchOrder.member_id == member_id,
+                MerchOrder.status != MerchOrderStatus.CANCELLED,
+            )
+            .distinct()
+            .all()
+        ]
+
+        visibility = [MerchRound.status == MerchRoundStatus.OPEN]
+        if order_round_ids:
+            visibility.append(MerchRound.id.in_(order_round_ids))
+
+        rounds = (
+            MerchRound.query.filter(
+                MerchRound.status.notin_(
+                    (MerchRoundStatus.DRAFT, MerchRoundStatus.CANCELLED)
+                ),
+                or_(*visibility),
+            )
+            .order_by(MerchRound.id.desc())
+            .all()
+        )
+
+        if not rounds:
+            return []
+
+        round_ids = [r.id for r in rounds]
+        orders = (
+            MerchOrder.query.options(
+                joinedload(MerchOrder.order_items)
+                .joinedload(MerchOrderItem.round_item)
+                .joinedload(MerchRoundItem.variant)
+                .joinedload(MerchVariant.article),
+                joinedload(MerchOrder.order_items)
+                .joinedload(MerchOrderItem.round_item)
+                .joinedload(MerchRoundItem.variant)
+                .joinedload(MerchVariant.color),
+                joinedload(MerchOrder.order_items)
+                .joinedload(MerchOrderItem.round_item)
+                .joinedload(MerchRoundItem.variant)
+                .joinedload(MerchVariant.size),
+            )
+            .filter(
+                MerchOrder.member_id == member_id,
+                MerchOrder.round_id.in_(round_ids),
+                MerchOrder.status != MerchOrderStatus.CANCELLED,
+            )
+            .all()
+        )
+        orders_by_round = {o.round_id: o for o in orders}
+
+        rows: list[MerchMemberShopIndexRow] = []
+        for rnd in rounds:
+            order = orders_by_round.get(rnd.id)
+            article_lines: list[str] = []
+            list_total = 0
+            member_gross = 0
+            has_lines = False
+
+            if order and order.order_items:
+                for line in sorted(
+                    order.order_items,
+                    key=lambda ln: (
+                        (ln.round_item.variant.article.name or '').lower(),
+                        ln.round_item_id,
+                    ),
+                ):
+                    if line.quantity <= 0:
+                        continue
+                    has_lines = True
+                    ri = line.round_item
+                    v = ri.variant
+                    color = variant_color_label(v)
+                    size = variant_size_label(v)
+                    article_lines.append(
+                        f'{line.quantity}x {v.article.name}, {color}, {size}'
+                    )
+                    list_total += line.quantity * ri.list_price_snapshot_rappen
+                    unit_member = line.unit_price_final_rappen
+                    if unit_member is None:
+                        unit_member = line.unit_price_at_confirm_rappen
+                    member_gross += line.quantity * unit_member
+
+            list_chf = cls._chf_display(list_total) if has_lines else None
+            member_chf = cls._chf_display(member_gross) if has_lines else None
+            subsidy_chf: str | None = None
+            due_chf: str | None = None
+            if has_lines and order is not None:
+                if (
+                    order.gross_amount_rappen is not None
+                    and order.subsidy_amount_rappen is not None
+                    and order.member_amount_due_rappen is not None
+                ):
+                    member_chf = cls._chf_display(order.gross_amount_rappen)
+                    subsidy_chf = cls._chf_display(order.subsidy_amount_rappen)
+                    due_chf = cls._chf_display(order.member_amount_due_rappen)
+                else:
+                    sub, due = cls.subsidy_and_member_due_rappen(
+                        member_gross,
+                        rnd.subsidy_per_member_rappen,
+                    )
+                    subsidy_chf = cls._chf_display(sub)
+                    due_chf = cls._chf_display(due)
+
+            deadline = (
+                rnd.deadline_communicated.strftime('%d.%m.%Y')
+                if rnd.deadline_communicated
+                else '—'
+            )
+            from backend.services.merch_member_workflow import (
+                compute_member_workflow_phase,
+                member_workflow_status_label,
+            )
+
+            workflow_phase = compute_member_workflow_phase(rnd, order)
+            rows.append(
+                MerchMemberShopIndexRow(
+                    round_id=rnd.id,
+                    round_title=rnd.title,
+                    status_value=member_workflow_status_label(workflow_phase),
+                    deadline_display=deadline,
+                    article_lines=tuple(article_lines),
+                    list_total_chf=list_chf,
+                    member_total_chf=member_chf,
+                    subsidy_chf=subsidy_chf,
+                    due_chf=due_chf,
+                )
+            )
+        return rows
 
     @staticmethod
     def subsidy_and_member_due_rappen(
@@ -74,7 +236,10 @@ class MerchOrderService:
                     'order': None,
                     'editable': False,
                 }
-            editable = o.status == MerchOrderStatus.DRAFT and r.status == MerchRoundStatus.OPEN
+            editable = (
+                r.status == MerchRoundStatus.OPEN
+                and o.status in (MerchOrderStatus.DRAFT, MerchOrderStatus.CONFIRMED)
+            )
             return {'success': True, 'error': None, 'order': o, 'editable': editable}
 
         o = MerchOrder(
@@ -87,6 +252,44 @@ class MerchOrderService:
         return {'success': True, 'error': None, 'order': o, 'editable': True}
 
     @classmethod
+    def _revert_order_to_draft(cls, order: MerchOrder) -> None:
+        """CONFIRMED -> DRAFT; Positionen und Mengen bleiben erhalten."""
+        order.status = MerchOrderStatus.DRAFT
+        order.confirmed_at = None
+        for line in order.order_items:
+            line.unit_price_final_rappen = None
+            line.unit_price_at_confirm_rappen = cls._preview_unit_rappen(line.round_item)
+        cls.recalculate_draft_totals(order)
+
+    @classmethod
+    def revert_member_workflow_step(cls, order_id: int, member_id: int) -> dict:
+        """Member-Workflow einen Schritt zurueck; erfasste Positionen bleiben."""
+        o = db.session.get(MerchOrder, order_id)
+        if not o or o.member_id != member_id:
+            return {'success': False, 'error': 'Bestellung nicht gefunden.'}
+        if o.status == MerchOrderStatus.CANCELLED:
+            return {'success': False, 'error': 'Bestellung ist storniert.'}
+
+        from backend.services.merch_member_workflow import compute_member_workflow_phase
+
+        phase = compute_member_workflow_phase(o.round, o)
+
+        if phase == 2 and o.status == MerchOrderStatus.CONFIRMED:
+            if o.round.status != MerchRoundStatus.OPEN:
+                return {'success': False, 'error': 'Runde ist nicht mehr offen.'}
+            cls._revert_order_to_draft(o)
+            return {'success': True, 'error': None}
+
+        return {'success': False, 'error': 'Kein vorheriger Schritt.'}
+
+    @classmethod
+    def member_cart_editable(cls, order: MerchOrder) -> bool:
+        return (
+            order.round.status == MerchRoundStatus.OPEN
+            and order.status in (MerchOrderStatus.DRAFT, MerchOrderStatus.CONFIRMED)
+        )
+
+    @classmethod
     def set_cart_line(
         cls,
         order_id: int,
@@ -94,16 +297,19 @@ class MerchOrderService:
         round_item_id: int,
         quantity: int,
     ) -> dict:
-        """Setzt Menge fuer eine Rund-Position (0 entfernt Zeile). Nur DRAFT + OPEN."""
+        """Setzt Menge fuer eine Rund-Position (0 entfernt Zeile). OPEN + DRAFT/CONFIRMED."""
         o = db.session.get(MerchOrder, order_id)
         if not o or o.member_id != member_id:
             return {'success': False, 'error': 'Bestellung nicht gefunden.'}
-        if o.status != MerchOrderStatus.DRAFT:
-            return {'success': False, 'error': 'Warenkorb ist nicht mehr aenderbar.'}
 
         r = o.round
         if r.status != MerchRoundStatus.OPEN:
             return {'success': False, 'error': 'Runde ist nicht offen.'}
+
+        if o.status == MerchOrderStatus.CONFIRMED:
+            cls._revert_order_to_draft(o)
+        elif o.status != MerchOrderStatus.DRAFT:
+            return {'success': False, 'error': 'Warenkorb ist nicht mehr aenderbar.'}
 
         ri = MerchRoundItem.query.filter_by(id=round_item_id, round_id=o.round_id).first()
         if not ri:
@@ -192,11 +398,30 @@ class MerchOrderService:
         return {'success': True, 'error': None}
 
     @classmethod
-    def discard_draft_orders_for_round(cls, round_id: int) -> None:
-        """OPEN -> LOCKED: nicht bestaetigte Warenkoerbe loeschen."""
-        drafts = MerchOrder.query.filter_by(round_id=round_id, status=MerchOrderStatus.DRAFT).all()
+    def finalize_orders_for_round_lock(cls, round_id: int) -> None:
+        """OPEN -> LOCKED: leere Entwuerfe entfernen, Entwuerfe mit Positionen bestaetigen."""
+        drafts = MerchOrder.query.filter_by(
+            round_id=round_id,
+            status=MerchOrderStatus.DRAFT,
+        ).all()
+        now = datetime.utcnow()
         for o in drafts:
-            db.session.delete(o)
+            has_lines = any(line.quantity > 0 for line in o.order_items)
+            if not has_lines:
+                db.session.delete(o)
+                continue
+            for line in o.order_items:
+                line.unit_price_at_confirm_rappen = cls._preview_unit_rappen(
+                    line.round_item
+                )
+            cls.recalculate_draft_totals(o)
+            o.status = MerchOrderStatus.CONFIRMED
+            o.confirmed_at = now
+
+    @classmethod
+    def discard_draft_orders_for_round(cls, round_id: int) -> None:
+        """OPEN -> LOCKED: nicht bestaetigte Warenkoerbe loeschen (Legacy-Alias)."""
+        cls.finalize_orders_for_round_lock(round_id)
 
     @classmethod
     def reset_confirmed_orders_to_draft_for_round(cls, round_id: int) -> None:

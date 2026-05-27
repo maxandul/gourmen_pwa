@@ -200,6 +200,31 @@ class MerchRound(db.Model):
         back_populates='round',
         cascade='all, delete-orphan',
     )
+    supplier_invoices = db.relationship(
+        'MerchRoundSupplierInvoice',
+        back_populates='round',
+        cascade='all, delete-orphan',
+        order_by='MerchRoundSupplierInvoice.created_at',
+    )
+
+
+class MerchRoundSupplierInvoice(db.Model):
+    """Lieferantenbeleg(e) pro Bestellrunde (Drive-Referenz)."""
+
+    __tablename__ = 'merch_round_supplier_invoices'
+
+    id = db.Column(db.Integer, primary_key=True)
+    round_id = db.Column(
+        db.Integer,
+        db.ForeignKey('merch_rounds.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    drive_file_id = db.Column(db.String(200), nullable=False)
+    original_filename = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    round = db.relationship('MerchRound', back_populates='supplier_invoices')
 
 
 class MerchRoundItem(db.Model):

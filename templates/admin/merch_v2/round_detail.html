@@ -210,7 +210,6 @@
     {% elif workflow_phase == 4 %}
     <section class="settings-nav__section merch-round-pricing-section" id="merch-round-step-panel" aria-labelledby="merch-round-pricing-title">
       <h2 id="merch-round-pricing-title" class="settings-nav__section-title">Effektive Preise erfassen</h2>
-      <p class="form-field__hint">Trage den fakturierten Lieferantenpreis pro bestellter Position ein. Member-Preis optional — bleibt das Feld leer, entspricht er dem fakturierten Preis. Der Member-Preis ist der Endbetrag pro Stück für das Mitglied, ohne Vereinssubvention (die wird pro Bestellung separat angerechnet).</p>
       {% if pricing_article_groups %}
       <form method="POST" action="{{ url_for('merch_admin.round_pricing', round_id=round.id) }}" class="form stack-vertical">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -270,19 +269,42 @@
           <button type="submit" class="btn btn--primary">Preise speichern und Forderungen berechnen</button>
         </div>
       </form>
-      {% else %}
-      <p class="admin-hub__hint">Keine bestellten Positionen — Preise können nicht erfasst werden.</p>
       {% endif %}
     </section>
 
     {% elif workflow_phase == 5 %}
-    <div class="card card--flat" id="merch-round-step-panel">
+    <div class="form-actions merch-round-prep-open" id="merch-round-step-panel">
+      <form method="POST" action="{{ url_for('merch_admin.round_beleg_complete', round_id=round.id) }}" class="form form--inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button type="submit"
+                class="btn btn--primary"
+                {% if round.supplier_invoice_total_rappen is none %}disabled{% endif %}>
+          Weiter zum Wareneingang
+        </button>
+      </form>
+    </div>
+
+    <div class="card card--flat">
       <div class="card__body stack-vertical">
         <h2 class="card__title">Lieferantenbeleg</h2>
-        {% if invoice_web_link %}
-        <p class="card__subtitle">
-          <a href="{{ invoice_web_link }}" class="btn btn--secondary" target="_blank" rel="noopener noreferrer">Beleg in Drive öffnen</a>
-        </p>
+        {% if supplier_invoice_rows %}
+        <ul class="stack-vertical merch-supplier-invoices">
+          {% for inv in supplier_invoice_rows %}
+          <li class="merch-supplier-invoices__item">
+            {% if inv.web_link %}
+            <a href="{{ inv.web_link }}" class="btn btn--secondary btn--sm" target="_blank" rel="noopener noreferrer">{{ inv.filename }}</a>
+            {% else %}
+            <span>{{ inv.filename }}</span>
+            {% endif %}
+            {% if inv.id %}
+            <form method="POST" action="{{ url_for('merch_admin.round_supplier_invoice_delete', round_id=round.id, invoice_id=inv.id) }}" class="form form--inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn btn--ghost btn--sm">Löschen</button>
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
         {% endif %}
         {% if round.supplier_invoice_total_rappen is not none %}
         <p class="card__subtitle">Rechnungssumme: CHF {{ '%.2f'|format(round.supplier_invoice_total_rappen / 100.0) }}</p>
@@ -294,7 +316,8 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div class="form-field">
             <label class="form-field__label" for="merch-inv-file">Beleg (PDF/Bild)</label>
-            <input class="form-field__input" id="merch-inv-file" type="file" name="invoice_file" accept=".pdf,image/*"/>
+            <input class="form-field__input" id="merch-inv-file" type="file" name="invoice_file" accept=".pdf,image/*" multiple/>
+            <p class="form-field__hint">Mehrere Dateien gleichzeitig möglich.</p>
           </div>
           <div class="form-field">
             <label class="form-field__label" for="merch-inv-total">Rechnungssumme CHF</label>
@@ -303,12 +326,6 @@
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn--primary">Speichern</button>
-          </div>
-        </form>
-        <form method="POST" action="{{ url_for('merch_admin.round_beleg_complete', round_id=round.id) }}" class="form form--inline merch-round-beleg-advance">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <div class="form-actions">
-            <button type="submit" class="btn btn--secondary">Weiter zum Wareneingang</button>
           </div>
         </form>
       </div>

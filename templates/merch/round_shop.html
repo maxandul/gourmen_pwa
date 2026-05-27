@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% set _sprite = url_for('static', filename='icons/lucide-sprite.7e463391.svg') %}
 
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ _sprite }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
 {% macro round_shop_variant_label(ri) -%}
   {%- if ri.variant.color or ri.variant.size -%}
     {%- if ri.variant.color -%}{{ ri.variant.color.label }}{%- endif -%}
@@ -25,41 +31,49 @@ Listenpreis (Schätz.) CHF {{ '%.2f'|format(ri.list_price_snapshot_rappen / 100.
 {%- endif %}
 {%- endmacro %}
 
-{% block title %}{{ round.title }} - Merch - Gourmen{% endblock %}
+{% block title %}{{ round.title }} - Merch-Shop - Gourmen{% endblock %}
 
 {% block content %}
 <div class="container">
   <div class="page-header">
     <p class="page-back">
       <a href="{{ url_for('merch.shop_index') }}">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <use href="{{ _sprite }}#chevron-left"></use>
-        </svg>
-        <span>Zurück zum Merch</span>
+        {{ lucide_icon('chevron-left') }}
+        <span>Zurück zum Merch-Shop</span>
       </a>
     </p>
     <h1>
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <use href="{{ _sprite }}#shopping-bag"></use>
-      </svg>
+      {{ lucide_icon('shopping-bag') }}
       {{ round.title }}
     </h1>
   </div>
 
   <div class="page-content page-content--merch-shop-round">
-    <p class="admin-hub__hint">
-      Status: <strong>{{ round.status.value }}</strong>
-      {% if round.status == MerchRoundStatus.OPEN %}
-      — Pro Artikel zuerst die Ausführung wählen, dann die Anzahl übernehmen. Schätzung mit Listenpreis (Snapshot).
-      {% elif round.status != MerchRoundStatus.OPEN %}
-      — Diese Runde nimmt keine neuen Bestellungen mehr entgegen.
-      {% endif %}
-    </p>
+    {% if workflow_phase > 0 %}
+    <div class="billbro-workflow-block" id="merch-member-workflow">
+      <ol class="billbro-workflow merch-round-workflow" aria-label="Ablauf deine Bestellung">
+        {% for label in workflow_step_labels %}
+        {% set i = loop.index %}
+        <li class="billbro-workflow__step{% if i < workflow_phase %} billbro-workflow__step--done{% elif i == workflow_phase %} billbro-workflow__step--current{% endif %}"
+            {% if i == workflow_phase %}aria-current="step"{% endif %}>
+          <span class="billbro-workflow__index">{{ i }}</span>
+          {% if i == workflow_phase %}
+          <span>{{ label }}</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+      <p class="billbro-workflow__hint" role="status">{{ workflow_hint_text }}</p>
+    </div>
+    {% else %}
+    <p class="admin-hub__hint" role="status">{{ workflow_hint_text }}</p>
+    {% endif %}
 
     {% if cart_blocked_reason %}
     <p class="form-field__error" role="alert">{{ cart_blocked_reason }}</p>
     {% endif %}
 
+    {% if workflow_phase == 1 %}
     {% for article, ris in shop_article_groups %}
     <div class="card card--flat merch-round-shop-article-card">
       <div class="card__body">
@@ -129,14 +143,52 @@ Listenpreis (Schätz.) CHF {{ '%.2f'|format(ri.list_price_snapshot_rappen / 100.
       </div>
     </div>
     {% endfor %}
-
-    {% if order and order.status.value == 'DRAFT' %}
-    <div class="card">
+    {% elif order and order.order_items %}
+    {% for article, ris in shop_article_groups %}
+    <div class="card card--flat merch-round-shop-article-card">
       <div class="card__body">
-        <h3 class="card__title">Zusammenfassung (Schätzung)</h3>
+        <div class="form-row merch-round-shop-article-row">
+          {% if article.image_drive_file_id %}
+          <div class="form-field">
+            <img
+              src="{{ url_for('merch.article_image', article_id=article.id) }}"
+              alt=""
+              loading="lazy"
+            />
+          </div>
+          {% endif %}
+          <div class="form-field stack-vertical merch-round-shop-variant-stack">
+            <h3 class="card__title">{{ article.name }}</h3>
+            <ul class="merch-round-shop-readonly-list">
+            {% for ri in ris %}
+              {% set qcart = qty_by_ri.get(ri.id, 0) %}
+              {% if qcart > 0 %}
+              <li class="merch-round-shop-readonly-list__item">
+                <strong>{{ qcart }}x {{ round_shop_variant_label(ri) }}</strong>
+                <span class="form-field__hint">{{ round_shop_price_hints(ri) }}</span>
+              </li>
+              {% endif %}
+            {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if order and order.order_items and workflow_phase >= 1 %}
+    <div class="card{% if workflow_phase == 1 %} card--flat{% endif %}">
+      <div class="card__body">
+        <h3 class="card__title">
+          {% if workflow_phase == 1 %}Zusammenfassung (Schätzung)
+          {% elif workflow_phase == 2 %}Deine Bestellung (Schätzung)
+          {% elif workflow_phase == 3 %}Endbetrag
+          {% else %}Bestellung abgeschlossen{% endif %}
+        </h3>
         <dl class="form-row form-row--stacked">
           <div>
-            <dt class="form-field__label">Brutto</dt>
+            <dt class="form-field__label">{% if workflow_phase <= 2 %}Brutto (Schätz.){% else %}Brutto{% endif %}</dt>
             <dd>CHF {{ '%.2f'|format((order.gross_amount_rappen or 0) / 100.0) }}</dd>
           </div>
           <div>
@@ -144,11 +196,11 @@ Listenpreis (Schätz.) CHF {{ '%.2f'|format(ri.list_price_snapshot_rappen / 100.
             <dd>CHF {{ '%.2f'|format((order.subsidy_amount_rappen or 0) / 100.0) }}</dd>
           </div>
           <div>
-            <dt class="form-field__label">Schätzung Forderung</dt>
+            <dt class="form-field__label">{% if workflow_phase <= 2 %}Schätzung Zu bezahlen{% else %}Zu bezahlen{% endif %}</dt>
             <dd>CHF {{ '%.2f'|format((order.member_amount_due_rappen or 0) / 100.0) }}</dd>
           </div>
         </dl>
-        {% if editable and order.order_items %}
+        {% if workflow_phase == 1 and editable and order.status.value == 'DRAFT' and order.order_items %}
         <form method="POST" action="{{ url_for('merch.round_confirm', round_id=round.id) }}" class="form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div class="form-actions">
@@ -156,40 +208,12 @@ Listenpreis (Schätz.) CHF {{ '%.2f'|format(ri.list_price_snapshot_rappen / 100.
           </div>
         </form>
         {% endif %}
-        {% if round.status == MerchRoundStatus.OPEN and order and order.status.value in ('DRAFT', 'CONFIRMED') %}
-        <form method="POST" action="{{ url_for('merch.round_cancel_order', round_id=round.id) }}" class="form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <div class="form-actions">
-            <button type="submit" class="btn btn--secondary">Bestellung stornieren</button>
-          </div>
-        </form>
-        {% endif %}
       </div>
     </div>
-    {% elif order and order.status.value != 'DRAFT' %}
-    <div class="card card--flat">
-      <div class="card__body">
-        <p class="card__subtitle">Deine Bestellung: <strong>{{ order.status.value }}</strong></p>
-        <dl class="form-row form-row--stacked">
-          <div>
-            <dt class="form-field__label">Brutto</dt>
-            <dd>CHF {{ '%.2f'|format((order.gross_amount_rappen or 0) / 100.0) }}</dd>
-          </div>
-          <div>
-            <dt class="form-field__label">Forderung</dt>
-            <dd>CHF {{ '%.2f'|format((order.member_amount_due_rappen or 0) / 100.0) }}</dd>
-          </div>
-        </dl>
-        {% if round.status == MerchRoundStatus.OPEN and order.status.value == 'CONFIRMED' %}
-        <form method="POST" action="{{ url_for('merch.round_cancel_order', round_id=round.id) }}" class="form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <div class="form-actions">
-            <button type="submit" class="btn btn--secondary">Bestellung stornieren</button>
-          </div>
-        </form>
-        {% endif %}
-      </div>
-    </div>
+    {% endif %}
+
+    {% if order and workflow_phase > 0 and (step_back_available or order_delete_available) %}
+    {% include 'merch/_member_order_step_footer.html' %}
     {% endif %}
   </div>
 </div>

@@ -1253,6 +1253,7 @@ def _load_round_detail(round_id: int) -> MerchRound:
                 MerchOrderItem.round_item
             ).joinedload(MerchRoundItem.variant).joinedload(MerchVariant.size),
             joinedload(MerchRound.orders).joinedload(MerchOrder.member),
+            joinedload(MerchRound.supplier_invoices),
         )
         .filter_by(id=round_id)
         .first_or_404()
@@ -1286,6 +1287,27 @@ def _supplier_invoice_web_link_safe(file_id: str | None) -> str | None:
         return None
 
 
+def _supplier_invoice_rows(round_obj: MerchRound) -> list[dict]:
+    rows: list[dict] = []
+    for inv in round_obj.supplier_invoices:
+        rows.append(
+            {
+                'id': inv.id,
+                'filename': (inv.original_filename or '').strip() or 'Beleg',
+                'web_link': _supplier_invoice_web_link_safe(inv.drive_file_id),
+            }
+        )
+    if not rows and round_obj.supplier_invoice_drive_file_id:
+        rows.append(
+            {
+                'id': None,
+                'filename': 'Beleg',
+                'web_link': _supplier_invoice_web_link_safe(round_obj.supplier_invoice_drive_file_id),
+            }
+        )
+    return rows
+
+
 def _statistics_season_years_list() -> list[int]:
     min_ts = db.session.query(func.min(func.coalesce(MerchRound.opened_at, MerchRound.created_at))).scalar()
     latest = current_club_season_label_year()
@@ -1316,6 +1338,7 @@ def round_detail(round_id: int):
     aggregate_rows = _round_aggregate_rows(r)
     round_stats = compute_round_statistics(r)
     invoice_web_link = _supplier_invoice_web_link_safe(r.supplier_invoice_drive_file_id)
+    supplier_invoice_rows = _supplier_invoice_rows(r)
     invoice_folder_configured = bool(
         (current_app.config.get('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID') or '').strip()
     )
@@ -1339,6 +1362,7 @@ def round_detail(round_id: int):
         aggregate_rows=aggregate_rows,
         round_stats=round_stats,
         invoice_web_link=invoice_web_link,
+        supplier_invoice_rows=supplier_invoice_rows,
         invoice_folder_configured=invoice_folder_configured,
         orders_sorted=orders_sorted,
         workflow_phase=workflow_phase,
@@ -1356,7 +1380,7 @@ def round_detail(round_id: int):
             [
                 ri
                 for ri in round_items_sorted
-                if ri.id in {agg_id for agg_id, qty in aggregate_rows if qty > 0}
+                if ri.id in {item.id for item, qty in aggregate_rows if qty > 0}
             ]
         ),
         distribution_line_rows=build_distribution_line_rows(orders_sorted),
@@ -1812,50 +1836,58 @@ def order_mark_paid(round_id: int, order_id: int):
 @limiter.limit('20 per minute', methods=['POST'])
 def round_supplier_invoice(round_id: int):
     require_merch_v2_enabled()
-    r = MerchRound.query.filter_by(id=round_id).first_or_404()
+    r = _load_round_detail(round_id)
     if r.status in (MerchRoundStatus.DRAFT, MerchRoundStatus.OPEN, MerchRoundStatus.CANCELLED):
         flash('Lieferantenbeleg ist ab gesperrter Runde (Lock) vorgesehen.', 'error')
         return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
-    uf = request.files.get('invoice_file')
-    invoice_upload = bool(uf and uf.filename)
+    upload_files = [
+        uf for uf in request.files.getlist('invoice_file') if uf and uf.filename
+    ]
     total_raw = (request.form.get('invoice_total_chf') or '').strip()
-    if not invoice_upload and not total_raw:
+    if not upload_files and not total_raw:
         flash('Bitte Datei waehlen oder Rechnungs-Summe eintragen.', 'warning')
         return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
     folder_id = (current_app.config.get('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID') or '').strip()
 
     changed = False
-    if invoice_upload:
+    uploaded_drive_ids: list[str] = []
+    if upload_files:
         if not folder_id:
             flash('MERCH_SUPPLIER_INVOICE_DRIVE_FOLDER_ID fehlt (Drive-Zielordner).', 'error')
             return redirect(url_for('merch_admin.round_detail', round_id=round_id))
-        raw = uf.read()
-        if not raw:
-            flash('Leere Datei.', 'error')
-            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
-        try:
-            doc = DriveStorageService.upload_document(
-                file_stream=io.BytesIO(raw),
-                filename_stem=f'merch-lieferant-runde-{round_id}',
-                drive_folder_id=folder_id,
-                uploader=current_user,
-                event_id=None,
-                original_filename=uf.filename,
-                mime_type=uf.mimetype or 'application/octet-stream',
-            )
-            r.supplier_invoice_drive_file_id = doc.drive_file_id
-            changed = True
-        except DriveError as exc:
-            db.session.rollback()
-            flash(str(exc), 'error')
-            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
-        except Exception as exc:
-            db.session.rollback()
-            current_app.logger.error('Merch Lieferantenbeleg Upload: %s', exc, exc_info=True)
-            flash('Drive-Upload fehlgeschlagen.', 'error')
-            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+        for uf in upload_files:
+            raw = uf.read()
+            if not raw:
+                flash(f'Leere Datei: {uf.filename}', 'error')
+                return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+            try:
+                doc = DriveStorageService.upload_document(
+                    file_stream=io.BytesIO(raw),
+                    filename_stem=f'merch-lieferant-runde-{round_id}',
+                    drive_folder_id=folder_id,
+                    uploader=current_user,
+                    event_id=None,
+                    original_filename=uf.filename,
+                    mime_type=uf.mimetype or 'application/octet-stream',
+                )
+                MerchRoundService.add_supplier_invoice_upload(
+                    r,
+                    drive_file_id=doc.drive_file_id,
+                    original_filename=uf.filename,
+                )
+                uploaded_drive_ids.append(doc.drive_file_id)
+                changed = True
+            except DriveError as exc:
+                db.session.rollback()
+                flash(str(exc), 'error')
+                return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+            except Exception as exc:
+                db.session.rollback()
+                current_app.logger.error('Merch Lieferantenbeleg Upload: %s', exc, exc_info=True)
+                flash('Drive-Upload fehlgeschlagen.', 'error')
+                return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
     if total_raw:
         try:
@@ -1868,20 +1900,42 @@ def round_supplier_invoice(round_id: int):
             return redirect(url_for('merch_admin.round_detail', round_id=round_id))
 
     if changed:
-        step = MerchRoundService.complete_supplier_invoice_step(r)
-        if not step['success']:
-            db.session.rollback()
-            flash(step.get('error') or 'Beleg-Schritt konnte nicht abgeschlossen werden.', 'error')
-            return redirect(url_for('merch_admin.round_detail', round_id=round_id))
         db.session.commit()
-        if invoice_upload:
+        for drive_file_id in uploaded_drive_ids:
             SecurityService.log_audit_event(
                 AuditAction.MERCH_SUPPLIER_INVOICE_UPLOADED,
                 'merch_round',
                 round_id,
-                extra_data={'drive_file_id': r.supplier_invoice_drive_file_id},
+                extra_data={'drive_file_id': drive_file_id},
             )
-        flash('Lieferantenbeleg / Summe aktualisiert.', 'success')
+        flash('Lieferantenbeleg / Summe gespeichert.', 'success')
+    return _round_detail_redirect(round_id)
+
+
+@bp.route(
+    '/rounds/<int:round_id>/supplier-invoice/<int:invoice_id>/delete',
+    methods=['POST'],
+)
+@login_required
+@marketing_chief_or_admin_required
+@limiter.limit('20 per minute', methods=['POST'])
+def round_supplier_invoice_delete(round_id: int, invoice_id: int):
+    require_merch_v2_enabled()
+    r = _load_round_detail(round_id)
+    if r.status in (MerchRoundStatus.DRAFT, MerchRoundStatus.OPEN, MerchRoundStatus.CANCELLED):
+        flash('Lieferantenbeleg ist ab gesperrter Runde (Lock) vorgesehen.', 'error')
+        return redirect(url_for('merch_admin.round_detail', round_id=round_id))
+
+    result = MerchRoundService.delete_supplier_invoice(r, invoice_id)
+    if not result['success']:
+        db.session.rollback()
+        flash(result.get('error') or 'Beleg konnte nicht geloescht werden.', 'error')
+        return _round_detail_redirect(round_id)
+
+    drive_file_id = result.get('drive_file_id')
+    db.session.commit()
+    DriveStorageService.delete_drive_file(drive_file_id)
+    flash('Beleg geloescht.', 'success')
     return _round_detail_redirect(round_id)
 
 

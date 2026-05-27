@@ -19,6 +19,13 @@ from backend.models.merch_v2 import (
 )
 from backend.routes.merch_access import require_merch_v2_enabled
 from backend.services.merch_image_service import MerchImageService
+from backend.services.merch_member_workflow import (
+    MEMBER_WORKFLOW_STEP_LABELS,
+    compute_member_workflow_phase,
+    member_order_delete_available,
+    member_step_back_available,
+    member_workflow_hint,
+)
 from backend.services.merch_order_service import MerchOrderService
 from backend.services.security import SecurityService
 from backend.models.audit_event import AuditAction
@@ -29,27 +36,12 @@ bp = Blueprint('merch', __name__)
 @bp.route('/', methods=['GET'])
 @login_required
 def shop_index():
-    """Mitgliedsshop-Uebersicht (Merch v2). Legacy bleibt unter /member/merch."""
+    """Mitgliedsshop-Uebersicht (Merch v2)."""
     require_merch_v2_enabled()
-    open_rounds = (
-        MerchRound.query.filter(MerchRound.status == MerchRoundStatus.OPEN)
-        .order_by(MerchRound.id.desc())
-        .all()
-    )
-    recent_orders = (
-        MerchOrder.query.options(joinedload(MerchOrder.round))
-        .filter(
-            MerchOrder.member_id == current_user.id,
-            MerchOrder.status != MerchOrderStatus.CANCELLED,
-        )
-        .order_by(MerchOrder.id.desc())
-        .limit(24)
-        .all()
-    )
+    shop_rows = MerchOrderService.build_member_shop_index_rows(current_user.id)
     return render_template(
         'merch/shop.html',
-        open_rounds=open_rounds,
-        recent_orders=recent_orders,
+        shop_rows=shop_rows,
     )
 
 
@@ -153,6 +145,11 @@ def round_shop(round_id: int):
         shop_article_groups, qty_by_ri
     )
 
+    workflow_phase = compute_member_workflow_phase(r, order)
+    workflow_hint_text = member_workflow_hint(r, order, phase=workflow_phase)
+    step_back_available = member_step_back_available(r, order, phase=workflow_phase)
+    order_delete_available = member_order_delete_available(r, order)
+
     return render_template(
         'merch/round_shop.html',
         round=r,
@@ -163,6 +160,11 @@ def round_shop(round_id: int):
         qty_by_ri=qty_by_ri,
         cart_blocked_reason=cart_blocked_reason,
         MerchRoundStatus=MerchRoundStatus,
+        workflow_phase=workflow_phase,
+        workflow_step_labels=MEMBER_WORKFLOW_STEP_LABELS,
+        workflow_hint_text=workflow_hint_text,
+        step_back_available=step_back_available,
+        order_delete_available=order_delete_available,
     )
 
 
@@ -178,16 +180,25 @@ def round_cart(round_id: int):
         return redirect(url_for('merch.round_shop', round_id=round_id))
 
     res_o = MerchOrderService.get_or_create_draft_order(round_id, current_user.id)
-    if not res_o['success'] or not res_o.get('editable'):
+    if not res_o['success'] or not res_o.get('order'):
         db.session.rollback()
         flash(res_o.get('error') or 'Warenkorb nicht verfuegbar.', 'error')
         return redirect(url_for('merch.round_shop', round_id=round_id))
 
+    if not MerchOrderService.member_cart_editable(res_o['order']):
+        db.session.rollback()
+        flash('Warenkorb ist nicht mehr aenderbar.', 'error')
+        return redirect(url_for('merch.round_shop', round_id=round_id))
+
     oid = res_o['order'].id
+    was_confirmed = res_o['order'].status == MerchOrderStatus.CONFIRMED
     result = MerchOrderService.set_cart_line(oid, current_user.id, round_item_id, qty)
     if result['success']:
         db.session.commit()
-        flash('Warenkorb aktualisiert.', 'success')
+        if was_confirmed:
+            flash('Bestellung zur Bearbeitung geöffnet — bitte erneut bestätigen.', 'info')
+        else:
+            flash('Warenkorb aktualisiert.', 'success')
     else:
         db.session.rollback()
         flash(result.get('error') or 'Aktualisierung fehlgeschlagen.', 'error')
@@ -216,6 +227,49 @@ def round_confirm(round_id: int):
     else:
         db.session.rollback()
         flash(result.get('error') or 'Bestellung fehlgeschlagen.', 'error')
+    return redirect(url_for('merch.round_shop', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/step-back', methods=['POST'])
+@login_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_step_back(round_id: int):
+    require_merch_v2_enabled()
+    o = MerchOrder.query.filter_by(round_id=round_id, member_id=current_user.id).first()
+    if not o:
+        flash('Keine Bestellung in dieser Runde.', 'error')
+        return redirect(url_for('merch.round_shop', round_id=round_id))
+
+    result = MerchOrderService.revert_member_workflow_step(o.id, current_user.id)
+    if result['success']:
+        db.session.commit()
+        flash('Zurück zum vorherigen Schritt.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Aktion nicht möglich.', 'error')
+    return redirect(url_for('merch.round_shop', round_id=round_id))
+
+
+@bp.route('/rounds/<int:round_id>/delete-order', methods=['POST'])
+@login_required
+@limiter.limit('30 per minute', methods=['POST'])
+def round_delete_order(round_id: int):
+    require_merch_v2_enabled()
+    o = MerchOrder.query.filter_by(round_id=round_id, member_id=current_user.id).first()
+    if not o:
+        flash('Keine Bestellung in dieser Runde.', 'error')
+        return redirect(url_for('merch.round_shop', round_id=round_id))
+
+    result = MerchOrderService.cancel_order_by_member(o.id, current_user.id)
+    if result['success']:
+        db.session.commit()
+        SecurityService.log_audit_event(
+            AuditAction.MERCH_ORDER_CANCELLED, 'merch_order', o.id
+        )
+        flash('Bestellung gelöscht.', 'success')
+    else:
+        db.session.rollback()
+        flash(result.get('error') or 'Löschen nicht möglich.', 'error')
     return redirect(url_for('merch.round_shop', round_id=round_id))
 
 

@@ -12,6 +12,7 @@ from backend.models.merch_v2 import (
     MerchRound,
     MerchRoundItem,
     MerchRoundStatus,
+    MerchRoundSupplierInvoice,
     MerchVariant,
 )
 from backend.services.merch_order_service import MerchOrderService
@@ -119,7 +120,7 @@ class MerchRoundService:
                 }
 
         if target == MerchRoundStatus.LOCKED and old_status == MerchRoundStatus.OPEN:
-            MerchOrderService.discard_draft_orders_for_round(round_obj.id)
+            MerchOrderService.finalize_orders_for_round_lock(round_obj.id)
 
         if target == MerchRoundStatus.ORDERED_AT_SUPPLIER and old_status == MerchRoundStatus.LOCKED:
             pass
@@ -249,10 +250,50 @@ class MerchRoundService:
         return {'success': True, 'changed': True}
 
     @classmethod
+    def _sync_legacy_supplier_invoice_drive_file_id(cls, round_obj: MerchRound) -> None:
+        if round_obj.supplier_invoices:
+            round_obj.supplier_invoice_drive_file_id = round_obj.supplier_invoices[0].drive_file_id
+        else:
+            round_obj.supplier_invoice_drive_file_id = None
+
+    @classmethod
     def _clear_supplier_invoice(cls, round_obj: MerchRound) -> None:
+        for inv in list(round_obj.supplier_invoices):
+            db.session.delete(inv)
         round_obj.supplier_invoice_drive_file_id = None
         round_obj.supplier_invoice_total_rappen = None
         round_obj.supplier_invoice_completed_at = None
+
+    @classmethod
+    def add_supplier_invoice_upload(
+        cls,
+        round_obj: MerchRound,
+        *,
+        drive_file_id: str,
+        original_filename: str | None,
+    ) -> None:
+        inv = MerchRoundSupplierInvoice(
+            round_id=round_obj.id,
+            drive_file_id=drive_file_id,
+            original_filename=(original_filename or '').strip() or None,
+        )
+        db.session.add(inv)
+        db.session.flush()
+        cls._sync_legacy_supplier_invoice_drive_file_id(round_obj)
+
+    @classmethod
+    def delete_supplier_invoice(cls, round_obj: MerchRound, invoice_id: int) -> dict:
+        inv = MerchRoundSupplierInvoice.query.filter_by(
+            id=invoice_id,
+            round_id=round_obj.id,
+        ).first()
+        if not inv:
+            return {'success': False, 'error': 'Beleg nicht gefunden.'}
+        db.session.delete(inv)
+        db.session.flush()
+        db.session.expire(round_obj, ['supplier_invoices'])
+        cls._sync_legacy_supplier_invoice_drive_file_id(round_obj)
+        return {'success': True, 'error': None, 'drive_file_id': inv.drive_file_id}
 
     @classmethod
     def complete_supplier_invoice_step(cls, round_obj: MerchRound) -> dict:
@@ -265,6 +306,11 @@ class MerchRoundService:
             return {
                 'success': False,
                 'error': 'Erst Preise erfassen und Forderungen berechnen.',
+            }
+        if round_obj.supplier_invoice_total_rappen is None:
+            return {
+                'success': False,
+                'error': 'Bitte zuerst die Rechnungssumme erfassen.',
             }
         round_obj.supplier_invoice_completed_at = datetime.utcnow()
         return {'success': True, 'error': None}
