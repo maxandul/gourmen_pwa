@@ -879,6 +879,127 @@ class DriveStorageService:
         )
         return document
 
+    @classmethod
+    def ensure_subfolder(cls, parent_id: str, name: str) -> str:
+        """Find-or-create eines direkten Unterordners (idempotent).
+
+        Liefert die Drive-Folder-ID. Verwendet u.a. von der Buchhaltung
+        fuer `Buchhaltung/{Jahr}/` (docs/capabilities/accounting.md 7.3).
+        """
+        drive = cls._build_drive()
+        drive_id = cls._get_drive_id()
+        q_parent = _escape_drive_query_literal(parent_id)
+        q_name = _escape_drive_query_literal(name)
+        response = (
+            drive.files()
+            .list(
+                q=(
+                    f"'{q_parent}' in parents "
+                    f"and name = '{q_name}' "
+                    f"and mimeType = '{GOOGLE_FOLDER_MIME}' "
+                    f"and trashed = false"
+                ),
+                corpora="drive",
+                driveId=drive_id,
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
+                fields="files(id)",
+                pageSize=1,
+            )
+            .execute()
+        )
+        files = response.get("files", [])
+        if files:
+            return files[0]["id"]
+
+        created = (
+            drive.files()
+            .create(
+                body={
+                    "name": name,
+                    "mimeType": GOOGLE_FOLDER_MIME,
+                    "parents": [parent_id],
+                },
+                fields="id",
+                supportsAllDrives=True,
+            )
+            .execute()
+        )
+        logger.info("Drive-Ordner «%s» unter %s angelegt", name, parent_id)
+        return created["id"]
+
+    @classmethod
+    def upload_bytes(
+        cls,
+        payload: bytes,
+        filename_stem: str,
+        drive_folder_id: str,
+        mime_type: str,
+        extension: str | None = None,
+        actor: Member | None = None,
+    ) -> dict:
+        """Generischer Datei-Upload ohne Document-Datensatz.
+
+        Liefert Drive-Metadaten (`id`, `name`, `parents`). Validierung wie
+        bei `upload_document`; Aufrufer pflegt seine eigenen DB-Records
+        (z.B. `Receipt` in der Buchhaltung).
+        """
+        try:
+            from googleapiclient.errors import HttpError
+            from googleapiclient.http import MediaIoBaseUpload
+        except ImportError as exc:
+            raise DriveError("google-api-python-client fehlt.") from exc
+
+        if not isinstance(payload, (bytes, bytearray)):
+            raise DriveValidationError("Datei-Inhalt muss als Bytes vorliegen.")
+        cls.validate_upload(len(payload), mime_type, filename_stem)
+
+        if mime_type == "image/svg+xml":
+            payload = sanitize_svg_bytes(bytes(payload))
+
+        drive = cls._build_drive()
+        sanitized_filename = sanitize_drive_filename(filename_stem, extension)
+        sanitized_filename = cls._resolve_filename_collision(
+            drive, drive_folder_id, sanitized_filename
+        )
+
+        media = MediaIoBaseUpload(
+            io.BytesIO(payload), mimetype=mime_type, resumable=False
+        )
+        body = {
+            "name": sanitized_filename,
+            "parents": [drive_folder_id],
+            "mimeType": mime_type,
+        }
+        try:
+            return cls._drive_create_file(drive, body, media)
+        except HttpError as exc:
+            cls._handle_quota_error(exc, actor=actor)
+            raise
+
+    @classmethod
+    def download_file_by_id(cls, drive_file_id: str) -> tuple[bytes, str, str]:
+        """Bytes, MIME, Dateiname fuer eine beliebige Drive-File-ID."""
+        try:
+            from googleapiclient.http import MediaIoBaseDownload
+        except ImportError as exc:
+            raise DriveError("google-api-python-client fehlt.") from exc
+
+        drive = cls._build_drive()
+        meta = cls._drive_file_meta(drive, drive_file_id)
+        name = meta.get("name") or "download"
+        mime = meta.get("mimeType") or "application/octet-stream"
+
+        request = drive.files().get_media(
+            fileId=drive_file_id, supportsAllDrives=True
+        )
+        buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(buffer, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        return buffer.getvalue(), mime, name
+
     @staticmethod
     @_drive_retry
     def _drive_create_file(drive, body: dict, media) -> dict:
