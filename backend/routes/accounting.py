@@ -24,6 +24,7 @@ from wtforms.validators import ValidationError
 
 from backend.extensions import db, limiter
 from backend.forms.accounting import (
+    AccountForm,
     BookingForm,
     ReceiptUploadForm,
     RevisionCommentForm,
@@ -492,6 +493,103 @@ def comment_resolve(comment_id: int):
     return redirect(
         url_for('accounting.index', year=comment.fiscal_year_id, tab='abschluss')
     )
+
+
+# ---------------------------------------------------------------------------
+# Export (CSV / PDF)
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/export/<int:fiscal_year_id>/csv')
+@login_required
+def export_csv(fiscal_year_id: int):
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    csv_payload = AccountingService.export_csv(fy.id)
+    return Response(
+        csv_payload,
+        mimetype='text/csv; charset=utf-8',
+        headers={
+            'Content-Disposition': f'attachment; filename="Buchhaltung_{fy.year}.csv"'
+        },
+    )
+
+
+@bp.route('/export/<int:fiscal_year_id>/pdf')
+@login_required
+def export_pdf(fiscal_year_id: int):
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    pdf_payload = AccountingPdfService.generate_report(fy)
+    return Response(
+        pdf_payload,
+        mimetype='application/pdf',
+        headers={
+            'Content-Disposition': f'attachment; filename="Jahresabschluss_{fy.year}.pdf"'
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Kontenplan-Verwaltung (Admin)
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/accounts', methods=['GET', 'POST'])
+@login_required
+def accounts():
+    if not current_user.is_admin():
+        abort(403)
+
+    form = AccountForm()
+    if form.validate_on_submit():
+        try:
+            AccountingService.create_account(
+                code=form.code.data,
+                name=form.name.data,
+                kind=form.kind.data,
+                group_name=form.group_name.data,
+            )
+            flash(f'Konto {form.code.data} angelegt.', 'success')
+            return redirect(url_for('accounting.accounts'))
+        except AccountingError as exc:
+            flash(str(exc), 'error')
+    elif request.method == 'POST':
+        flash('Bitte Eingaben prüfen.', 'error')
+
+    all_accounts = Account.query.order_by(Account.sort_order, Account.code).all()
+    return render_template('accounting/accounts.html', accounts=all_accounts, form=form)
+
+
+@bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST'])
+@login_required
+def account_edit(account_id: int):
+    if not current_user.is_admin():
+        abort(403)
+
+    account = Account.query.get_or_404(account_id)
+    form = AccountForm(obj=account)
+    if request.method == 'GET':
+        form.kind.data = account.kind.value
+
+    if form.validate_on_submit():
+        try:
+            AccountingService.update_account(
+                account.id,
+                code=form.code.data,
+                name=form.name.data,
+                kind=form.kind.data,
+                group_name=form.group_name.data,
+                is_active=form.is_active.data,
+            )
+            flash(f'Konto {form.code.data} gespeichert.', 'success')
+            return redirect(url_for('accounting.accounts'))
+        except AccountingError as exc:
+            flash(str(exc), 'error')
+    elif request.method == 'POST':
+        flash('Bitte Eingaben prüfen.', 'error')
+
+    return render_template('accounting/account_edit.html', form=form, account=account)
 
 
 # ---------------------------------------------------------------------------

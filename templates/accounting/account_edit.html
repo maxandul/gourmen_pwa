@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "partials/_form_macros.html" import required_mark, field_errors %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Konto bearbeiten - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('accounting.accounts') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Kontenplan</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('pencil') }}
+            Konto {{ account.code }} bearbeiten
+        </h1>
+    </div>
+
+    <div class="page-content">
+        <div class="card">
+            <div class="card__body">
+                <form method="POST" action="{{ url_for('accounting.account_edit', account_id=account.id) }}" class="form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.code.id }}">{{ form.code.label.text }}{{ required_mark(form.code) }}</label>
+                            {{ form.code(class='form-field__input') }}
+                            {{ field_errors(form.code) }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.name.id }}">{{ form.name.label.text }}{{ required_mark(form.name) }}</label>
+                            {{ form.name(class='form-field__input') }}
+                            {{ field_errors(form.name) }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.kind.id }}">{{ form.kind.label.text }}{{ required_mark(form.kind) }}</label>
+                            {{ form.kind(class='form-field__select') }}
+                            <span class="form-field__help">Achtung: Die Art bestimmt, ob Buchungen als Einnahme oder Ausgabe gezählt werden.</span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.group_name.id }}">{{ form.group_name.label.text }}</label>
+                            {{ form.group_name(class='form-field__input') }}
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-field__label">
+                            {{ form.is_active() }}
+                            {{ form.is_active.label.text }}
+                        </label>
+                        <span class="form-field__help">Inaktive Konten erscheinen nicht mehr in Auswahllisten, bestehende Buchungen bleiben erhalten.</span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">
+                            {{ lucide_icon('check') }} Speichern
+                        </button>
+                        <a href="{{ url_for('accounting.accounts') }}" class="btn btn--outline">Abbrechen</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
