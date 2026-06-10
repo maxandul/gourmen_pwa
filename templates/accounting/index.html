@@ -111,6 +111,12 @@
                 </a>
             </nav>
 
+            <div class="form-actions">
+                <a href="{{ url_for('accounting.stats', year=fiscal_year.id) }}" class="btn btn--outline btn--sm">
+                    {{ lucide_icon('chart-line') }} Statistik
+                </a>
+            </div>
+
             <div class="tabs__content">
                 {# ---------------- Journal ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'journal' else '' }}" role="tabpanel">

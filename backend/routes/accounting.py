@@ -495,6 +495,70 @@ def comment_resolve(comment_id: int):
 
 
 # ---------------------------------------------------------------------------
+# Statistik
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/stats')
+@login_required
+def stats():
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    fy = _resolve_fiscal_year()
+    if fy is None:
+        flash('Kein Geschäftsjahr vorhanden. Bitte Seed-Script ausführen.', 'error')
+        return redirect(url_for('accounting.index'))
+
+    timeline = AccountingService.get_saldo_timeline(fy.id)
+    comparison = AccountingService.get_year_comparison()
+    budget_groups = AccountingService.get_budget_grouped(fy.id)
+
+    budget_usage = []
+    for group in budget_groups:
+        if group['budget_rappen'] <= 0:
+            continue
+        pct = round(group['actual_rappen'] / group['budget_rappen'] * 100)
+        budget_usage.append({**group, 'pct': pct, 'pct_capped': min(pct, 100)})
+
+    expense_groups = [
+        g for g in budget_groups
+        if g['kind'].value == 'expense' and g['actual_rappen'] > 0
+    ]
+
+    chart_data = {
+        'saldo': {
+            'labels': timeline['labels'],
+            'values': [round(v / 100, 2) for v in timeline['values_rappen']],
+        },
+        'years': {
+            'labels': [str(e['year']) for e in comparison],
+            'income': [round(e['income_rappen'] / 100, 2) for e in comparison],
+            'expense': [round(e['expense_rappen'] / 100, 2) for e in comparison],
+            'result': [round(e['result_rappen'] / 100, 2) for e in comparison],
+        },
+        'donut': {
+            'labels': [g['name'] for g in expense_groups],
+            'values': [round(g['actual_rappen'] / 100, 2) for g in expense_groups],
+        },
+    }
+
+    is_treasurer = _is_treasurer()
+    contributions = (
+        AccountingService.get_member_contributions(fy.id) if is_treasurer else []
+    )
+
+    return render_template(
+        'accounting/stats.html',
+        fiscal_year=fy,
+        fiscal_years=AccountingService.get_all_fiscal_years(),
+        chart_data=chart_data,
+        budget_usage=budget_usage,
+        comparison=comparison,
+        contributions=contributions,
+        is_treasurer=is_treasurer,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Revisions-Workflow (Jahresfreigabe und Bestätigung)
 # ---------------------------------------------------------------------------
 

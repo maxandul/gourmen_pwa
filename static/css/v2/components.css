@@ -6477,3 +6477,50 @@ a.docs-file-row__title:hover {
   color: var(--color-text-primary);
 }
 
+/* ============================================
+   BUDGET-METER – Fortschrittsbalken Budget-Auslastung (Buchhaltung)
+   Füllgrad via Custom Property: style="--budget-meter-fill: 62%"
+   ============================================ */
+
+.budget-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+}
+
+.budget-meter__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.budget-meter__label {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.budget-meter__value {
+  color: var(--color-text-secondary);
+}
+
+.budget-meter__track {
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  overflow: hidden;
+}
+
+.budget-meter__fill {
+  height: 100%;
+  width: var(--budget-meter-fill, 0%);
+  border-radius: var(--radius-full);
+  background: var(--color-interactive-primary);
+}
+
+.budget-meter__fill--over {
+  background: var(--color-error);
+}
+

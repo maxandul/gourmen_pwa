@@ -422,6 +422,81 @@ class AccountingService:
             'booking_count': Booking.query.filter_by(fiscal_year_id=fy.id).count(),
         }
 
+    # -- Statistik --------------------------------------------------------
+
+    MEMBER_CONTRIBUTION_CODES = ('3000', '3015', '3020')
+
+    @classmethod
+    def get_saldo_timeline(cls, fiscal_year_id: int) -> dict:
+        """Kumulierter Saldo pro Monat (Rappen) für die Linienkurve."""
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        bookings = (
+            Booking.query.filter_by(fiscal_year_id=fy.id)
+            .order_by(Booking.booking_date, Booking.id)
+            .all()
+        )
+        monthly = [0] * 12
+        for b in bookings:
+            delta = b.amount_rappen if b.direction == BookingDirection.IN else -b.amount_rappen
+            monthly[b.booking_date.month - 1] += delta
+
+        cumulative = []
+        running = 0
+        for value in monthly:
+            running += value
+            cumulative.append(running)
+        return {
+            'labels': ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            'values_rappen': cumulative,
+        }
+
+    @classmethod
+    def get_year_comparison(cls) -> list[dict]:
+        """Einnahmen/Ausgaben/Ergebnis pro Jahr (aufsteigend) für Balken und Tabelle."""
+        rows = (
+            db.session.query(
+                FiscalYear,
+                Booking.direction,
+                db.func.sum(Booking.amount_rappen),
+            )
+            .outerjoin(Booking, Booking.fiscal_year_id == FiscalYear.id)
+            .group_by(FiscalYear.id, Booking.direction)
+            .all()
+        )
+        by_year: dict[int, dict] = {}
+        for fy, direction, total in rows:
+            entry = by_year.setdefault(fy.year, {
+                'fiscal_year': fy,
+                'year': fy.year,
+                'income_rappen': 0,
+                'expense_rappen': 0,
+            })
+            if direction == BookingDirection.IN:
+                entry['income_rappen'] = total or 0
+            elif direction == BookingDirection.OUT:
+                entry['expense_rappen'] = total or 0
+        result = []
+        for year in sorted(by_year):
+            entry = by_year[year]
+            entry['result_rappen'] = entry['income_rappen'] - entry['expense_rappen']
+            result.append(entry)
+        return result
+
+    @classmethod
+    def get_member_contributions(cls, fiscal_year_id: int) -> list[Booking]:
+        """Mitgliederbeitrags-Buchungen (Konten 3000/3015/3020) des Jahres."""
+        return (
+            Booking.query.join(Account, Account.id == Booking.account_id)
+            .filter(
+                Booking.fiscal_year_id == fiscal_year_id,
+                Booking.direction == BookingDirection.IN,
+                Account.code.in_(cls.MEMBER_CONTRIBUTION_CODES),
+            )
+            .order_by(Booking.booking_date, Booking.id)
+            .all()
+        )
+
     # -- Belege ---------------------------------------------------------
 
     @classmethod

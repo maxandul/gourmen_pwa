@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+
+{% block title %}Buchhaltung Statistik - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('accounting.index', year=fiscal_year.id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Buchhaltung</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('chart-line') }}
+            Statistik
+        </h1>
+    </div>
+
+    <div class="page-content" id="accounting-stats" data-chart='{{ chart_data | tojson }}'>
+        {# Jahres-Selektor #}
+        <form method="GET" action="{{ url_for('accounting.stats') }}" class="form">
+            <div class="form-row">
+                <div class="form-field">
+                    <label class="form-field__label" for="year-select">Geschäftsjahr</label>
+                    <select name="year" id="year-select" class="form-field__select" onchange="this.form.submit()">
+                        {% for fy in fiscal_years %}
+                        <option value="{{ fy.id }}" {{ 'selected' if fy.id == fiscal_year.id else '' }}>
+                            {{ fy.year }} – {{ fy.status_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        {# Saldo-Verlauf #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-line') }} Saldo-Verlauf {{ fiscal_year.year }}</h2>
+            </div>
+            <div class="card__body">
+                <canvas id="chart-saldo" height="120" role="img" aria-label="Kumulierter Saldo über die Monate {{ fiscal_year.year }}"></canvas>
+            </div>
+        </div>
+
+        {# Budget-Auslastung #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('goal') }} Budget-Auslastung {{ fiscal_year.year }}</h2>
+            </div>
+            <div class="card__body">
+                {% if budget_usage %}
+                    {% for group in budget_usage %}
+                    <div class="budget-meter">
+                        <div class="budget-meter__header">
+                            <span class="budget-meter__label">{{ group.name }}</span>
+                            <span class="budget-meter__value">
+                                CHF {{ chf(group.actual_rappen) }} / {{ chf(group.budget_rappen) }} ({{ group.pct }}%)
+                            </span>
+                        </div>
+                        <div class="budget-meter__track">
+                            <div class="budget-meter__fill{% if group.pct > 100 %} budget-meter__fill--over{% endif %}"
+                                 style="--budget-meter-fill: {{ group.pct_capped }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-secondary">Kein Budget für {{ fiscal_year.year }} hinterlegt.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Jahresvergleich #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-column') }} Jahresvergleich</h2>
+            </div>
+            <div class="card__body">
+                <canvas id="chart-years" height="140" role="img" aria-label="Einnahmen, Ausgaben und Ergebnis pro Jahr"></canvas>
+            </div>
+        </div>
+
+        {# Ausgaben nach Kontengruppe #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-pie') }} Ausgaben nach Kontengruppe {{ fiscal_year.year }}</h2>
+            </div>
+            <div class="card__body">
+                {% if chart_data.donut.labels %}
+                <canvas id="chart-donut" height="200" role="img" aria-label="Anteil der Kontengruppen an den Gesamtausgaben {{ fiscal_year.year }}"></canvas>
+                {% else %}
+                <p class="text-secondary">Noch keine Ausgaben in {{ fiscal_year.year }} gebucht.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Ergebnis-Übersicht #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('table') }} Ergebnis-Übersicht</h2>
+            </div>
+            <div class="card__body">
+                <div class="table-responsive data-table-wrap" role="region" aria-label="Ergebnis pro Jahr">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Jahr</th>
+                                <th scope="col">Einnahmen</th>
+                                <th scope="col">Ausgaben</th>
+                                <th scope="col">Ergebnis</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in comparison | reverse %}
+                            <tr>
+                                <td>{{ entry.year }}</td>
+                                <td>CHF {{ chf(entry.income_rappen) }}</td>
+                                <td>CHF {{ chf(entry.expense_rappen) }}</td>
+                                <td>CHF {{ chf(entry.result_rappen) }}</td>
+                                <td>{{ entry.fiscal_year.status_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Mitgliederbeiträge (nur Schatzmeister/Admin) #}
+        {% if is_treasurer %}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('users') }} Mitgliederbeiträge {{ fiscal_year.year }}</h2>
+            </div>
+            <div class="card__body">
+                {% if contributions %}
+                <div class="table-responsive data-table-wrap" role="region" aria-label="Mitgliederbeiträge {{ fiscal_year.year }}">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mitglied</th>
+                                <th scope="col">Betrag</th>
+                                <th scope="col">Datum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in contributions %}
+                            <tr>
+                                <td>{{ booking.member.display_name_with_spirit if booking.member else '–' }}</td>
+                                <td>CHF {{ chf(booking.amount_rappen) }}</td>
+                                <td>{{ booking.booking_date.strftime('%d.%m.%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-secondary">Noch keine Mitgliederbeiträge in {{ fiscal_year.year }} gebucht.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const root = document.getElementById('accounting-stats');
+    const data = JSON.parse(root.dataset.chart);
+    const styles = getComputedStyle(document.documentElement);
+    const colorText = styles.getPropertyValue('--color-text-secondary').trim();
+    const colorGrid = styles.getPropertyValue('--color-border-default').trim();
+    const palette = [
+      styles.getPropertyValue('--logo-orange').trim(),
+      styles.getPropertyValue('--logo-teal').trim(),
+      styles.getPropertyValue('--logo-navy-medium').trim(),
+      styles.getPropertyValue('--brand-accent-300').trim(),
+      styles.getPropertyValue('--brand-secondary-600').trim(),
+      styles.getPropertyValue('--brand-primary-400').trim(),
+      styles.getPropertyValue('--brand-warm-500').trim(),
+      styles.getPropertyValue('--brand-accent-700').trim(),
+      styles.getPropertyValue('--brand-secondary-300').trim(),
+    ];
+
+    Chart.defaults.color = colorText;
+    Chart.defaults.borderColor = colorGrid;
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+
+    const chfTick = (value) => 'CHF ' + Number(value).toLocaleString('de-CH');
+
+    new Chart(document.getElementById('chart-saldo'), {
+      type: 'line',
+      data: {
+        labels: data.saldo.labels,
+        datasets: [{
+          label: 'Kumulierter Saldo',
+          data: data.saldo.values,
+          borderColor: palette[0],
+          backgroundColor: palette[0],
+          tension: 0.2,
+          fill: false,
+        }],
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    });
+
+    new Chart(document.getElementById('chart-years'), {
+      type: 'bar',
+      data: {
+        labels: data.years.labels,
+        datasets: [
+          { label: 'Einnahmen', data: data.years.income, backgroundColor: palette[1] },
+          { label: 'Ausgaben', data: data.years.expense, backgroundColor: palette[0] },
+          { label: 'Ergebnis', data: data.years.result, backgroundColor: palette[2] },
+        ],
+      },
+      options: {
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    });
+
+    const donutCanvas = document.getElementById('chart-donut');
+    if (donutCanvas && data.donut.labels.length) {
+      new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: data.donut.labels,
+          datasets: [{ data: data.donut.values, backgroundColor: palette }],
+        },
+        options: {
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    }
+  })();
+</script>
+{% endblock %}

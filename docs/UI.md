@@ -373,6 +373,12 @@ Verhalten:
 | `.calendar-subscribe__actions` | – | Sekundäraktionen (Link neu / Abo aus); oben per Rand abgesetzt, unter 480px gestapelt |
 | `.calendar-subscribe-dialog` | mit `__panel`, `__title` | Bestätigungs-`<dialog>` für Link neu / Abo aus |
 
+#### Buchhaltung (Phase 04)
+
+| Klasse | Modifikatoren | Zweck |
+|---|---|---|
+| `.budget-meter` | mit `__header`, `__label`, `__value`, `__track`, `__fill`, `__fill--over` | Fortschrittsbalken Budget-Auslastung pro Kontengruppe (`accounting/stats.html`). Füllgrad via Custom Property `--budget-meter-fill` (inline, da dynamischer Wert); `--over` bei >100%. Erstes Progressbar-Pattern im System. |
+
 ### 5.10 Deprecated / Legacy
 
 Folgende Klassen existieren historisch und sollen **nicht in neuen Komponenten** verwendet werden. Bei Refactoring wenn möglich entfernen:
