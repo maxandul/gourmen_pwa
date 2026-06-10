@@ -51,7 +51,7 @@ def create_app(config_name=None):
         
         # Register blueprints
         from backend.routes import public, auth, dashboard, events, billbro, ggl, member, admin, notifications, ratings
-        from backend.routes import push_notifications, cron, docs, calendar_feed
+        from backend.routes import push_notifications, cron, docs, calendar_feed, accounting
 
         app.register_blueprint(public.bp)
         app.register_blueprint(auth.bp, url_prefix='/auth')
@@ -67,6 +67,7 @@ def create_app(config_name=None):
         app.register_blueprint(cron.bp)
         app.register_blueprint(docs.bp, url_prefix='/docs')
         app.register_blueprint(calendar_feed.bp)
+        app.register_blueprint(accounting.bp, url_prefix='/accounting')
         app.logger.info("Push notifications and cron jobs registered")
         
         # Register error handlers

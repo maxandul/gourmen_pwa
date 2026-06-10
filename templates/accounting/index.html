@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+
+{% block title %}Buchhaltung - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu Verein</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('calculator') }}
+            Buchhaltung
+        </h1>
+    </div>
+
+    <div class="page-content">
+        {% if needs_seed %}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">Kontenplan initialisieren</h2>
+            </div>
+            <div class="card__body">
+                <p class="text-secondary">
+                    Es sind noch keine Konten oder Geschäftsjahre vorhanden.
+                    Bitte das Seed-Script ausführen:
+                    <code>python scripts/seed_accounting_chart.py</code>
+                </p>
+            </div>
+        </div>
+        {% else %}
+
+        {# Jahres-Selektor #}
+        <form method="GET" action="{{ url_for('accounting.index') }}" class="form">
+            <input type="hidden" name="tab" value="{{ active_tab }}">
+            <div class="form-row">
+                <div class="form-field">
+                    <label class="form-field__label" for="year-select">Geschäftsjahr</label>
+                    <select name="year" id="year-select" class="form-field__select" onchange="this.form.submit()">
+                        {% for fy in fiscal_years %}
+                        <option value="{{ fy.id }}" {{ 'selected' if fy.id == fiscal_year.id else '' }}>
+                            {{ fy.year }} – {{ fy.status_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        {# KPI-Kacheln #}
+        <div class="dashboard-info-grid">
+            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                <span class="dashboard-info-tile__content">
+                    <span class="dashboard-info-tile__label">Saldo {{ fiscal_year.year }}</span>
+                    <span class="dashboard-info-tile__value">
+                        <span class="dashboard-info-tile__line">CHF {{ chf(summary.result_rappen) }}</span>
+                    </span>
+                </span>
+            </div>
+            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                <span class="dashboard-info-tile__content">
+                    <span class="dashboard-info-tile__label">Offene Belege</span>
+                    <span class="dashboard-info-tile__value">
+                        <span class="dashboard-info-tile__line {% if summary.open_receipts == 0 %}dashboard-info-tile__line--subtle{% endif %}">
+                            {{ summary.open_receipts }}
+                        </span>
+                    </span>
+                </span>
+            </div>
+            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
+                <span class="dashboard-info-tile__content">
+                    <span class="dashboard-info-tile__label">Budget-Auslastung</span>
+                    <span class="dashboard-info-tile__value">
+                        {% if summary.budget_used_pct is not none %}
+                        <span class="dashboard-info-tile__line">{{ summary.budget_used_pct }}%</span>
+                        {% else %}
+                        <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Kein Budget</span>
+                        {% endif %}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <nav class="tabs__nav" role="tablist">
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'journal' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'journal' else 'false' }}">
+                    {{ lucide_icon('book-open') }} Journal
+                </a>
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'belege' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'belege' else 'false' }}">
+                    {{ lucide_icon('receipt') }} Belege
+                </a>
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='budget') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'budget' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'budget' else 'false' }}">
+                    {{ lucide_icon('chart-column') }} Budget
+                </a>
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='abschluss') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'abschluss' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'abschluss' else 'false' }}">
+                    {{ lucide_icon('shield-check') }} Abschluss
+                </a>
+            </nav>
+
+            <div class="tabs__content">
+                {# ---------------- Journal ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'journal' else '' }}" role="tabpanel">
+                    <div class="card card--filter tool-surface">
+                        <div class="card__body">
+                            <details class="disclosure">
+                                <summary class="disclosure__summary">
+                                    {{ lucide_icon('chevron-down') }}
+                                    Filter
+                                    {% if filter_account %}
+                                    <span class="chip chip--info">{{ filter_account.name }}</span>
+                                    {% endif %}
+                                    {% if filter_direction %}
+                                    <span class="chip chip--info">{{ 'Einnahmen' if filter_direction == 'in' else 'Ausgaben' }}</span>
+                                    {% endif %}
+                                </summary>
+                                <div class="disclosure__content">
+                                    <form method="GET" action="{{ url_for('accounting.index') }}" class="form">
+                                        <input type="hidden" name="year" value="{{ fiscal_year.id }}">
+                                        <input type="hidden" name="tab" value="journal">
+                                        <div class="form-row">
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="filter-konto">Konto</label>
+                                                <select name="konto" id="filter-konto" class="form-field__select">
+                                                    <option value="">Alle</option>
+                                                    {% for account in accounts %}
+                                                    <option value="{{ account.id }}" {{ 'selected' if filter_account_id == account.id else '' }}>
+                                                        {{ account.code }} {{ account.name }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="filter-richtung">Richtung</label>
+                                                <select name="richtung" id="filter-richtung" class="form-field__select">
+                                                    <option value="">Alle</option>
+                                                    <option value="in" {{ 'selected' if filter_direction == 'in' else '' }}>Einnahmen</option>
+                                                    <option value="out" {{ 'selected' if filter_direction == 'out' else '' }}>Ausgaben</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn--primary btn--sm">
+                                                {{ lucide_icon('funnel') }} Filtern
+                                            </button>
+                                            <a class="btn btn--outline btn--sm" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal') }}">Zurücksetzen</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    {% if bookings %}
+                    <div class="data-table-scroll-outer">
+                    <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Buchungsjournal">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Datum</th>
+                                    <th scope="col">Beschreibung</th>
+                                    <th scope="col">Konto</th>
+                                    <th scope="col">Betrag</th>
+                                    <th scope="col">Beleg</th>
+                                    <th scope="col">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td>{{ booking.booking_date.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ booking.description }}</td>
+                                    <td>{{ booking.account.code }} {{ booking.account.name }}</td>
+                                    <td>{% if booking.is_income %}+{% else %}−{% endif %} CHF {{ chf(booking.amount_rappen) }}</td>
+                                    <td>
+                                        {% if booking.receipts %}
+                                        {{ lucide_icon('paperclip') }}
+                                        {% else %}
+                                        <span class="text-secondary">–</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('accounting.booking_detail', booking_id=booking.id) }}" class="btn btn--outline btn--sm">Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="card__body">
+                            <p class="text-secondary">Keine Buchungen für die aktuellen Filter.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# ---------------- Belege ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'belege' else '' }}" role="tabpanel">
+                    <div class="card card--filter tool-surface">
+                        <div class="card__body">
+                            <details class="disclosure">
+                                <summary class="disclosure__summary">
+                                    {{ lucide_icon('chevron-down') }}
+                                    Filter
+                                    {% if filter_receipt_status %}
+                                    <span class="chip chip--info">{{ 'Ausstehend' if filter_receipt_status == 'offen' else 'Verbucht' }}</span>
+                                    {% endif %}
+                                    {% if filter_event %}
+                                    <span class="chip chip--info">{{ filter_event.display_date }}</span>
+                                    {% endif %}
+                                </summary>
+                                <div class="disclosure__content">
+                                    <form method="GET" action="{{ url_for('accounting.index') }}" class="form">
+                                        <input type="hidden" name="year" value="{{ fiscal_year.id }}">
+                                        <input type="hidden" name="tab" value="belege">
+                                        <div class="form-row">
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="filter-status">Status</label>
+                                                <select name="status" id="filter-status" class="form-field__select">
+                                                    <option value="">Alle</option>
+                                                    <option value="offen" {{ 'selected' if filter_receipt_status == 'offen' else '' }}>Ausstehend</option>
+                                                    <option value="verbucht" {{ 'selected' if filter_receipt_status == 'verbucht' else '' }}>Verbucht</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-field">
+                                                <label class="form-field__label" for="filter-event">Event</label>
+                                                <select name="event" id="filter-event" class="form-field__select">
+                                                    <option value="">Alle</option>
+                                                    {% for event in events_for_filter %}
+                                                    <option value="{{ event.id }}" {{ 'selected' if filter_event_id == event.id else '' }}>
+                                                        {{ event.display_date }} {{ event.restaurant or event.event_typ.value }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn--primary btn--sm">
+                                                {{ lucide_icon('funnel') }} Filtern
+                                            </button>
+                                            <a class="btn btn--outline btn--sm" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege') }}">Zurücksetzen</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    {% if receipts %}
+                        {% for receipt in receipts %}
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    {{ lucide_icon('receipt') }}
+                                    {{ receipt.drive_file_name }}
+                                </h2>
+                                <div class="card__actions">
+                                    {% if receipt.is_booked %}
+                                    <span class="chip chip--success">Verbucht</span>
+                                    {% else %}
+                                    <span class="chip chip--warning">Ausstehend</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                <div class="info-row">
+                                    <span class="info-row__label">Eingereicht von</span>
+                                    <span class="info-row__value">{{ receipt.uploader.display_name_with_spirit }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-row__label">Eingereicht am</span>
+                                    <span class="info-row__value">{{ receipt.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                </div>
+                                {% if receipt.suggested_account %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Kategorie-Vorschlag</span>
+                                    <span class="info-row__value">{{ receipt.suggested_account.name }}</span>
+                                </div>
+                                {% endif %}
+                                {% if receipt.suggested_event %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Event-Vorschlag</span>
+                                    <span class="info-row__value">{{ receipt.suggested_event.display_date }} {{ receipt.suggested_event.restaurant or '' }}</span>
+                                </div>
+                                {% endif %}
+                                {% if receipt.comment %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Kommentar</span>
+                                    <span class="info-row__value">{{ receipt.comment }}</span>
+                                </div>
+                                {% endif %}
+                                {% if receipt.is_booked %}
+                                <div class="info-row">
+                                    <span class="info-row__label">Buchung</span>
+                                    <span class="info-row__value">
+                                        <a href="{{ url_for('accounting.booking_detail', booking_id=receipt.booking_id) }}">{{ receipt.booking.description }}</a>
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="card">
+                        <div class="card__body">
+                            <p class="text-secondary">Keine Belege für die aktuellen Filter.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# ---------------- Budget ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'budget' else '' }}" role="tabpanel">
+                    {% set budget_editable = is_treasurer and not fiscal_year.is_closed %}
+                    {% for group in budget_groups %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">{{ group.name }}</h2>
+                            <div class="card__actions">
+                                <span class="chip chip--info">{{ 'Einnahmen' if group.kind.value == 'income' else 'Ausgaben' }}</span>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="table-responsive data-table-wrap" role="region" aria-label="Budget {{ group.name }}">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Konto</th>
+                                            <th scope="col">Soll</th>
+                                            <th scope="col">Ist</th>
+                                            <th scope="col">Abweichung</th>
+                                            {% if budget_editable %}<th scope="col">Anpassen</th>{% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in group.rows %}
+                                        <tr>
+                                            <td>{{ row.account.code }} {{ row.account.name }}</td>
+                                            <td>CHF {{ chf(row.budget_rappen) }}</td>
+                                            <td>CHF {{ chf(row.actual_rappen) }}</td>
+                                            <td>CHF {{ chf(row.deviation_rappen) }}</td>
+                                            {% if budget_editable %}
+                                            <td>
+                                                <form method="POST" action="{{ url_for('accounting.year_budget', fiscal_year_id=fiscal_year.id) }}" class="form">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <input type="hidden" name="account_id" value="{{ row.account.id }}">
+                                                    <div class="form-row form-row--inline-remove">
+                                                        <div class="form-field">
+                                                            <label class="form-field__label" for="budget-{{ row.account.id }}">
+                                                                <span class="sr-only">Budget {{ row.account.name }}</span>
+                                                            </label>
+                                                            <input type="number" step="0.01" min="0" id="budget-{{ row.account.id }}"
+                                                                   name="amount_chf" class="form-field__input"
+                                                                   value="{{ chf(row.budget_rappen) }}">
+                                                        </div>
+                                                        <button type="submit" class="btn btn--outline btn--sm">Speichern</button>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                        <tr>
+                                            <td><strong>Total {{ group.name }}</strong></td>
+                                            <td><strong>CHF {{ chf(group.budget_rappen) }}</strong></td>
+                                            <td><strong>CHF {{ chf(group.actual_rappen) }}</strong></td>
+                                            <td><strong>CHF {{ chf(group.deviation_rappen) }}</strong></td>
+                                            {% if budget_editable %}<td></td>{% endif %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {# ---------------- Abschluss ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'abschluss' else '' }}" role="tabpanel">
+                    <div class="billbro-workflow-block">
+                        <ol class="billbro-workflow" aria-label="Jahresabschluss-Ablauf">
+                            {% for label in ['Offen', 'In Prüfung', 'Abgeschlossen'] %}
+                            {% set i = loop.index %}
+                            <li class="billbro-workflow__step{% if i < abschluss_phase %} billbro-workflow__step--done{% elif i == abschluss_phase %} billbro-workflow__step--current{% endif %}"
+                                {% if i == abschluss_phase %}aria-current="step"{% endif %}>
+                                <span class="billbro-workflow__index">{{ i }}</span>
+                                {% if i == abschluss_phase %}<span>{{ label }}</span>{% endif %}
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        <p class="billbro-workflow__hint" role="status">
+                            {% if is_treasurer %}
+                                {% if abschluss_phase == 1 %}Erfasse alle Buchungen und weise Belege zu. Sobald alles vollständig ist, gib das Jahr zur Prüfung frei.
+                                {% elif abschluss_phase == 2 %}Das Jahr ist gesperrt. Beantworte Kommentare des Revisors falls nötig.
+                                {% else %}Abschluss {{ fiscal_year.year }} ist genehmigt und archiviert.{% endif %}
+                            {% elif is_reviewer %}
+                                {% if abschluss_phase == 1 %}Warte, bis der Schatzmeister das Jahr freigibt.
+                                {% elif abschluss_phase == 2 %}Prüfe Journal und Budget, hinterlasse Kommentare bei Klärungsbedarf und bestätige das Jahr.
+                                {% else %}Abschluss {{ fiscal_year.year }} ist genehmigt und archiviert.{% endif %}
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if fiscal_year.revision_approval %}
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">{{ lucide_icon('shield-check') }} Revisionsbestätigung</h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Bestätigt von</span>
+                                <span class="info-row__value">{{ fiscal_year.revision_approval.reviewer.display_name_with_spirit }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-row__label">Bestätigt am</span>
+                                <span class="info-row__value">{{ fiscal_year.revision_approval.approved_at.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">{{ lucide_icon('message-square') }} Revisions-Kommentare</h2>
+                        </div>
+                        <div class="card__body">
+                            {% if comments %}
+                                {% for comment in comments %}
+                                <div class="info-row">
+                                    <span class="info-row__label">
+                                        {{ comment.author.display_name_with_spirit }}<br>
+                                        <span class="text-secondary">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                    </span>
+                                    <span class="info-row__value">
+                                        {{ comment.text }}
+                                        {% if comment.booking %}
+                                        <br><a href="{{ url_for('accounting.booking_detail', booking_id=comment.booking_id) }}">Zur Buchung: {{ comment.booking.description }}</a>
+                                        {% endif %}
+                                        {% if comment.resolved %}
+                                        <br><span class="chip chip--success">Erledigt</span>
+                                        {% elif is_treasurer or is_reviewer %}
+                                        <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
+                                        </form>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <p class="text-secondary">Noch keine Kommentare.</p>
+                            {% endif %}
+
+                            <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
+                                {{ comment_form.hidden_tag() }}
+                                <div class="form-field">
+                                    <label class="form-field__label" for="comment-text">Neuer Kommentar</label>
+                                    {{ comment_form.text(class='form-field__textarea', rows=3, id='comment-text') }}
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn--primary btn--sm">
+                                        {{ lucide_icon('message-square') }} Kommentar speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

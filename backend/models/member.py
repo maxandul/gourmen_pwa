@@ -148,6 +148,10 @@ class Member(db.Model, UserMixin):
     def is_admin(self):
         """Check if member is admin"""
         return self.role == Role.ADMIN
+
+    def has_funktion(self, funktion_name):
+        """Check if member has the given Funktion (name, e.g. 'SCHATZMEISTER')"""
+        return self.funktion is not None and self.funktion.name == funktion_name
     
     def get_id(self):
         """Get user ID for Flask-Login"""
