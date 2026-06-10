@@ -86,7 +86,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | 1 | in_progress | master | 2026-05-01 | Workspace/DNS/DKIM/MX stabil; Shared-Drive-Rollout + formeller Abschluss offen — siehe `AGENT_HANDOFF.md` |
 | 2 | done | master | 2026-05-07 | Resend in Prod (PR #11); `/admin/mail/test` verifiziert. Optional nachziehen: Forgot-Password/Onboarding/2FA E2E, mail-tester.com, Resend/Privacy-Text auf oeffentlicher Seite — siehe `PHASE_02_APP_SYSTEM_MAIL.md` |
 | 3 | done (legacy Kategorie-UI entfernt in Phase 9) | master | 2026-05-13 | Code merged (PR #12), Hotfix Migration `d2b4e8f5a312` auf `4377231`; DB Head `e3c5f9a6b423`. **2026-05-15:** Konzeptwende Drive-Browser → Phase 9; `scripts/setup_drive.py` entfernt. |
-| 4 | pending | – | – | Inhaltlich analog `_archive/2026-04_modules-and-hosting/PHASE_04_ACCOUNTING.md`, Backend = Drive; n8n-Pfad als offene Architektur-Frage (siehe STRATEGY_2026.md) |
+| 4 | done (Code; Merge + Prod-Migration/Seed offen) | `phase/04-workspace-accounting` | 2026-06-10 | Buchhaltungs-Modul komplett (9 Commits): Models + 2 Migrationen, Seed (Kontenplan, FiscalYears 2021–2026, Budget 2025/2026), Tab-Index, Beleg-Upload, Buchungsworkflow, Revisions-Workflow inkl. Revisorenbericht-PDF (`reportlab`), Statistik (Chart.js), CSV/PDF-Export, Kontenplan-Verwaltung. Spec: `docs/capabilities/accounting.md`. Nach Merge: `flask db upgrade` + Seed-Script in Prod. |
 | 5 | done | master (war `phase/05-workspace-ical-feed`) | 2026-05-14 | iCal-Feed pro Mitglied (Service, Migrationen, UI Polish Disclosure/Aktionen, Rate-Limit). Spec: `docs/capabilities/calendar.md`. |
 | 6 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_06_PAYMENTS.md` |
 | 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |

@@ -64,6 +64,7 @@ Registrierung in `backend/app.py`:
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
 | `docs` | `/docs` | **Phase 03 + 09:** Vereinsdokumente im Google Shared Drive – Drive-Browser (Ordner-Tiles, Breadcrumb, Dateiliste), Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. Spec: `docs/capabilities/drive.md`. |
 | `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
+| `accounting` | `/accounting` | **Phase 04:** Buchhaltung – Tab-Index (Journal/Belege/Budget/Abschluss), Buchungsworkflow, Beleg-Upload (alle aktiven Mitglieder, Ablage in Drive `Buchhaltung/{Jahr}/`), Revisions-Workflow (submit/approve + Revisorenbericht-PDF), Statistik, CSV/PDF-Export, Kontenplan-Verwaltung (Admin). Zugriff: `SCHATZMEISTER`/`RECHNUNGSPRUEFER`/`ADMIN` (Beleg-Upload: aktives Mitglied). Spec: `docs/capabilities/accounting.md`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -81,6 +82,7 @@ Registrierung in `backend/app.py`:
 - **`MerchArticle/Variant/Order/OrderItem`** – Vereins-Merchandise-Shop
 - **`PushSubscription`** – Web-Push-Subscriptions pro Member+Gerät
 - **`AuditEvent`** – Audit-Log sensibler Aktionen
+- **`FiscalYear`/`Account`/`BudgetEntry`/`Booking`/`Receipt`/`RevisionComment`/`RevisionApproval`** – Buchhaltungsmodul (**Phase 04**): E/A-Rechnung mit Status-Lifecycle `open → in_review → closed`, Beträge in Rappen (Integer), Belege als Drive-Referenzen. Spec: `docs/capabilities/accounting.md`.
 
 Detail siehe direkt im Code unter `backend/models/`.
 
@@ -112,6 +114,8 @@ Aktuelle Services:
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
 | `DriveStorageService` | Google Shared Drive – Drive-Browser (**Phase 09**): `list_folder`, Breadcrumb, Volltextsuche, Upload mit Zielordner, Move/Archive/Restore, Auto-Sync/Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Spec: `docs/capabilities/drive.md`. |
 | `CalendarFeedService` | **Phase 05:** RFC-5545-iCal-Feed aus veröffentlichten Zukunfts-Events (`icalendar`), Token-Lifecycle (`Member.ical_token`), `ical_sequence`-Bump bei kalender-relevanten Feldänderungen. Spec: `docs/capabilities/calendar.md`. |
+| `AccountingService` | **Phase 04:** Buchhaltung – Konten, Geschäftsjahre (Status-Lifecycle), Buchungen, Budget vs. Ist, Belege (Drive-Upload via `DriveStorageService` nach `Buchhaltung/{Jahr}/`), Revisions-Kommentare, Statistik-Auswertungen, CSV-Export. Spec: `docs/capabilities/accounting.md`. |
+| `AccountingPdfService` | **Phase 04:** Revisorenbericht und Jahresabschluss als PDF (`reportlab`, pure Python). Saemtlicher PDF-Code isoliert in `backend/services/accounting_pdf.py`. |
 
 ## Auth-Flow
 
