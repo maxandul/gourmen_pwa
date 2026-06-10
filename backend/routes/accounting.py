@@ -22,8 +22,12 @@ from flask_login import current_user, login_required
 from flask_wtf.csrf import validate_csrf
 from wtforms.validators import ValidationError
 
-from backend.extensions import db
-from backend.forms.accounting import BookingForm, RevisionCommentForm
+from backend.extensions import db, limiter
+from backend.forms.accounting import (
+    BookingForm,
+    ReceiptUploadForm,
+    RevisionCommentForm,
+)
 from backend.models.accounting import (
     Account,
     Booking,
@@ -37,6 +41,7 @@ from backend.services.accounting import (
     AccountingService,
     AccountingValidationError,
 )
+from backend.services.drive_storage import DriveError, DriveValidationError
 
 bp = Blueprint('accounting', __name__)
 
@@ -313,6 +318,149 @@ def booking_attach_receipt(booking_id: int):
     except AccountingError as exc:
         flash(str(exc), 'error')
     return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+
+
+# ---------------------------------------------------------------------------
+# Beleg-Upload (alle aktiven Mitglieder) und Beleg-Anzeige
+# ---------------------------------------------------------------------------
+
+
+def _receipt_upload_form_with_choices(year: int) -> ReceiptUploadForm:
+    form = ReceiptUploadForm()
+    form.suggested_account_id.choices = [(0, '–')] + [
+        (a.id, a.name)
+        for a in AccountingService.get_active_accounts(kind='expense')
+    ]
+    events = (
+        Event.query.filter(
+            Event.datum >= datetime(year, 1, 1),
+            Event.datum < datetime(year + 1, 1, 1),
+        )
+        .order_by(Event.datum.desc())
+        .all()
+    )
+    form.suggested_event_id.choices = [(0, '–')] + [
+        (e.id, f'{e.display_date} {e.restaurant or e.event_typ.value}')
+        for e in events
+    ]
+    return form
+
+
+@bp.route('/receipt/upload', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("10 per minute", methods=['POST'])
+def receipt_upload():
+    if not current_user.is_active:
+        abort(403)
+
+    year = date.today().year
+    form = _receipt_upload_form_with_choices(year)
+
+    if form.validate_on_submit():
+        fy = AccountingService.get_or_create_fiscal_year(year)
+        try:
+            AccountingService.upload_receipt(
+                file=form.file.data,
+                uploader=current_user,
+                fiscal_year_id=fy.id,
+                suggested_account_id=form.suggested_account_id.data or None,
+                suggested_event_id=form.suggested_event_id.data or None,
+                comment=form.comment.data,
+            )
+            flash('Beleg eingereicht. Der Schatzmeister prüft und verbucht ihn.', 'success')
+            return redirect(url_for('member.receipts'))
+        except (AccountingError, DriveValidationError) as exc:
+            flash(str(exc), 'error')
+        except DriveError:
+            current_app.logger.error('Beleg-Upload fehlgeschlagen', exc_info=True)
+            flash('Upload fehlgeschlagen. Bitte später erneut versuchen.', 'error')
+
+    return render_template('accounting/receipt_upload.html', form=form)
+
+
+@bp.route('/receipt/<int:receipt_id>')
+@login_required
+def receipt_view(receipt_id: int):
+    receipt = Receipt.query.get_or_404(receipt_id)
+    is_uploader = receipt.uploader_id == current_user.id
+    if not is_uploader:
+        _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    try:
+        payload, mime, name = AccountingService.download_receipt(receipt)
+    except DriveError:
+        current_app.logger.error('Beleg-Download fehlgeschlagen', exc_info=True)
+        flash('Beleg konnte nicht aus Drive geladen werden.', 'error')
+        return redirect(request.referrer or url_for('accounting.index'))
+    return Response(
+        payload,
+        mimetype=mime,
+        headers={'Content-Disposition': f'inline; filename="{name}"'},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Buchungsworkflow (Schatzmeister)
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/booking/new', methods=['GET', 'POST'])
+@login_required
+def booking_new():
+    _require_funktion('SCHATZMEISTER')
+
+    fy = _resolve_fiscal_year()
+    if fy is None:
+        flash('Kein Geschäftsjahr vorhanden. Bitte Seed-Script ausführen.', 'error')
+        return redirect(url_for('accounting.index'))
+
+    receipt = None
+    receipt_id = request.args.get('receipt', type=int) or request.form.get(
+        'receipt_id', type=int
+    )
+    if receipt_id:
+        receipt = db.session.get(Receipt, receipt_id)
+
+    form = _booking_form_with_choices(fy)
+
+    if request.method == 'GET':
+        form.booking_date.data = date.today()
+        if receipt is not None:
+            if receipt.suggested_account_id:
+                form.account_id.data = receipt.suggested_account_id
+                form.direction.data = 'out'
+            if receipt.suggested_event_id:
+                form.event_id.data = receipt.suggested_event_id
+            if receipt.comment:
+                form.description.data = receipt.comment[:255]
+
+    if form.validate_on_submit():
+        try:
+            booking = AccountingService.create_booking(
+                fiscal_year_id=fy.id,
+                booking_date=form.booking_date.data,
+                description=form.description.data,
+                amount_rappen=form.amount_rappen,
+                direction=form.direction.data,
+                account_id=form.account_id.data,
+                event_id=form.event_id.data or None,
+                member_id=form.member_id.data or None,
+                created_by=current_user,
+            )
+            if receipt is not None and not receipt.is_booked:
+                AccountingService.attach_receipt_to_booking(receipt.id, booking.id)
+            flash('Buchung erfasst.', 'success')
+            return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+        except AccountingError as exc:
+            flash(str(exc), 'error')
+    elif request.method == 'POST':
+        flash('Bitte Eingaben prüfen.', 'error')
+
+    return render_template(
+        'accounting/booking_new.html',
+        form=form,
+        fiscal_year=fy,
+        receipt=receipt,
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "partials/_form_macros.html" import required_mark, field_errors %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Beleg einreichen - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.receipts') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu meinen Belegen</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('receipt') }}
+            Beleg einreichen
+        </h1>
+    </div>
+
+    <div class="page-content">
+        <nav class="cleanup-step-nav" aria-label="Schritte Beleg einreichen">
+            <p class="cleanup-step-nav__counter"><span id="step-counter">1</span> von 2</p>
+            <div class="cleanup-step-nav__actions">
+                <button type="button" class="btn btn--outline btn--sm" id="step-back" disabled>Zurück</button>
+                <button type="button" class="btn btn--outline btn--sm" id="step-next">Weiter</button>
+            </div>
+        </nav>
+
+        <form method="POST" action="{{ url_for('accounting.receipt_upload') }}" enctype="multipart/form-data" class="form">
+            {{ form.hidden_tag() }}
+
+            {# Schritt 1: Datei + Pre-Tagging #}
+            <div class="card" id="upload-step-1">
+                <div class="card__header">
+                    <h2 class="card__title">{{ lucide_icon('camera') }} Datei und Angaben</h2>
+                </div>
+                <div class="card__body">
+                    <div class="form-field">
+                        <label class="form-field__label" for="{{ form.file.id }}">{{ form.file.label.text }}{{ required_mark(form.file) }}</label>
+                        {{ form.file(class='form-field__input', accept='image/*,application/pdf', capture='environment') }}
+                        {{ field_errors(form.file) }}
+                        <span class="form-field__help">Foto direkt mit der Kamera aufnehmen oder Datei wählen (max. 100 MB).</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.suggested_event_id.id }}">{{ form.suggested_event_id.label.text }}</label>
+                            {{ form.suggested_event_id(class='form-field__select') }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.suggested_account_id.id }}">{{ form.suggested_account_id.label.text }}</label>
+                            {{ form.suggested_account_id(class='form-field__select') }}
+                            <span class="form-field__help">Vorschlag für den Schatzmeister – er entscheidet beim Verbuchen.</span>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-field__label" for="{{ form.comment.id }}">{{ form.comment.label.text }}</label>
+                        {{ form.comment(class='form-field__textarea', rows=3) }}
+                        {{ field_errors(form.comment) }}
+                        <span class="form-field__help">Worum geht es? Der Kommentar erscheint im Drive-Dateinamen.</span>
+                    </div>
+                </div>
+            </div>
+
+            {# Schritt 2: Vorschau + Bestätigen #}
+            <div class="card" id="upload-step-2" hidden>
+                <div class="card__header">
+                    <h2 class="card__title">{{ lucide_icon('shield-check') }} Prüfen und bestätigen</h2>
+                </div>
+                <div class="card__body">
+                    <div class="info-row">
+                        <span class="info-row__label">Datei</span>
+                        <span class="info-row__value" id="preview-filename">–</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Event</span>
+                        <span class="info-row__value" id="preview-event">–</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Kategorie-Vorschlag</span>
+                        <span class="info-row__value" id="preview-account">–</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Kommentar</span>
+                        <span class="info-row__value" id="preview-comment">–</span>
+                    </div>
+                    <span class="form-field__help">Der Beleg wird im Vereins-Drive unter Buchhaltung abgelegt und erscheint beim Schatzmeister als «Ausstehend».</span>
+                </div>
+                <div class="card__footer">
+                    <button type="submit" class="btn btn--primary">
+                        {{ lucide_icon('upload') }} Beleg einreichen
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  (function () {
+    const step1 = document.getElementById('upload-step-1');
+    const step2 = document.getElementById('upload-step-2');
+    const backBtn = document.getElementById('step-back');
+    const nextBtn = document.getElementById('step-next');
+    const counter = document.getElementById('step-counter');
+    const fileInput = document.getElementById('{{ form.file.id }}');
+    const eventSelect = document.getElementById('{{ form.suggested_event_id.id }}');
+    const accountSelect = document.getElementById('{{ form.suggested_account_id.id }}');
+    const commentInput = document.getElementById('{{ form.comment.id }}');
+
+    function selectedText(select) {
+      const opt = select.options[select.selectedIndex];
+      return opt && opt.value !== '0' ? opt.textContent.trim() : '–';
+    }
+
+    function showStep(step) {
+      step1.hidden = step !== 1;
+      step2.hidden = step !== 2;
+      counter.textContent = String(step);
+      backBtn.disabled = step === 1;
+      nextBtn.disabled = step === 2;
+      if (step === 2) {
+        document.getElementById('preview-filename').textContent =
+          fileInput.files.length ? fileInput.files[0].name : '–';
+        document.getElementById('preview-event').textContent = selectedText(eventSelect);
+        document.getElementById('preview-account').textContent = selectedText(accountSelect);
+        document.getElementById('preview-comment').textContent =
+          commentInput.value.trim() || '–';
+      }
+    }
+
+    nextBtn.addEventListener('click', function () {
+      if (!fileInput.files.length) {
+        fileInput.setCustomValidity('Bitte zuerst eine Datei wählen.');
+        fileInput.reportValidity();
+        fileInput.setCustomValidity('');
+        fileInput.focus();
+        return;
+      }
+      showStep(2);
+    });
+    backBtn.addEventListener('click', function () { showStep(1); });
+  })();
+</script>
+{% endblock %}

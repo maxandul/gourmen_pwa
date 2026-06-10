@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Meine Belege - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('receipt') }}
+            Meine Belege
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">{{ lucide_icon('plus') }} Beleg einreichen</a>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% if receipts %}
+            {% for receipt in receipts %}
+            <div class="card">
+                <div class="card__header">
+                    <h2 class="card__title">{{ receipt.uploaded_at.strftime('%d.%m.%Y') }} – {{ receipt.comment or receipt.drive_file_name }}</h2>
+                    <div class="card__actions">
+                        {% if receipt.is_booked %}
+                            <span class="chip chip--success">{{ receipt.status_display }}</span>
+                        {% else %}
+                            <span class="chip chip--warning">{{ receipt.status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card__body">
+                    <div class="info-row">
+                        <span class="info-row__label">Eingereicht am</span>
+                        <span class="info-row__value">{{ receipt.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
+                    {% if receipt.suggested_event %}
+                    <div class="info-row">
+                        <span class="info-row__label">Event</span>
+                        <span class="info-row__value">{{ receipt.suggested_event.display_date }} {{ receipt.suggested_event.restaurant or receipt.suggested_event.event_typ.value }}</span>
+                    </div>
+                    {% endif %}
+                    {% if receipt.suggested_account %}
+                    <div class="info-row">
+                        <span class="info-row__label">Kategorie-Vorschlag</span>
+                        <span class="info-row__value">{{ receipt.suggested_account.name }}</span>
+                    </div>
+                    {% endif %}
+                    {% if receipt.is_booked and receipt.booking %}
+                    <div class="info-row">
+                        <span class="info-row__label">Verbucht als</span>
+                        <span class="info-row__value">{{ receipt.booking.description }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card__footer">
+                    <a href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}" class="btn btn--outline" target="_blank" rel="noopener">
+                        {{ lucide_icon('eye') }}
+                        Beleg anzeigen
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card__header">
+                    <h2 class="card__title">Keine Belege</h2>
+                </div>
+                <div class="card__body">
+                    <p>Du hast noch keine Belege eingereicht. Quittungen von Vereins-Ausgaben kannst du hier direkt als Foto oder PDF hochladen.</p>
+                </div>
+                <div class="card__footer">
+                    <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">
+                        {{ lucide_icon('upload') }}
+                        Ersten Beleg einreichen
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

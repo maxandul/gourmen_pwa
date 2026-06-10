@@ -114,6 +114,13 @@
             <div class="tabs__content">
                 {# ---------------- Journal ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'journal' else '' }}" role="tabpanel">
+                    {% if is_treasurer and fiscal_year.is_open %}
+                    <div class="form-actions">
+                        <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id) }}" class="btn btn--primary">
+                            {{ lucide_icon('plus') }} Buchung erfassen
+                        </a>
+                    </div>
+                    {% endif %}
                     <div class="card card--filter tool-surface">
                         <div class="card__body">
                             <details class="disclosure">
@@ -212,6 +219,11 @@
 
                 {# ---------------- Belege ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'belege' else '' }}" role="tabpanel">
+                    <div class="form-actions">
+                        <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">
+                            {{ lucide_icon('upload') }} Beleg einreichen
+                        </a>
+                    </div>
                     <div class="card card--filter tool-surface">
                         <div class="card__body">
                             <details class="disclosure">
@@ -312,6 +324,16 @@
                                         <a href="{{ url_for('accounting.booking_detail', booking_id=receipt.booking_id) }}">{{ receipt.booking.description }}</a>
                                     </span>
                                 </div>
+                                {% endif %}
+                            </div>
+                            <div class="card__footer">
+                                <a href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}" class="btn btn--outline btn--sm" target="_blank" rel="noopener">
+                                    {{ lucide_icon('eye') }} Anzeigen
+                                </a>
+                                {% if is_treasurer and not receipt.is_booked and fiscal_year.is_open %}
+                                <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id, receipt=receipt.id) }}" class="btn btn--primary btn--sm">
+                                    {{ lucide_icon('book-open') }} Verbuchen
+                                </a>
                                 {% endif %}
                             </div>
                         </div>
