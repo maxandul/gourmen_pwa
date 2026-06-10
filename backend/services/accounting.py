@@ -257,6 +257,47 @@ class AccountingService:
             })
         return rows
 
+    @classmethod
+    def get_budget_grouped(cls, fiscal_year_id: int) -> list[dict]:
+        """Budget-vs-Ist-Zeilen nach Kontengruppe gruppiert (Reihenfolge erhalten)."""
+        groups: list[dict] = []
+        by_name: dict[str, dict] = {}
+        for row in cls.get_budget_vs_actual(fiscal_year_id):
+            group_name = row['account'].group_name or 'Ohne Gruppe'
+            group = by_name.get(group_name)
+            if group is None:
+                group = {
+                    'name': group_name,
+                    'kind': row['account'].kind,
+                    'rows': [],
+                    'budget_rappen': 0,
+                    'actual_rappen': 0,
+                }
+                by_name[group_name] = group
+                groups.append(group)
+            group['rows'].append(row)
+            group['budget_rappen'] += row['budget_rappen']
+            group['actual_rappen'] += row['actual_rappen']
+        for group in groups:
+            group['deviation_rappen'] = group['actual_rappen'] - group['budget_rappen']
+        return groups
+
+    @classmethod
+    def get_opening_balance(cls, fiscal_year_id: int) -> int:
+        """Sparkapital zu Jahresbeginn: kumuliertes Ergebnis aller Vorjahre (Rappen)."""
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        rows = (
+            db.session.query(Booking.direction, db.func.sum(Booking.amount_rappen))
+            .join(FiscalYear, FiscalYear.id == Booking.fiscal_year_id)
+            .filter(FiscalYear.year < fy.year)
+            .group_by(Booking.direction)
+            .all()
+        )
+        sums = dict(rows)
+        income = sums.get(BookingDirection.IN, 0) or 0
+        expense = sums.get(BookingDirection.OUT, 0) or 0
+        return income - expense
+
     # -- Buchungen ----------------------------------------------------------
 
     @classmethod

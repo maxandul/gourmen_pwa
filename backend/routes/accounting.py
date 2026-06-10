@@ -35,13 +35,19 @@ from backend.models.accounting import (
     Receipt,
 )
 from backend.models.event import Event
-from backend.models.member import Member
+from backend.models.member import Funktion, Member
 from backend.services.accounting import (
     AccountingError,
     AccountingService,
     AccountingValidationError,
 )
-from backend.services.drive_storage import DriveError, DriveValidationError
+from backend.services.accounting_pdf import AccountingPdfService
+from backend.services.drive_storage import (
+    DriveError,
+    DriveStorageService,
+    DriveValidationError,
+)
+from backend.services.notifier import NotifierService
 
 bp = Blueprint('accounting', __name__)
 
@@ -120,31 +126,6 @@ def _booking_form_with_choices(fy: FiscalYear, obj=None) -> BookingForm:
     return form
 
 
-def _group_budget_rows(rows: list[dict]) -> list[dict]:
-    """Budget-Zeilen nach Kontengruppe gruppieren (Reihenfolge erhalten)."""
-    groups: list[dict] = []
-    by_name: dict[str, dict] = {}
-    for row in rows:
-        group_name = row['account'].group_name or 'Ohne Gruppe'
-        group = by_name.get(group_name)
-        if group is None:
-            group = {
-                'name': group_name,
-                'kind': row['account'].kind,
-                'rows': [],
-                'budget_rappen': 0,
-                'actual_rappen': 0,
-            }
-            by_name[group_name] = group
-            groups.append(group)
-        group['rows'].append(row)
-        group['budget_rappen'] += row['budget_rappen']
-        group['actual_rappen'] += row['actual_rappen']
-    for group in groups:
-        group['deviation_rappen'] = group['actual_rappen'] - group['budget_rappen']
-    return groups
-
-
 # ---------------------------------------------------------------------------
 # Tab-Index
 # ---------------------------------------------------------------------------
@@ -199,9 +180,7 @@ def index():
         booked=booked, event_id=filter_event_id
     )
 
-    budget_groups = _group_budget_rows(
-        AccountingService.get_budget_vs_actual(fy.id)
-    )
+    budget_groups = AccountingService.get_budget_grouped(fy.id)
 
     comments = AccountingService.get_comments_for_year(fy.id)
     comment_form = RevisionCommentForm()
@@ -513,6 +492,86 @@ def comment_resolve(comment_id: int):
     return redirect(
         url_for('accounting.index', year=comment.fiscal_year_id, tab='abschluss')
     )
+
+
+# ---------------------------------------------------------------------------
+# Revisions-Workflow (Jahresfreigabe und Bestätigung)
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/year/<int:fiscal_year_id>/submit', methods=['POST'])
+@login_required
+def year_submit(fiscal_year_id: int):
+    """Jahr zur Revision freigeben (Schatzmeister/Admin) → in_review."""
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    try:
+        AccountingService.submit_for_review(fy.id, current_user)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+    reviewers = Member.query.filter_by(
+        funktion=Funktion.RECHNUNGSPRUEFER, is_active=True
+    ).all()
+    for reviewer in reviewers:
+        try:
+            NotifierService.send_push_notification(
+                reviewer.id,
+                f'Revision {fy.year} bereit',
+                f'Der Schatzmeister hat das Geschäftsjahr {fy.year} zur Prüfung freigegeben.',
+                data={'url': url_for('accounting.index', year=fy.id, tab='abschluss')},
+                notification_type='accounting',
+            )
+        except Exception:
+            current_app.logger.warning(
+                'Revisor-Notification fehlgeschlagen (Member %s)', reviewer.id,
+                exc_info=True,
+            )
+
+    flash(f'Jahr {fy.year} ist zur Prüfung freigegeben. Der Revisor wurde benachrichtigt.', 'success')
+    return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+
+@bp.route('/year/<int:fiscal_year_id>/approve', methods=['POST'])
+@login_required
+def year_approve(fiscal_year_id: int):
+    """Jahr bestätigen (Revisor) → closed + Revisorenbericht-PDF in Drive."""
+    _require_funktion('RECHNUNGSPRUEFER')
+    _validate_csrf_or_403()
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    try:
+        fy = AccountingService.approve_year(fy.id, current_user)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+    try:
+        pdf_bytes = AccountingPdfService.generate_report(
+            fy, approval=fy.revision_approval
+        )
+        folder_id = AccountingService.get_receipt_folder_id(fy.year)
+        drive_meta = DriveStorageService.upload_bytes(
+            payload=pdf_bytes,
+            filename_stem=f'Revisorenbericht_{fy.year}',
+            drive_folder_id=folder_id,
+            mime_type='application/pdf',
+            extension='pdf',
+            actor=current_user,
+        )
+        AccountingService.set_approval_report(fy.id, drive_meta['id'])
+        flash(f'Jahr {fy.year} bestätigt. Revisorenbericht wurde in Drive abgelegt.', 'success')
+    except Exception:
+        current_app.logger.error(
+            'Revisorenbericht-Upload fehlgeschlagen (Jahr %s)', fy.year, exc_info=True
+        )
+        flash(
+            f'Jahr {fy.year} ist bestätigt, aber der Revisorenbericht konnte nicht '
+            'in Drive abgelegt werden. Bitte Admin informieren.',
+            'warning',
+        )
+    return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
 
 
 # ---------------------------------------------------------------------------

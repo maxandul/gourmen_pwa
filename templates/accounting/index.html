@@ -439,6 +439,30 @@
                         </p>
                     </div>
 
+                    {% if is_treasurer and abschluss_phase == 1 %}
+                    <form method="POST" action="{{ url_for('accounting.year_submit', fiscal_year_id=fiscal_year.id) }}" class="form"
+                          onsubmit="return confirm('Jahr {{ fiscal_year.year }} zur Prüfung freigeben? Buchungen und Belege sind danach gesperrt.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn--primary">
+                                {{ lucide_icon('send') }} Jahr zur Prüfung freigeben
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    {% if is_reviewer and abschluss_phase == 2 %}
+                    <form method="POST" action="{{ url_for('accounting.year_approve', fiscal_year_id=fiscal_year.id) }}" class="form"
+                          onsubmit="return confirm('Jahr {{ fiscal_year.year }} bestätigen? Das Jahr wird endgültig abgeschlossen und der Revisorenbericht generiert.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn--primary">
+                                {{ lucide_icon('shield-check') }} Jahr bestätigen
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
                     {% if fiscal_year.revision_approval %}
                     <div class="card">
                         <div class="card__header">
@@ -453,6 +477,14 @@
                                 <span class="info-row__label">Bestätigt am</span>
                                 <span class="info-row__value">{{ fiscal_year.revision_approval.approved_at.strftime('%d.%m.%Y') }}</span>
                             </div>
+                            {% if fiscal_year.revision_approval.report_drive_id %}
+                            <div class="info-row">
+                                <span class="info-row__label">Revisorenbericht</span>
+                                <span class="info-row__value">
+                                    <a href="https://drive.google.com/file/d/{{ fiscal_year.revision_approval.report_drive_id }}/view" target="_blank" rel="noopener">In Drive öffnen</a>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
