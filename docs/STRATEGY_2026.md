@@ -2,7 +2,7 @@
 
 > **Zweck**: Eine Seite, die sagt, **wo welche Daten leben** und **welche externen Systeme welche Aufgabe haben**. Bei Konflikten mit Phasen-Docs oder älteren Initiative-READMEs gewinnt dieses Dokument.
 >
-> **Stand**: 2026-05-07. **Owner**: Andreas. **Review-Rhythmus**: bei jedem grossen Architektur-Entscheid.
+> **Stand**: 2026-06-08. **Owner**: Andreas. **Review-Rhythmus**: bei jedem grossen Architektur-Entscheid.
 
 ---
 
@@ -80,17 +80,16 @@ Bei jeder Capability mit repetitiven Schritten, Datenklassifikation, Texterzeugu
 
 ## Open Decisions (zu klären, bevor entsprechende Phase startet)
 
-### 1. Buchhaltung: n8n-Orchestrator oder reines Flask-Modul?
+### ~~1. Buchhaltung: n8n-Orchestrator oder reines Flask-Modul?~~ ✅ Entschieden 2026-06-08
 
-- **n8n-Pfad**: PWA stellt UI und Stammdaten, n8n übernimmt Beleg-OCR, Mail-Posteingang für Eingangsrechnungen, Klassifikations-Workflow, Buchungssatz-Vorschläge. Bringt einen weiteren Service (n8n cloud ~ €20/Mo oder self-hosted Container).
-- **Flask-Pfad**: Alles im PWA-Backend, klassisches Modul wie ursprünglich in `_archive/2026-04_modules-and-hosting/PHASE_04_ACCOUNTING.md` vorgesehen. Mehr Code im Repo, weniger Dienste.
-- **Entscheid offen**. Capability-Doc «Buchhaltung» soll beide Varianten gegenüberstellen und Empfehlung geben.
+**Entscheid: Flask-Modul.** Kein n8n. Begründung: ~50 Buchungen/Jahr, eine Person als Schatzmeister — n8n-Overhead nicht gerechtfertigt. OCR/Automation als zukünftiger optionaler API-Call direkt aus Flask. Vollständige Spec: `docs/capabilities/accounting.md`.
 
 ### 2. TWINT-Anbieter: RaiseNow oder Stripe?
 
 - **RaiseNow**: Schweizer Vereins-Acquirer, kein HR-Eintrag nötig, Buchhaltungs-Integration eingebaut, höhere Gebühr.
 - **Stripe**: TWINT seit 2024 unterstützt, niedrigere Gebühr, aber weniger Vereins-Komfort.
-- Hängt mit Entscheid 1 zusammen — wenn n8n, dann ist Anbindung egal, n8n hat Konnektoren für beide.
+- Zusätzlich evaluieren: ZKB Open Banking (SIX bLink) für TWINT-Anfragen direkt aus der App.
+- **Entscheid offen** — wird in Phase 6 gefällt. `Booking.payment_ref` in Phase 4 bereits vorbereitet.
 
 ### 3. AI/Automation pro Capability
 

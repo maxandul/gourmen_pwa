@@ -182,4 +182,7 @@ instance/
 
 # VAPID Keys (private keys should never be in version control)
 vapid_private.pem
-vapid_public.txt 
+vapid_public.txt
+
+# Buchhaltungs-Vorlagen und Belege (sensible Finanzdaten)
+vorlagen_buchhaltung/
