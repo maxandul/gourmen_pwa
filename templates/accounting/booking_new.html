@@ -59,6 +59,10 @@
                     </div>
                     {% endif %}
                 </div>
+                {% else %}
+                <div class="card__body">
+                    <p class="text-secondary">Buchung ohne Beleg – du kannst später auf der Buchungsdetailseite einen eingereichten Beleg verknüpfen.</p>
+                </div>
                 {% endif %}
                 <div class="card__header">
                     <h2 class="card__title">{{ lucide_icon('pencil') }} Grunddaten</h2>
@@ -72,8 +76,9 @@
                         </div>
                         <div class="form-field">
                             <label class="form-field__label" for="{{ form.amount_chf.id }}">{{ form.amount_chf.label.text }}{{ required_mark(form.amount_chf) }}</label>
-                            {{ form.amount_chf(class='form-field__input', inputmode='decimal', step='0.05', placeholder='0.00') }}
+                            {{ form.amount_chf(class='form-field__input', inputmode='decimal', placeholder='z. B. 300.00') }}
                             {{ field_errors(form.amount_chf) }}
+                            <span class="form-field__help">In CHF, Schritt 0.05 (5 Rappen). Ganze Beträge wie 300 sind möglich.</span>
                         </div>
                     </div>
                     <div class="form-field">

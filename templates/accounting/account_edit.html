@@ -12,7 +12,7 @@
 <div class="container">
     <div class="page-header">
         <p class="page-back">
-            <a href="{{ url_for('accounting.accounts') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Kontenplan</span></a>
+            <a href="{{ url_for('accounting.index', tab='kontenplan', _anchor='gourmen-tabs') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Kontenplan</span></a>
         </p>
         <h1>
             {{ lucide_icon('pencil') }}
@@ -59,7 +59,7 @@
                         <button type="submit" class="btn btn--primary">
                             {{ lucide_icon('check') }} Speichern
                         </button>
-                        <a href="{{ url_for('accounting.accounts') }}" class="btn btn--outline">Abbrechen</a>
+                        <a href="{{ url_for('accounting.index', tab='kontenplan', _anchor='gourmen-tabs') }}" class="btn btn--outline">Abbrechen</a>
                     </div>
                 </form>
             </div>

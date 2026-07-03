@@ -36,111 +36,171 @@
         </div>
         {% else %}
 
-        {# Jahres-Selektor #}
-        <form method="GET" action="{{ url_for('accounting.index') }}" class="form">
-            <input type="hidden" name="tab" value="{{ active_tab }}">
-            <div class="form-row">
-                <div class="form-field">
-                    <label class="form-field__label" for="year-select">Geschäftsjahr</label>
-                    <select name="year" id="year-select" class="form-field__select" onchange="this.form.submit()">
-                        {% for fy in fiscal_years %}
-                        <option value="{{ fy.id }}" {{ 'selected' if fy.id == fiscal_year.id else '' }}>
-                            {{ fy.year }} – {{ fy.status_display }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </form>
-
-        {# KPI-Kacheln #}
-        <div class="dashboard-info-grid">
-            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                <span class="dashboard-info-tile__content">
-                    <span class="dashboard-info-tile__label">Saldo {{ fiscal_year.year }}</span>
-                    <span class="dashboard-info-tile__value">
-                        <span class="dashboard-info-tile__line">CHF {{ chf(summary.result_rappen) }}</span>
-                    </span>
-                </span>
-            </div>
-            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                <span class="dashboard-info-tile__content">
-                    <span class="dashboard-info-tile__label">Offene Belege</span>
-                    <span class="dashboard-info-tile__value">
-                        <span class="dashboard-info-tile__line {% if summary.open_receipts == 0 %}dashboard-info-tile__line--subtle{% endif %}">
-                            {{ summary.open_receipts }}
-                        </span>
-                    </span>
-                </span>
-            </div>
-            <div class="dashboard-info-tile dashboard-info-tile--static" role="status">
-                <span class="dashboard-info-tile__content">
-                    <span class="dashboard-info-tile__label">Budget-Auslastung</span>
-                    <span class="dashboard-info-tile__value">
-                        {% if summary.budget_used_pct is not none %}
-                        <span class="dashboard-info-tile__line">{{ summary.budget_used_pct }}%</span>
-                        {% else %}
-                        <span class="dashboard-info-tile__line dashboard-info-tile__line--subtle">Kein Budget</span>
+        {# Geschäftsjahr-Filter + Aktionen (Tool-Strip wie GGL/Events) #}
+        <div class="card card--filter tool-surface">
+            <div class="card__body">
+                <details id="accounting-filter-disclosure" class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down') }}
+                        Geschäftsjahr
+                        <span class="chip chip--info">{{ fiscal_year.year }}</span>
+                        <span class="chip chip--info">{{ fiscal_year.status_display }}</span>
+                    </summary>
+                    <div class="disclosure__content">
+                        <form method="GET" action="{{ url_for('accounting.index') }}" class="form">
+                            <input type="hidden" name="tab" value="{{ active_tab }}">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="year-select">Geschäftsjahr</label>
+                                    <select name="year" id="year-select" class="form-field__select">
+                                        {% for fy in fiscal_years %}
+                                        <option value="{{ fy.id }}" {{ 'selected' if fy.id == fiscal_year.id else '' }}>
+                                            {{ fy.year }} – {{ fy.status_display }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions form-actions--start">
+                                <button type="submit" class="btn btn--primary">
+                                    {{ lucide_icon('funnel') }}
+                                    Filtern
+                                </button>
+                                <a class="btn btn--outline" href="{{ url_for('accounting.index', tab=active_tab, _anchor='gourmen-tabs') }}">Zurücksetzen</a>
+                            </div>
+                        </form>
+                        <div class="accounting-index-actions" role="region" aria-labelledby="accounting-index-actions-heading">
+                            <p class="section-subtitle" id="accounting-index-actions-heading">Aktionen</p>
+                            <nav class="tool-strip__actions" aria-label="Buchhaltungs-Aktionen">
+                                {% if is_treasurer and fiscal_year.is_open %}
+                                <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id) }}" class="btn btn--primary accounting-index-actions__action">
+                                    {{ lucide_icon('plus') }}
+                                    Buchung erfassen
+                                </a>
+                                {% endif %}
+                                <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary accounting-index-actions__action">
+                                    {{ lucide_icon('upload') }}
+                                    Beleg einreichen
+                                </a>
+                                <a href="{{ url_for('accounting.export_csv', fiscal_year_id=fiscal_year.id) }}" class="btn btn--outline accounting-index-actions__action">
+                                    {{ lucide_icon('file-spreadsheet') }}
+                                    CSV
+                                </a>
+                                <a href="{{ url_for('accounting.export_pdf', fiscal_year_id=fiscal_year.id) }}" class="btn btn--outline accounting-index-actions__action">
+                                    {{ lucide_icon('file-text') }}
+                                    PDF
+                                </a>
+                            </nav>
+                        </div>
+                        {% if current_user.is_admin() and next_fiscal_year %}
+                        <form method="POST" action="{{ url_for('accounting.year_create') }}" class="form accounting-year-create"
+                              onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Budget wird vom Vorjahr übernommen.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="year" value="{{ next_fiscal_year }}">
+                            <div class="form-actions form-actions--start">
+                                <button type="submit" class="btn btn--outline">
+                                    {{ lucide_icon('calendar-plus') }}
+                                    Geschäftsjahr {{ next_fiscal_year }} eröffnen
+                                </button>
+                            </div>
+                        </form>
                         {% endif %}
-                    </span>
-                </span>
+                    </div>
+                </details>
             </div>
         </div>
 
-        <div class="tabs">
+        <div class="tabs tabs--panel" id="gourmen-tabs" aria-label="Buchhaltung — Ansichten">
             <nav class="tabs__nav" role="tablist">
-                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal') }}"
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='uebersicht', _anchor='gourmen-tabs') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'uebersicht' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'uebersicht' else 'false' }}">
+                    {{ lucide_icon('gauge') }} Übersicht
+                </a>
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'journal' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'journal' else 'false' }}">
                     {{ lucide_icon('book-open') }} Journal
                 </a>
-                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege') }}"
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'belege' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'belege' else 'false' }}">
                     {{ lucide_icon('receipt') }} Belege
                 </a>
-                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='budget') }}"
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='budget', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'budget' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'budget' else 'false' }}">
                     {{ lucide_icon('chart-column') }} Budget
                 </a>
-                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='abschluss') }}"
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='abschluss', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'abschluss' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'abschluss' else 'false' }}">
                     {{ lucide_icon('shield-check') }} Abschluss
                 </a>
-            </nav>
-
-            <div class="form-actions">
-                <a href="{{ url_for('accounting.stats', year=fiscal_year.id) }}" class="btn btn--outline btn--sm">
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='statistik', _anchor='gourmen-tabs') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'statistik' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'statistik' else 'false' }}">
                     {{ lucide_icon('chart-line') }} Statistik
                 </a>
-                <a href="{{ url_for('accounting.export_csv', fiscal_year_id=fiscal_year.id) }}" class="btn btn--outline btn--sm">
-                    {{ lucide_icon('file-spreadsheet') }} CSV
-                </a>
-                <a href="{{ url_for('accounting.export_pdf', fiscal_year_id=fiscal_year.id) }}" class="btn btn--outline btn--sm">
-                    {{ lucide_icon('file-text') }} PDF
-                </a>
                 {% if current_user.is_admin() %}
-                <a href="{{ url_for('accounting.accounts') }}" class="btn btn--outline btn--sm">
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='kontenplan', _anchor='gourmen-tabs') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'kontenplan' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'kontenplan' else 'false' }}">
                     {{ lucide_icon('list-ordered') }} Kontenplan
                 </a>
                 {% endif %}
-            </div>
+            </nav>
 
             <div class="tabs__content">
+                {# ---------------- Übersicht ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'uebersicht' else '' }}" role="tabpanel">
+                    <div class="metrics-spotlight" aria-label="Kennzahlen Buchhaltung">
+                        <p class="metrics-spotlight__context">
+                            Geschäftsjahr <strong>{{ fiscal_year.year }}</strong> · <strong>{{ fiscal_year.status_display }}</strong>
+                        </p>
+                        <div class="metrics-spotlight__hero" aria-label="Saldo, Einnahmen und Ausgaben für das gewählte Geschäftsjahr">
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Saldo</span>
+                                <span class="metrics-spotlight__metric-value">{{ chf(summary.result_rappen) }}</span>
+                                <span class="metrics-spotlight__metric-hint">CHF</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Einnahmen</span>
+                                <span class="metrics-spotlight__metric-value">{{ chf(summary.income_rappen) }}</span>
+                                <span class="metrics-spotlight__metric-hint">CHF</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Ausgaben</span>
+                                <span class="metrics-spotlight__metric-value">{{ chf(summary.expense_rappen) }}</span>
+                                <span class="metrics-spotlight__metric-hint">CHF</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Buchungen</span>
+                                <span class="metrics-spotlight__metric-value">{{ summary.booking_count }}</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Offene Belege</span>
+                                <span class="metrics-spotlight__metric-value">{{ summary.open_receipts }}</span>
+                            </div>
+                            <div class="metrics-spotlight__metric">
+                                <span class="metrics-spotlight__metric-label">Budget-Auslastung</span>
+                                {% if summary.budget_used_pct is not none %}
+                                <span class="metrics-spotlight__metric-value">{{ summary.budget_used_pct }}%</span>
+                                <span class="metrics-spotlight__metric-hint">von CHF {{ chf(summary.budget_total_rappen) }}</span>
+                                {% else %}
+                                <span class="metrics-spotlight__metric-value">—</span>
+                                <span class="metrics-spotlight__metric-hint">Kein Budget hinterlegt</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {# ---------------- Journal ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'journal' else '' }}" role="tabpanel">
-                    {% if is_treasurer and fiscal_year.is_open %}
-                    <div class="form-actions">
-                        <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id) }}" class="btn btn--primary">
-                            {{ lucide_icon('plus') }} Buchung erfassen
-                        </a>
-                    </div>
-                    {% endif %}
                     <div class="card card--filter tool-surface">
                         <div class="card__body">
-                            <details class="disclosure">
+                            <details id="accounting-journal-filter-disclosure" class="disclosure">
                                 <summary class="disclosure__summary">
                                     {{ lucide_icon('chevron-down') }}
                                     Filter
@@ -176,11 +236,11 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn btn--primary btn--sm">
+                                        <div class="form-actions form-actions--start">
+                                            <button type="submit" class="btn btn--primary">
                                                 {{ lucide_icon('funnel') }} Filtern
                                             </button>
-                                            <a class="btn btn--outline btn--sm" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal') }}">Zurücksetzen</a>
+                                            <a class="btn btn--outline" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal', _anchor='gourmen-tabs') }}">Zurücksetzen</a>
                                         </div>
                                     </form>
                                 </div>
@@ -191,7 +251,7 @@
                     {% if bookings %}
                     <div class="data-table-scroll-outer">
                     <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Buchungsjournal">
-                        <table class="data-table">
+                        <table class="data-table data-table--sticky-first">
                             <thead>
                                 <tr>
                                     <th scope="col">Datum</th>
@@ -218,6 +278,9 @@
                                     </td>
                                     <td>
                                         <a href="{{ url_for('accounting.booking_detail', booking_id=booking.id) }}" class="btn btn--outline btn--sm">Details</a>
+                                        {% if is_treasurer and fiscal_year.is_open and not booking.receipts %}
+                                        <a href="{{ url_for('accounting.booking_detail', booking_id=booking.id, _anchor='beleg-anhaengen') }}" class="btn btn--outline btn--sm">Beleg zuordnen</a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -226,9 +289,14 @@
                     </div>
                     </div>
                     {% else %}
-                    <div class="card">
-                        <div class="card__body">
-                            <p class="text-secondary">Keine Buchungen für die aktuellen Filter.</p>
+                    <div class="alert alert--info" role="status">
+                        <svg class="alert__icon" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#info"></use>
+                        </svg>
+                        <div class="alert__content">
+                            <div class="alert__message">
+                                Keine Buchungen für die aktuellen Filter.
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -236,14 +304,9 @@
 
                 {# ---------------- Belege ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'belege' else '' }}" role="tabpanel">
-                    <div class="form-actions">
-                        <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">
-                            {{ lucide_icon('upload') }} Beleg einreichen
-                        </a>
-                    </div>
                     <div class="card card--filter tool-surface">
                         <div class="card__body">
-                            <details class="disclosure">
+                            <details id="accounting-belege-filter-disclosure" class="disclosure">
                                 <summary class="disclosure__summary">
                                     {{ lucide_icon('chevron-down') }}
                                     Filter
@@ -279,11 +342,11 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn btn--primary btn--sm">
+                                        <div class="form-actions form-actions--start">
+                                            <button type="submit" class="btn btn--primary">
                                                 {{ lucide_icon('funnel') }} Filtern
                                             </button>
-                                            <a class="btn btn--outline btn--sm" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege') }}">Zurücksetzen</a>
+                                            <a class="btn btn--outline" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='belege', _anchor='gourmen-tabs') }}">Zurücksetzen</a>
                                         </div>
                                     </form>
                                 </div>
@@ -356,9 +419,14 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                    <div class="card">
-                        <div class="card__body">
-                            <p class="text-secondary">Keine Belege für die aktuellen Filter.</p>
+                    <div class="alert alert--info" role="status">
+                        <svg class="alert__icon" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#info"></use>
+                        </svg>
+                        <div class="alert__content">
+                            <div class="alert__message">
+                                Keine Belege für die aktuellen Filter.
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -367,67 +435,78 @@
                 {# ---------------- Budget ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'budget' else '' }}" role="tabpanel">
                     {% set budget_editable = is_treasurer and not fiscal_year.is_closed %}
-                    {% for group in budget_groups %}
-                    <div class="card">
-                        <div class="card__header">
-                            <h2 class="card__title">{{ group.name }}</h2>
-                            <div class="card__actions">
-                                <span class="chip chip--info">{{ 'Einnahmen' if group.kind.value == 'income' else 'Ausgaben' }}</span>
-                            </div>
-                        </div>
-                        <div class="card__body">
-                            <div class="table-responsive data-table-wrap" role="region" aria-label="Budget {{ group.name }}">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Konto</th>
-                                            <th scope="col">Soll</th>
-                                            <th scope="col">Ist</th>
-                                            <th scope="col">Abweichung</th>
-                                            {% if budget_editable %}<th scope="col">Anpassen</th>{% endif %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for row in group.rows %}
-                                        <tr>
-                                            <td>{{ row.account.code }} {{ row.account.name }}</td>
-                                            <td>CHF {{ chf(row.budget_rappen) }}</td>
-                                            <td>CHF {{ chf(row.actual_rappen) }}</td>
-                                            <td>CHF {{ chf(row.deviation_rappen) }}</td>
-                                            {% if budget_editable %}
-                                            <td>
-                                                <form method="POST" action="{{ url_for('accounting.year_budget', fiscal_year_id=fiscal_year.id) }}" class="form">
-                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                                    <input type="hidden" name="account_id" value="{{ row.account.id }}">
-                                                    <div class="form-row form-row--inline-remove">
-                                                        <div class="form-field">
-                                                            <label class="form-field__label" for="budget-{{ row.account.id }}">
-                                                                <span class="sr-only">Budget {{ row.account.name }}</span>
-                                                            </label>
-                                                            <input type="number" step="0.01" min="0" id="budget-{{ row.account.id }}"
-                                                                   name="amount_chf" class="form-field__input"
-                                                                   value="{{ chf(row.budget_rappen) }}">
-                                                        </div>
-                                                        <button type="submit" class="btn btn--outline btn--sm">Speichern</button>
-                                                    </div>
-                                                </form>
-                                            </td>
-                                            {% endif %}
-                                        </tr>
-                                        {% endfor %}
-                                        <tr>
-                                            <td><strong>Total {{ group.name }}</strong></td>
-                                            <td><strong>CHF {{ chf(group.budget_rappen) }}</strong></td>
-                                            <td><strong>CHF {{ chf(group.actual_rappen) }}</strong></td>
-                                            <td><strong>CHF {{ chf(group.deviation_rappen) }}</strong></td>
-                                            {% if budget_editable %}<td></td>{% endif %}
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    {% set budget_cols = 5 if budget_editable else 4 %}
+                    {% if budget_groups %}
+                    <div class="data-table-scroll-outer">
+                    <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Budget {{ fiscal_year.year }}">
+                        <table class="data-table accounting-budget-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Konto</th>
+                                    <th scope="col">Soll</th>
+                                    <th scope="col">Ist</th>
+                                    <th scope="col">Abweichung</th>
+                                    {% if budget_editable %}<th scope="col">Anpassen</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in budget_groups %}
+                                <tr class="data-table__group-row">
+                                    <th colspan="{{ budget_cols }}" scope="colgroup">
+                                        {{ group.name }} · {{ 'Einnahmen' if group.kind.value == 'income' else 'Ausgaben' }}
+                                    </th>
+                                </tr>
+                                {% for row in group.rows %}
+                                <tr>
+                                    <td>{{ row.account.code }} {{ row.account.name }}</td>
+                                    <td>CHF {{ chf(row.budget_rappen) }}</td>
+                                    <td>CHF {{ chf(row.actual_rappen) }}</td>
+                                    <td>CHF {{ chf(row.deviation_rappen) }}</td>
+                                    {% if budget_editable %}
+                                    <td>
+                                        <form method="POST" action="{{ url_for('accounting.year_budget', fiscal_year_id=fiscal_year.id) }}" class="form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="account_id" value="{{ row.account.id }}">
+                                            <div class="form-row form-row--inline-remove">
+                                                <div class="form-field">
+                                                    <label class="form-field__label" for="budget-{{ row.account.id }}">
+                                                        <span class="sr-only">Budget {{ row.account.name }}</span>
+                                                    </label>
+                                                    <input type="number" step="0.01" min="0" id="budget-{{ row.account.id }}"
+                                                           name="amount_chf" class="form-field__input"
+                                                           value="{{ chf(row.budget_rappen) }}">
+                                                </div>
+                                                <button type="submit" class="btn btn--outline btn--sm">Speichern</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td><strong>Total {{ group.name }}</strong></td>
+                                    <td><strong>CHF {{ chf(group.budget_rappen) }}</strong></td>
+                                    <td><strong>CHF {{ chf(group.actual_rappen) }}</strong></td>
+                                    <td><strong>CHF {{ chf(group.deviation_rappen) }}</strong></td>
+                                    {% if budget_editable %}<td></td>{% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert--info" role="status">
+                        <svg class="alert__icon" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#info"></use>
+                        </svg>
+                        <div class="alert__content">
+                            <div class="alert__message">
+                                Kein Budget für {{ fiscal_year.year }} hinterlegt.
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
 
                 {# ---------------- Abschluss ---------------- #}
@@ -446,7 +525,7 @@
                         <p class="billbro-workflow__hint" role="status">
                             {% if is_treasurer %}
                                 {% if abschluss_phase == 1 %}Erfasse alle Buchungen und weise Belege zu. Sobald alles vollständig ist, gib das Jahr zur Prüfung frei.
-                                {% elif abschluss_phase == 2 %}Das Jahr ist gesperrt. Beantworte Kommentare des Revisors falls nötig.
+                                {% elif abschluss_phase == 2 %}Das Jahr ist gesperrt. Beantworte Kommentare des Revisors falls nötig, oder ziehe die Freigabe zurück.
                                 {% else %}Abschluss {{ fiscal_year.year }} ist genehmigt und archiviert.{% endif %}
                             {% elif is_reviewer %}
                                 {% if abschluss_phase == 1 %}Warte, bis der Schatzmeister das Jahr freigibt.
@@ -468,6 +547,18 @@
                     </form>
                     {% endif %}
 
+                    {% if is_treasurer and abschluss_phase == 2 %}
+                    <form method="POST" action="{{ url_for('accounting.year_withdraw', fiscal_year_id=fiscal_year.id) }}" class="form"
+                          onsubmit="return confirm('Freigabe für {{ fiscal_year.year }} zurückziehen? Das Jahr wird wieder offen und Buchungen sind bearbeitbar.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn--outline">
+                                {{ lucide_icon('undo-2') }} Freigabe zurückziehen
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
                     {% if is_reviewer and abschluss_phase == 2 %}
                     <form method="POST" action="{{ url_for('accounting.year_approve', fiscal_year_id=fiscal_year.id) }}" class="form"
                           onsubmit="return confirm('Jahr {{ fiscal_year.year }} bestätigen? Das Jahr wird endgültig abgeschlossen und der Revisorenbericht generiert.');">
@@ -475,6 +566,18 @@
                         <div class="form-actions">
                             <button type="submit" class="btn btn--primary">
                                 {{ lucide_icon('shield-check') }} Jahr bestätigen
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    {% if (is_reviewer or current_user.is_admin()) and abschluss_phase == 3 %}
+                    <form method="POST" action="{{ url_for('accounting.year_revoke', fiscal_year_id=fiscal_year.id) }}" class="form"
+                          onsubmit="return confirm('Abschluss {{ fiscal_year.year }} rückgängig machen? Das Jahr geht zurück in die Prüfung.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn--outline">
+                                {{ lucide_icon('undo-2') }} Abschluss rückgängig
                             </button>
                         </div>
                     </form>
@@ -553,9 +656,231 @@
                         </div>
                     </div>
                 </div>
+
+                {# ---------------- Statistik ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'statistik' else '' }}" role="tabpanel">
+                    {% include 'accounting/_tab_statistik.html' %}
+                </div>
+
+                {# ---------------- Kontenplan (Admin) ---------------- #}
+                {% if current_user.is_admin() %}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'kontenplan' else '' }}" role="tabpanel">
+                    {% include 'accounting/_tab_kontenplan.html' %}
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  function bindDisclosure(id, key, defaultOpen) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var stored = sessionStorage.getItem(key);
+    if (stored === '1') {
+      el.open = true;
+    } else if (stored === '0') {
+      el.open = false;
+    } else {
+      el.open = defaultOpen;
+    }
+    el.addEventListener('toggle', function () {
+      try {
+        sessionStorage.setItem(key, el.open ? '1' : '0');
+      } catch (e) { /* private mode etc. */ }
+    });
+  }
+  function collapseDisclosureOnFilterSubmit(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var form = details.querySelector('form');
+    if (!form) return;
+    var method = (form.getAttribute('method') || 'get').toLowerCase();
+    if (method !== 'get') return;
+    form.addEventListener('submit', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
+  function collapseDisclosureOnFilterReset(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var resetLink = details.querySelector('.form-actions a.btn');
+    if (!resetLink) return;
+    resetLink.addEventListener('click', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
+  function collapseDisclosureOnActionNavigate(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    details.querySelectorAll('.accounting-index-actions__action').forEach(function (a) {
+      a.addEventListener('click', function () {
+        try {
+          sessionStorage.setItem(storageKey, '0');
+        } catch (e) { /* private mode */ }
+        details.open = false;
+      });
+    });
+  }
+  bindDisclosure('accounting-filter-disclosure', 'gourmen:accountingFilterDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('accounting-filter-disclosure', 'gourmen:accountingFilterDisclosureOpen');
+  collapseDisclosureOnFilterReset('accounting-filter-disclosure', 'gourmen:accountingFilterDisclosureOpen');
+  collapseDisclosureOnActionNavigate('accounting-filter-disclosure', 'gourmen:accountingFilterDisclosureOpen');
+
+  bindDisclosure('accounting-journal-filter-disclosure', 'gourmen:accountingJournalFilterDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('accounting-journal-filter-disclosure', 'gourmen:accountingJournalFilterDisclosureOpen');
+  collapseDisclosureOnFilterReset('accounting-journal-filter-disclosure', 'gourmen:accountingJournalFilterDisclosureOpen');
+
+  bindDisclosure('accounting-belege-filter-disclosure', 'gourmen:accountingBelegeFilterDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('accounting-belege-filter-disclosure', 'gourmen:accountingBelegeFilterDisclosureOpen');
+  collapseDisclosureOnFilterReset('accounting-belege-filter-disclosure', 'gourmen:accountingBelegeFilterDisclosureOpen');
+
+  bindDisclosure('accounting-kontenplan-create-disclosure', 'gourmen:accountingKontenplanCreateDisclosureOpen', false);
+})();
+</script>
+{% if active_tab == 'statistik' and not needs_seed %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const root = document.getElementById('accounting-stats');
+    if (!root || !window.Chart) return;
+    const data = JSON.parse(root.dataset.chart);
+    const styles = getComputedStyle(document.documentElement);
+    const colorText = styles.getPropertyValue('--color-text-secondary').trim();
+    const colorGrid = styles.getPropertyValue('--color-border-default').trim();
+    const palette = [
+      styles.getPropertyValue('--logo-orange').trim(),
+      styles.getPropertyValue('--logo-teal').trim(),
+      styles.getPropertyValue('--logo-navy-medium').trim(),
+      styles.getPropertyValue('--brand-accent-300').trim(),
+      styles.getPropertyValue('--brand-secondary-600').trim(),
+      styles.getPropertyValue('--brand-primary-400').trim(),
+      styles.getPropertyValue('--brand-warm-500').trim(),
+      styles.getPropertyValue('--brand-accent-700').trim(),
+      styles.getPropertyValue('--brand-secondary-300').trim(),
+    ];
+    Chart.defaults.color = colorText;
+    Chart.defaults.borderColor = colorGrid;
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+    const chfTick = (value) => 'CHF ' + Number(value).toLocaleString('de-CH');
+    const chartInstances = new Map();
+    chartInstances.set('chart-saldo', new Chart(document.getElementById('chart-saldo'), {
+      type: 'line',
+      data: {
+        labels: data.saldo.labels,
+        datasets: [{
+          label: 'Kumulierter Saldo',
+          data: data.saldo.values,
+          borderColor: palette[0],
+          backgroundColor: palette[0],
+          tension: 0.2,
+          fill: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    }));
+    chartInstances.set('chart-years', new Chart(document.getElementById('chart-years'), {
+      type: 'bar',
+      data: {
+        labels: data.years.labels,
+        datasets: [
+          { label: 'Einnahmen', data: data.years.income, backgroundColor: palette[1] },
+          { label: 'Ausgaben', data: data.years.expense, backgroundColor: palette[0] },
+          { label: 'Ergebnis', data: data.years.result, backgroundColor: palette[2] },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    }));
+    const donutCanvas = document.getElementById('chart-donut');
+    if (donutCanvas && data.donut.labels.length) {
+      chartInstances.set('chart-donut', new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: data.donut.labels,
+          datasets: [{ data: data.donut.values, backgroundColor: palette }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+        },
+      }));
+    }
+    const modal = document.getElementById('accounting-chart-fullscreen-modal');
+    const modalBody = modal ? modal.querySelector('[data-accounting-modal-body]') : null;
+    const expandButtons = Array.from(document.querySelectorAll('.accounting-chart-expand-btn'));
+    let activeChartNode = null;
+    let activePlaceholder = null;
+    let activeChartInstance = null;
+    let previousBodyOverflow = '';
+    function closeFullscreenModal() {
+      if (!modal || !modalBody) return;
+      if (activeChartNode && activePlaceholder && activePlaceholder.parentNode) {
+        activePlaceholder.parentNode.insertBefore(activeChartNode, activePlaceholder);
+        activePlaceholder.remove();
+        activeChartNode.classList.remove('accounting-chart--fullscreen');
+      }
+      modal.setAttribute('data-open', 'false');
+      modal.hidden = true;
+      document.body.style.overflow = previousBodyOverflow;
+      if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+      activeChartNode = null;
+      activePlaceholder = null;
+      activeChartInstance = null;
+    }
+    function openFullscreenModal(button) {
+      if (!modal || !modalBody) return;
+      const chartTarget = button.getAttribute('data-chart-target');
+      const chartCanvasId = button.getAttribute('data-chart-canvas-id');
+      const chartNode = chartTarget ? document.getElementById(chartTarget) : null;
+      if (!chartNode || !chartNode.parentNode) return;
+      if (activeChartNode) closeFullscreenModal();
+      activePlaceholder = document.createElement('div');
+      activePlaceholder.className = 'accounting-chart-placeholder';
+      chartNode.parentNode.insertBefore(activePlaceholder, chartNode);
+      modalBody.appendChild(chartNode);
+      chartNode.classList.add('accounting-chart--fullscreen');
+      activeChartNode = chartNode;
+      activeChartInstance = chartCanvasId ? chartInstances.get(chartCanvasId) || null : null;
+      previousBodyOverflow = document.body.style.overflow || '';
+      modal.hidden = false;
+      modal.setAttribute('data-open', 'true');
+      if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+    }
+    expandButtons.forEach((button) => {
+      button.addEventListener('click', () => openFullscreenModal(button));
+    });
+    if (modal) {
+      modal.querySelectorAll('[data-accounting-chart-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeFullscreenModal);
+      });
+    }
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal && modal.getAttribute('data-open') === 'true') {
+        closeFullscreenModal();
+      }
+    });
+  })();
+</script>
+{% endif %}
 {% endblock %}

@@ -162,6 +162,70 @@ class AccountingService:
         return fy
 
     @classmethod
+    def withdraw_from_review(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
+        """Freigabe zurückziehen: in_review → open (Schatzmeister/Admin)."""
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        if fy.status != FiscalYearStatus.IN_REVIEW:
+            raise AccountingValidationError(
+                f"Jahr {fy.year} ist nicht in Prüfung und kann nicht zurückgezogen werden."
+            )
+        fy.status = FiscalYearStatus.OPEN
+        db.session.commit()
+        logger.info(
+            "Geschäftsjahr %s Freigabe zurückgezogen von Member %s",
+            fy.year, by_member.id,
+        )
+        return fy
+
+    @classmethod
+    def revoke_approval(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
+        """Abschluss rückgängig: closed → in_review (Revisor/Admin)."""
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        if fy.status != FiscalYearStatus.CLOSED:
+            raise AccountingValidationError(
+                f"Jahr {fy.year} ist nicht abgeschlossen und kann nicht geöffnet werden."
+            )
+        if fy.revision_approval is None:
+            raise AccountingValidationError(
+                f"Jahr {fy.year} hat keine Revisionsbestätigung."
+            )
+        db.session.delete(fy.revision_approval)
+        fy.status = FiscalYearStatus.IN_REVIEW
+        fy.closed_at = None
+        db.session.commit()
+        logger.info(
+            "Geschäftsjahr %s Abschluss rückgängig von Member %s",
+            fy.year, by_member.id,
+        )
+        return fy
+
+    @classmethod
+    def create_fiscal_year(cls, year: int, by_member: Member) -> FiscalYear:
+        """Neues Geschäftsjahr anlegen; Budget vom Vorjahr übernehmen falls vorhanden."""
+        if FiscalYear.query.filter_by(year=year).first():
+            raise AccountingValidationError(f"Geschäftsjahr {year} existiert bereits.")
+        prev = FiscalYear.query.filter_by(year=year - 1).first()
+        fy = FiscalYear(
+            year=year,
+            start_date=date(year, 1, 1),
+            end_date=date(year, 12, 31),
+            status=FiscalYearStatus.OPEN,
+        )
+        db.session.add(fy)
+        db.session.flush()
+        if prev is not None:
+            for entry in prev.budget_entries:
+                db.session.add(BudgetEntry(
+                    fiscal_year_id=fy.id,
+                    account_id=entry.account_id,
+                    amount_rappen=entry.amount_rappen,
+                    created_by=by_member.id,
+                ))
+        db.session.commit()
+        logger.info("Geschäftsjahr %s angelegt von Member %s", year, by_member.id)
+        return fy
+
+    @classmethod
     def approve_year(cls, fiscal_year_id: int, reviewer: Member) -> FiscalYear:
         """Jahr bestätigen: RevisionApproval anlegen, Status auf closed.
 

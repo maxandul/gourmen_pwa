@@ -52,7 +52,9 @@ from backend.services.notifier import NotifierService
 
 bp = Blueprint('accounting', __name__)
 
-VALID_TABS = ('journal', 'belege', 'budget', 'abschluss')
+VALID_TABS = (
+    'uebersicht', 'journal', 'belege', 'budget', 'abschluss', 'statistik', 'kontenplan',
+)
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +98,57 @@ def _resolve_fiscal_year() -> FiscalYear | None:
     if year_id:
         return db.session.get(FiscalYear, year_id)
     return FiscalYear.query.order_by(FiscalYear.year.desc()).first()
+
+
+def _truncate_label(text: str, max_len: int = 36) -> str:
+    text = (text or '').strip()
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1] + '…'
+
+
+def _build_stats_context(fy: FiscalYear, is_treasurer: bool) -> dict:
+    timeline = AccountingService.get_saldo_timeline(fy.id)
+    comparison = AccountingService.get_year_comparison()
+    budget_groups = AccountingService.get_budget_grouped(fy.id)
+
+    budget_usage = []
+    for group in budget_groups:
+        if group['budget_rappen'] <= 0:
+            continue
+        pct = round(group['actual_rappen'] / group['budget_rappen'] * 100)
+        budget_usage.append({**group, 'pct': pct, 'pct_capped': min(pct, 100)})
+
+    expense_groups = [
+        g for g in budget_groups
+        if g['kind'].value == 'expense' and g['actual_rappen'] > 0
+    ]
+
+    chart_data = {
+        'saldo': {
+            'labels': timeline['labels'],
+            'values': [round(v / 100, 2) for v in timeline['values_rappen']],
+        },
+        'years': {
+            'labels': [str(e['year']) for e in comparison],
+            'income': [round(e['income_rappen'] / 100, 2) for e in comparison],
+            'expense': [round(e['expense_rappen'] / 100, 2) for e in comparison],
+            'result': [round(e['result_rappen'] / 100, 2) for e in comparison],
+        },
+        'donut': {
+            'labels': [g['name'] for g in expense_groups],
+            'values': [round(g['actual_rappen'] / 100, 2) for g in expense_groups],
+        },
+    }
+
+    return {
+        'chart_data': chart_data,
+        'budget_usage': budget_usage,
+        'comparison': comparison,
+        'contributions': (
+            AccountingService.get_member_contributions(fy.id) if is_treasurer else []
+        ),
+    }
 
 
 def _events_for_year(fy: FiscalYear) -> list[Event]:
@@ -147,15 +200,19 @@ def index():
             fiscal_year=None,
             fiscal_years=fiscal_years,
             needs_seed=True,
-            active_tab='journal',
+            active_tab='uebersicht',
             is_treasurer=_is_treasurer(),
             is_reviewer=_is_reviewer(),
         )
 
-    active_tab = request.args.get('tab', 'journal')
+    active_tab = request.args.get('tab', 'uebersicht')
     if active_tab not in VALID_TABS:
-        active_tab = 'journal'
+        active_tab = 'uebersicht'
+    if active_tab == 'kontenplan' and not current_user.is_admin():
+        abort(403)
 
+    is_treasurer = _is_treasurer()
+    is_reviewer = _is_reviewer()
     summary = AccountingService.get_year_summary(fy.id)
 
     # Journal-Filter
@@ -193,6 +250,18 @@ def index():
         db.session.get(Event, filter_event_id) if filter_event_id else None
     )
 
+    stats_ctx = _build_stats_context(fy, is_treasurer)
+
+    account_form = AccountForm()
+    all_accounts = []
+    next_fiscal_year = None
+    if current_user.is_admin():
+        all_accounts = Account.query.order_by(Account.sort_order, Account.code).all()
+        max_year = max(fy.year for fy in fiscal_years) if fiscal_years else fy.year
+        candidate = max_year + 1
+        if not FiscalYear.query.filter_by(year=candidate).first():
+            next_fiscal_year = candidate
+
     return render_template(
         'accounting/index.html',
         fiscal_year=fy,
@@ -206,6 +275,9 @@ def index():
         comments=comments,
         comment_form=comment_form,
         accounts=accounts,
+        all_accounts=all_accounts,
+        account_form=account_form,
+        next_fiscal_year=next_fiscal_year,
         events_for_filter=_events_for_year(fy),
         filter_account_id=filter_account_id,
         filter_account=filter_account,
@@ -214,8 +286,9 @@ def index():
         filter_event_id=filter_event_id,
         filter_event=filter_event,
         abschluss_phase=fy.abschluss_phase,
-        is_treasurer=_is_treasurer(),
-        is_reviewer=_is_reviewer(),
+        is_treasurer=is_treasurer,
+        is_reviewer=is_reviewer,
+        **stats_ctx,
     )
 
 
@@ -266,11 +339,17 @@ def booking_edit(booking_id: int):
         return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
 
     try:
+        amount_rappen = form.amount_rappen
+    except ValueError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+
+    try:
         AccountingService.update_booking(
             booking.id,
             booking_date=form.booking_date.data,
             description=form.description.data,
-            amount_rappen=form.amount_rappen,
+            amount_rappen=amount_rappen,
             direction=form.direction.data,
             account_id=form.account_id.data,
             event_id=form.event_id.data or None,
@@ -308,19 +387,23 @@ def booking_attach_receipt(booking_id: int):
 def _receipt_upload_form_with_choices(year: int) -> ReceiptUploadForm:
     form = ReceiptUploadForm()
     form.suggested_account_id.choices = [(0, '–')] + [
-        (a.id, a.name)
+        (a.id, _truncate_label(a.name, 40))
         for a in AccountingService.get_active_accounts(kind='expense')
     ]
+    cutoff = datetime(year - 1, 1, 1)
     events = (
-        Event.query.filter(
-            Event.datum >= datetime(year, 1, 1),
-            Event.datum < datetime(year + 1, 1, 1),
-        )
+        Event.query.filter(Event.datum >= cutoff)
         .order_by(Event.datum.desc())
+        .limit(20)
         .all()
     )
     form.suggested_event_id.choices = [(0, '–')] + [
-        (e.id, f'{e.display_date} {e.restaurant or e.event_typ.value}')
+        (
+            e.id,
+            _truncate_label(
+                f'{e.display_date} {e.restaurant or e.event_typ.value}', 40
+            ),
+        )
         for e in events
     ]
     return form
@@ -415,23 +498,28 @@ def booking_new():
 
     if form.validate_on_submit():
         try:
-            booking = AccountingService.create_booking(
-                fiscal_year_id=fy.id,
-                booking_date=form.booking_date.data,
-                description=form.description.data,
-                amount_rappen=form.amount_rappen,
-                direction=form.direction.data,
-                account_id=form.account_id.data,
-                event_id=form.event_id.data or None,
-                member_id=form.member_id.data or None,
-                created_by=current_user,
-            )
-            if receipt is not None and not receipt.is_booked:
-                AccountingService.attach_receipt_to_booking(receipt.id, booking.id)
-            flash('Buchung erfasst.', 'success')
-            return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
-        except AccountingError as exc:
+            amount_rappen = form.amount_rappen
+        except ValueError as exc:
             flash(str(exc), 'error')
+        else:
+            try:
+                booking = AccountingService.create_booking(
+                    fiscal_year_id=fy.id,
+                    booking_date=form.booking_date.data,
+                    description=form.description.data,
+                    amount_rappen=amount_rappen,
+                    direction=form.direction.data,
+                    account_id=form.account_id.data,
+                    event_id=form.event_id.data or None,
+                    member_id=form.member_id.data or None,
+                    created_by=current_user,
+                )
+                if receipt is not None and not receipt.is_booked:
+                    AccountingService.attach_receipt_to_booking(receipt.id, booking.id)
+                flash('Buchung erfasst.', 'success')
+                return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+            except AccountingError as exc:
+                flash(str(exc), 'error')
     elif request.method == 'POST':
         flash('Bitte Eingaben prüfen.', 'error')
 
@@ -541,6 +629,14 @@ def accounts():
     if not current_user.is_admin():
         abort(403)
 
+    year_id = request.args.get('year', type=int)
+    redirect_kwargs = {'tab': 'kontenplan', '_anchor': 'gourmen-tabs'}
+    if year_id:
+        redirect_kwargs['year'] = year_id
+
+    if request.method == 'GET':
+        return redirect(url_for('accounting.index', **redirect_kwargs))
+
     form = AccountForm()
     if form.validate_on_submit():
         try:
@@ -551,14 +647,12 @@ def accounts():
                 group_name=form.group_name.data,
             )
             flash(f'Konto {form.code.data} angelegt.', 'success')
-            return redirect(url_for('accounting.accounts'))
+            return redirect(url_for('accounting.index', **redirect_kwargs))
         except AccountingError as exc:
             flash(str(exc), 'error')
-    elif request.method == 'POST':
+    else:
         flash('Bitte Eingaben prüfen.', 'error')
-
-    all_accounts = Account.query.order_by(Account.sort_order, Account.code).all()
-    return render_template('accounting/accounts.html', accounts=all_accounts, form=form)
+    return redirect(url_for('accounting.index', **redirect_kwargs))
 
 
 @bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST'])
@@ -583,7 +677,9 @@ def account_edit(account_id: int):
                 is_active=form.is_active.data,
             )
             flash(f'Konto {form.code.data} gespeichert.', 'success')
-            return redirect(url_for('accounting.accounts'))
+            return redirect(url_for(
+                'accounting.index', tab='kontenplan', _anchor='gourmen-tabs',
+            ))
         except AccountingError as exc:
             flash(str(exc), 'error')
     elif request.method == 'POST':
@@ -605,60 +701,78 @@ def stats():
     if fy is None:
         flash('Kein Geschäftsjahr vorhanden. Bitte Seed-Script ausführen.', 'error')
         return redirect(url_for('accounting.index'))
-
-    timeline = AccountingService.get_saldo_timeline(fy.id)
-    comparison = AccountingService.get_year_comparison()
-    budget_groups = AccountingService.get_budget_grouped(fy.id)
-
-    budget_usage = []
-    for group in budget_groups:
-        if group['budget_rappen'] <= 0:
-            continue
-        pct = round(group['actual_rappen'] / group['budget_rappen'] * 100)
-        budget_usage.append({**group, 'pct': pct, 'pct_capped': min(pct, 100)})
-
-    expense_groups = [
-        g for g in budget_groups
-        if g['kind'].value == 'expense' and g['actual_rappen'] > 0
-    ]
-
-    chart_data = {
-        'saldo': {
-            'labels': timeline['labels'],
-            'values': [round(v / 100, 2) for v in timeline['values_rappen']],
-        },
-        'years': {
-            'labels': [str(e['year']) for e in comparison],
-            'income': [round(e['income_rappen'] / 100, 2) for e in comparison],
-            'expense': [round(e['expense_rappen'] / 100, 2) for e in comparison],
-            'result': [round(e['result_rappen'] / 100, 2) for e in comparison],
-        },
-        'donut': {
-            'labels': [g['name'] for g in expense_groups],
-            'values': [round(g['actual_rappen'] / 100, 2) for g in expense_groups],
-        },
-    }
-
-    is_treasurer = _is_treasurer()
-    contributions = (
-        AccountingService.get_member_contributions(fy.id) if is_treasurer else []
-    )
-
-    return render_template(
-        'accounting/stats.html',
-        fiscal_year=fy,
-        fiscal_years=AccountingService.get_all_fiscal_years(),
-        chart_data=chart_data,
-        budget_usage=budget_usage,
-        comparison=comparison,
-        contributions=contributions,
-        is_treasurer=is_treasurer,
-    )
+    return redirect(url_for(
+        'accounting.index',
+        year=fy.id,
+        tab='statistik',
+        _anchor='gourmen-tabs',
+    ))
 
 
 # ---------------------------------------------------------------------------
 # Revisions-Workflow (Jahresfreigabe und Bestätigung)
 # ---------------------------------------------------------------------------
+
+
+@bp.route('/year/<int:fiscal_year_id>/withdraw', methods=['POST'])
+@login_required
+def year_withdraw(fiscal_year_id: int):
+    """Freigabe zurückziehen: in_review → open."""
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    try:
+        AccountingService.withdraw_from_review(fy.id, current_user)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+    flash(
+        f'Jahr {fy.year} ist wieder offen. Buchungen und Belege können bearbeitet werden.',
+        'success',
+    )
+    return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+
+@bp.route('/year/<int:fiscal_year_id>/revoke', methods=['POST'])
+@login_required
+def year_revoke(fiscal_year_id: int):
+    """Abschluss rückgängig: closed → in_review."""
+    _require_funktion('RECHNUNGSPRUEFER')
+    _validate_csrf_or_403()
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    try:
+        AccountingService.revoke_approval(fy.id, current_user)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+    flash(
+        f'Abschluss {fy.year} rückgängig. Das Jahr ist wieder in Prüfung.',
+        'success',
+    )
+    return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+
+@bp.route('/year/create', methods=['POST'])
+@login_required
+def year_create():
+    """Neues Geschäftsjahr anlegen (Admin)."""
+    if not current_user.is_admin():
+        abort(403)
+    _validate_csrf_or_403()
+    year = request.form.get('year', type=int)
+    if not year:
+        flash('Ungültiges Jahr.', 'error')
+        return redirect(url_for('accounting.index'))
+    try:
+        fy = AccountingService.create_fiscal_year(year, current_user)
+        flash(
+            f'Geschäftsjahr {fy.year} eröffnet. Budget vom Vorjahr wurde übernommen.',
+            'success',
+        )
+        return redirect(url_for('accounting.index', year=fy.id, tab='uebersicht'))
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index'))
 
 
 @bp.route('/year/<int:fiscal_year_id>/submit', methods=['POST'])

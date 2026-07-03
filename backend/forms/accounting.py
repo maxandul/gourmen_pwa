@@ -16,7 +16,28 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
+
+RAPPEN_STEP = 5  # 0.05 CHF
+
+
+def chf_to_rappen(amount_chf) -> int:
+    """CHF → Rappen (Integer), auf 5 Rappen gerundet."""
+    if amount_chf is None:
+        raise ValueError('Betrag fehlt')
+    try:
+        dec = Decimal(str(amount_chf)).quantize(
+            Decimal('0.01'), rounding=ROUND_HALF_UP
+        )
+    except (InvalidOperation, ValueError) as exc:
+        raise ValueError('Ungültiger Betrag') from exc
+    rappen = int(dec * 100)
+    snapped = int(round(rappen / RAPPEN_STEP) * RAPPEN_STEP)
+    if snapped < RAPPEN_STEP:
+        raise ValueError('Betrag muss mindestens 0.05 CHF sein')
+    return snapped
 
 
 class BookingForm(FlaskForm):
@@ -45,7 +66,7 @@ class BookingForm(FlaskForm):
     @property
     def amount_rappen(self):
         """Betrag als Integer-Rappen (niemals Float speichern)."""
-        return int(round(self.amount_chf.data * 100))
+        return chf_to_rappen(self.amount_chf.data)
 
 
 class ReceiptUploadForm(FlaskForm):

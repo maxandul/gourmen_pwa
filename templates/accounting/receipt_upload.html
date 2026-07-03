@@ -20,7 +20,7 @@
         </h1>
     </div>
 
-    <div class="page-content">
+    <div class="page-content accounting-receipt-upload">
         <nav class="cleanup-step-nav" aria-label="Schritte Beleg einreichen">
             <p class="cleanup-step-nav__counter"><span id="step-counter">1</span> von 2</p>
             <div class="cleanup-step-nav__actions">
@@ -29,7 +29,7 @@
             </div>
         </nav>
 
-        <form method="POST" action="{{ url_for('accounting.receipt_upload') }}" enctype="multipart/form-data" class="form">
+        <form method="POST" action="{{ url_for('accounting.receipt_upload') }}" enctype="multipart/form-data" class="form" id="receipt-upload-form">
             {{ form.hidden_tag() }}
 
             {# Schritt 1: Datei + Pre-Tagging #}
@@ -39,22 +39,45 @@
                 </div>
                 <div class="card__body">
                     <div class="form-field">
-                        <label class="form-field__label" for="{{ form.file.id }}">{{ form.file.label.text }}{{ required_mark(form.file) }}</label>
-                        {{ form.file(class='form-field__input', accept='image/*,application/pdf', capture='environment') }}
+                        <span class="form-field__label">{{ form.file.label.text }}{{ required_mark(form.file) }}</span>
+                        <div class="accounting-receipt-capture">
+                            {{ form.file(class='sr-only', id=form.file.id, accept='image/*,application/pdf') }}
+                            <div class="accounting-receipt-capture__actions">
+                                <button type="button" class="btn btn--primary" id="btn-camera">
+                                    {{ lucide_icon('camera') }}
+                                    Foto aufnehmen
+                                </button>
+                                <button type="button" class="btn btn--outline" id="btn-file">
+                                    {{ lucide_icon('folder-open') }}
+                                    Datei wählen
+                                </button>
+                            </div>
+                            <p class="form-field__help" id="file-name-hint">Noch keine Datei gewählt (max. 100 MB).</p>
+                            <div class="accounting-receipt-capture__preview" id="file-preview" hidden>
+                                <img id="file-preview-img" alt="Vorschau des Belegs" class="accounting-receipt-capture__preview-img">
+                            </div>
+                        </div>
                         {{ field_errors(form.file) }}
-                        <span class="form-field__help">Foto direkt mit der Kamera aufnehmen oder Datei wählen (max. 100 MB).</span>
                     </div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label class="form-field__label" for="{{ form.suggested_event_id.id }}">{{ form.suggested_event_id.label.text }}</label>
-                            {{ form.suggested_event_id(class='form-field__select') }}
+
+                    <details class="disclosure accounting-receipt-upload__tagging" id="receipt-tagging-disclosure">
+                        <summary class="disclosure__summary">
+                            {{ lucide_icon('chevron-down') }}
+                            Event &amp; Kategorie (optional)
+                        </summary>
+                        <div class="disclosure__content accounting-receipt-upload__picker-panel">
+                            <div class="form-field">
+                                <label class="form-field__label" for="{{ form.suggested_event_id.id }}">{{ form.suggested_event_id.label.text }}</label>
+                                {{ form.suggested_event_id(class='form-field__select accounting-receipt-upload__select') }}
+                            </div>
+                            <div class="form-field">
+                                <label class="form-field__label" for="{{ form.suggested_account_id.id }}">{{ form.suggested_account_id.label.text }}</label>
+                                {{ form.suggested_account_id(class='form-field__select accounting-receipt-upload__select') }}
+                                <span class="form-field__help">Vorschlag für den Schatzmeister – er entscheidet beim Verbuchen.</span>
+                            </div>
                         </div>
-                        <div class="form-field">
-                            <label class="form-field__label" for="{{ form.suggested_account_id.id }}">{{ form.suggested_account_id.label.text }}</label>
-                            {{ form.suggested_account_id(class='form-field__select') }}
-                            <span class="form-field__help">Vorschlag für den Schatzmeister – er entscheidet beim Verbuchen.</span>
-                        </div>
-                    </div>
+                    </details>
+
                     <div class="form-field">
                         <label class="form-field__label" for="{{ form.comment.id }}">{{ form.comment.label.text }}</label>
                         {{ form.comment(class='form-field__textarea', rows=3) }}
@@ -109,11 +132,48 @@
     const eventSelect = document.getElementById('{{ form.suggested_event_id.id }}');
     const accountSelect = document.getElementById('{{ form.suggested_account_id.id }}');
     const commentInput = document.getElementById('{{ form.comment.id }}');
+    const cameraBtn = document.getElementById('btn-camera');
+    const fileBtn = document.getElementById('btn-file');
+    const fileNameHint = document.getElementById('file-name-hint');
+    const filePreview = document.getElementById('file-preview');
+    const filePreviewImg = document.getElementById('file-preview-img');
 
     function selectedText(select) {
       const opt = select.options[select.selectedIndex];
       return opt && opt.value !== '0' ? opt.textContent.trim() : '–';
     }
+
+    function updateFilePreview() {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) {
+        fileNameHint.textContent = 'Noch keine Datei gewählt (max. 100 MB).';
+        filePreview.hidden = true;
+        filePreviewImg.removeAttribute('src');
+        return;
+      }
+      fileNameHint.textContent = file.name;
+      if (file.type.startsWith('image/')) {
+        filePreviewImg.src = URL.createObjectURL(file);
+        filePreview.hidden = false;
+      } else {
+        filePreview.hidden = true;
+        filePreviewImg.removeAttribute('src');
+      }
+    }
+
+    cameraBtn.addEventListener('click', function () {
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.setAttribute('accept', 'image/*');
+      fileInput.click();
+    });
+
+    fileBtn.addEventListener('click', function () {
+      fileInput.removeAttribute('capture');
+      fileInput.setAttribute('accept', 'image/*,application/pdf');
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', updateFilePreview);
 
     function showStep(step) {
       step1.hidden = step !== 1;
@@ -133,10 +193,9 @@
 
     nextBtn.addEventListener('click', function () {
       if (!fileInput.files.length) {
-        fileInput.setCustomValidity('Bitte zuerst eine Datei wählen.');
+        fileInput.setCustomValidity('Bitte zuerst ein Foto aufnehmen oder eine Datei wählen.');
         fileInput.reportValidity();
         fileInput.setCustomValidity('');
-        fileInput.focus();
         return;
       }
       showStep(2);
