@@ -380,10 +380,18 @@ class PlacesAutocomplete {
                         
                         <div class="form-field">
                             {{ form.event_typ.label(class="form-field__label") }}
-                            {{ form.event_typ(class="form-field__select") }}
+                            {{ form.event_typ(class="form-field__select", id="event-typ-select") }}
                             {% if form.event_typ.errors %}
                             <span class="form-field__error">{{ form.event_typ.errors[0] }}</span>
                             {% endif %}
+                        </div>
+                        <div class="form-field">
+                            {{ form.audience.label(class="form-field__label") }}
+                            {{ form.audience(class="form-field__select", id="event-audience-select") }}
+                            {% if form.audience.errors %}
+                            <span class="form-field__error">{{ form.audience.errors[0] }}</span>
+                            {% endif %}
+                            <span class="form-field__hint">Vorstandssitzungen sind immer nur für den Vorstand sichtbar.</span>
                         </div>
                     </div>
                     

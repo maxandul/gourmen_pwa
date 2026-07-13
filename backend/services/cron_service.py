@@ -63,9 +63,9 @@ class CronService:
         Gibt den Status aller Cron-Jobs zurück
         """
         try:
-            from backend.models.event import EventType
+            from backend.models.event import RSVP_REMINDER_EVENT_TYPES
             
-            # Prüfe Events die in 3 Wochen sind (nur MONATSESSEN und GENERALVERSAMMLUNG)
+            # Prüfe Events die in 3 Wochen sind (RSVP-Reminder-Typen inkl. Vorstandssitzung)
             target_date = datetime.utcnow() + timedelta(days=21)
             start_date = target_date - timedelta(hours=12)
             end_date = target_date + timedelta(hours=12)
@@ -74,7 +74,7 @@ class CronService:
                 Event.datum >= start_date,
                 Event.datum <= end_date,
                 Event.published == True,
-                Event.event_typ.in_([EventType.MONATSESSEN, EventType.GENERALVERSAMMLUNG])
+                Event.event_typ.in_(RSVP_REMINDER_EVENT_TYPES)
             ).count()
             
             # Prüfe Push-Subscriptions

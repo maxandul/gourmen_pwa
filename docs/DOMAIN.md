@@ -38,16 +38,26 @@ Aktueller Status: nicht im Handelsregister eingetragen – das ist für einen ei
 | `MONATSESSEN` | Monatliches Restaurant-Event, Hauptaktivität |
 | `AUSFLUG` | Mehrtägige oder Tages-Ausflüge |
 | `GENERALVERSAMMLUNG` | Jährliche Mitgliederversammlung |
+| `VORSTANDSSITZUNG` | Sitzung des Vorstands; immer `audience=board` |
 
-Bei Monatsessen wird in der Regel BillBro angewendet, bei Ausflügen und Generalversammlung nicht zwingend.
+### Event-Sichtbarkeit (`EventAudience`)
+
+| Wert | Bedeutung |
+|---|---|
+| `all` | Für alle aktiven Mitglieder sichtbar (App + iCal) |
+| `board` | Nur Vorstandsmitglieder (`Member.vorstandsmitglied`), Admins und der Organisator |
+
+`VORSTANDSSITZUNG` setzt `audience` serverseitig immer auf `board`. Push-/RSVP-Erinnerungen (3 Wochen vor Termin, Montag vor Event) laufen für Monatsessen, GV und Vorstandssitzung; bei `board` nur an Vorstandsmitglieder.
+
+Bei Monatsessen wird in der Regel BillBro inkl. GGL-Schätzspiel angewendet. Bei **Vorstandssitzungen** läuft BillBro abgespeckt (Ess-Typ + Rechnungssplit, ohne Schätzung/Rangliste/GGL). Bei Ausflügen und Generalversammlung ist BillBro nicht zwingend.
 
 ## BillBro
 
-**Was es ist**: Bill-Splitting-System für Monatsessen, das den Rechnungsbetrag fair auf Teilnehmende aufteilt – nicht stumpf gleichmässig, sondern nach **Verzehrs-Rolle**.
+**Was es ist**: Bill-Splitting-System, das den Rechnungsbetrag fair auf Teilnehmende aufteilt – nicht stumpf gleichmässig, sondern nach **Verzehrs-Rolle** (Ess-Typ).
 
-### Rollen pro Teilnahme (`Participation.role` o.ä.)
+### Rollen pro Teilnahme (`Participation.esstyp`)
 
-Bei der Anmeldung wählt das Mitglied eine Rolle, die das geschätzte Verzehr-Verhalten abbildet:
+Bei BillBro wählt das Mitglied eine Rolle, die das geschätzte Verzehr-Verhalten abbildet:
 
 | Rolle | Gewicht (default) | Bedeutung |
 |---|---|---|
@@ -70,13 +80,19 @@ Gewichte sind pro Event in `Event.weights_used_json` konfigurierbar (Default: 0.
 
 Resultat-Felder am Event: `betrag_sparsam_rappen`, `betrag_normal_rappen`, `betrag_allin_rappen`.
 
-### BillBro-Schätzspiel
+### BillBro-Schätzspiel (nur Monatsessen / GGL)
 
-Vor jedem Monatsessen schätzt jedes teilnehmende Mitglied den Rechnungsbetrag. Diese Schätzung wird in `Participation.guess_bill_amount_rappen` gespeichert und ist Grundlage für die GGL-Punkte (siehe unten).
+`Event.supports_ggl` ist `True` nur für `EventType.MONATSESSEN`. Nur dann:
+
+- Teilnehmende geben zusätzlich einen Schätzbetrag ab (`guess_bill_amount_rappen`)
+- Organisator sieht die Schätzungsrangliste
+- Beim Erfassen der Rechnung vergibt `GGLService.calculate_event_points` GGL-Punkte
+
+Bei Vorstandssitzungen (und anderen Nicht-GGL-Events) wählen Teilnehmende nur den Ess-Typ; der Organisator erfasst Rechnung, bestätigt/passt den vorgeschlagenen Gesamtbetrag (inkl. Trinkgeld) an und BillBro berechnet die Anteile – ohne Rangliste und ohne GGL-Punkte.
 
 ## GGL – Gourmen Guessing League
 
-**Was es ist**: Saisonaler Wettbewerb. Wer am besten den Rechnungsbetrag eines Monatsessens schätzt, kriegt Punkte. Über die Saison entsteht ein Ranking.
+**Was es ist**: Saisonaler Wettbewerb. Wer am besten den Rechnungsbetrag eines **Monatsessens** schätzt, kriegt Punkte. Über die Saison entsteht ein Ranking.
 
 ### Punkte-Vergabe pro Event
 

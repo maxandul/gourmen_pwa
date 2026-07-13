@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Optional
 from backend.extensions import db
 from backend.models.event import Event
 from backend.models.participation import Participation, Esstyp
@@ -11,6 +11,14 @@ from backend.services.money import MoneyService
 from backend.services.ggl_rules import GGLService
 from backend.services.security import SecurityService, AuditAction
 from backend.services.notifier import NotifierService
+
+
+def _get_visible_event_or_404(event_id: int) -> Event:
+    event = Event.query.get_or_404(event_id)
+    if not event.is_visible_to(current_user):
+        abort(403)
+    return event
+
 
 def round_to_5_rappen(amount_rappen):
     """Round amount to nearest 5 Rappen (Swiss currency rule)"""
@@ -74,8 +82,8 @@ class BillBroForm(FlaskForm):
         (Esstyp.NORMAL.value, 'Normal'),
         (Esstyp.ALLIN.value, 'All-In')
     ], validators=[DataRequired()], coerce=str)
-    guess_amount = StringField('Schätzung (CHF)', validators=[DataRequired()])
-    submit = SubmitField('Einloggen')
+    guess_amount = StringField('Schätzung (CHF)', validators=[Optional()])
+    submit = SubmitField('Speichern')
 
 @bp.route('/')
 @login_required
@@ -87,7 +95,7 @@ def index():
         flash('Event-ID erforderlich', 'error')
         return redirect(url_for('events.index'))
     
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is participating or is organizer
     participation = Participation.query.filter_by(
@@ -121,73 +129,95 @@ def index():
 @bp.route('/<int:event_id>/compute', methods=['POST'])
 @login_required
 def compute(event_id):
-    """Compute BillBro results"""
-    event = Event.query.get_or_404(event_id)
+    """Save Esstyp (and optional GGL guess for Monatsessen)."""
+    event = _get_visible_event_or_404(event_id)
     
-    # Check if user is participating
     participation = Participation.query.filter_by(
         member_id=current_user.id,
         event_id=event_id
     ).first()
     
     if not participation or not participation.teilnahme:
-        return jsonify({'error': 'Keine Teilnahme'}), 400
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'Keine Teilnahme'}), 400
+        flash('Keine Teilnahme', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    if event.billbro_closed:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'BillBro ist geschlossen'}), 400
+        flash('BillBro ist geschlossen – keine Änderungen mehr möglich', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     form = BillBroForm()
-    if not form.validate():
-        return jsonify({'error': 'Ungültige Eingabe'}), 400
-    
-    # Parse guess amount
-    guess_rappen = MoneyService.to_rappen(form.guess_amount.data)
-    if guess_rappen is None:
-        return jsonify({'error': 'Ungültiger Betrag'}), 400
-    
-    # Check for duplicate guesses
-    existing_guess = Participation.query.filter_by(
-        event_id=event_id,
-        guess_bill_amount_rappen=guess_rappen
-    ).filter(Participation.member_id != current_user.id).first()
-    
-    if existing_guess:
-        return jsonify({'error': 'Diese Schätzung wurde bereits abgegeben. Wähle einen anderen Betrag.'}), 400
-    
-    # Validate esstyp selection
-    if not form.esstyp.data or form.esstyp.data == '':
+    if not form.validate() or not form.esstyp.data or form.esstyp.data == '':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'error': 'Bitte wähle einen Ess-Typ.'}), 400
-    
-    # Update participation
+        flash('Bitte wähle einen Ess-Typ.', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
     participation.esstyp = Esstyp(form.esstyp.data)
-    participation.guess_bill_amount_rappen = guess_rappen
     participation.responded_at = datetime.utcnow()
-    
-    # Calculate difference if actual bill is known
-    if event.rechnungsbetrag_rappen:
-        participation.diff_amount_rappen = abs(
-            guess_rappen - event.rechnungsbetrag_rappen
-        )
+
+    guess_rappen = None
+    if event.supports_ggl:
+        guess_rappen = MoneyService.to_rappen(form.guess_amount.data)
+        if guess_rappen is None:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'Ungültiger Betrag'}), 400
+            flash('Ungültiger Schätzbetrag', 'error')
+            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+        existing_guess = Participation.query.filter_by(
+            event_id=event_id,
+            guess_bill_amount_rappen=guess_rappen
+        ).filter(Participation.member_id != current_user.id).first()
+
+        if existing_guess:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'Diese Schätzung wurde bereits abgegeben. Wähle einen anderen Betrag.'}), 400
+            flash('Diese Schätzung wurde bereits abgegeben. Wähle einen anderen Betrag.', 'error')
+            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+        participation.guess_bill_amount_rappen = guess_rappen
+        if event.rechnungsbetrag_rappen:
+            participation.diff_amount_rappen = abs(
+                guess_rappen - event.rechnungsbetrag_rappen
+            )
+    else:
+        participation.guess_bill_amount_rappen = None
+        participation.diff_amount_rappen = None
+        participation.rank = None
+        participation.points = None
     
     db.session.commit()
     
-    # Log audit event
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_COMPUTE, 'participation', participation.id,
         extra_data={
             'event_id': event_id,
             'guess_amount': guess_rappen,
-            'esstyp': form.esstyp.data
+            'esstyp': form.esstyp.data,
+            'supports_ggl': event.supports_ggl,
         }
     )
+
+    success_msg = 'Schätzung gespeichert' if event.supports_ggl else 'Ess-Typ gespeichert'
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({
+        payload = {
             'success': True,
-            'message': 'Schätzung gespeichert',
-            'guess_amount': MoneyService.to_franken(guess_rappen),
+            'message': success_msg,
             'esstyp': form.esstyp.data
-        })
+        }
+        if guess_rappen is not None:
+            payload['guess_amount'] = MoneyService.to_franken(guess_rappen)
+        return jsonify(payload)
     
-    flash('Schätzung gespeichert', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-my-guess'))
+    flash(success_msg, 'success')
+    anchor = 'billbro-my-guess' if event.supports_ggl else 'billbro-my-esstyp'
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor=anchor))
+
 
 # Ergebnisse-Seite entfernt; Rangliste wird direkt in BillBro angezeigt
 
@@ -197,7 +227,7 @@ def compute(event_id):
 @login_required
 def enter_bill(event_id):
     """Enter actual bill amount (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -222,29 +252,29 @@ def enter_bill(event_id):
     event.rechnungsbetrag_rappen = rechnungsbetrag_rappen
     event.trinkgeld_rappen = tip_rappen
     # Don't set gesamtbetrag_rappen yet - let user choose manual override
-    
-    # Calculate differences for rankings (based on bill amount only)
-    participations = Participation.query.filter_by(
-        event_id=event_id,
-        teilnahme=True
-    ).filter(
-        Participation.guess_bill_amount_rappen.isnot(None)
-    ).all()
-    
-    for participation in participations:
-        participation.diff_amount_rappen = abs(
-            participation.guess_bill_amount_rappen - rechnungsbetrag_rappen
-        )
-    
-    # Use GGLService to calculate proper rankings and points
-    GGLService.calculate_event_points(event_id)
+
+    if event.supports_ggl:
+        participations = Participation.query.filter_by(
+            event_id=event_id,
+            teilnahme=True
+        ).filter(
+            Participation.guess_bill_amount_rappen.isnot(None)
+        ).all()
+
+        for participation in participations:
+            participation.diff_amount_rappen = abs(
+                participation.guess_bill_amount_rappen - rechnungsbetrag_rappen
+            )
+
+        GGLService.calculate_event_points(event_id)
     
     # Log audit event
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_ENTER_BILL, 'event', event.id,
         extra_data={
             'rechnungsbetrag': rechnungsbetrag_rappen,
-            'tip': tip_rappen
+            'tip': tip_rappen,
+            'supports_ggl': event.supports_ggl,
         }
     )
     
@@ -255,7 +285,11 @@ def enter_bill(event_id):
 @login_required
 def start_session(event_id):
     """Start BillBro session and notify all participants (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
+
+    if not event.supports_ggl:
+        flash('Schätz-Benachrichtigungen gibt es nur bei Monatsessen (GGL).', 'info')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -293,7 +327,11 @@ def start_session(event_id):
 @login_required
 def send_reminder(event_id):
     """Send reminder to participants who haven't guessed yet (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
+
+    if not event.supports_ggl:
+        flash('Schätz-Erinnerungen gibt es nur bei Monatsessen (GGL).', 'info')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -335,7 +373,7 @@ def send_reminder(event_id):
 @login_required
 def set_total(event_id):
     """Set final total amount and calculate shares (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -391,7 +429,7 @@ def set_total(event_id):
 @login_required
 def undo_final(event_id):
     """Reopen finalization to allow adjusting totals again (organizer only)."""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann die Finalisierung aufheben', 'error')
@@ -427,7 +465,7 @@ def undo_final(event_id):
 @login_required
 def accept_suggested_total(event_id):
     """Accept the automatically suggested total amount (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -471,7 +509,7 @@ def accept_suggested_total(event_id):
 @login_required
 def reset_bill(event_id):
     """Reset bill and totals to start over (organizer only)."""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not (event.organisator_id == current_user.id):
         flash('Nur der Organisator kann den BillBro zurücksetzen', 'error')
@@ -509,7 +547,7 @@ def reset_bill(event_id):
 @login_required
 def share_whatsapp(event_id):
     """Generate WhatsApp share link"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     if not event.rechnungsbetrag_rappen:
         flash('Rechnungsbetrag muss zuerst eingegeben werden', 'error')
@@ -526,20 +564,20 @@ def share_whatsapp(event_id):
     message += f"💡 Trinkgeld (7%): {event.trinkgeld_rappen / 100:.2f} CHF\n"
     message += f"💵 Gesamtbetrag: {event.gesamtbetrag_rappen / 100:.2f} CHF\n\n"
     
-    # Add rankings
-    participations = Participation.query.filter_by(
-        event_id=event_id,
-        teilnahme=True
-    ).filter(
-        Participation.guess_bill_amount_rappen.isnot(None)
-    ).order_by(Participation.rank.asc()).all()
-    
-    if participations:
-        message += "🏆 Rangliste:\n"
-        for participation in participations[:5]:  # Top 5
-            message += f"{participation.rank}. {participation.member.display_name}: "
-            message += f"{participation.guess_bill_amount_rappen / 100:.2f} CHF "
-            message += f"(±{participation.diff_amount_rappen / 100:.2f} CHF)\n"
+    if event.supports_ggl:
+        participations = Participation.query.filter_by(
+            event_id=event_id,
+            teilnahme=True
+        ).filter(
+            Participation.guess_bill_amount_rappen.isnot(None)
+        ).order_by(Participation.rank.asc()).all()
+
+        if participations:
+            message += "🏆 Rangliste:\n"
+            for participation in participations[:5]:  # Top 5
+                message += f"{participation.rank}. {participation.member.display_name}: "
+                message += f"{participation.guess_bill_amount_rappen / 100:.2f} CHF "
+                message += f"(±{participation.diff_amount_rappen / 100:.2f} CHF)\n"
     
     # Add individual shares with participant details
     message += f"\n💸 Anteile pro Person:\n"
@@ -595,8 +633,8 @@ def share_whatsapp(event_id):
 @bp.route('/<int:event_id>/update_guess', methods=['POST'])
 @login_required
 def update_guess(event_id):
-    """Update existing guess"""
-    event = Event.query.get_or_404(event_id)
+    """Reset Esstyp / GGL guess so the member can re-enter."""
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is participating
     participation = Participation.query.filter_by(
@@ -607,24 +645,38 @@ def update_guess(event_id):
     if not participation or not participation.teilnahme:
         flash('Du nimmst nicht an diesem Event teil.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    if event.billbro_closed:
+        flash('BillBro ist geschlossen – keine Änderungen mehr möglich', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
-    # Clear existing guess to allow new one
+    # Clear existing guess / esstyp to allow new one
     participation.guess_bill_amount_rappen = None
     participation.esstyp = None
     participation.diff_amount_rappen = None
     participation.rank = None
+    participation.points = None
     participation.responded_at = None
     
     db.session.commit()
     
-    flash('Schätzung zurückgesetzt - neue Schätzung möglich', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-new-guess'))
+    if event.supports_ggl:
+        flash('Schätzung zurückgesetzt - neue Schätzung möglich', 'success')
+        anchor = 'billbro-new-guess'
+    else:
+        flash('Ess-Typ zurückgesetzt - neue Auswahl möglich', 'success')
+        anchor = 'billbro-new-esstyp'
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor=anchor))
 
 @bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST'])
 @login_required
 def record_guess(event_id, member_id):
     """Record guess for specific member (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
+
+    if not event.supports_ggl:
+        flash('Schätzungen gibt es nur bei Monatsessen (GGL).', 'info')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -693,7 +745,7 @@ def record_guess(event_id, member_id):
 @login_required
 def calculator(event_id):
     """Mobile calculator view for organizers"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -706,7 +758,7 @@ def calculator(event_id):
 @login_required
 def export_pdf(event_id):
     """Export results as PDF"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check permissions (organizer or admin)
     if not (event.organisator_id == current_user.id):
@@ -730,7 +782,7 @@ def export_pdf(event_id):
 @login_required
 def mark_absent(event_id, member_id):
     """Mark member as absent (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -782,7 +834,7 @@ def mark_absent(event_id, member_id):
 @login_required
 def mark_present(event_id, member_id):
     """Mark member as present again (organizer only)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -827,7 +879,7 @@ def mark_present(event_id, member_id):
 @login_required
 def toggle_billbro_status(event_id):
     """Toggle BillBro status (close/reopen) - organizer only"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (event.organisator_id == current_user.id):
@@ -838,11 +890,17 @@ def toggle_billbro_status(event_id):
     if event.billbro_closed:
         # Reopen BillBro
         event.billbro_closed = False
-        flash('BillBro wieder geöffnet - Teilnehmer können Schätzungen ändern', 'success')
+        if event.supports_ggl:
+            flash('BillBro wieder geöffnet - Teilnehmer können Schätzungen ändern', 'success')
+        else:
+            flash('BillBro wieder geöffnet - Teilnehmer können den Ess-Typ ändern', 'success')
     else:
         # Close BillBro
         event.billbro_closed = True
-        flash('BillBro abgeschlossen - Schätzungen können nicht mehr geändert werden', 'success')
+        if event.supports_ggl:
+            flash('BillBro abgeschlossen - Schätzungen können nicht mehr geändert werden', 'success')
+        else:
+            flash('Ess-Typ-Runde abgeschlossen - Ess-Typen können nicht mehr geändert werden', 'success')
     
     db.session.commit()
     

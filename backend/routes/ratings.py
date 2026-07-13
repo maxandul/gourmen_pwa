@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_login import login_required, current_user
 from backend.extensions import db
 from backend.models.event import Event
@@ -9,11 +9,19 @@ from backend.routes.events import CLEANUP_RSVP_UNDO_SESSION_KEY
 
 bp = Blueprint('ratings', __name__)
 
+
+def _get_visible_event_or_404(event_id: int) -> Event:
+    event = Event.query.get_or_404(event_id)
+    if not event.is_visible_to(current_user):
+        abort(403)
+    return event
+
+
 @bp.route('/event/<int:event_id>/rate', methods=['GET', 'POST'])
 @login_required
 def rate_event(event_id):
     """Rate an event (handled inline im Event-Tab)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
     next_url = request.args.get('next') or request.form.get('next')
 
@@ -81,7 +89,7 @@ def rate_event(event_id):
 @login_required
 def view_ratings(event_id):
     """View all ratings for an event"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
 
     if not event.allow_ratings:
@@ -104,7 +112,7 @@ def view_ratings(event_id):
 @login_required
 def get_ratings_api(event_id):
     """API endpoint to get ratings for an event"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
 
     if not event.allow_ratings:
@@ -131,7 +139,7 @@ def get_ratings_api(event_id):
 @login_required
 def edit_rating(event_id):
     """Edit existing rating (inline im Event-Tab)"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not event.allow_ratings:
         flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
@@ -175,7 +183,7 @@ def delete_rating(event_id):
         participant_id=current_user.id
     ).first()
     
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     if not event.allow_ratings:
         flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='info'))

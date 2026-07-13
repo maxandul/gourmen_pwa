@@ -75,7 +75,7 @@ Registrierung in `backend/app.py`:
 - **`Member`** – Vereinsmitglied, UserMixin, Rollen `MEMBER`/`ADMIN`, mit `Funktion`-Enum
 - **`MemberSensitive`** – verschlüsselte sensible Felder (Fernet via `CRYPTO_KEY`)
 - **`MemberMFA`** + **`MFABackupCode`** – 2FA-Konfiguration
-- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung) mit Google-Places-Daten und BillBro-Kalkulationsfeldern; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
+- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung, Vorstandssitzung) mit Google-Places-Daten, BillBro-Kalkulationsfeldern und `audience` (`all`/`board`) für Vorstands-only-Sichtbarkeit; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
 - **`Document`** – schlanker DB-Cache zu einer Drive-Datei (**Phase 09**): `drive_file_id`, `drive_parent_id`, optional `uploader_id`/`event_id`, `last_seen_at`, `created_at`. Metadaten (Name, MIME, Groesse) kommen von der Drive-API; Archiv ist ein Ordner (`DRIVE_ARCHIVE_FOLDER_ID`), kein DB-Status mehr. Spec: `docs/capabilities/drive.md`.
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)

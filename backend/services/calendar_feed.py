@@ -29,6 +29,7 @@ class CalendarFeedService:
         {
             "datum",
             "event_typ",
+            "audience",
             "restaurant",
             "place_name",
             "place_address",
@@ -41,6 +42,7 @@ class CalendarFeedService:
         EventType.MONATSESSEN: "\U0001f374",  # 🍴
         EventType.AUSFLUG: "\U0001f690",  # 🚐
         EventType.GENERALVERSAMMLUNG: "\U0001f3db\ufe0f",  # 🏛️
+        EventType.VORSTANDSSITZUNG: "\U0001f4cb",  # 📋
     }
 
     @classmethod
@@ -266,14 +268,14 @@ class CalendarFeedService:
     def generate_feed_for_member(cls, member: Member) -> bytes:
         today = cls._today_zurich()
         now_utc = datetime.now(timezone.utc)
-        rows = (
+        query = (
             Event.query.options(joinedload(Event.organisator))
             .filter(
                 Event.published == True,  # noqa: E712
             )
-            .order_by(Event.datum.asc())
-            .all()
         )
+        query = Event.apply_audience_filter(query, member, for_calendar=True)
+        rows = query.order_by(Event.datum.asc()).all()
         def _cal_day(ev: Event) -> date | None:
             raw = ev.datum
             if raw is None:

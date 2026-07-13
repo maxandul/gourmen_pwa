@@ -13,7 +13,10 @@ def get_rating_prompt_event_for_member(member) -> Event | None:
     """
     now = datetime.utcnow()
     last_completed = (
-        Event.query.filter(Event.published == True, Event.datum < now)
+        Event.apply_audience_filter(
+            Event.query.filter(Event.published == True, Event.datum < now),
+            member,
+        )
         .order_by(Event.datum.desc())
         .first()
     )
