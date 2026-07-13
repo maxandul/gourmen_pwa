@@ -19,8 +19,11 @@ from backend.models.accounting import (
     Booking,
     BookingDirection,
     BudgetEntry,
+    ClaimStatus,
+    ClaimType,
     FiscalYear,
     FiscalYearStatus,
+    MemberClaim,
     Receipt,
     RevisionApproval,
     RevisionComment,
@@ -485,6 +488,242 @@ class AccountingService:
             'budget_used_pct': budget_used_pct,
             'booking_count': Booking.query.filter_by(fiscal_year_id=fy.id).count(),
         }
+
+    # -- Offene Posten (MemberClaim, Spec Sektion 11.5) ---------------------
+
+    @classmethod
+    def create_claims_for_fiscal_year(cls, fiscal_year_id: int,
+                                      by_member: Member) -> list[MemberClaim]:
+        """Beitrags-Claims pro aktivem Mitglied anlegen (idempotent).
+
+        Betrag = FiscalYear.membership_fee_rappen; pro Mitglied nachträglich
+        überschreibbar (Sonderfälle).
+        """
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        if not fy.membership_fee_rappen:
+            raise AccountingValidationError(
+                f"Jahr {fy.year} hat keinen Jahresbeitrag hinterlegt."
+            )
+        existing_member_ids = {
+            c.member_id
+            for c in MemberClaim.query.filter_by(
+                fiscal_year_id=fy.id, claim_type=ClaimType.MITGLIEDERBEITRAG,
+            ).all()
+        }
+        created = []
+        for member in Member.query.filter_by(is_active=True).all():
+            if member.id in existing_member_ids:
+                continue
+            claim = MemberClaim(
+                member_id=member.id,
+                claim_type=ClaimType.MITGLIEDERBEITRAG,
+                fiscal_year_id=fy.id,
+                expected_rappen=fy.membership_fee_rappen,
+                note=f'Mitgliederbeitrag {fy.year}',
+            )
+            db.session.add(claim)
+            created.append(claim)
+        db.session.commit()
+        logger.info(
+            "Beitrags-Claims %s: %s angelegt von Member %s",
+            fy.year, len(created), by_member.id,
+        )
+        return created
+
+    @staticmethod
+    def get_claim(claim_id: int) -> MemberClaim:
+        claim = db.session.get(MemberClaim, claim_id)
+        if claim is None:
+            raise AccountingValidationError("Offener Posten nicht gefunden.")
+        return claim
+
+    @staticmethod
+    def get_claims(claim_type=None, status=None, member_id: int | None = None,
+                   fiscal_year_id: int | None = None,
+                   only_club: bool = False) -> list[MemberClaim]:
+        query = MemberClaim.query
+        if claim_type:
+            query = query.filter_by(claim_type=ClaimType(claim_type)
+                                    if not isinstance(claim_type, ClaimType)
+                                    else claim_type)
+        if status:
+            query = query.filter_by(status=ClaimStatus(status)
+                                    if not isinstance(status, ClaimStatus)
+                                    else status)
+        if member_id:
+            query = query.filter_by(member_id=member_id)
+        if fiscal_year_id:
+            query = query.filter_by(fiscal_year_id=fiscal_year_id)
+        if only_club:
+            query = query.filter(MemberClaim.creditor_member_id.is_(None))
+        return query.order_by(MemberClaim.created_at.desc()).all()
+
+    @staticmethod
+    def get_open_claims_for_member(member: Member) -> list[MemberClaim]:
+        """Eigene offene/teilbezahlte Posten (Dashboard)."""
+        return (
+            MemberClaim.query.filter(
+                MemberClaim.member_id == member.id,
+                MemberClaim.status.in_((ClaimStatus.OFFEN, ClaimStatus.TEILWEISE)),
+            )
+            .order_by(MemberClaim.created_at)
+            .all()
+        )
+
+    @staticmethod
+    def get_claims_to_confirm(member: Member) -> list[MemberClaim]:
+        """Posten, bei denen dieses Mitglied privater Gläubiger ist."""
+        return (
+            MemberClaim.query.filter(
+                MemberClaim.creditor_member_id == member.id,
+                MemberClaim.status.in_((ClaimStatus.OFFEN, ClaimStatus.TEILWEISE)),
+            )
+            .order_by(MemberClaim.created_at)
+            .all()
+        )
+
+    @classmethod
+    def create_claims_for_billbro(cls, event) -> list[MemberClaim]:
+        """Essensanteil-Claims nach BillBro-Abschluss anlegen (Spec 11.6).
+
+        Zahlweg Vereinskonto: Gläubiger Verein (creditor NULL).
+        Zahlweg Mitglied: Gläubiger = bill_payer_member_id, der Zahler
+        selbst bekommt keinen Posten. Idempotent pro Event.
+        """
+        if event.bill_paid_by is None:
+            return []
+        creditor_id = None if event.is_paid_by_club else event.bill_payer_member_id
+        if not event.is_paid_by_club and creditor_id is None:
+            raise AccountingValidationError(
+                "Zahlweg «Mitglied» braucht ein zahlendes Mitglied."
+            )
+        existing_member_ids = {
+            c.member_id
+            for c in MemberClaim.query.filter_by(
+                event_id=event.id, claim_type=ClaimType.ESSENSANTEIL,
+            ).all()
+        }
+        created = []
+        for participation in event.participations:
+            if not participation.teilnahme:
+                continue
+            share = participation.calculated_share_rappen
+            if not share or share <= 0:
+                continue
+            if participation.member_id == creditor_id:
+                continue
+            if participation.member_id in existing_member_ids:
+                continue
+            claim = MemberClaim(
+                member_id=participation.member_id,
+                creditor_member_id=creditor_id,
+                claim_type=ClaimType.ESSENSANTEIL,
+                event_id=event.id,
+                expected_rappen=share,
+                note=f'Essensanteil {event.display_date}',
+            )
+            db.session.add(claim)
+            created.append(claim)
+        db.session.commit()
+        return created
+
+    @classmethod
+    def create_claim_for_merch_order(cls, order) -> MemberClaim | None:
+        """Merch-Claim über den Mitglieder-Preis anlegen (Spec 11.8, idempotent)."""
+        existing = MemberClaim.query.filter_by(
+            merch_order_id=order.id, claim_type=ClaimType.MERCH,
+        ).first()
+        if existing is not None:
+            return existing
+        if not order.total_member_price_rappen:
+            return None
+        claim = MemberClaim(
+            member_id=order.member_id,
+            claim_type=ClaimType.MERCH,
+            merch_order_id=order.id,
+            expected_rappen=order.total_member_price_rappen,
+            note=f'Merch-Bestellung {order.order_number}',
+        )
+        db.session.add(claim)
+        db.session.commit()
+        return claim
+
+    @classmethod
+    def settle_claim(cls, claim_id: int, *, waive: bool = False) -> MemberClaim:
+        """Posten manuell abschliessen: beglichen oder erlassen."""
+        claim = cls.get_claim(claim_id)
+        if not claim.is_open:
+            raise AccountingValidationError("Dieser Posten ist bereits abgeschlossen.")
+        claim.status = ClaimStatus.ERLASSEN if waive else ClaimStatus.BEGLICHEN
+        claim.settled_at = datetime.utcnow()
+        db.session.commit()
+        return claim
+
+    @classmethod
+    def confirm_private_payment(cls, claim_id: int, creditor: Member) -> MemberClaim:
+        """Privatzahler bestätigt den Eingang eines Anteils (Spec 11.6)."""
+        claim = cls.get_claim(claim_id)
+        if claim.creditor_member_id != creditor.id:
+            raise AccountingValidationError(
+                "Nur das auslegende Mitglied kann Eingänge bestätigen."
+            )
+        if not claim.is_open:
+            raise AccountingValidationError("Dieser Posten ist bereits beglichen.")
+        claim.register_payment(claim.open_rappen)
+        db.session.commit()
+        return claim
+
+    @classmethod
+    def get_claims_overview(cls) -> list[dict]:
+        """Pro Mitglied: offene und bezahlte Beträge (Tab «Offene Posten»)."""
+        claims = MemberClaim.query.order_by(MemberClaim.created_at).all()
+        by_member: dict[int, dict] = {}
+        for claim in claims:
+            entry = by_member.setdefault(claim.member_id, {
+                'member': claim.member,
+                'open_rappen': 0,
+                'paid_rappen': 0,
+                'claims': [],
+            })
+            if claim.status != ClaimStatus.ERLASSEN:
+                entry['open_rappen'] += claim.open_rappen
+                entry['paid_rappen'] += min(claim.paid_rappen, claim.expected_rappen)
+            entry['claims'].append(claim)
+        return sorted(
+            by_member.values(),
+            key=lambda e: (-e['open_rappen'], e['member'].nachname),
+        )
+
+    # -- Budget-Vorschlag (Spec Sektion 11.11) -------------------------------
+
+    @classmethod
+    def propose_budget(cls, fiscal_year_id: int) -> dict[int, int]:
+        """Budget-Vorschlag pro Konto-ID in Rappen.
+
+        Mitgliederbeiträge: aktive Mitglieder × Jahresbeitrag.
+        Übrige Konten: Vorjahres-Ist, gerundet auf CHF 10.
+        """
+        fy = cls.get_fiscal_year(fiscal_year_id)
+        prev = FiscalYear.query.filter_by(year=fy.year - 1).first()
+
+        proposals: dict[int, int] = {}
+        if prev is not None:
+            actual_rows = (
+                db.session.query(Booking.account_id, db.func.sum(Booking.amount_rappen))
+                .filter(Booking.fiscal_year_id == prev.id)
+                .group_by(Booking.account_id)
+                .all()
+            )
+            for account_id, total in actual_rows:
+                proposals[account_id] = round((total or 0) / 1000) * 1000
+
+        contribution_account = Account.query.filter_by(code='3000').first()
+        if contribution_account is not None and fy.membership_fee_rappen:
+            active_members = Member.query.filter_by(is_active=True).count()
+            proposals[contribution_account.id] = (
+                active_members * fy.membership_fee_rappen
+            )
+        return proposals
 
     # -- Statistik --------------------------------------------------------
 
