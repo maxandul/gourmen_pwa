@@ -282,6 +282,69 @@ def test_billbro_claims_club_vs_private(app):
         assert confirmed.status == ClaimStatus.BEGLICHEN
 
 
+def test_billbro_claims_reconcile_on_zahlweg_change(app):
+    """Wechsel des Zahlwegs nach Finalisierung aktualisiert Gläubiger und räumt auf."""
+    with app.app_context():
+        _treasurer, max_muster, roman, _fy = _seed_base()
+        from datetime import datetime
+        from backend.models.event import BillPaidBy
+        from backend.models.participation import Participation
+
+        event = _make_event(roman, datetime(2026, 6, 27, 19, 0))
+        db.session.add_all([
+            Participation(member_id=max_muster.id, event_id=event.id,
+                          teilnahme=True, calculated_share_rappen=8000),
+            Participation(member_id=roman.id, event_id=event.id,
+                          teilnahme=True, calculated_share_rappen=9000),
+        ])
+        event.bill_paid_by = BillPaidBy.VEREINSKONTO
+        event.bill_payer_member_id = None
+        db.session.commit()
+
+        AccountingService.create_claims_for_billbro(event)
+        claims = MemberClaim.query.filter_by(
+            event_id=event.id, claim_type=ClaimType.ESSENSANTEIL,
+        ).all()
+        assert len(claims) == 2
+        assert all(c.creditor_member_id is None for c in claims)
+
+        event.bill_paid_by = BillPaidBy.MITGLIED
+        event.bill_payer_member_id = roman.id
+        db.session.commit()
+
+        created = AccountingService.create_claims_for_billbro(event)
+        assert created == []
+
+        claims = MemberClaim.query.filter_by(
+            event_id=event.id, claim_type=ClaimType.ESSENSANTEIL,
+        ).all()
+        assert len(claims) == 1
+        assert claims[0].member_id == max_muster.id
+        assert claims[0].creditor_member_id == roman.id
+
+
+def test_settle_claim_updates_paid_rappen(app):
+    """Manuelles Begleichen setzt paid_rappen, damit Offene-Posten-Summen stimmen."""
+    with app.app_context():
+        treasurer, max_muster, _roman, fy = _seed_base()
+        claim = MemberClaim(
+            member_id=max_muster.id, claim_type=ClaimType.MITGLIEDERBEITRAG,
+            fiscal_year_id=fy.id, expected_rappen=84000,
+        )
+        db.session.add(claim)
+        db.session.commit()
+
+        settled = AccountingService.settle_claim(claim.id, waive=False)
+        assert settled.status == ClaimStatus.BEGLICHEN
+        assert settled.paid_rappen == 84000
+        assert settled.open_rappen == 0
+
+        overview = AccountingService.get_claims_overview()
+        entry = next(e for e in overview if e['member'].id == max_muster.id)
+        assert entry['open_rappen'] == 0
+        assert entry['paid_rappen'] == 84000
+
+
 def test_create_fiscal_year_seeds_budget_proposal(app):
     with app.app_context():
         treasurer, _max, _roman, fy = _seed_base()
