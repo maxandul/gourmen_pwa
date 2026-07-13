@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from backend.models.event import Event
 from backend.models.participation import Participation
 from backend.models.merch_order import MerchOrder, OrderStatus
+from backend.services.accounting import AccountingService
 from backend.services.ggl_rules import GGLService
 from backend.services.retro_cleanup import RetroCleanupService
 from backend.routes.events import hamburg2026_is_visible
@@ -96,6 +97,11 @@ def index():
         1 for o in merch_orders if o.status in (OrderStatus.BESTELLT, OrderStatus.WIRD_GELIEFERT)
     )
 
+    # Offene Posten (Phase 4b): eigene Schulden + zu bestätigende Eingänge
+    open_claims = AccountingService.get_open_claims_for_member(current_user)
+    open_claims_total_rappen = sum(c.open_rappen for c in open_claims)
+    claims_to_confirm = AccountingService.get_claims_to_confirm(current_user)
+
     return render_template(
         'dashboard/index.html',
         next_event=next_event,
@@ -108,6 +114,9 @@ def index():
         restaurant_due_event=restaurant_due_event,
         merch_last_order=merch_last_order,
         merch_open_count=merch_open_count,
+        open_claims=open_claims,
+        open_claims_total_rappen=open_claims_total_rappen,
+        claims_to_confirm=claims_to_confirm,
         hamburg2026_visible=hamburg2026_is_visible(),
     )
 
