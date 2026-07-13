@@ -92,23 +92,28 @@
                     {% if unbooked_receipts %}
                     <form method="POST" action="{{ url_for('accounting.booking_attach_receipt', booking_id=booking.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="form-row form-row--inline-remove">
+                        <div class="form-row form-row--inline-submit">
                             <div class="form-field">
                                 <label class="form-field__label" for="attach-receipt">Beleg aus Inbox verknüpfen</label>
                                 <select name="receipt_id" id="attach-receipt" class="form-field__select" required>
                                     {% for receipt in unbooked_receipts %}
                                     <option value="{{ receipt.id }}">
-                                        {{ receipt.uploaded_at.strftime('%d.%m.%Y') }} – {{ receipt.drive_file_name }} ({{ receipt.uploader.display_name_with_spirit }})
+                                        {{ receipt.uploaded_at.strftime('%d.%m.%Y') }} – {{ receipt.label }} ({{ receipt.uploader.display_name_with_spirit }})
                                     </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn--outline btn--sm">Verknüpfen</button>
+                            <button type="submit" class="btn btn--outline">{{ lucide_icon('link') }} Verknüpfen</button>
                         </div>
                     </form>
                     {% else %}
                     <p class="text-secondary">Aktuell keine offenen Belege in der Inbox. Neue Belege erscheinen unter «Belege» oder nach Einreichung durch Mitglieder.</p>
                     {% endif %}
+                    <div class="accounting-tab-actions">
+                        <a href="{{ url_for('accounting.receipt_upload', booking=booking.id) }}" class="btn btn--primary">
+                            {{ lucide_icon('camera') }} Beleg erfassen
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>

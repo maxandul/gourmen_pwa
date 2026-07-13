@@ -151,6 +151,7 @@ id              : Integer PK
 booking_id      : FK Booking nullable  # NULL = noch ungebucht (Inbox)
 drive_file_id   : String(255)          # Google Drive File-ID
 drive_file_name : String(255)
+display_name    : String(120) nullable # kurzer Anzeige-Name fuer Listen (zusaetzlich zum langen Dateinamen)
 drive_folder_id : String(255)          # Ordner-ID in Drive
 file_type       : String(50)           # 'image/jpeg', 'application/pdf', etc.
 uploader_id     : FK Member
@@ -278,12 +279,14 @@ Jedes aktive Mitglied kann Belege einreichen. Schatzmeister und Admin zusätzlic
 ### 7.2 Upload-Formular (Pre-Tagging)
 
 Felder beim Beleg-Upload:
-- **Datei** (Pflicht): Foto via Kamera (`<input type="file" accept="image/*,application/pdf" capture="environment">`) oder Datei-Upload
+- **Datei** (Pflicht): Foto via Kamera (`<input type="file" accept="image/*,application/pdf" capture="environment">`) oder Datei-Upload. Hinweis: `capture` greift nur auf Mobilgeräten; am Desktop öffnet sich der Datei-Dialog.
+- **Anzeige-Name** (optional): kurzer Name für die Beleg-Liste, zusätzlich zum langen Drive-Dateinamen (`Receipt.display_name`)
 - **Event** (optional): Dropdown mit kommenden und vergangenen Events des laufenden Jahres
 - **Kategorie-Vorschlag** (optional): Vereinfachte Dropdown-Liste der aktiven Ausgaben-Konten (Anzeige: Name, nicht Code)
+- **Bestehende Buchung** (optional): Beleg direkt mit einer Buchung eines offenen Jahres verknüpfen → Beleg gilt sofort als «verbucht». Wird auch vom Buchungsdetail («Beleg erfassen») via `?booking=<id>` vorbelegt.
 - **Kommentar** (optional): Freitext
 
-Diese Angaben sind **Vorschläge** für den Schatzmeister, keine Buchungsdaten.
+Event, Kategorie und Kommentar sind **Vorschläge** für den Schatzmeister, keine Buchungsdaten.
 
 ### 7.3 Drive-Speicherung
 

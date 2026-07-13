@@ -1,9 +1,9 @@
 {
-  "static/css/main-v2.css": "static/css/main-v2.613db757.css",
+  "static/css/main-v2.css": "static/css/main-v2.c1e6a159.css",
   "static/css/public.css": "static/css/public.604da1b3.css",
-  "static/css/v2/components.css": "static/css/v2/components.9aeb97e3.css",
+  "static/css/v2/components.css": "static/css/v2/components.0af66197.css",
   "static/js/app.js": "static/js/app.6763c8b3.js",
-  "static/js/pwa.js": "static/js/pwa.f42a903f.js",
+  "static/js/pwa.js": "static/js/pwa.5fabe797.js",
   "static/icons/lucide-sprite.svg": "static/icons/lucide-sprite.7e463391.svg",
   "static/favicon.ico": "static/favicon.6d319de4.ico",
   "static/favicon.svg": "static/favicon.0c03bb1d.svg",
@@ -35,5 +35,5 @@
   "static/img/pwa/splash/splash-1640x2360.png": "static/img/pwa/splash/splash-1640x2360.84e744a1.png",
   "static/img/pwa/splash/splash-1668x2388.png": "static/img/pwa/splash/splash-1668x2388.ac2cc977.png",
   "static/img/pwa/splash/splash-2048x2732.png": "static/img/pwa/splash/splash-2048x2732.88abdf66.png",
-  "static/offline.html": "static/offline.b11e9069.html"
+  "static/offline.html": "static/offline.b3ed91d6.html"
 }

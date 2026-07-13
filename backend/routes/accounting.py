@@ -33,6 +33,7 @@ from backend.models.accounting import (
     Account,
     Booking,
     FiscalYear,
+    FiscalYearStatus,
     Receipt,
 )
 from backend.models.event import Event
@@ -384,6 +385,16 @@ def booking_attach_receipt(booking_id: int):
 # ---------------------------------------------------------------------------
 
 
+def _open_year_bookings() -> list[Booking]:
+    return (
+        Booking.query.join(FiscalYear, Booking.fiscal_year_id == FiscalYear.id)
+        .filter(FiscalYear.status == FiscalYearStatus.OPEN)
+        .order_by(Booking.booking_date.desc(), Booking.id.desc())
+        .limit(50)
+        .all()
+    )
+
+
 def _receipt_upload_form_with_choices(year: int) -> ReceiptUploadForm:
     form = ReceiptUploadForm()
     form.suggested_account_id.choices = [(0, '–')] + [
@@ -406,6 +417,17 @@ def _receipt_upload_form_with_choices(year: int) -> ReceiptUploadForm:
         )
         for e in events
     ]
+    form.booking_id.choices = [(0, '–')] + [
+        (
+            b.id,
+            _truncate_label(
+                f'{b.booking_date.strftime("%d.%m.%Y")} · '
+                f'{b.description} · CHF {b.amount_rappen / 100:.2f}',
+                48,
+            ),
+        )
+        for b in _open_year_bookings()
+    ]
     return form
 
 
@@ -419,6 +441,14 @@ def receipt_upload():
     year = date.today().year
     form = _receipt_upload_form_with_choices(year)
 
+    # Kontext: Aufruf aus einer Buchung (Schatzmeister erfasst Beleg direkt)
+    context_booking_id = request.args.get('booking', type=int)
+    context_booking = (
+        db.session.get(Booking, context_booking_id) if context_booking_id else None
+    )
+    if request.method == 'GET' and context_booking is not None:
+        form.booking_id.data = context_booking.id
+
     if form.validate_on_submit():
         fy = AccountingService.get_or_create_fiscal_year(year)
         try:
@@ -429,7 +459,14 @@ def receipt_upload():
                 suggested_account_id=form.suggested_account_id.data or None,
                 suggested_event_id=form.suggested_event_id.data or None,
                 comment=form.comment.data,
+                display_name=form.display_name.data,
+                booking_id=form.booking_id.data or None,
             )
+            if form.booking_id.data:
+                flash('Beleg eingereicht und mit der Buchung verknüpft.', 'success')
+                return redirect(url_for(
+                    'accounting.booking_detail', booking_id=form.booking_id.data
+                ))
             flash('Beleg eingereicht. Der Schatzmeister prüft und verbucht ihn.', 'success')
             return redirect(url_for('member.receipts'))
         except (AccountingError, DriveValidationError) as exc:
@@ -438,7 +475,11 @@ def receipt_upload():
             current_app.logger.error('Beleg-Upload fehlgeschlagen', exc_info=True)
             flash('Upload fehlgeschlagen. Bitte später erneut versuchen.', 'error')
 
-    return render_template('accounting/receipt_upload.html', form=form)
+    return render_template(
+        'accounting/receipt_upload.html',
+        form=form,
+        context_booking=context_booking,
+    )
 
 
 @bp.route('/receipt/<int:receipt_id>')

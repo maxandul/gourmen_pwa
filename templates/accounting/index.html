@@ -72,16 +72,6 @@
                         <div class="accounting-index-actions" role="region" aria-labelledby="accounting-index-actions-heading">
                             <p class="section-subtitle" id="accounting-index-actions-heading">Aktionen</p>
                             <nav class="tool-strip__actions" aria-label="Buchhaltungs-Aktionen">
-                                {% if is_treasurer and fiscal_year.is_open %}
-                                <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id) }}" class="btn btn--primary accounting-index-actions__action">
-                                    {{ lucide_icon('plus') }}
-                                    Buchung erfassen
-                                </a>
-                                {% endif %}
-                                <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary accounting-index-actions__action">
-                                    {{ lucide_icon('upload') }}
-                                    Beleg einreichen
-                                </a>
                                 <a href="{{ url_for('accounting.export_csv', fiscal_year_id=fiscal_year.id) }}" class="btn btn--outline accounting-index-actions__action">
                                     {{ lucide_icon('file-spreadsheet') }}
                                     CSV
@@ -248,6 +238,15 @@
                         </div>
                     </div>
 
+                    {% if is_treasurer and fiscal_year.is_open %}
+                    <div class="accounting-tab-actions">
+                        <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id) }}" class="btn btn--primary">
+                            {{ lucide_icon('plus') }}
+                            Buchung erfassen
+                        </a>
+                    </div>
+                    {% endif %}
+
                     {% if bookings %}
                     <div class="data-table-scroll-outer">
                     <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Buchungsjournal">
@@ -259,13 +258,18 @@
                                     <th scope="col">Konto</th>
                                     <th scope="col">Betrag</th>
                                     <th scope="col">Beleg</th>
-                                    <th scope="col">Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for booking in bookings %}
                                 <tr>
-                                    <td>{{ booking.booking_date.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <a class="data-table__link" href="{{ url_for('accounting.booking_detail', booking_id=booking.id) }}"
+                                           aria-label="Buchung vom {{ booking.booking_date.strftime('%d.%m.%Y') }} öffnen">
+                                            <span class="data-table__link-label">{{ booking.booking_date.strftime('%d.%m.%Y') }}</span>
+                                            {{ lucide_icon('chevron-right', 'icon data-table__chev') }}
+                                        </a>
+                                    </td>
                                     <td>{{ booking.description }}</td>
                                     <td>{{ booking.account.code }} {{ booking.account.name }}</td>
                                     <td>{% if booking.is_income %}+{% else %}−{% endif %} CHF {{ chf(booking.amount_rappen) }}</td>
@@ -274,12 +278,6 @@
                                         {{ lucide_icon('paperclip') }}
                                         {% else %}
                                         <span class="text-secondary">–</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('accounting.booking_detail', booking_id=booking.id) }}" class="btn btn--outline btn--sm">Details</a>
-                                        {% if is_treasurer and fiscal_year.is_open and not booking.receipts %}
-                                        <a href="{{ url_for('accounting.booking_detail', booking_id=booking.id, _anchor='beleg-anhaengen') }}" class="btn btn--outline btn--sm">Beleg zuordnen</a>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -354,70 +352,73 @@
                         </div>
                     </div>
 
+                    <div class="accounting-tab-actions">
+                        <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">
+                            {{ lucide_icon('upload') }}
+                            Beleg einreichen
+                        </a>
+                    </div>
+
                     {% if receipts %}
-                        {% for receipt in receipts %}
-                        <div class="card">
-                            <div class="card__header">
-                                <h2 class="card__title">
-                                    {{ lucide_icon('receipt') }}
-                                    {{ receipt.drive_file_name }}
-                                </h2>
-                                <div class="card__actions">
-                                    {% if receipt.is_booked %}
-                                    <span class="chip chip--success">Verbucht</span>
-                                    {% else %}
-                                    <span class="chip chip--warning">Ausstehend</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="card__body">
-                                <div class="info-row">
-                                    <span class="info-row__label">Eingereicht von</span>
-                                    <span class="info-row__value">{{ receipt.uploader.display_name_with_spirit }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-row__label">Eingereicht am</span>
-                                    <span class="info-row__value">{{ receipt.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</span>
-                                </div>
-                                {% if receipt.suggested_account %}
-                                <div class="info-row">
-                                    <span class="info-row__label">Kategorie-Vorschlag</span>
-                                    <span class="info-row__value">{{ receipt.suggested_account.name }}</span>
-                                </div>
-                                {% endif %}
-                                {% if receipt.suggested_event %}
-                                <div class="info-row">
-                                    <span class="info-row__label">Event-Vorschlag</span>
-                                    <span class="info-row__value">{{ receipt.suggested_event.display_date }} {{ receipt.suggested_event.restaurant or '' }}</span>
-                                </div>
-                                {% endif %}
-                                {% if receipt.comment %}
-                                <div class="info-row">
-                                    <span class="info-row__label">Kommentar</span>
-                                    <span class="info-row__value">{{ receipt.comment }}</span>
-                                </div>
-                                {% endif %}
-                                {% if receipt.is_booked %}
-                                <div class="info-row">
-                                    <span class="info-row__label">Buchung</span>
-                                    <span class="info-row__value">
-                                        <a href="{{ url_for('accounting.booking_detail', booking_id=receipt.booking_id) }}">{{ receipt.booking.description }}</a>
-                                    </span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="card__footer">
-                                <a href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}" class="btn btn--outline btn--sm" target="_blank" rel="noopener">
-                                    {{ lucide_icon('eye') }} Anzeigen
-                                </a>
-                                {% if is_treasurer and not receipt.is_booked and fiscal_year.is_open %}
-                                <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id, receipt=receipt.id) }}" class="btn btn--primary btn--sm">
-                                    {{ lucide_icon('book-open') }} Verbuchen
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
+                    <div class="data-table-scroll-outer">
+                    <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Belege">
+                        <table class="data-table data-table--sticky-first">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Beleg</th>
+                                    <th scope="col">Datum</th>
+                                    <th scope="col">Eingereicht von</th>
+                                    <th scope="col">Vorschlag</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receipt in receipts %}
+                                <tr>
+                                    <td>
+                                        <a class="data-table__link" href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}"
+                                           target="_blank" rel="noopener" aria-label="Beleg {{ receipt.label }} anzeigen">
+                                            <span class="data-table__link-label">{{ receipt.label }}</span>
+                                            {{ lucide_icon('chevron-right', 'icon data-table__chev') }}
+                                        </a>
+                                        <span class="data-table__sub">{{ receipt.drive_file_name }}</span>
+                                    </td>
+                                    <td>{{ receipt.uploaded_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ receipt.uploader.display_name_with_spirit }}</td>
+                                    <td>
+                                        {% if receipt.suggested_account %}{{ receipt.suggested_account.name }}{% endif %}
+                                        {% if receipt.suggested_event %}
+                                        <span class="data-table__sub">{{ receipt.suggested_event.display_date }} {{ receipt.suggested_event.restaurant or '' }}</span>
+                                        {% endif %}
+                                        {% if not receipt.suggested_account and not receipt.suggested_event %}<span class="text-secondary">–</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if receipt.is_booked %}
+                                        <span class="chip chip--success">Verbucht</span>
+                                        {% else %}
+                                        <span class="chip chip--warning">Ausstehend</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if is_treasurer and not receipt.is_booked and fiscal_year.is_open %}
+                                        <a href="{{ url_for('accounting.booking_new', year=fiscal_year.id, receipt=receipt.id) }}" class="btn btn--primary btn--sm">
+                                            {{ lucide_icon('book-open') }} Verbuchen
+                                        </a>
+                                        {% elif receipt.is_booked %}
+                                        <a href="{{ url_for('accounting.booking_detail', booking_id=receipt.booking_id) }}" class="btn btn--outline btn--sm">
+                                            Buchung
+                                        </a>
+                                        {% else %}
+                                        <span class="text-secondary">–</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
                     {% else %}
                     <div class="alert alert--info" role="status">
                         <svg class="alert__icon" aria-hidden="true">
@@ -467,7 +468,7 @@
                                         <form method="POST" action="{{ url_for('accounting.year_budget', fiscal_year_id=fiscal_year.id) }}" class="form">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="account_id" value="{{ row.account.id }}">
-                                            <div class="form-row form-row--inline-remove">
+                                            <div class="form-row form-row--inline-submit">
                                                 <div class="form-field">
                                                     <label class="form-field__label" for="budget-{{ row.account.id }}">
                                                         <span class="sr-only">Budget {{ row.account.name }}</span>

@@ -576,7 +576,9 @@ class AccountingService:
     def upload_receipt(cls, file, uploader: Member, fiscal_year_id: int,
                        suggested_account_id: int | None = None,
                        suggested_event_id: int | None = None,
-                       comment: str | None = None) -> Receipt:
+                       comment: str | None = None,
+                       display_name: str | None = None,
+                       booking_id: int | None = None) -> Receipt:
         """Beleg nach Drive hochladen und Receipt-Datensatz anlegen.
 
         `file` ist ein werkzeug FileStorage. Dateiname in Drive:
@@ -594,11 +596,23 @@ class AccountingService:
             stem, extension = original_filename, ''
 
         comment = (comment or '').strip() or None
+        display_name = (display_name or '').strip() or None
         prefix_parts = [datetime.utcnow().strftime('%Y%m%d')]
-        if comment:
-            prefix_parts.append(comment[:COMMENT_PREFIX_MAX_LENGTH])
+        name_prefix = display_name or comment
+        if name_prefix:
+            prefix_parts.append(name_prefix[:COMMENT_PREFIX_MAX_LENGTH])
         prefix_parts.append(stem)
         filename_stem = '_'.join(prefix_parts)
+
+        target_booking = None
+        if booking_id:
+            target_booking = db.session.get(Booking, booking_id)
+            if target_booking is None:
+                raise AccountingValidationError("Buchung nicht gefunden.")
+            if target_booking.fiscal_year.status != FiscalYearStatus.OPEN:
+                raise AccountingValidationError(
+                    "Jahr ist nicht offen – Beleg kann nicht direkt verknüpft werden."
+                )
 
         payload = file.read()
         mime_type = file.mimetype or 'application/octet-stream'
@@ -617,12 +631,14 @@ class AccountingService:
             receipt = Receipt(
                 drive_file_id=drive_meta['id'],
                 drive_file_name=drive_meta.get('name') or filename_stem,
+                display_name=display_name,
                 drive_folder_id=folder_id,
                 file_type=mime_type,
                 uploader_id=uploader.id,
                 suggested_account_id=suggested_account_id,
                 suggested_event_id=suggested_event_id,
                 comment=comment,
+                booking_id=target_booking.id if target_booking else None,
             )
             db.session.add(receipt)
             db.session.commit()

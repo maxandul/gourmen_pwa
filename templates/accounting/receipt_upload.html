@@ -12,7 +12,11 @@
 <div class="container">
     <div class="page-header">
         <p class="page-back">
+            {% if context_booking %}
+            <a href="{{ url_for('accounting.booking_detail', booking_id=context_booking.id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Buchung</span></a>
+            {% else %}
             <a href="{{ url_for('member.receipts') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zu meinen Belegen</span></a>
+            {% endif %}
         </p>
         <h1>
             {{ lucide_icon('receipt') }}
@@ -53,6 +57,7 @@
                                 </button>
                             </div>
                             <p class="form-field__help" id="file-name-hint">Noch keine Datei gewählt (max. 100 MB).</p>
+                            <p class="form-field__help">Am Handy öffnet «Foto aufnehmen» die Kamera; am Computer öffnet sich der Datei-Dialog.</p>
                             <div class="accounting-receipt-capture__preview" id="file-preview" hidden>
                                 <img id="file-preview-img" alt="Vorschau des Belegs" class="accounting-receipt-capture__preview-img">
                             </div>
@@ -60,10 +65,17 @@
                         {{ field_errors(form.file) }}
                     </div>
 
-                    <details class="disclosure accounting-receipt-upload__tagging" id="receipt-tagging-disclosure">
+                    <div class="form-field">
+                        <label class="form-field__label" for="{{ form.display_name.id }}">{{ form.display_name.label.text }}</label>
+                        {{ form.display_name(class='form-field__input', placeholder='z. B. Migros Apéro Juni') }}
+                        {{ field_errors(form.display_name) }}
+                        <span class="form-field__help">Kurzer Name für die Beleg-Liste – zusätzlich zum langen Dateinamen.</span>
+                    </div>
+
+                    <details class="disclosure accounting-receipt-upload__tagging" id="receipt-tagging-disclosure" {{ 'open' if context_booking else '' }}>
                         <summary class="disclosure__summary">
                             {{ lucide_icon('chevron-down') }}
-                            Event &amp; Kategorie (optional)
+                            Event, Kategorie &amp; Buchung (optional)
                         </summary>
                         <div class="disclosure__content accounting-receipt-upload__picker-panel">
                             <div class="form-field">
@@ -74,6 +86,11 @@
                                 <label class="form-field__label" for="{{ form.suggested_account_id.id }}">{{ form.suggested_account_id.label.text }}</label>
                                 {{ form.suggested_account_id(class='form-field__select accounting-receipt-upload__select') }}
                                 <span class="form-field__help">Vorschlag für den Schatzmeister – er entscheidet beim Verbuchen.</span>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-field__label" for="{{ form.booking_id.id }}">{{ form.booking_id.label.text }}</label>
+                                {{ form.booking_id(class='form-field__select accounting-receipt-upload__select') }}
+                                <span class="form-field__help">Direkt mit einer bestehenden Buchung verknüpfen – der Beleg gilt dann sofort als verbucht.</span>
                             </div>
                         </div>
                     </details>
@@ -98,12 +115,20 @@
                         <span class="info-row__value" id="preview-filename">–</span>
                     </div>
                     <div class="info-row">
+                        <span class="info-row__label">Anzeige-Name</span>
+                        <span class="info-row__value" id="preview-display-name">–</span>
+                    </div>
+                    <div class="info-row">
                         <span class="info-row__label">Event</span>
                         <span class="info-row__value" id="preview-event">–</span>
                     </div>
                     <div class="info-row">
                         <span class="info-row__label">Kategorie-Vorschlag</span>
                         <span class="info-row__value" id="preview-account">–</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label">Buchung</span>
+                        <span class="info-row__value" id="preview-booking">–</span>
                     </div>
                     <div class="info-row">
                         <span class="info-row__label">Kommentar</span>
@@ -129,8 +154,10 @@
     const nextBtn = document.getElementById('step-next');
     const counter = document.getElementById('step-counter');
     const fileInput = document.getElementById('{{ form.file.id }}');
+    const displayNameInput = document.getElementById('{{ form.display_name.id }}');
     const eventSelect = document.getElementById('{{ form.suggested_event_id.id }}');
     const accountSelect = document.getElementById('{{ form.suggested_account_id.id }}');
+    const bookingSelect = document.getElementById('{{ form.booking_id.id }}');
     const commentInput = document.getElementById('{{ form.comment.id }}');
     const cameraBtn = document.getElementById('btn-camera');
     const fileBtn = document.getElementById('btn-file');
@@ -184,8 +211,11 @@
       if (step === 2) {
         document.getElementById('preview-filename').textContent =
           fileInput.files.length ? fileInput.files[0].name : '–';
+        document.getElementById('preview-display-name').textContent =
+          displayNameInput.value.trim() || '–';
         document.getElementById('preview-event').textContent = selectedText(eventSelect);
         document.getElementById('preview-account').textContent = selectedText(accountSelect);
+        document.getElementById('preview-booking').textContent = selectedText(bookingSelect);
         document.getElementById('preview-comment').textContent =
           commentInput.value.trim() || '–';
       }

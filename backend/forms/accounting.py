@@ -75,11 +75,17 @@ class ReceiptUploadForm(FlaskForm):
     file = FileField('Beleg (Foto oder PDF)', validators=[
         FileRequired(message='Bitte Datei auswählen')
     ])
+    display_name = StringField('Anzeige-Name (optional)', validators=[
+        Optional(), Length(max=120),
+    ])
     suggested_account_id = SelectField(
         'Kategorie-Vorschlag (optional)', coerce=int, validators=[Optional()]
     )
     suggested_event_id = SelectField(
         'Event (optional)', coerce=int, validators=[Optional()]
+    )
+    booking_id = SelectField(
+        'Bestehende Buchung (optional)', coerce=int, validators=[Optional()]
     )
     comment = TextAreaField('Kommentar (optional)', validators=[
         Optional(), Length(max=500),

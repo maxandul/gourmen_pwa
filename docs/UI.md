@@ -388,6 +388,10 @@ Verhalten:
 | `.accounting-chart` | `__scroll`, `__container`, `__pie-wrap`, `--pie`, `--fullscreen` | Chart-Hülle Buchhaltungs-Statistik, analog `.events-stats-chart`; `--fullscreen` im Vollbild-Modal |
 | `.accounting-chart-expand-btn` | – | Vollbild-Button im `card__actions` der Chart-Cards (`data-chart-target`, `data-chart-canvas-id`) |
 | `.accounting-chart-modal__container` / `__body` | – | Grössen-Constraints des Chart-Vollbild-`.modal` |
+| `.accounting-tab-actions` | – | Aktions-Leiste zwischen Filter-Card und Tabelle/Liste innerhalb eines Tabs (z. B. «Buchung erfassen» im Journal-Tab, «Beleg einreichen» im Belege-Tab, «Beleg erfassen» im Buchungsdetail) |
+| `.data-table__link` | mit `__link-label`, `__chev` | Klickbare erste Zelle in `.data-table` (Datum/Beleg): Label + `chevron-right` als ein Link (nowrap), generisches Pendant zu `.events-index-table__event-link` |
+| `.data-table__sub` | – | Sekundäre, gedämpfte Zusatzzeile in einer Tabellenzelle (z. B. langer Drive-Dateiname unter dem Beleg-Anzeigenamen); `--text-xs`, umbruchfähig |
+| `.form-row--inline-submit` | – | Feld + Text-Submit-Button in einer Zeile (Budget «Speichern», Beleg «Verknüpfen»); anders als `--inline-remove` behält der Button seine Textbreite |
 
 ### 5.10 Deprecated / Legacy
 
