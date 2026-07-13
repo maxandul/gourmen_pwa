@@ -13,6 +13,7 @@ Spezifikation: docs/capabilities/accounting.md Sektion 11.2.
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 revision = "a4b7c2d9e015"
@@ -21,6 +22,7 @@ branch_labels = None
 depends_on = None
 
 
+# sa.Enum fuer idempotentes .create() / .drop() in upgrade()/downgrade()
 bank_tx_status = sa.Enum("PENDING", "BOOKED", "IGNORED", name="banktransactionstatus")
 claim_type = sa.Enum(
     "MITGLIEDERBEITRAG", "ESSENSANTEIL", "MERCH", "REISE", "SONSTIGES",
@@ -29,6 +31,26 @@ claim_type = sa.Enum(
 claim_status = sa.Enum("OFFEN", "TEILWEISE", "BEGLICHEN", "ERLASSEN", name="claimstatus")
 bill_paid_by = sa.Enum("vereinskonto", "mitglied", name="billpaidby")
 booking_direction = sa.Enum("IN", "OUT", name="bookingdirection")
+
+# postgresql.ENUM + create_type=False fuer Spalten in create_table / batch_alter_table.
+# In SQLAlchemy 2.0.x wird create_type nur hier beachtet, nicht bei sa.Enum – sonst
+# emittiert op.create_table erneut CREATE TYPE (Retry-Kollision nach fehlgeschlagenem Deploy).
+bank_tx_status_col = postgresql.ENUM(
+    "PENDING", "BOOKED", "IGNORED", name="banktransactionstatus", create_type=False,
+)
+claim_type_col = postgresql.ENUM(
+    "MITGLIEDERBEITRAG", "ESSENSANTEIL", "MERCH", "REISE", "SONSTIGES",
+    name="claimtype", create_type=False,
+)
+claim_status_col = postgresql.ENUM(
+    "OFFEN", "TEILWEISE", "BEGLICHEN", "ERLASSEN", name="claimstatus", create_type=False,
+)
+bill_paid_by_col = postgresql.ENUM(
+    "vereinskonto", "mitglied", name="billpaidby", create_type=False,
+)
+booking_direction_col = postgresql.ENUM(
+    "IN", "OUT", name="bookingdirection", create_type=False,
+)
 
 
 def upgrade():
@@ -41,15 +63,8 @@ def upgrade():
         claim_type.create(bind, checkfirst=True)
         claim_status.create(bind, checkfirst=True)
         bill_paid_by.create(bind, checkfirst=True)
-        # Bereits von Phase-4-Migration c8d3e9f1a274 oder fehlgeschlagenem Retry;
-        # checkfirst verhindert DuplicateObject bei erneutem Deploy.
+        # bookingdirection: Phase-4-Migration c8d3e9f1a274 oder fehlgeschlagenes Retry
         booking_direction.create(bind, checkfirst=True)
-
-    # create_type=False: Typ wurde oben (oder in c8d3e9f1a274) angelegt – create_table
-    # darf bookingdirection nicht erneut CREATE TYPE emittieren (Retry-Kollision).
-    booking_direction_col = sa.Enum(
-        "IN", "OUT", name="bookingdirection", create_type=False,
-    )
 
     # --- fiscal_years: Jahresbeitrag pro Mitglied ---
     with op.batch_alter_table("fiscal_years", schema=None) as batch_op:
@@ -57,7 +72,7 @@ def upgrade():
 
     # --- events: Zahlweg ---
     with op.batch_alter_table("events", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("bill_paid_by", bill_paid_by, nullable=True))
+        batch_op.add_column(sa.Column("bill_paid_by", bill_paid_by_col, nullable=True))
         batch_op.add_column(sa.Column("bill_payer_member_id", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
             "fk_events_bill_payer_member_id", "members",
@@ -95,17 +110,13 @@ def upgrade():
         sa.Column("booked_date", sa.Date(), nullable=False),
         sa.Column("valuta", sa.Date(), nullable=True),
         sa.Column("amount_rappen", sa.Integer(), nullable=False),
-        sa.Column(
-            "direction",
-            booking_direction_col,
-            nullable=False,
-        ),
+        sa.Column("direction", booking_direction_col, nullable=False),
         sa.Column("currency", sa.String(length=3), nullable=False),
         sa.Column("amount_original", sa.String(length=30), nullable=True),
         sa.Column("buchungstext", sa.String(length=500), nullable=False),
         sa.Column("zahlungszweck", sa.String(length=500), nullable=True),
         sa.Column("details", sa.String(length=500), nullable=True),
-        sa.Column("status", bank_tx_status, nullable=False, server_default="PENDING"),
+        sa.Column("status", bank_tx_status_col, nullable=False, server_default="PENDING"),
         sa.Column("booking_id", sa.Integer(), nullable=True),
         sa.Column("suggested_account_id", sa.Integer(), nullable=True),
         sa.Column("suggested_member_id", sa.Integer(), nullable=True),
@@ -145,13 +156,13 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("member_id", sa.Integer(), nullable=False),
         sa.Column("creditor_member_id", sa.Integer(), nullable=True),
-        sa.Column("claim_type", claim_type, nullable=False),
+        sa.Column("claim_type", claim_type_col, nullable=False),
         sa.Column("fiscal_year_id", sa.Integer(), nullable=True),
         sa.Column("event_id", sa.Integer(), nullable=True),
         sa.Column("merch_order_id", sa.Integer(), nullable=True),
         sa.Column("expected_rappen", sa.Integer(), nullable=False),
         sa.Column("paid_rappen", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("status", claim_status, nullable=False, server_default="OFFEN"),
+        sa.Column("status", claim_status_col, nullable=False, server_default="OFFEN"),
         sa.Column("settled_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")),
         sa.Column("note", sa.String(length=255), nullable=True),
@@ -214,4 +225,5 @@ def downgrade():
         claim_status.drop(bind, checkfirst=True)
         claim_type.drop(bind, checkfirst=True)
         bank_tx_status.drop(bind, checkfirst=True)
+    # bookingdirection gehoert zu Phase 4 (bookings) – hier nicht droppen.
     # PostgreSQL kann Enum-Werte nicht entfernen; ESSEN_BUCHHALTUNG bleibt in eventtype.
