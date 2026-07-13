@@ -25,6 +25,7 @@ from wtforms.validators import ValidationError
 from backend.extensions import db, limiter
 from backend.forms.accounting import (
     AccountForm,
+    BankImportForm,
     BookingForm,
     ReceiptUploadForm,
     RevisionCommentForm,
@@ -32,8 +33,11 @@ from backend.forms.accounting import (
 from backend.models.accounting import (
     Account,
     Booking,
+    ClaimStatus,
+    ClaimType,
     FiscalYear,
     FiscalYearStatus,
+    MemberClaim,
     Receipt,
 )
 from backend.models.event import Event
@@ -43,6 +47,7 @@ from backend.services.accounting import (
     AccountingService,
     AccountingValidationError,
 )
+from backend.services.bank_import import BankImportService
 from backend.services.accounting_pdf import AccountingPdfService
 from backend.services.drive_storage import (
     DriveError,
@@ -54,7 +59,8 @@ from backend.services.notifier import NotifierService
 bp = Blueprint('accounting', __name__)
 
 VALID_TABS = (
-    'uebersicht', 'journal', 'belege', 'budget', 'abschluss', 'statistik', 'kontenplan',
+    'uebersicht', 'journal', 'belege', 'import', 'posten', 'budget',
+    'abschluss', 'statistik', 'kontenplan',
 )
 
 
@@ -214,6 +220,8 @@ def index():
 
     is_treasurer = _is_treasurer()
     is_reviewer = _is_reviewer()
+    if active_tab == 'import' and not is_treasurer:
+        abort(403)
     summary = AccountingService.get_year_summary(fy.id)
 
     # Journal-Filter
@@ -253,6 +261,23 @@ def index():
 
     stats_ctx = _build_stats_context(fy, is_treasurer)
 
+    # Import-Tab (Schatzmeister): Import-Historie + offene Transaktionen
+    bank_imports = BankImportService.get_imports() if is_treasurer else []
+    pending_tx_count = (
+        len(BankImportService.get_pending_transactions()) if is_treasurer else 0
+    )
+    import_form = BankImportForm() if is_treasurer else None
+
+    # Offene-Posten-Tab: Übersicht pro Mitglied
+    claims_overview = AccountingService.get_claims_overview()
+    membership_claims_missing = bool(
+        is_treasurer
+        and fy.membership_fee_rappen
+        and not MemberClaim.query.filter_by(
+            fiscal_year_id=fy.id, claim_type=ClaimType.MITGLIEDERBEITRAG,
+        ).first()
+    )
+
     account_form = AccountForm()
     all_accounts = []
     next_fiscal_year = None
@@ -289,6 +314,11 @@ def index():
         abschluss_phase=fy.abschluss_phase,
         is_treasurer=is_treasurer,
         is_reviewer=is_reviewer,
+        bank_imports=bank_imports,
+        pending_tx_count=pending_tx_count,
+        import_form=import_form,
+        claims_overview=claims_overview,
+        membership_claims_missing=membership_claims_missing,
         **stats_ctx,
     )
 
@@ -889,6 +919,211 @@ def year_approve(fiscal_year_id: int):
             'warning',
         )
     return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
+
+
+# ---------------------------------------------------------------------------
+# ZKB-Kontoauszug-Import (Schatzmeister) – Spec Sektion 11
+# ---------------------------------------------------------------------------
+
+
+def _review_context(pending):
+    """Wahl-Listen für den Review-Screen (Konten, Mitglieder, offene Posten)."""
+    accounts = AccountingService.get_active_accounts()
+    members = (
+        Member.query.filter_by(is_active=True)
+        .order_by(Member.vorname, Member.nachname)
+        .all()
+    )
+    open_claims = (
+        MemberClaim.query.filter(
+            MemberClaim.creditor_member_id.is_(None),
+            MemberClaim.status.in_((ClaimStatus.OFFEN, ClaimStatus.TEILWEISE)),
+        )
+        .order_by(MemberClaim.created_at)
+        .all()
+    )
+    years = {tx.booked_date.year for tx in pending}
+    events = []
+    if years:
+        events = (
+            Event.query.filter(
+                Event.datum >= datetime(min(years), 1, 1),
+                Event.datum < datetime(max(years) + 1, 1, 1),
+            )
+            .order_by(Event.datum.desc())
+            .all()
+        )
+    # Vorgeschlagener Posten pro Transaktion (exakter Betrag / ältester Posten)
+    suggested_claims = {}
+    for tx in pending:
+        if tx.suggested_member is not None and tx.is_income:
+            claim = BankImportService.match_open_claim(
+                tx.suggested_member, tx.amount_rappen
+            )
+            if claim is not None:
+                suggested_claims[tx.id] = claim.id
+    return {
+        'accounts': accounts,
+        'members': members,
+        'open_claims': open_claims,
+        'events': events,
+        'suggested_claims': suggested_claims,
+    }
+
+
+@bp.route('/import', methods=['POST'])
+@login_required
+@limiter.limit("5 per minute")
+def bank_import_upload():
+    _require_funktion('SCHATZMEISTER')
+    form = BankImportForm()
+    if not form.validate_on_submit():
+        flash('Bitte CSV-Datei auswählen.', 'error')
+        return redirect(url_for('accounting.index', tab='import', _anchor='gourmen-tabs'))
+    try:
+        statement = BankImportService.import_statement(form.file.data, current_user)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', tab='import', _anchor='gourmen-tabs'))
+    flash(
+        f'{statement.filename}: {statement.new_count} neue Transaktionen, '
+        f'{statement.duplicate_count} bereits bekannt.',
+        'success',
+    )
+    if statement.pending_count:
+        return redirect(url_for('accounting.bank_import_review', import_id=statement.id))
+    return redirect(url_for('accounting.index', tab='import', _anchor='gourmen-tabs'))
+
+
+@bp.route('/import/<int:import_id>/review')
+@login_required
+def bank_import_review(import_id: int):
+    _require_funktion('SCHATZMEISTER')
+    try:
+        statement = BankImportService.get_statement(import_id)
+    except AccountingError:
+        abort(404)
+    pending = BankImportService.get_pending_transactions(statement.id)
+    return render_template(
+        'accounting/import_review.html',
+        statement=statement,
+        pending=pending,
+        **_review_context(pending),
+    )
+
+
+@bp.route('/import/review')
+@login_required
+def bank_review_all():
+    """Alle offenen Transaktionen (import-übergreifend)."""
+    _require_funktion('SCHATZMEISTER')
+    pending = BankImportService.get_pending_transactions()
+    return render_template(
+        'accounting/import_review.html',
+        statement=None,
+        pending=pending,
+        **_review_context(pending),
+    )
+
+
+def _review_redirect(tx):
+    if request.form.get('all') == '1':
+        return redirect(url_for('accounting.bank_review_all'))
+    return redirect(url_for('accounting.bank_import_review', import_id=tx.import_id))
+
+
+@bp.route('/import/tx/<int:tx_id>/book', methods=['POST'])
+@login_required
+def bank_tx_book(tx_id: int):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    tx = BankImportService.get_transaction(tx_id)
+    account_id = request.form.get('account_id', type=int)
+    if not account_id:
+        flash('Bitte ein Konto wählen.', 'error')
+        return _review_redirect(tx)
+    try:
+        booking = BankImportService.book_transaction(
+            tx.id,
+            account_id=account_id,
+            member_id=request.form.get('member_id', type=int) or None,
+            event_id=request.form.get('event_id', type=int) or None,
+            claim_id=request.form.get('claim_id', type=int) or None,
+            booked_by=current_user,
+        )
+        flash(f'Verbucht: {booking.description} (CHF {booking.amount_rappen / 100:.2f}).', 'success')
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return _review_redirect(tx)
+
+
+@bp.route('/import/tx/<int:tx_id>/ignore', methods=['POST'])
+@login_required
+def bank_tx_ignore(tx_id: int):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    try:
+        tx = BankImportService.ignore_transaction(tx_id)
+        flash('Transaktion ignoriert.', 'success')
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('accounting.index', tab='import', _anchor='gourmen-tabs'))
+    return _review_redirect(tx)
+
+
+# ---------------------------------------------------------------------------
+# Offene Posten (MemberClaims)
+# ---------------------------------------------------------------------------
+
+
+@bp.route('/year/<int:fiscal_year_id>/claims/create', methods=['POST'])
+@login_required
+def year_claims_create(fiscal_year_id: int):
+    """Beitrags-Claims für alle aktiven Mitglieder anlegen."""
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    try:
+        created = AccountingService.create_claims_for_fiscal_year(fy.id, current_user)
+        flash(f'{len(created)} Beitrags-Posten für {fy.year} angelegt.', 'success')
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return redirect(url_for('accounting.index', year=fy.id, tab='posten', _anchor='gourmen-tabs'))
+
+
+@bp.route('/claims/<int:claim_id>/settle', methods=['POST'])
+@login_required
+def claim_settle(claim_id: int):
+    """Posten manuell abschliessen (beglichen oder erlassen)."""
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    waive = request.form.get('waive') == '1'
+    try:
+        claim = AccountingService.settle_claim(claim_id, waive=waive)
+        flash(
+            f'Posten «{claim.type_display}» von {claim.member.display_name} '
+            f'als {"erlassen" if waive else "beglichen"} markiert.',
+            'success',
+        )
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return redirect(url_for('accounting.index', tab='posten', _anchor='gourmen-tabs'))
+
+
+@bp.route('/claims/<int:claim_id>/confirm', methods=['POST'])
+@login_required
+def claim_confirm(claim_id: int):
+    """Privatzahler bestätigt den Eingang eines Anteils (vom Dashboard)."""
+    _validate_csrf_or_403()
+    try:
+        claim = AccountingService.confirm_private_payment(claim_id, current_user)
+        flash(
+            f'Eingang von {claim.member.display_name} bestätigt.',
+            'success',
+        )
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return redirect(request.referrer or url_for('dashboard.index'))
 
 
 # ---------------------------------------------------------------------------
