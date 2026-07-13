@@ -195,7 +195,8 @@ Diese sind in `:root` für Light-Default gesetzt; `[data-theme="dark"]` übersch
 |---|---|---|
 | `.info-row` | – | Label/Value-Paar mit `__label`, `__value` |
 | `.data-table-wrap` | – | Wrapper um Tabellen (Scroll-Container) |
-| `.data-table` | – | Standard-Tabelle (BEM-aligned) |
+| `.data-table` | `--sticky-first` | Standard-Tabelle (BEM-aligned); `--sticky-first`: erste Spalte horizontal sticky (Buchhaltung Journal/Budget/Statistik) |
+| `.data-table__group-row` | – | Gruppen-Zwischenzeile (`<tr>` mit `<th colspan>`), z. B. Budget nach Kontengruppe |
 | `.admin-members-table` | `__row--inactive`, `__col-email`, `__col-adresse`, `__col-kleider`, `__col-fuehrerschein`, `__col-status`, `__status-chips`, `__actions`, `__actions-inner` | Admin Mitgliederliste (`admin/members.html`): alle Mitgliedsfelder als Spalten; `data-table-scroll-*`; erste Spalte (Rufname) sticky; inaktive Zeilen gedimmt |
 | `.page-content--admin-members-table` | – | Modifier: `min-width: 0` auf Flex-Spalte + Scroll-Hülle, damit horizontale Tabelle nicht die Seitenbreite aufbläht |
 | `.page-content--merch-hub` | – | Merch-Admin Hub: `min-width: 0`; gemeinsamer `.tabs__content`-Panel unter Haupt-Tabs; Scroll-Hüllen/`overscroll-behavior-x` für Statistik-Tabellen; erste Toolbar-`.form-actions` ohne Oberstrich |
@@ -372,6 +373,25 @@ Verhalten:
 | `.calendar-subscribe__hint` | – | Hinweis Polling/Push |
 | `.calendar-subscribe__actions` | – | Sekundäraktionen (Link neu / Abo aus); oben per Rand abgesetzt, unter 480px gestapelt |
 | `.calendar-subscribe-dialog` | mit `__panel`, `__title` | Bestätigungs-`<dialog>` für Link neu / Abo aus |
+
+#### Buchhaltung (Phase 04)
+
+| Klasse | Modifikatoren | Zweck |
+|---|---|---|
+| `.budget-meter` | mit `__header`, `__label`, `__value`, `__track`, `__fill`, `__fill--over` | Fortschrittsbalken Budget-Auslastung pro Kontengruppe (`accounting/stats.html`). Füllgrad via Custom Property `--budget-meter-fill` (inline, da dynamischer Wert); `--over` bei >100%. Erstes Progressbar-Pattern im System. |
+| `.accounting-budget-table` | – | Budget/Kontenplan/Statistik-Tabellen: erste Spalte `max-width` + Textumbruch, übrige Spalten `nowrap` + horizontaler Scroll |
+| `.accounting-receipt-capture` | `__actions`, `__preview`, `__preview-img` | Beleg-Upload: getrennte Buttons «Foto aufnehmen» / «Datei wählen» + Bildvorschau |
+| `.accounting-receipt-upload__picker-panel` | – | Scrollbare Hülle für optionale Event/Kategorie-Selects (max-height, Touch-Scroll) |
+| `.accounting-year-create` | – | Admin-Block «Geschäftsjahr eröffnen» unter dem Filter-Disclosure |
+| `.accounting-index-actions` | `__action` | Aktionen-Block im Geschäftsjahr-Tool-Strip (`accounting/index.html`), analog `.events-index-capture`: `section-subtitle` + `tool-strip__actions`; Klick auf `__action` klappt Disclosure ein |
+| `.accounting-stats-block` | `__heading` | Statistik-Sektion mit Heading + Tabelle direkt im Flow (kein Card), analog `.events-stats-restaurant-block` |
+| `.accounting-chart` | `__scroll`, `__container`, `__pie-wrap`, `--pie`, `--fullscreen` | Chart-Hülle Buchhaltungs-Statistik, analog `.events-stats-chart`; `--fullscreen` im Vollbild-Modal |
+| `.accounting-chart-expand-btn` | – | Vollbild-Button im `card__actions` der Chart-Cards (`data-chart-target`, `data-chart-canvas-id`) |
+| `.accounting-chart-modal__container` / `__body` | – | Grössen-Constraints des Chart-Vollbild-`.modal` |
+| `.accounting-tab-actions` | – | Aktions-Leiste zwischen Filter-Card und Tabelle/Liste innerhalb eines Tabs (z. B. «Buchung erfassen» im Journal-Tab, «Beleg einreichen» im Belege-Tab, «Beleg erfassen» im Buchungsdetail) |
+| `.data-table__link` | mit `__link-label`, `__chev` | Klickbare erste Zelle in `.data-table` (Datum/Beleg): Label + `chevron-right` als ein Link (nowrap), generisches Pendant zu `.events-index-table__event-link` |
+| `.data-table__sub` | – | Sekundäre, gedämpfte Zusatzzeile in einer Tabellenzelle (z. B. langer Drive-Dateiname unter dem Beleg-Anzeigenamen); `--text-xs`, umbruchfähig |
+| `.form-row--inline-submit` | – | Feld + Text-Submit-Button in einer Zeile (Budget «Speichern», Beleg «Verknüpfen»); anders als `--inline-remove` behält der Button seine Textbreite |
 
 ### 5.10 Deprecated / Legacy
 

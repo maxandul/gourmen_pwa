@@ -183,6 +183,37 @@ Im `AuditAction`-Enum definiert. Beispiele:
 - `CALENDAR_FEED_ENABLED`, `CALENDAR_FEED_REGENERATED`, `CALENDAR_FEED_DISABLED` — persönlicher iCal-Feed (`docs/capabilities/calendar.md`); **ohne** Token-Wert im Audit-`extra_json`
 - weitere bei Bedarf
 
+## Buchhaltung (Phase 04)
+
+Einnahmen-/Ausgaben-Rechnung (E/A) des Vereins in der App. Authoritatives Spec: `docs/capabilities/accounting.md`.
+
+### Begriffe
+
+- **Geschäftsjahr** (`FiscalYear`) – Kalenderjahr mit Status-Lifecycle `open → in_review → closed`. Nur in offenen Jahren sind Buchungen möglich.
+- **Konto** (`Account`) – Position aus dem Kontenplan (z.B. `6100 Ausgaben aus monatlichem Essen`), Art `income`/`expense`, gruppiert per `group_name` (Kontengruppe).
+- **Buchung** (`Booking`) – einzelner Geldfluss: Datum, Beschreibung, Betrag (Rappen, Integer), Richtung `in`/`out`, Konto, optional Event/Mitglied/`payment_ref`.
+- **Beleg** (`Receipt`) – Quittungs-Datei im Vereins-Drive unter `Buchhaltung/{Jahr}/`. Jedes aktive Mitglied kann Belege einreichen (Foto/PDF, optionales Pre-Tagging). `booking_id NULL` = ungebucht («Inbox» des Schatzmeisters).
+- **Budget** (`BudgetEntry`) – Soll-Wert pro Konto und Jahr; Vergleich Budget vs. Ist im Budget-Tab.
+- **Revision** – der Rechnungsprüfer prüft das freigegebene Jahr in der App (read-only), hinterlässt `RevisionComment`s und bestätigt formal (`RevisionApproval`). Danach generiert die App den **Revisorenbericht** als PDF und legt ihn in Drive ab.
+- **Sparkapital** – kumuliertes Ergebnis aller Vorjahre («zu Jahresbeginn» im Bericht).
+
+### Rollen
+
+- **Schatzmeister** (`Funktion.SCHATZMEISTER`) – bucht, verwaltet Budget, gibt das Jahr zur Revision frei.
+- **Rechnungsprüfer / Revisor** (`Funktion.RECHNUNGSPRUEFER`) – read-only-Zugriff, Kommentare, formale Bestätigung des Jahres.
+- **Admin** – kommt überall durch; verwaltet zusätzlich den Kontenplan.
+- **Aktives Mitglied** – darf Belege einreichen und die eigenen Belege sehen (`/member/receipts`).
+
+### Kontenplan (Kurzübersicht)
+
+Vierstellige Konto-Nummern, angelehnt an KMU-Kontenrahmen:
+
+- **3xxx Einnahmen**: `3000/3015/3020` Mitgliederbeiträge, `31xx` Zuwendungen/Spenden, `33xx` Aktivitäten (u.a. `3310` Einnahmen aus monatlichen Essen), `36xx` übrige Erlöse (u.a. `3620` Bussen)
+- **4xxx/5xxx Aufwand**: `4xxx` Aufwand Aktivitäten (u.a. `4500` Reisen/Ausflüge), `5000` Lohnaufwand
+- **6xxx übriger Aufwand**: u.a. `6100` Ausgaben aus monatlichem Essen, `6530` Buchführung/Revision, `6800` Abschreibungen, `69xx` Finanzergebnis
+
+Seed: `python scripts/seed_accounting_chart.py` (idempotent; Kontenplan + FiscalYears 2021–2026 + Budget 2025/2026).
+
 ## Merchandise
 
 Vereins-Shop-Logik mit Preis-Strukturen:
@@ -213,6 +244,6 @@ Default `BESTELLT`, weitere Werte je nach Workflow (`AUSGELIEFERT` etc. – im C
 ## Was es **nicht** gibt (potenziell verwirrend)
 
 - **Keine Family-/Gast-Mitglieder**: jeder Member ist gleich strukturiert
-- **Keine Mitgliedsbeiträge im Code** (heute): Beitragslogik kommt mit Buchhaltungs-Modul
+- **Keine automatische Beitrags-Einforderung**: Mitgliederbeiträge werden im Buchhaltungs-Modul manuell gebucht (Konten 3000/3015/3020); Payment-Integration (TWINT/ZKB) kommt erst in Phase 6
 - **Keine externen Auth-Provider**: Login ist Eigenbau (Email + Passwort + 2FA)
 - **Keine native App**: nur PWA (installierbar, aber HTML/JS unter der Haube)

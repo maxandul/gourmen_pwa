@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+
+{% block title %}Buchhaltung Statistik - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('accounting.index', year=fiscal_year.id) }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Buchhaltung</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('chart-line') }}
+            Statistik
+        </h1>
+    </div>
+
+    <div class="page-content" id="accounting-stats" data-chart='{{ chart_data | tojson }}'>
+        {# Geschäftsjahr-Filter (Tool-Strip wie GGL) #}
+        <div class="card card--filter tool-surface">
+            <div class="card__body">
+                <details id="accounting-stats-filter-disclosure" class="disclosure">
+                    <summary class="disclosure__summary">
+                        {{ lucide_icon('chevron-down') }}
+                        Geschäftsjahr
+                        <span class="chip chip--info">{{ fiscal_year.year }}</span>
+                    </summary>
+                    <div class="disclosure__content">
+                        <form method="GET" action="{{ url_for('accounting.stats') }}" class="form">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-field__label" for="year-select">Geschäftsjahr</label>
+                                    <select name="year" id="year-select" class="form-field__select">
+                                        {% for fy in fiscal_years %}
+                                        <option value="{{ fy.id }}" {{ 'selected' if fy.id == fiscal_year.id else '' }}>
+                                            {{ fy.year }} – {{ fy.status_display }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions form-actions--start">
+                                <button type="submit" class="btn btn--primary">
+                                    {{ lucide_icon('funnel') }}
+                                    Filtern
+                                </button>
+                                <a class="btn btn--outline" href="{{ url_for('accounting.stats') }}">Zurücksetzen</a>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        {# Saldo-Verlauf #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-line') }} Saldo-Verlauf {{ fiscal_year.year }}</h2>
+                <div class="card__actions">
+                    <button
+                        type="button"
+                        class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                        data-chart-target="accounting-chart-wrap-saldo"
+                        data-chart-canvas-id="chart-saldo"
+                        aria-label="Saldo-Verlauf im Vollbild anzeigen">
+                        {{ lucide_icon('expand') }}
+                    </button>
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="accounting-chart" id="accounting-chart-wrap-saldo">
+                    <div class="accounting-chart__scroll">
+                        <div class="accounting-chart__container">
+                            <canvas id="chart-saldo" role="img" aria-label="Kumulierter Saldo über die Monate {{ fiscal_year.year }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Budget-Auslastung #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('goal') }} Budget-Auslastung {{ fiscal_year.year }}</h2>
+            </div>
+            <div class="card__body">
+                {% if budget_usage %}
+                    {% for group in budget_usage %}
+                    <div class="budget-meter">
+                        <div class="budget-meter__header">
+                            <span class="budget-meter__label">{{ group.name }}</span>
+                            <span class="budget-meter__value">
+                                CHF {{ chf(group.actual_rappen) }} / {{ chf(group.budget_rappen) }} ({{ group.pct }}%)
+                            </span>
+                        </div>
+                        <div class="budget-meter__track">
+                            <div class="budget-meter__fill{% if group.pct > 100 %} budget-meter__fill--over{% endif %}"
+                                 style="--budget-meter-fill: {{ group.pct_capped }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-secondary">Kein Budget für {{ fiscal_year.year }} hinterlegt.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Jahresvergleich #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-column') }} Jahresvergleich</h2>
+                <div class="card__actions">
+                    <button
+                        type="button"
+                        class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                        data-chart-target="accounting-chart-wrap-years"
+                        data-chart-canvas-id="chart-years"
+                        aria-label="Jahresvergleich im Vollbild anzeigen">
+                        {{ lucide_icon('expand') }}
+                    </button>
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="accounting-chart" id="accounting-chart-wrap-years">
+                    <div class="accounting-chart__scroll">
+                        <div class="accounting-chart__container">
+                            <canvas id="chart-years" role="img" aria-label="Einnahmen, Ausgaben und Ergebnis pro Jahr"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Ausgaben nach Kontengruppe #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('chart-pie') }} Ausgaben nach Kontengruppe {{ fiscal_year.year }}</h2>
+                {% if chart_data.donut.labels %}
+                <div class="card__actions">
+                    <button
+                        type="button"
+                        class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                        data-chart-target="accounting-chart-wrap-donut"
+                        data-chart-canvas-id="chart-donut"
+                        aria-label="Ausgaben-Verteilung im Vollbild anzeigen">
+                        {{ lucide_icon('expand') }}
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card__body">
+                {% if chart_data.donut.labels %}
+                <div class="accounting-chart accounting-chart--pie" id="accounting-chart-wrap-donut">
+                    <div class="accounting-chart__pie-wrap">
+                        <canvas id="chart-donut" role="img" aria-label="Anteil der Kontengruppen an den Gesamtausgaben {{ fiscal_year.year }}"></canvas>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-secondary">Noch keine Ausgaben in {{ fiscal_year.year }} gebucht.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Ergebnis-Übersicht #}
+        <section class="accounting-stats-block" aria-labelledby="accounting-stats-result-heading">
+            <h2 class="accounting-stats-block__heading" id="accounting-stats-result-heading">
+                {{ lucide_icon('table') }}
+                Ergebnis-Übersicht
+            </h2>
+            <div class="data-table-scroll-outer">
+            <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="accounting-stats-result-heading">
+                <table class="data-table data-table--sticky-first">
+                    <thead>
+                        <tr>
+                            <th scope="col">Jahr</th>
+                            <th scope="col">Einnahmen</th>
+                            <th scope="col">Ausgaben</th>
+                            <th scope="col">Ergebnis</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in comparison | reverse %}
+                        <tr>
+                            <td>{{ entry.year }}</td>
+                            <td>CHF {{ chf(entry.income_rappen) }}</td>
+                            <td>CHF {{ chf(entry.expense_rappen) }}</td>
+                            <td>CHF {{ chf(entry.result_rappen) }}</td>
+                            <td>{{ entry.fiscal_year.status_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </section>
+
+        {# Mitgliederbeiträge (nur Schatzmeister/Admin) #}
+        {% if is_treasurer %}
+        <section class="accounting-stats-block" aria-labelledby="accounting-stats-contributions-heading">
+            <h2 class="accounting-stats-block__heading" id="accounting-stats-contributions-heading">
+                {{ lucide_icon('users') }}
+                Mitgliederbeiträge {{ fiscal_year.year }}
+            </h2>
+            {% if contributions %}
+            <div class="data-table-scroll-outer">
+            <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="accounting-stats-contributions-heading">
+                <table class="data-table data-table--sticky-first">
+                    <thead>
+                        <tr>
+                            <th scope="col">Mitglied</th>
+                            <th scope="col">Betrag</th>
+                            <th scope="col">Datum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in contributions %}
+                        <tr>
+                            <td>{{ booking.member.display_name_with_spirit if booking.member else '–' }}</td>
+                            <td>CHF {{ chf(booking.amount_rappen) }}</td>
+                            <td>{{ booking.booking_date.strftime('%d.%m.%Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+            {% else %}
+            <p class="text-secondary">Noch keine Mitgliederbeiträge in {{ fiscal_year.year }} gebucht.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        {# Chart-Vollbild-Modal #}
+        <div
+            id="accounting-chart-fullscreen-modal"
+            class="modal"
+            data-open="false"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="accounting-chart-fullscreen-title">
+            <div class="modal__backdrop" data-accounting-chart-modal-close></div>
+            <div class="modal__container accounting-chart-modal__container">
+                <div class="modal__header">
+                    <h2 class="modal__title" id="accounting-chart-fullscreen-title">Chart-Vollbild</h2>
+                    <button type="button" class="modal__close" data-accounting-chart-modal-close aria-label="Vollbild schließen">
+                        {{ lucide_icon('x') }}
+                    </button>
+                </div>
+                <div class="modal__body accounting-chart-modal__body" data-accounting-modal-body></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const root = document.getElementById('accounting-stats');
+    const data = JSON.parse(root.dataset.chart);
+    const styles = getComputedStyle(document.documentElement);
+    const colorText = styles.getPropertyValue('--color-text-secondary').trim();
+    const colorGrid = styles.getPropertyValue('--color-border-default').trim();
+    const palette = [
+      styles.getPropertyValue('--logo-orange').trim(),
+      styles.getPropertyValue('--logo-teal').trim(),
+      styles.getPropertyValue('--logo-navy-medium').trim(),
+      styles.getPropertyValue('--brand-accent-300').trim(),
+      styles.getPropertyValue('--brand-secondary-600').trim(),
+      styles.getPropertyValue('--brand-primary-400').trim(),
+      styles.getPropertyValue('--brand-warm-500').trim(),
+      styles.getPropertyValue('--brand-accent-700').trim(),
+      styles.getPropertyValue('--brand-secondary-300').trim(),
+    ];
+
+    Chart.defaults.color = colorText;
+    Chart.defaults.borderColor = colorGrid;
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+
+    const chfTick = (value) => 'CHF ' + Number(value).toLocaleString('de-CH');
+    const chartInstances = new Map();
+
+    chartInstances.set('chart-saldo', new Chart(document.getElementById('chart-saldo'), {
+      type: 'line',
+      data: {
+        labels: data.saldo.labels,
+        datasets: [{
+          label: 'Kumulierter Saldo',
+          data: data.saldo.values,
+          borderColor: palette[0],
+          backgroundColor: palette[0],
+          tension: 0.2,
+          fill: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    }));
+
+    chartInstances.set('chart-years', new Chart(document.getElementById('chart-years'), {
+      type: 'bar',
+      data: {
+        labels: data.years.labels,
+        datasets: [
+          { label: 'Einnahmen', data: data.years.income, backgroundColor: palette[1] },
+          { label: 'Ausgaben', data: data.years.expense, backgroundColor: palette[0] },
+          { label: 'Ergebnis', data: data.years.result, backgroundColor: palette[2] },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { ticks: { callback: chfTick } } },
+      },
+    }));
+
+    const donutCanvas = document.getElementById('chart-donut');
+    if (donutCanvas && data.donut.labels.length) {
+      chartInstances.set('chart-donut', new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: data.donut.labels,
+          datasets: [{ data: data.donut.values, backgroundColor: palette }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+        },
+      }));
+    }
+
+    /* —— Chart-Vollbild (Pattern wie GGL/Events-Statistik) —— */
+    const modal = document.getElementById('accounting-chart-fullscreen-modal');
+    const modalBody = modal ? modal.querySelector('[data-accounting-modal-body]') : null;
+    const expandButtons = Array.from(document.querySelectorAll('.accounting-chart-expand-btn'));
+    let activeChartNode = null;
+    let activePlaceholder = null;
+    let activeChartInstance = null;
+    let previousBodyOverflow = '';
+
+    function closeFullscreenModal() {
+      if (!modal || !modalBody) return;
+      if (activeChartNode && activePlaceholder && activePlaceholder.parentNode) {
+        activePlaceholder.parentNode.insertBefore(activeChartNode, activePlaceholder);
+        activePlaceholder.remove();
+        activeChartNode.classList.remove('accounting-chart--fullscreen');
+      }
+      modal.setAttribute('data-open', 'false');
+      modal.hidden = true;
+      document.body.style.overflow = previousBodyOverflow;
+      if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+      activeChartNode = null;
+      activePlaceholder = null;
+      activeChartInstance = null;
+    }
+
+    function openFullscreenModal(button) {
+      if (!modal || !modalBody) return;
+      const chartTarget = button.getAttribute('data-chart-target');
+      const chartCanvasId = button.getAttribute('data-chart-canvas-id');
+      const chartNode = chartTarget ? document.getElementById(chartTarget) : null;
+      if (!chartNode || !chartNode.parentNode) return;
+
+      if (activeChartNode) closeFullscreenModal();
+
+      activePlaceholder = document.createElement('div');
+      activePlaceholder.className = 'accounting-chart-placeholder';
+      chartNode.parentNode.insertBefore(activePlaceholder, chartNode);
+      modalBody.appendChild(chartNode);
+      chartNode.classList.add('accounting-chart--fullscreen');
+
+      activeChartNode = chartNode;
+      activeChartInstance = chartCanvasId ? chartInstances.get(chartCanvasId) || null : null;
+      previousBodyOverflow = document.body.style.overflow || '';
+      modal.hidden = false;
+      modal.setAttribute('data-open', 'true');
+      if (activeChartInstance) setTimeout(() => activeChartInstance.resize(), 60);
+    }
+
+    expandButtons.forEach((button) => {
+      button.addEventListener('click', () => openFullscreenModal(button));
+    });
+
+    if (modal) {
+      modal.querySelectorAll('[data-accounting-chart-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeFullscreenModal);
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal && modal.getAttribute('data-open') === 'true') {
+        closeFullscreenModal();
+      }
+    });
+  })();
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  function bindDisclosure(id, key, defaultOpen) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var stored = sessionStorage.getItem(key);
+    if (stored === '1') {
+      el.open = true;
+    } else if (stored === '0') {
+      el.open = false;
+    } else {
+      el.open = defaultOpen;
+    }
+    el.addEventListener('toggle', function () {
+      try {
+        sessionStorage.setItem(key, el.open ? '1' : '0');
+      } catch (e) { /* private mode etc. */ }
+    });
+  }
+  function collapseDisclosureOnFilterSubmit(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var form = details.querySelector('form');
+    if (!form) return;
+    var method = (form.getAttribute('method') || 'get').toLowerCase();
+    if (method !== 'get') return;
+    form.addEventListener('submit', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
+  function collapseDisclosureOnFilterReset(detailsId, storageKey) {
+    var details = document.getElementById(detailsId);
+    if (!details) return;
+    var resetLink = details.querySelector('.form-actions a.btn');
+    if (!resetLink) return;
+    resetLink.addEventListener('click', function () {
+      try {
+        sessionStorage.setItem(storageKey, '0');
+      } catch (e) { /* private mode */ }
+      details.open = false;
+    });
+  }
+  bindDisclosure('accounting-stats-filter-disclosure', 'gourmen:accountingStatsFilterDisclosureOpen', false);
+  collapseDisclosureOnFilterSubmit('accounting-stats-filter-disclosure', 'gourmen:accountingStatsFilterDisclosureOpen');
+  collapseDisclosureOnFilterReset('accounting-stats-filter-disclosure', 'gourmen:accountingStatsFilterDisclosureOpen');
+})();
+</script>
+{% endblock %}

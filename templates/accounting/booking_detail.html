@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% from "partials/_form_macros.html" import required_mark, field_errors %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+
+{% block title %}Buchung – Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='journal') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Journal</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('book-open') }}
+            Buchung
+        </h1>
+    </div>
+
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ booking.description }}</h2>
+                <div class="card__actions">
+                    <span class="chip {{ 'chip--success' if booking.is_income else 'chip--danger' }}">{{ booking.direction_display }}</span>
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Datum</span>
+                    <span class="info-row__value">{{ booking.booking_date.strftime('%d.%m.%Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Betrag</span>
+                    <span class="info-row__value">CHF {{ chf(booking.amount_rappen) }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Konto</span>
+                    <span class="info-row__value">{{ booking.account.code }} {{ booking.account.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row__label">Geschäftsjahr</span>
+                    <span class="info-row__value">{{ fiscal_year.year }} ({{ fiscal_year.status_display }})</span>
+                </div>
+                {% if booking.event %}
+                <div class="info-row">
+                    <span class="info-row__label">Event</span>
+                    <span class="info-row__value">
+                        <a href="{{ url_for('events.detail', event_id=booking.event.id) }}">{{ booking.event.display_date }} {{ booking.event.restaurant or '' }}</a>
+                    </span>
+                </div>
+                {% endif %}
+                {% if booking.member %}
+                <div class="info-row">
+                    <span class="info-row__label">Mitglied</span>
+                    <span class="info-row__value">{{ booking.member.display_name_with_spirit }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="info-row__label">Erfasst von</span>
+                    <span class="info-row__value">{{ booking.creator.display_name_with_spirit }} am {{ booking.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# Belege zur Buchung #}
+        <div class="card" id="beleg-anhaengen">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('receipt') }} Belege</h2>
+            </div>
+            <div class="card__body">
+                {% if booking.receipts %}
+                    {% for receipt in booking.receipts %}
+                    <div class="info-row">
+                        <span class="info-row__label">{{ receipt.uploaded_at.strftime('%d.%m.%Y') }}</span>
+                        <span class="info-row__value">
+                            <a href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}" target="_blank" rel="noopener">{{ receipt.drive_file_name }}</a>
+                            <br>
+                            <span class="text-secondary">eingereicht von {{ receipt.uploader.display_name_with_spirit }}</span>
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-secondary">Kein Beleg verknüpft. Belege können jederzeit nachgetragen werden.</p>
+                {% endif %}
+
+                {% if can_edit %}
+                    {% if unbooked_receipts %}
+                    <form method="POST" action="{{ url_for('accounting.booking_attach_receipt', booking_id=booking.id) }}" class="form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-row form-row--inline-submit">
+                            <div class="form-field">
+                                <label class="form-field__label" for="attach-receipt">Beleg aus Inbox verknüpfen</label>
+                                <select name="receipt_id" id="attach-receipt" class="form-field__select" required>
+                                    {% for receipt in unbooked_receipts %}
+                                    <option value="{{ receipt.id }}">
+                                        {{ receipt.uploaded_at.strftime('%d.%m.%Y') }} – {{ receipt.label }} ({{ receipt.uploader.display_name_with_spirit }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn--outline">{{ lucide_icon('link') }} Verknüpfen</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <p class="text-secondary">Aktuell keine offenen Belege in der Inbox. Neue Belege erscheinen unter «Belege» oder nach Einreichung durch Mitglieder.</p>
+                    {% endif %}
+                    <div class="accounting-tab-actions">
+                        <a href="{{ url_for('accounting.receipt_upload', booking=booking.id) }}" class="btn btn--primary">
+                            {{ lucide_icon('camera') }} Beleg erfassen
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Inline-Bearbeitung #}
+        {% if can_edit and form %}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('pencil') }} Bearbeiten</h2>
+            </div>
+            <div class="card__body">
+                <form method="POST" action="{{ url_for('accounting.booking_edit', booking_id=booking.id) }}" class="form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.booking_date.id }}">{{ form.booking_date.label.text }}{{ required_mark(form.booking_date) }}</label>
+                            {{ form.booking_date(class='form-field__input') }}
+                            {{ field_errors(form.booking_date) }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.amount_chf.id }}">{{ form.amount_chf.label.text }}{{ required_mark(form.amount_chf) }}</label>
+                            {{ form.amount_chf(class='form-field__input', inputmode='decimal', placeholder='z. B. 300.00') }}
+                            {{ field_errors(form.amount_chf) }}
+                            <span class="form-field__help">In CHF, Schritt 0.05 (5 Rappen).</span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.direction.id }}">{{ form.direction.label.text }}</label>
+                            {{ form.direction(class='form-field__select') }}
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-field__label" for="{{ form.description.id }}">{{ form.description.label.text }}{{ required_mark(form.description) }}</label>
+                        {{ form.description(class='form-field__input') }}
+                        {{ field_errors(form.description) }}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.account_id.id }}">{{ form.account_id.label.text }}</label>
+                            {{ form.account_id(class='form-field__select') }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.event_id.id }}">{{ form.event_id.label.text }}</label>
+                            {{ form.event_id(class='form-field__select') }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ form.member_id.id }}">{{ form.member_id.label.text }}</label>
+                            {{ form.member_id(class='form-field__select') }}
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">
+                            {{ lucide_icon('save') }} Speichern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% elif not fiscal_year.is_open %}
+        <div class="card">
+            <div class="card__body">
+                <p class="text-secondary">Das Jahr {{ fiscal_year.year }} ist {{ fiscal_year.status_display|lower }} – Buchungen sind gesperrt.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Revisions-Kommentare zur Buchung #}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">{{ lucide_icon('message-square') }} Revisions-Kommentare</h2>
+            </div>
+            <div class="card__body">
+                {% if booking.revision_comments %}
+                    {% for comment in booking.revision_comments %}
+                    <div class="info-row">
+                        <span class="info-row__label">
+                            {{ comment.author.display_name_with_spirit }}<br>
+                            <span class="text-secondary">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </span>
+                        <span class="info-row__value">
+                            {{ comment.text }}
+                            {% if comment.resolved %}
+                            <br><span class="chip chip--success">Erledigt</span>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
+                            </form>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-secondary">Noch keine Kommentare zu dieser Buchung.</p>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
+                    {{ comment_form.hidden_tag() }}
+                    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                    <div class="form-field">
+                        <label class="form-field__label" for="booking-comment-text">Neuer Kommentar</label>
+                        {{ comment_form.text(class='form-field__textarea', rows=3, id='booking-comment-text') }}
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary btn--sm">
+                            {{ lucide_icon('message-square') }} Kommentar speichern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

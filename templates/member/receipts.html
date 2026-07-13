@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+
+{% block title %}Meine Belege - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('member.index') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zum Verein</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('receipt') }}
+            Meine Belege
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">{{ lucide_icon('plus') }} Beleg einreichen</a>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% if receipts %}
+            <div class="data-table-scroll-outer">
+            <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Meine Belege">
+                <table class="data-table data-table--sticky-first">
+                    <thead>
+                        <tr>
+                            <th scope="col">Beleg</th>
+                            <th scope="col">Datum</th>
+                            <th scope="col">Vorschlag</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for receipt in receipts %}
+                        <tr>
+                            <td>
+                                <a class="data-table__link" href="{{ url_for('accounting.receipt_view', receipt_id=receipt.id) }}"
+                                   target="_blank" rel="noopener" aria-label="Beleg {{ receipt.label }} anzeigen">
+                                    <span class="data-table__link-label">{{ receipt.label }}</span>
+                                    {{ lucide_icon('chevron-right', 'icon data-table__chev') }}
+                                </a>
+                                <span class="data-table__sub">{{ receipt.drive_file_name }}</span>
+                            </td>
+                            <td>{{ receipt.uploaded_at.strftime('%d.%m.%Y') }}</td>
+                            <td>
+                                {% if receipt.suggested_account %}{{ receipt.suggested_account.name }}{% endif %}
+                                {% if receipt.suggested_event %}
+                                <span class="data-table__sub">{{ receipt.suggested_event.display_date }} {{ receipt.suggested_event.restaurant or receipt.suggested_event.event_typ.value }}</span>
+                                {% endif %}
+                                {% if not receipt.suggested_account and not receipt.suggested_event %}<span class="text-secondary">–</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if receipt.is_booked %}
+                                <span class="chip chip--success">{{ receipt.status_display }}</span>
+                                {% else %}
+                                <span class="chip chip--warning">{{ receipt.status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card__header">
+                    <h2 class="card__title">Keine Belege</h2>
+                </div>
+                <div class="card__body">
+                    <p>Du hast noch keine Belege eingereicht. Quittungen von Vereins-Ausgaben kannst du hier direkt als Foto oder PDF hochladen.</p>
+                </div>
+                <div class="card__footer">
+                    <a href="{{ url_for('accounting.receipt_upload') }}" class="btn btn--primary">
+                        {{ lucide_icon('upload') }}
+                        Ersten Beleg einreichen
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

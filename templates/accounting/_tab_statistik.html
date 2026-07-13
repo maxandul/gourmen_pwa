@@ -1,0 +1,195 @@
+{# Statistik-Tab (eingebettet in accounting/index.html) #}
+<div id="accounting-stats" data-chart='{{ chart_data | tojson }}'>
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">{{ lucide_icon('chart-line') }} Saldo-Verlauf {{ fiscal_year.year }}</h2>
+            <div class="card__actions">
+                <button
+                    type="button"
+                    class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                    data-chart-target="accounting-chart-wrap-saldo"
+                    data-chart-canvas-id="chart-saldo"
+                    aria-label="Saldo-Verlauf im Vollbild anzeigen">
+                    {{ lucide_icon('expand') }}
+                </button>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="accounting-chart" id="accounting-chart-wrap-saldo">
+                <div class="accounting-chart__scroll">
+                    <div class="accounting-chart__container">
+                        <canvas id="chart-saldo" role="img" aria-label="Kumulierter Saldo über die Monate {{ fiscal_year.year }}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">{{ lucide_icon('goal') }} Budget-Auslastung {{ fiscal_year.year }}</h2>
+        </div>
+        <div class="card__body">
+            {% if budget_usage %}
+                {% for group in budget_usage %}
+                <div class="budget-meter">
+                    <div class="budget-meter__header">
+                        <span class="budget-meter__label">{{ group.name }}</span>
+                        <span class="budget-meter__value">
+                            CHF {{ chf(group.actual_rappen) }} / {{ chf(group.budget_rappen) }} ({{ group.pct }}%)
+                        </span>
+                    </div>
+                    <div class="budget-meter__track">
+                        <div class="budget-meter__fill{% if group.pct > 100 %} budget-meter__fill--over{% endif %}"
+                             style="--budget-meter-fill: {{ group.pct_capped }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p class="text-secondary">Kein Budget für {{ fiscal_year.year }} hinterlegt.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">{{ lucide_icon('chart-column') }} Jahresvergleich</h2>
+            <div class="card__actions">
+                <button
+                    type="button"
+                    class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                    data-chart-target="accounting-chart-wrap-years"
+                    data-chart-canvas-id="chart-years"
+                    aria-label="Jahresvergleich im Vollbild anzeigen">
+                    {{ lucide_icon('expand') }}
+                </button>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="accounting-chart" id="accounting-chart-wrap-years">
+                <div class="accounting-chart__scroll">
+                    <div class="accounting-chart__container">
+                        <canvas id="chart-years" role="img" aria-label="Einnahmen, Ausgaben und Ergebnis pro Jahr"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__header">
+            <h2 class="card__title">{{ lucide_icon('chart-pie') }} Ausgaben nach Kontengruppe {{ fiscal_year.year }}</h2>
+            {% if chart_data.donut.labels %}
+            <div class="card__actions">
+                <button
+                    type="button"
+                    class="btn btn--outline btn--sm accounting-chart-expand-btn"
+                    data-chart-target="accounting-chart-wrap-donut"
+                    data-chart-canvas-id="chart-donut"
+                    aria-label="Ausgaben-Verteilung im Vollbild anzeigen">
+                    {{ lucide_icon('expand') }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card__body">
+            {% if chart_data.donut.labels %}
+            <div class="accounting-chart accounting-chart--pie" id="accounting-chart-wrap-donut">
+                <div class="accounting-chart__pie-wrap">
+                    <canvas id="chart-donut" role="img" aria-label="Anteil der Kontengruppen an den Gesamtausgaben {{ fiscal_year.year }}"></canvas>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-secondary">Noch keine Ausgaben in {{ fiscal_year.year }} gebucht.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <section class="accounting-stats-block" aria-labelledby="accounting-stats-result-heading">
+        <h2 class="accounting-stats-block__heading" id="accounting-stats-result-heading">
+            {{ lucide_icon('table') }}
+            Ergebnis-Übersicht
+        </h2>
+        <div class="data-table-scroll-outer">
+        <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="accounting-stats-result-heading">
+            <table class="data-table accounting-budget-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Jahr</th>
+                        <th scope="col">Einnahmen</th>
+                        <th scope="col">Ausgaben</th>
+                        <th scope="col">Ergebnis</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in comparison | reverse %}
+                    <tr>
+                        <td>{{ entry.year }}</td>
+                        <td>CHF {{ chf(entry.income_rappen) }}</td>
+                        <td>CHF {{ chf(entry.expense_rappen) }}</td>
+                        <td>CHF {{ chf(entry.result_rappen) }}</td>
+                        <td>{{ entry.fiscal_year.status_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </section>
+
+    {% if is_treasurer %}
+    <section class="accounting-stats-block" aria-labelledby="accounting-stats-contributions-heading">
+        <h2 class="accounting-stats-block__heading" id="accounting-stats-contributions-heading">
+            {{ lucide_icon('users') }}
+            Mitgliederbeiträge {{ fiscal_year.year }}
+        </h2>
+        {% if contributions %}
+        <div class="data-table-scroll-outer">
+        <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-labelledby="accounting-stats-contributions-heading">
+            <table class="data-table accounting-budget-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Mitglied</th>
+                        <th scope="col">Betrag</th>
+                        <th scope="col">Datum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in contributions %}
+                    <tr>
+                        <td>{{ booking.member.display_name_with_spirit if booking.member else '–' }}</td>
+                        <td>CHF {{ chf(booking.amount_rappen) }}</td>
+                        <td>{{ booking.booking_date.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        </div>
+        {% else %}
+        <p class="text-secondary">Noch keine Mitgliederbeiträge in {{ fiscal_year.year }} gebucht.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <div
+        id="accounting-chart-fullscreen-modal"
+        class="modal"
+        data-open="false"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accounting-chart-fullscreen-title">
+        <div class="modal__backdrop" data-accounting-chart-modal-close></div>
+        <div class="modal__container accounting-chart-modal__container">
+            <div class="modal__header">
+                <h2 class="modal__title" id="accounting-chart-fullscreen-title">Chart-Vollbild</h2>
+                <button type="button" class="modal__close" data-accounting-chart-modal-close aria-label="Vollbild schließen">
+                    {{ lucide_icon('x') }}
+                </button>
+            </div>
+            <div class="modal__body accounting-chart-modal__body" data-accounting-modal-body></div>
+        </div>
+    </div>
+</div>

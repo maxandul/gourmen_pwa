@@ -82,6 +82,16 @@ def index():
     """Member main overview page (Verein-Hub)."""
     return render_template('member/index.html')
 
+
+@bp.route('/receipts')
+@login_required
+def receipts():
+    """Eigene eingereichte Belege mit Status (Phase 4 Buchhaltung)."""
+    from backend.services.accounting import AccountingService
+
+    my_receipts = AccountingService.get_receipts_for_member(current_user)
+    return render_template('member/receipts.html', receipts=my_receipts)
+
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():

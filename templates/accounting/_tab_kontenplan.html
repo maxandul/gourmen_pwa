@@ -1,0 +1,81 @@
+{# Kontenplan-Tab (Admin, eingebettet in accounting/index.html) #}
+{% from "partials/_form_macros.html" import required_mark, field_errors %}
+<div class="card card--filter tool-surface">
+    <div class="card__body">
+        <details id="accounting-kontenplan-create-disclosure" class="disclosure">
+            <summary class="disclosure__summary">
+                {{ lucide_icon('chevron-down') }}
+                Neues Konto anlegen
+            </summary>
+            <div class="disclosure__content">
+                <form method="POST" action="{{ url_for('accounting.accounts', year=fiscal_year.id) }}" class="form">
+                    {{ account_form.hidden_tag() }}
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ account_form.code.id }}">{{ account_form.code.label.text }}{{ required_mark(account_form.code) }}</label>
+                            {{ account_form.code(class='form-field__input', placeholder='z. B. 6710') }}
+                            {{ field_errors(account_form.code) }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ account_form.name.id }}">{{ account_form.name.label.text }}{{ required_mark(account_form.name) }}</label>
+                            {{ account_form.name(class='form-field__input') }}
+                            {{ field_errors(account_form.name) }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ account_form.kind.id }}">{{ account_form.kind.label.text }}{{ required_mark(account_form.kind) }}</label>
+                            {{ account_form.kind(class='form-field__select') }}
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="{{ account_form.group_name.id }}">{{ account_form.group_name.label.text }}</label>
+                            {{ account_form.group_name(class='form-field__input', placeholder='z. B. Übriger Aufwand') }}
+                        </div>
+                    </div>
+                    <div class="form-actions form-actions--start">
+                        <button type="submit" class="btn btn--primary">
+                            {{ lucide_icon('plus') }} Konto anlegen
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </details>
+    </div>
+</div>
+
+<div class="data-table-scroll-outer">
+<div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Kontenplan">
+    <table class="data-table accounting-budget-table">
+        <thead>
+            <tr>
+                <th scope="col">Nummer</th>
+                <th scope="col">Name</th>
+                <th scope="col">Art</th>
+                <th scope="col">Gruppe</th>
+                <th scope="col">Status</th>
+                <th scope="col">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in all_accounts %}
+            <tr>
+                <td>{{ account.code }}</td>
+                <td>{{ account.name }}</td>
+                <td>{{ account.kind_display }}</td>
+                <td>{{ account.group_name or '–' }}</td>
+                <td>
+                    {% if account.is_active %}
+                    <span class="chip chip--success">Aktiv</span>
+                    {% else %}
+                    <span class="chip">Inaktiv</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('accounting.account_edit', account_id=account.id) }}" class="btn btn--outline btn--sm">Bearbeiten</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
