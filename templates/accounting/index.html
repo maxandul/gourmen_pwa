@@ -84,7 +84,7 @@
                         </div>
                         {% if current_user.is_admin() and next_fiscal_year %}
                         <form method="POST" action="{{ url_for('accounting.year_create') }}" class="form accounting-year-create"
-                              onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Budget wird vom Vorjahr übernommen.');">
+                              onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Der Budget-Vorschlag wird aus den Vorjahres-Zahlen berechnet.');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="year" value="{{ next_fiscal_year }}">
                             <div class="form-actions form-actions--start">

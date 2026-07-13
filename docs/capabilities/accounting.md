@@ -2,7 +2,7 @@
 
 > **Zweck**: Das Buchhaltungsmodul bildet die gesamte Vereinsfinanzverwaltung in der PWA ab — Buchungsjournal, Budget, Belegverwaltung, Jahresabschluss und Revisionsprozess. Ziel ist eine vollständig app-basierte Arbeitsweise: kein Excel-Ping-Pong mehr, kein manuelles Zusammensuchen von Belegen, kein separater Revisoren-Workflow ausserhalb der App.
 >
-> **Status**: Phase 4 (Grundmodul) implementiert. Refokus 2026-07-13: Kern-Workflow ist der **ZKB-Kontoauszug-Import** (Sektion 11) — umzusetzen in Phase 4b. **Owner**: Andreas. **Stand**: 2026-07-13.
+> **Status**: Phase 4 (Grundmodul) + Phase 4b (ZKB-Import, Offene Posten, BillBro-Zahlweg, Sektion 11) implementiert — Merge + Prod-Migration/Seed offen. **Owner**: Andreas. **Stand**: 2026-07-13.
 >
 > **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen), `docs/initiatives/workspace-railway/PHASE_04_ACCOUNTING.md` (Cursor-Briefing), `docs/capabilities/drive.md` (Belege-Storage via Drive).
 

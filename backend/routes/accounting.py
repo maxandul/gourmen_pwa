@@ -837,7 +837,8 @@ def year_create():
     try:
         fy = AccountingService.create_fiscal_year(year, current_user)
         flash(
-            f'Geschäftsjahr {fy.year} eröffnet. Budget vom Vorjahr wurde übernommen.',
+            f'Geschäftsjahr {fy.year} eröffnet. Der Budget-Vorschlag basiert auf den '
+            'Vorjahres-Zahlen und kann im Budget-Tab angepasst werden.',
             'success',
         )
         return redirect(url_for('accounting.index', year=fy.id, tab='uebersicht'))

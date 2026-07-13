@@ -204,7 +204,13 @@ class AccountingService:
 
     @classmethod
     def create_fiscal_year(cls, year: int, by_member: Member) -> FiscalYear:
-        """Neues Geschäftsjahr anlegen; Budget vom Vorjahr übernehmen falls vorhanden."""
+        """Neues Geschäftsjahr mit Budget-Vorschlag eröffnen (Spec 11.11).
+
+        Vorschlag: Vorjahres-Ist pro Konto (auf CHF 10 gerundet);
+        Mitgliederbeiträge aus aktiven Mitgliedern × Jahresbeitrag. Konten
+        ohne Vorjahres-Buchungen erben das Vorjahres-Budget. Alles bleibt
+        im Budget-Tab editierbar.
+        """
         if FiscalYear.query.filter_by(year=year).first():
             raise AccountingValidationError(f"Geschäftsjahr {year} existiert bereits.")
         prev = FiscalYear.query.filter_by(year=year - 1).first()
@@ -213,17 +219,24 @@ class AccountingService:
             start_date=date(year, 1, 1),
             end_date=date(year, 12, 31),
             status=FiscalYearStatus.OPEN,
+            membership_fee_rappen=prev.membership_fee_rappen if prev else None,
         )
         db.session.add(fy)
         db.session.flush()
+
+        proposals = cls.propose_budget(fy.id)
         if prev is not None:
             for entry in prev.budget_entries:
-                db.session.add(BudgetEntry(
-                    fiscal_year_id=fy.id,
-                    account_id=entry.account_id,
-                    amount_rappen=entry.amount_rappen,
-                    created_by=by_member.id,
-                ))
+                proposals.setdefault(entry.account_id, entry.amount_rappen)
+        for account_id, amount_rappen in proposals.items():
+            if amount_rappen <= 0:
+                continue
+            db.session.add(BudgetEntry(
+                fiscal_year_id=fy.id,
+                account_id=account_id,
+                amount_rappen=amount_rappen,
+                created_by=by_member.id,
+            ))
         db.session.commit()
         logger.info("Geschäftsjahr %s angelegt von Member %s", year, by_member.id)
         return fy

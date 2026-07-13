@@ -1,6 +1,6 @@
 # Phase 4b – ZKB-Import und Offene Posten (Buchhaltung Refokus)
 
-**Status**: pending  
+**Status**: done (Code; Merge + Prod-Migration/Seed offen)  
 **Aufwand**: ~1–2 Wochen  
 **Branch**: `phase/04b-workspace-bank-import`  
 **Spec**: `docs/capabilities/accounting.md` Sektion 11 (autoritativ — bei Konflikten gewinnt das Capability-Doc)

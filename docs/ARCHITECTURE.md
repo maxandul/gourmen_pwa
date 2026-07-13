@@ -64,7 +64,7 @@ Registrierung in `backend/app.py`:
 | `admin` | `/admin` | Vereinsverwaltung: Dashboard `admin/index` mit **`.admin-hub`** (Hero-Kacheln, siehe `docs/UI.md`); Mitgliederliste und Merch-Übersicht **lesend** für alle aktiven Mitglieder (`verein_member_required`); Bearbeiten, sensible Daten, Security, Mail-Test und Merch-Mutationen nur `Role.ADMIN` (`admin_required`) |
 | `docs` | `/docs` | **Phase 03 + 09:** Vereinsdokumente im Google Shared Drive – Drive-Browser (Ordner-Tiles, Breadcrumb, Dateiliste), Detail, Upload, Rename, Move, Archive, Restore, Hard-Delete, Download, Admin-Re-Sync. Sichtbar nur bei `DRIVE_FEATURE_ENABLED=true`. Spec: `docs/capabilities/drive.md`. |
 | `calendar_feed` | (root) | **Phase 05:** Öffentlicher ICS-Feed pro Mitglied – `GET /calendar/<token>.ics` (ohne Login), Rate-Limit pro Token, `ETag`/`Cache-Control`. Spec: `docs/capabilities/calendar.md`. |
-| `accounting` | `/accounting` | **Phase 04:** Buchhaltung – Tab-Index (Journal/Belege/Budget/Abschluss), Buchungsworkflow, Beleg-Upload (alle aktiven Mitglieder, Ablage in Drive `Buchhaltung/{Jahr}/`), Revisions-Workflow (submit/approve + Revisorenbericht-PDF), Statistik, CSV/PDF-Export, Kontenplan-Verwaltung (Admin). Zugriff: `SCHATZMEISTER`/`RECHNUNGSPRUEFER`/`ADMIN` (Beleg-Upload: aktives Mitglied). Spec: `docs/capabilities/accounting.md`. |
+| `accounting` | `/accounting` | **Phase 04 + 04b:** Buchhaltung – Tab-Index (Journal/Import/Offene Posten/Belege/Budget/Abschluss), ZKB-CSV-Import mit Review-Screen (Dedup, Sammelbuchungs-Splitting, Auto-Vorschläge), Offene Posten (`MemberClaim`), Buchungsworkflow, Beleg-Upload (alle aktiven Mitglieder, Ablage in Drive `Buchhaltung/{Jahr}/`), Revisions-Workflow (submit/approve + Revisorenbericht-PDF), Statistik, CSV/PDF-Export, Kontenplan-Verwaltung (Admin). Zugriff: `SCHATZMEISTER`/`RECHNUNGSPRUEFER`/`ADMIN` (Beleg-Upload: aktives Mitglied). Spec: `docs/capabilities/accounting.md`. |
 | `notifications` | `/notifications` | **Legacy:** VAPID/Subscribe/Unsubscribe/Test (NotifierService); aktuelle Clients nutzen `push_notifications` unter `/api/...`. |
 | `ratings` | `/ratings` | Event-Ratings |
 | `push_notifications` | (root) | API für Web-Push: `/api/vapid-public-key`, `/api/push/subscribe`, `/api/push/subscription-status`, … |
@@ -75,7 +75,7 @@ Registrierung in `backend/app.py`:
 - **`Member`** – Vereinsmitglied, UserMixin, Rollen `MEMBER`/`ADMIN`, mit `Funktion`-Enum
 - **`MemberSensitive`** – verschlüsselte sensible Felder (Fernet via `CRYPTO_KEY`)
 - **`MemberMFA`** + **`MFABackupCode`** – 2FA-Konfiguration
-- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung, Vorstandssitzung) mit Google-Places-Daten, BillBro-Kalkulationsfeldern und `audience` (`all`/`board`) für Vorstands-only-Sichtbarkeit; „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
+- **`Event`** – Vereinsevents (Monatsessen, Ausflug, Generalversammlung, Vorstandssitzung, Essen (Buchhaltung)) mit Google-Places-Daten, BillBro-Kalkulationsfeldern, `audience` (`all`/`board`) für Vorstands-only-Sichtbarkeit und `bill_paid_by`/`bill_payer_member_id` (Zahlweg der Rechnung, **Phase 04b**); „Kuche“ ist Freitext mit Vorschlagsliste (HTML `datalist`) aus bereits gespeicherten Werten — Google Places befuellt das Feld nicht (Place-Typen liefern keine verlaessliche Kulinarik-Lesart).
 - **`Participation`** – Teilnahme an Event mit Rolle (sparsam/normal/allin), Schätzbetrag (für GGL), Punkten
 - **`Document`** – schlanker DB-Cache zu einer Drive-Datei (**Phase 09**): `drive_file_id`, `drive_parent_id`, optional `uploader_id`/`event_id`, `last_seen_at`, `created_at`. Metadaten (Name, MIME, Groesse) kommen von der Drive-API; Archiv ist ein Ordner (`DRIVE_ARCHIVE_FOLDER_ID`), kein DB-Status mehr. Spec: `docs/capabilities/drive.md`.
 - **`EventRating`** – Bewertung eines Events (Food/Drinks/Service)
@@ -83,6 +83,7 @@ Registrierung in `backend/app.py`:
 - **`PushSubscription`** – Web-Push-Subscriptions pro Member+Gerät
 - **`AuditEvent`** – Audit-Log sensibler Aktionen
 - **`FiscalYear`/`Account`/`BudgetEntry`/`Booking`/`Receipt`/`RevisionComment`/`RevisionApproval`** – Buchhaltungsmodul (**Phase 04**): E/A-Rechnung mit Status-Lifecycle `open → in_review → closed`, Beträge in Rappen (Integer), Belege als Drive-Referenzen. Spec: `docs/capabilities/accounting.md`.
+- **`BankStatementImport`/`BankTransaction`/`MemberClaim`/`MemberBankAlias`** – ZKB-Import und Offene Posten (**Phase 04b**): CSV-Import mit Dedup (ZKB-Referenz bzw. Content-Hash), Transaktions-Status `pending → booked/ignored`, offene Posten pro Mitglied (Beitrag/Essensanteil/Merch/Reise) mit Teilzahlungen, gelernte Bank-Aliase für Namens-Matching. Spec: `docs/capabilities/accounting.md` Sektion 11.
 
 Detail siehe direkt im Code unter `backend/models/`.
 
@@ -114,8 +115,9 @@ Aktuelle Services:
 | `RetroCleanupService` | Datenbereinigungs-Workflow für Member |
 | `DriveStorageService` | Google Shared Drive – Drive-Browser (**Phase 09**): `list_folder`, Breadcrumb, Volltextsuche, Upload mit Zielordner, Move/Archive/Restore, Auto-Sync/Resync, Member-Invite/Removal. Sanitization (`sanitize_drive_filename`, `sanitize_svg_bytes`), MIME-Allowlist, 100 MB Limit, transientes Retry mit `tenacity`. Spec: `docs/capabilities/drive.md`. |
 | `CalendarFeedService` | **Phase 05:** RFC-5545-iCal-Feed aus veröffentlichten Zukunfts-Events (`icalendar`), Token-Lifecycle (`Member.ical_token`), `ical_sequence`-Bump bei kalender-relevanten Feldänderungen. Spec: `docs/capabilities/calendar.md`. |
-| `AccountingService` | **Phase 04:** Buchhaltung – Konten, Geschäftsjahre (Status-Lifecycle), Buchungen, Budget vs. Ist, Belege (Drive-Upload via `DriveStorageService` nach `Buchhaltung/{Jahr}/`), Revisions-Kommentare, Statistik-Auswertungen, CSV-Export. Spec: `docs/capabilities/accounting.md`. |
+| `AccountingService` | **Phase 04 + 04b:** Buchhaltung – Konten, Geschäftsjahre (Status-Lifecycle, Budget-Vorschlag bei Jahreseröffnung), Buchungen, Budget vs. Ist, Belege (Drive-Upload via `DriveStorageService` nach `Buchhaltung/{Jahr}/`), Offene Posten (`MemberClaim`: Erzeugung für Beiträge/BillBro/Merch, Begleichen, Eingangs-Bestätigung), Revisions-Kommentare, Statistik-Auswertungen, CSV-Export. Spec: `docs/capabilities/accounting.md`. |
 | `AccountingPdfService` | **Phase 04:** Revisorenbericht und Jahresabschluss als PDF (`reportlab`, pure Python). Saemtlicher PDF-Code isoliert in `backend/services/accounting_pdf.py`. |
+| `BankImportService` | **Phase 04b:** ZKB-CSV-Import – Parsing (UTF-8/CP1252, Sammelbuchungs-Splitting, EUR→CHF-Verteilung), Dedup (ZKB-Referenz/Content-Hash), Auto-Vorschläge (Konto/Mitglied/Posten/Event), Verbuchen inkl. Claim-Abgleich und Aufrundungs-Split, Alias-Lernen. Code: `backend/services/bank_import.py`. Spec: `docs/capabilities/accounting.md` Sektion 11. |
 
 ## Auth-Flow
 

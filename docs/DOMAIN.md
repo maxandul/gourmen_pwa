@@ -39,6 +39,7 @@ Aktueller Status: nicht im Handelsregister eingetragen – das ist für einen ei
 | `AUSFLUG` | Mehrtägige oder Tages-Ausflüge |
 | `GENERALVERSAMMLUNG` | Jährliche Mitgliederversammlung |
 | `VORSTANDSSITZUNG` | Sitzung des Vorstands; immer `audience=board` |
+| `ESSEN_BUCHHALTUNG` | «Essen (Buchhaltung)»: Ad-hoc-Essen (z.B. auf Reisen), das mit der Vereinskarte bezahlt wird – nur damit der ZKB-Eintrag später zugeordnet und via BillBro gesplittet werden kann. Offen für alle Mitglieder, ohne GGL, ohne Erinnerungen |
 
 ### Event-Sichtbarkeit (`EventAudience`)
 
@@ -49,7 +50,7 @@ Aktueller Status: nicht im Handelsregister eingetragen – das ist für einen ei
 
 `VORSTANDSSITZUNG` setzt `audience` serverseitig immer auf `board`. Push-/RSVP-Erinnerungen (3 Wochen vor Termin, Montag vor Event) laufen für Monatsessen, GV und Vorstandssitzung; bei `board` nur an Vorstandsmitglieder.
 
-Bei Monatsessen wird in der Regel BillBro inkl. GGL-Schätzspiel angewendet. Bei **Vorstandssitzungen** läuft BillBro abgespeckt (Ess-Typ + Rechnungssplit, ohne Schätzung/Rangliste/GGL). Bei Ausflügen und Generalversammlung ist BillBro nicht zwingend.
+Bei Monatsessen wird in der Regel BillBro inkl. GGL-Schätzspiel angewendet. Bei **Vorstandssitzungen** und **Essen (Buchhaltung)** läuft BillBro abgespeckt (Ess-Typ + Rechnungssplit, ohne Schätzung/Rangliste/GGL). Bei Ausflügen und Generalversammlung ist BillBro nicht zwingend.
 
 ## BillBro
 
@@ -89,6 +90,13 @@ Resultat-Felder am Event: `betrag_sparsam_rappen`, `betrag_normal_rappen`, `betr
 - Beim Erfassen der Rechnung vergibt `GGLService.calculate_event_points` GGL-Punkte
 
 Bei Vorstandssitzungen (und anderen Nicht-GGL-Events) wählen Teilnehmende nur den Ess-Typ; der Organisator erfasst Rechnung, bestätigt/passt den vorgeschlagenen Gesamtbetrag (inkl. Trinkgeld) an und BillBro berechnet die Anteile – ohne Rangliste und ohne GGL-Punkte.
+
+### BillBro-Zahlweg (Phase 04b)
+
+Der Organisator gibt an, wie die Rechnung beglichen wird (`Event.bill_paid_by`):
+
+- **Vereinskonto** (`VEREINSKONTO`) – bei Finalisierung entstehen pro Teilnehmer offene Posten (`MemberClaim`, Typ `ESSENSANTEIL`); Rücküberweisungen werden über den ZKB-Import den Posten zugeordnet, Aufrundungen landen auf Konto `3315`.
+- **Mitglied** (`MITGLIED`) – ein teilnehmendes Mitglied legt privat aus (`Event.bill_payer_member_id`); die Anteile laufen **nicht** über die Vereinsbuchhaltung. Der Auslegende bestätigt eingegangene Zahlungen der anderen direkt in der App (Dashboard).
 
 ## GGL – Gourmen Guessing League
 
@@ -199,7 +207,7 @@ Im `AuditAction`-Enum definiert. Beispiele:
 - `CALENDAR_FEED_ENABLED`, `CALENDAR_FEED_REGENERATED`, `CALENDAR_FEED_DISABLED` — persönlicher iCal-Feed (`docs/capabilities/calendar.md`); **ohne** Token-Wert im Audit-`extra_json`
 - weitere bei Bedarf
 
-## Buchhaltung (Phase 04)
+## Buchhaltung (Phase 04 + 04b)
 
 Einnahmen-/Ausgaben-Rechnung (E/A) des Vereins in der App. Authoritatives Spec: `docs/capabilities/accounting.md`.
 
@@ -212,23 +220,26 @@ Einnahmen-/Ausgaben-Rechnung (E/A) des Vereins in der App. Authoritatives Spec: 
 - **Budget** (`BudgetEntry`) – Soll-Wert pro Konto und Jahr; Vergleich Budget vs. Ist im Budget-Tab.
 - **Revision** – der Rechnungsprüfer prüft das freigegebene Jahr in der App (read-only), hinterlässt `RevisionComment`s und bestätigt formal (`RevisionApproval`). Danach generiert die App den **Revisorenbericht** als PDF und legt ihn in Drive ab.
 - **Sparkapital** – kumuliertes Ergebnis aller Vorjahre («zu Jahresbeginn» im Bericht).
+- **ZKB-Import** (`BankStatementImport`/`BankTransaction`, Phase 04b) – monatlicher CSV-Export des ZKB-Vereinskontos wird hochgeladen, dedupliziert (ZKB-Referenz), Sammelbuchungen werden in Detailzeilen gesplittet; der Schatzmeister verbucht die Zeilen im Review-Screen. Der Import ist die **primäre Buchungsquelle**, manuelle Buchungen der Sonderfall.
+- **Offener Posten** (`MemberClaim`, Phase 04b) – erwartete Zahlung eines Mitglieds an den Verein: Mitgliederbeitrag, BillBro-Essensanteil, Merch-Bestellung, Reise. Kennt Teilzahlungen (`OFFEN → TEILWEISE → BEGLICHEN`); Überzahlungen werden als ausserordentliche Einnahme (aufgerundeter Anteil) verbucht.
+- **Bank-Alias** (`MemberBankAlias`, Phase 04b) – gelernte Schreibweise eines Mitglieds im Kontoauszug (Zweitnamen etc.); verbessert die Auto-Zuordnung bei künftigen Importen.
 
 ### Rollen
 
 - **Schatzmeister** (`Funktion.SCHATZMEISTER`) – bucht, verwaltet Budget, gibt das Jahr zur Revision frei.
 - **Rechnungsprüfer / Revisor** (`Funktion.RECHNUNGSPRUEFER`) – read-only-Zugriff, Kommentare, formale Bestätigung des Jahres.
 - **Admin** – kommt überall durch; verwaltet zusätzlich den Kontenplan.
-- **Aktives Mitglied** – darf Belege einreichen und die eigenen Belege sehen (`/member/receipts`).
+- **Aktives Mitglied** – darf Belege einreichen und die eigenen Belege sehen (`/member/receipts`); sieht eigene offene Posten auf dem Dashboard und bestätigt dort Eingänge, wenn es privat ausgelegt hat.
 
 ### Kontenplan (Kurzübersicht)
 
-Vierstellige Konto-Nummern, angelehnt an KMU-Kontenrahmen:
+Vierstellige Konto-Nummern, angelehnt an KMU-Kontenrahmen. Seit dem Refokus (Phase 04b) verschlankt auf 18 real bebuchte Konten:
 
-- **3xxx Einnahmen**: `3000/3015/3020` Mitgliederbeiträge, `31xx` Zuwendungen/Spenden, `33xx` Aktivitäten (u.a. `3310` Einnahmen aus monatlichen Essen), `36xx` übrige Erlöse (u.a. `3620` Bussen)
-- **4xxx/5xxx Aufwand**: `4xxx` Aufwand Aktivitäten (u.a. `4500` Reisen/Ausflüge), `5000` Lohnaufwand
-- **6xxx übriger Aufwand**: u.a. `6100` Ausgaben aus monatlichem Essen, `6530` Buchführung/Revision, `6800` Abschreibungen, `69xx` Finanzergebnis
+- **3xxx Einnahmen**: `3000` Mitgliederbeiträge, `3100` Spenden/Sponsoring, `3310/3315` Essensanteile (inkl. Aufrundungen), `3400/3410` Merch-Zahlungen (inkl. Aufrundungen), `3500` Reisen, `3620` Sonstiges (Bussen, Rückerstattungen)
+- **4xxx Aufwand Aktivitäten**: `4500` Reisen und Ausflüge
+- **6xxx übriger Aufwand**: `6100` Essen mit Vereinskonto, `6541/6542` GV/Vorstandssitzungen, `6570` IT/Telefon, `6650/6660` Merch-Einkauf/-Beitrag, `6700` Sonstiges, `6710` Rückzahlungen, `6940` Konto-/Kartengebühren
 
-Seed: `python scripts/seed_accounting_chart.py` (idempotent; Kontenplan + FiscalYears 2021–2026 + Budget 2025/2026).
+Seed: `python scripts/seed_accounting_chart.py` (idempotent; Kontenplan + FiscalYears 2021–2026 + Budget 2025/2026; entfernt/deaktiviert Alt-Konten ohne/mit Buchungen).
 
 ## Merchandise
 
@@ -260,6 +271,6 @@ Default `BESTELLT`, weitere Werte je nach Workflow (`AUSGELIEFERT` etc. – im C
 ## Was es **nicht** gibt (potenziell verwirrend)
 
 - **Keine Family-/Gast-Mitglieder**: jeder Member ist gleich strukturiert
-- **Keine automatische Beitrags-Einforderung**: Mitgliederbeiträge werden im Buchhaltungs-Modul manuell gebucht (Konten 3000/3015/3020); Payment-Integration (TWINT/ZKB) kommt erst in Phase 6
+- **Keine automatische Beitrags-Einforderung**: Mitgliederbeiträge entstehen als offene Posten (`MemberClaim`) und werden über den ZKB-Import abgeglichen; es gibt aber kein aktives Mahnwesen und keine Payment-Integration (TWINT kommt erst in Phase 6)
 - **Keine externen Auth-Provider**: Login ist Eigenbau (Email + Passwort + 2FA)
 - **Keine native App**: nur PWA (installierbar, aber HTML/JS unter der Haube)

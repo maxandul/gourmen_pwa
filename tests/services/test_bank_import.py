@@ -282,6 +282,31 @@ def test_billbro_claims_club_vs_private(app):
         assert confirmed.status == ClaimStatus.BEGLICHEN
 
 
+def test_create_fiscal_year_seeds_budget_proposal(app):
+    with app.app_context():
+        treasurer, _max, _roman, fy = _seed_base()
+        from datetime import date
+        from backend.models.accounting import BudgetEntry
+
+        travel = Account.query.filter_by(code='4500').one()
+        AccountingService.create_booking(
+            fiscal_year_id=fy.id, booking_date=date(2026, 5, 1),
+            description='Hotel Testreise', amount_rappen=412345,
+            direction=BookingDirection.OUT, account_id=travel.id,
+            event_id=None, member_id=None, created_by=treasurer,
+        )
+        fy_next = AccountingService.create_fiscal_year(2027, treasurer)
+        assert fy_next.membership_fee_rappen == 84000  # vom Vorjahr übernommen
+
+        entries = {
+            e.account_id: e.amount_rappen
+            for e in BudgetEntry.query.filter_by(fiscal_year_id=fy_next.id).all()
+        }
+        contribution = Account.query.filter_by(code='3000').one()
+        assert entries[contribution.id] == 3 * 84000
+        assert entries[travel.id] == 412000
+
+
 def test_propose_budget_uses_member_count_and_previous_actuals(app):
     with app.app_context():
         treasurer, _max, _roman, fy = _seed_base()
