@@ -216,6 +216,7 @@ def register_context_processors(app):
             'GENERALVERSAMMLUNG': '🏛️',
             'AUSFLUG': '🧳',
             'VORSTANDSSITZUNG': '📋',
+            'ESSEN_BUCHHALTUNG': '💳',
         }
         emoji = emoji_map.get(event_type_value, '')
         return f"{emoji} {event_type_value}" if emoji else event_type_value

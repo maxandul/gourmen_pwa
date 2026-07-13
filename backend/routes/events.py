@@ -137,6 +137,7 @@ class EventForm(FlaskForm):
         (EventType.AUSFLUG.value, 'Ausflug'),
         (EventType.GENERALVERSAMMLUNG.value, 'Generalversammlung'),
         (EventType.VORSTANDSSITZUNG.value, 'Vorstandssitzung'),
+        (EventType.ESSEN_BUCHHALTUNG.value, 'Essen (Buchhaltung)'),
     ], validators=[DataRequired()])
     audience = SelectField('Sichtbarkeit', choices=[
         (EventAudience.ALL.value, 'Alle Mitglieder'),
