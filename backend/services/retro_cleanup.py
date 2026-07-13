@@ -35,21 +35,23 @@ class RetroCleanupService:
         return start, end
 
     @classmethod
-    def _past_events_query(cls, member_join_dt: Optional[datetime] = None):
+    def _past_events_query(cls, member, member_join_dt: Optional[datetime] = None):
         today_start = cls._today_start_utc()
         query = Event.query.filter(Event.published == True).filter(Event.datum < today_start)  # noqa: E712
+        query = Event.apply_audience_filter(query, member)
         if member_join_dt:
             query = query.filter(Event.datum >= member_join_dt)
         return query
 
     @classmethod
-    def _upcoming_events_query(cls, member_join_dt: Optional[datetime] = None):
+    def _upcoming_events_query(cls, member, member_join_dt: Optional[datetime] = None):
         start, end = cls._upcoming_window_bounds()
         query = (
             Event.query.filter(Event.published == True)  # noqa: E712
             .filter(Event.datum >= start)
             .filter(Event.datum <= end)
         )
+        query = Event.apply_audience_filter(query, member)
         if member_join_dt:
             query = query.filter(Event.datum >= member_join_dt)
         return query
@@ -57,8 +59,9 @@ class RetroCleanupService:
     @classmethod
     def cleanup_candidate_events(cls, member_id: int) -> List[Event]:
         """Nur vergangene Events (vor heute), neuestes Datum zuerst."""
+        member = Member.query.get(member_id)
         join_dt = cls._member_join_date(member_id)
-        past = cls._past_events_query(join_dt).all()
+        past = cls._past_events_query(member, join_dt).all()
         return sorted(past, key=lambda e: e.datum, reverse=True)
 
     @classmethod
@@ -75,8 +78,9 @@ class RetroCleanupService:
     @classmethod
     def get_upcoming_rsvp_prompt_event(cls, member_id: int) -> Optional[Event]:
         """Nächstes Event im Fenster heute…+30 ohne Zu-/Absage (frühestes Datum zuerst)."""
+        member = Member.query.get(member_id)
         join_dt = cls._member_join_date(member_id)
-        q = cls._upcoming_events_query(join_dt).order_by(Event.datum.asc())
+        q = cls._upcoming_events_query(member, join_dt).order_by(Event.datum.asc())
         for event in q:
             p = cls._get_participation(event.id, member_id)
             if p is None or p.responded_at is None:
@@ -87,6 +91,7 @@ class RetroCleanupService:
     def get_today_billbro_prompt_event(cls, member_id: int) -> Optional[Event]:
         """Heutiges veröffentlichtes Event (UTC-Kalendertag): BillBro-Link für Organisator oder
         Zusage, nur solange ``billbro_closed`` falsch ist. Reihenfolge: frühestes ``datum`` zuerst."""
+        member = Member.query.get(member_id)
         join_dt = cls._member_join_date(member_id)
         today_utc = datetime.utcnow().date()
         day_start = datetime.combine(today_utc, time.min)
@@ -98,6 +103,7 @@ class RetroCleanupService:
             .filter(Event.datum >= day_start)
             .filter(Event.datum < day_end)
         )
+        q = Event.apply_audience_filter(q, member)
         if join_dt:
             q = q.filter(Event.datum >= join_dt)
         events = q.order_by(Event.datum.asc()).all()

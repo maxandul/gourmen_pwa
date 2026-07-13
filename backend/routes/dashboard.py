@@ -17,10 +17,15 @@ def index():
     # Get next upcoming event
     # An event is "upcoming" until the day AFTER the event date
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    next_event = Event.query.filter(
+    next_event_q = Event.query.filter(
         Event.datum >= today,
         Event.published == True
-    ).order_by(Event.datum.asc()).first()
+    )
+    next_event = (
+        Event.apply_audience_filter(next_event_q, current_user)
+        .order_by(Event.datum.asc())
+        .first()
+    )
     
     # Get current season GGL stats for user
     current_season = GGLService.get_current_season()
@@ -66,13 +71,20 @@ def index():
 
     rsvp_prompt_event = RetroCleanupService.get_upcoming_rsvp_prompt_event(current_user.id)
     today_billbro_event = RetroCleanupService.get_today_billbro_prompt_event(current_user.id)
-    restaurant_due_event = Event.query.filter(
-        Event.organisator_id == current_user.id,
-        Event.published == True,
-        Event.datum >= today,
-        Event.datum <= (today + timedelta(days=30)),
-        ((Event.restaurant.is_(None)) | (Event.restaurant == ''))
-    ).order_by(Event.datum.asc()).first()
+    restaurant_due_event = (
+        Event.apply_audience_filter(
+            Event.query.filter(
+                Event.organisator_id == current_user.id,
+                Event.published == True,
+                Event.datum >= today,
+                Event.datum <= (today + timedelta(days=30)),
+                ((Event.restaurant.is_(None)) | (Event.restaurant == ''))
+            ),
+            current_user,
+        )
+        .order_by(Event.datum.asc())
+        .first()
+    )
 
     merch_orders = (
         MerchOrder.query.filter_by(member_id=current_user.id)

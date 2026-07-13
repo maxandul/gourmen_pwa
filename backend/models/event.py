@@ -1,12 +1,31 @@
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from backend.extensions import db
 
 class EventType(Enum):
     MONATSESSEN = 'MONATSESSEN'
     AUSFLUG = 'AUSFLUG'
     GENERALVERSAMMLUNG = 'GENERALVERSAMMLUNG'
+    VORSTANDSSITZUNG = 'VORSTANDSSITZUNG'
+
+
+class EventAudience(Enum):
+    """Who may see the event in App UI and (board) personal iCal feeds."""
+    ALL = 'all'
+    BOARD = 'board'
+
+
+# Event types that get 3-week RSVP + Monday-before-event push reminders
+RSVP_REMINDER_EVENT_TYPES = (
+    EventType.MONATSESSEN,
+    EventType.GENERALVERSAMMLUNG,
+    EventType.VORSTANDSSITZUNG,
+)
+
+# GGL-Schätzspiel nur bei Monatsessen (nicht bei Vorstandssitzung / Ausflug / GV)
+GGL_EVENT_TYPES = (EventType.MONATSESSEN,)
+
 
 class Event(db.Model):
     """Event model for association events"""
@@ -19,6 +38,17 @@ class Event(db.Model):
     # Event details
     datum = db.Column(db.DateTime, nullable=False, index=True)
     event_typ = db.Column(db.Enum(EventType), nullable=False)
+    audience = db.Column(
+        db.Enum(
+            EventAudience,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+            name='eventaudience',
+        ),
+        nullable=False,
+        default=EventAudience.ALL,
+        server_default='all',
+        index=True,
+    )
     restaurant = db.Column(db.String(200))
     kueche = db.Column(db.String(100))
     
@@ -108,7 +138,77 @@ class Event(db.Model):
     def __repr__(self):
         event_type = self.event_typ.value if hasattr(self.event_typ, 'value') else str(self.event_typ)
         return f'<Event {self.id}: {event_type} am {self.datum.date()}>'
-    
+
+    @property
+    def audience_value(self) -> str:
+        aud = self.audience
+        if aud is None:
+            return EventAudience.ALL.value
+        return aud.value if hasattr(aud, 'value') else str(aud)
+
+    @property
+    def is_board_only(self) -> bool:
+        return self.audience_value == EventAudience.BOARD.value
+
+    @property
+    def supports_ggl(self) -> bool:
+        """True if this event participates in the GGL guessing league."""
+        return self.event_typ in GGL_EVENT_TYPES
+
+    def is_visible_to(self, member) -> bool:
+        """App-Sichtbarkeit: board-only nur für Vorstand, Admin oder Organisator."""
+        if not self.is_board_only:
+            return True
+        if member is None:
+            return False
+        if getattr(member, 'vorstandsmitglied', False):
+            return True
+        if hasattr(member, 'is_admin') and member.is_admin():
+            return True
+        return getattr(member, 'id', None) == self.organisator_id
+
+    @classmethod
+    def apply_audience_filter(cls, query, member, *, for_calendar: bool = False):
+        """Filter query to events the member may see.
+
+        Calendar feeds use only ``vorstandsmitglied`` (personal token).
+        App UI also includes admins and the event organizer.
+        """
+        if member is None:
+            return query.filter(cls.audience == EventAudience.ALL)
+        if getattr(member, 'vorstandsmitglied', False):
+            return query
+        if for_calendar:
+            return query.filter(cls.audience == EventAudience.ALL)
+        if hasattr(member, 'is_admin') and member.is_admin():
+            return query
+        return query.filter(
+            or_(
+                cls.audience == EventAudience.ALL,
+                cls.organisator_id == member.id,
+            )
+        )
+
+    def eligible_members_query(self):
+        """Active members in the RSVP / reminder audience for this event."""
+        from backend.models.member import Member
+
+        q = Member.query.filter_by(is_active=True)
+        if self.is_board_only:
+            q = q.filter_by(vorstandsmitglied=True)
+        return q
+
+    @staticmethod
+    def resolve_audience_for_type(event_typ: EventType, requested: EventAudience | str | None) -> EventAudience:
+        """Vorstandssitzung is always board-only; other types use the requested audience."""
+        if event_typ == EventType.VORSTANDSSITZUNG:
+            return EventAudience.BOARD
+        if requested is None:
+            return EventAudience.ALL
+        if isinstance(requested, EventAudience):
+            return requested
+        return EventAudience(requested)
+
     @property
     def is_past(self):
         """Check if event is in the past"""

@@ -10,6 +10,7 @@
 {% if v == 'MONATSESSEN' %}{{ lucide_icon('utensils') }}
 {% elif v == 'GENERALVERSAMMLUNG' %}{{ lucide_icon('landmark') }}
 {% elif v == 'AUSFLUG' %}{{ lucide_icon('bus') }}
+{% elif v == 'VORSTANDSSITZUNG' %}{{ lucide_icon('users') }}
 {% else %}{{ lucide_icon('calendar') }}
 {% endif %}
 {%- endmacro %}
@@ -300,6 +301,7 @@
                     {% set has_bill = event.rechnungsbetrag_rappen is not none %}
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
                     {% set can_access_billbro = (participation and participation.teilnahme) or is_organizer %}
+                    {% set supports_ggl = event.supports_ggl %}
                     {% if can_access_billbro %}
                     {% if not event.billbro_closed %}
                     {% set billbro_phase = 1 %}
@@ -311,10 +313,16 @@
                     {% set billbro_phase = 4 %}
                     {% endif %}
                     {% set billbro_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
-                    {% set billbro_pending_guesses = billbro_attending|selectattr('guess_bill_amount_rappen','equalto',none)|list %}
+                    {% if supports_ggl %}
+                    {% set billbro_pending = billbro_attending|selectattr('guess_bill_amount_rappen','equalto',none)|list %}
+                    {% set billbro_phase_labels = ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
+                    {% else %}
+                    {% set billbro_pending = billbro_attending|rejectattr('esstyp')|list %}
+                    {% set billbro_phase_labels = ['Esstyp', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
+                    {% endif %}
                     <div class="billbro-workflow-block">
                         <ol class="billbro-workflow" aria-label="BillBro-Ablauf">
-                            {% for label in ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
+                            {% for label in billbro_phase_labels %}
                             {% set i = loop.index %}
                             <li class="billbro-workflow__step{% if i < billbro_phase %} billbro-workflow__step--done{% elif i == billbro_phase %} billbro-workflow__step--current{% endif %}"{% if i == billbro_phase %} aria-current="step"{% endif %}>
                                 <span class="billbro-workflow__index">{{ i }}</span>
@@ -329,10 +337,18 @@
                                 {% if billbro_phase == 1 %}
                                     {% if billbro_attending|length == 0 %}
                                         Aktuell hat niemand zugesagt.
-                                    {% elif billbro_pending_guesses|length > 0 %}
-                                        Es fehlen noch {{ billbro_pending_guesses|length }} Schätzung{% if billbro_pending_guesses|length != 1 %}en{% endif %}. Prüfe bei Bedarf die Anwesenheit unten und schließe die Schätzrunde, sobald alle geschätzt haben.
+                                    {% elif billbro_pending|length > 0 %}
+                                        {% if supports_ggl %}
+                                        Es fehlen noch {{ billbro_pending|length }} Schätzung{% if billbro_pending|length != 1 %}en{% endif %}. Prüfe bei Bedarf die Anwesenheit unten und schließe die Schätzrunde, sobald alle geschätzt haben.
+                                        {% else %}
+                                        Es fehlen noch {{ billbro_pending|length }} Ess-Typ{% if billbro_pending|length != 1 %}en{% endif %}. Prüfe bei Bedarf die Anwesenheit unten und schließe die Runde, sobald alle gewählt haben.
+                                        {% endif %}
                                     {% else %}
+                                        {% if supports_ggl %}
                                         Alle Zugesagten haben geschätzt. Schliesse die Schätzrunde und trage anschliessend den Rechnungsbetrag ein.
+                                        {% else %}
+                                        Alle Zugesagten haben einen Ess-Typ. Schliesse die Runde und trage anschliessend den Rechnungsbetrag ein.
+                                        {% endif %}
                                     {% endif %}
                                 {% elif billbro_phase == 2 %}
                                     Trage den Rechnungsbetrag ein. Danach legst du den Gesamtbetrag inklusive Trinkgeld fest.
@@ -343,13 +359,25 @@
                                 {% endif %}
                             {% else %}
                                 {% if billbro_phase == 1 %}
-                                    {% if participation and participation.has_guess %}
-                                        Du hast geschätzt. Als Nächstes schliesst der Organisator die Schätzrunde und erfasst die Rechnung.
+                                    {% if supports_ggl %}
+                                        {% if participation and participation.has_guess %}
+                                            Du hast geschätzt. Als Nächstes schliesst der Organisator die Schätzrunde und erfasst die Rechnung.
+                                        {% else %}
+                                            Gib unten deine Schätzung und deinen Ess-Typ ab.
+                                        {% endif %}
                                     {% else %}
-                                        Gib unten deine Schätzung und deinen Ess-Typ ab.
+                                        {% if participation and participation.has_esstyp %}
+                                            Du hast deinen Ess-Typ gewählt. Als Nächstes schliesst der Organisator die Runde und erfasst die Rechnung.
+                                        {% else %}
+                                            Wähle unten deinen Ess-Typ.
+                                        {% endif %}
                                     {% endif %}
                                 {% elif billbro_phase == 2 %}
+                                    {% if supports_ggl %}
                                     Du wartest, bis der Organisator den Rechnungsbetrag einträgt. Danach siehst du die Rangliste.
+                                    {% else %}
+                                    Du wartest, bis der Organisator den Rechnungsbetrag einträgt.
+                                    {% endif %}
                                 {% elif billbro_phase == 3 %}
                                     Du wartest, bis der Organisator den finalen Gesamtbetrag festlegt. Danach erscheint dein Anteil.
                                 {% else %}
@@ -441,8 +469,8 @@
                         {% endif %}
                     </div>
 
-                    {# 2) Schätzungsrangliste (sobald Rechnungsbetrag gesetzt) #}
-                    {% if has_bill %}
+                    {# 2) Schätzungsrangliste (nur GGL / Monatsessen) #}
+                    {% if supports_ggl and has_bill %}
                     {% set ranked = event.participations
                             | selectattr('teilnahme','equalto', True)
                             | rejectattr('guess_bill_amount_rappen', 'equalto', none)
@@ -479,8 +507,9 @@
                     {% endif %}
                     {% endif %}
 
+                    {% if supports_ggl %}
                     <!-- 3) Deine Schätzung / Neue Schätzung als eigenständige Cards -->
-                    {% if participation.has_guess %}
+                    {% if participation and participation.has_guess %}
                     <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-my-guess">
                         <div class="card__header">
                             <h2 class="card__title">
@@ -549,7 +578,7 @@
                                     
                                     <div class="form-field">
                                         {{ form.guess_amount.label(class_="form-field__label") }}
-                                        {{ form.guess_amount(class_="form-field__input", placeholder="z.B. 45.50") }}
+                                        {{ form.guess_amount(class_="form-field__input", placeholder="z.B. 45.50", required=true) }}
                                         {% if form.guess_amount.errors %}
                                         <span class="form-field__error">{{ form.guess_amount.errors[0] }}</span>
                                         {% endif %}
@@ -573,9 +602,69 @@
                         </div>
                     </div>
                     {% endif %}
+                    {% else %}
+                    <!-- Ess-Typ only (kein GGL) -->
+                    {% if participation and participation.has_esstyp %}
+                    <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-my-esstyp">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Dein Ess-Typ
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            <div class="info-row">
+                                <span class="info-row__label">Ess-Typ</span>
+                                <span class="info-row__value">{{ participation.esstyp.value }}</span>
+                            </div>
+                        </div>
+                        <div class="card__footer">
+                            {% if not event.billbro_closed %}
+                            <form method="POST" action="{{ url_for('billbro.update_guess', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--outline">Ess-Typ ändern</button>
+                            </form>
+                            {% else %}
+                            <p class="text-muted">BillBro ist abgeschlossen – keine Änderungen mehr möglich.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% elif participation and participation.teilnahme %}
+                    <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-new-esstyp">
+                        <div class="card__header">
+                            <h2 class="card__title">Ess-Typ wählen</h2>
+                        </div>
+                        <div class="card__body">
+                            {% if not event.billbro_closed %}
+                            {% if form is defined %}
+                                <form method="POST" action="{{ url_for('billbro.compute', event_id=event.id) }}" class="form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="form-field">
+                                        {{ form.esstyp.label(class_="form-field__label") }}
+                                        {{ form.esstyp(class_="form-field__select") }}
+                                        {% if form.esstyp.errors %}
+                                        <span class="form-field__error">{{ form.esstyp.errors[0] }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn--primary">Ess-Typ speichern</button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <p class="text-muted">Formular nicht verfügbar.</p>
+                            {% endif %}
+                            {% else %}
+                            <p class="text-muted">BillBro ist abgeschlossen – keine Änderungen mehr möglich.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
 
                     {% if is_organizer %}
-                    <!-- Organizer: Anwesenheit & Schätzungen -->
+                    <!-- Organizer: Anwesenheit -->
                     <section id="billbro-attendance" class="event-ratings-all mt-6" aria-labelledby="billbro-attendance-heading">
                         <h2 class="event-ratings-all__heading" id="billbro-attendance-heading">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -596,12 +685,22 @@
                                     <div class="info-row">
                                         <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
                                         <div class="info-row__value info-row__value--actions">
-                                            {{ member_participation.display_guess if member_participation.has_guess else 'Wartet auf Schätzung' }}
-                                            {% if not member_participation.has_guess %}
+                                            {% if supports_ggl %}
+                                                {{ member_participation.display_guess if member_participation.has_guess else 'Wartet auf Schätzung' }}
+                                                {% if not member_participation.has_guess %}
                                             <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" class="form">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn--outline btn--sm" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
                                             </form>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ member_participation.esstyp.value if member_participation.has_esstyp else 'Wartet auf Ess-Typ' }}
+                                                {% if not member_participation.has_esstyp %}
+                                            <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" class="form">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn--outline btn--sm" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
+                                            </form>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                     </div>
@@ -632,7 +731,11 @@
                             </div>
                         </div>
                         {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
-                        {% set pending_guesses = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
+                        {% if supports_ggl %}
+                        {% set pending_ready = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
+                        {% else %}
+                        {% set pending_ready = total_attending|rejectattr('esstyp')|list %}
+                        {% endif %}
                         <div class="tool-strip__actions" role="group" aria-label="Aktionen Anwesenheits-Check">
                             {% if event.billbro_closed %}
                             <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
@@ -642,11 +745,11 @@
                                         <path d="M3 12h18"/>
                                         <path d="M12 3v18"/>
                                     </svg>
-                                    Schätzrunde öffnen
+                                    {% if supports_ggl %}Schätzrunde öffnen{% else %}Ess-Typ-Runde öffnen{% endif %}
                                 </button>
                             </form>
-                            {% elif pending_guesses|length > 0 %}
-                            <span class="text-muted">Warten auf Schätzungen ({{ pending_guesses|length }})</span>
+                            {% elif pending_ready|length > 0 %}
+                            <span class="text-muted">{% if supports_ggl %}Warten auf Schätzungen{% else %}Warten auf Ess-Typen{% endif %} ({{ pending_ready|length }})</span>
                             {% else %}
                             <form method="POST" action="{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -654,7 +757,7 @@
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="20 6 9 17 4 12"/>
                                     </svg>
-                                    Schätzrunde schließen
+                                    {% if supports_ggl %}Schätzrunde schließen{% else %}Ess-Typ-Runde schließen{% endif %}
                                 </button>
                             </form>
                             {% endif %}

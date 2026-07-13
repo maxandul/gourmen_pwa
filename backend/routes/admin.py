@@ -11,7 +11,7 @@ from wtforms import StringField, SelectField, BooleanField, DateField, SubmitFie
 from wtforms.validators import DataRequired, Email, Length, Optional
 from backend.extensions import db
 from backend.models.member import Member, Role, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
-from backend.models.event import Event, EventType
+from backend.models.event import Event, EventType, EventAudience
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
@@ -260,8 +260,13 @@ class EventForm(FlaskForm):
     event_typ = SelectField('Event-Typ', choices=[
         (EventType.MONATSESSEN.value, 'Monatsessen'),
         (EventType.AUSFLUG.value, 'Ausflug'),
-        (EventType.GENERALVERSAMMLUNG.value, 'Generalversammlung')
+        (EventType.GENERALVERSAMMLUNG.value, 'Generalversammlung'),
+        (EventType.VORSTANDSSITZUNG.value, 'Vorstandssitzung'),
     ], validators=[DataRequired()])
+    audience = SelectField('Sichtbarkeit', choices=[
+        (EventAudience.ALL.value, 'Alle Mitglieder'),
+        (EventAudience.BOARD.value, 'Nur Vorstand'),
+    ], validators=[DataRequired()], default=EventAudience.ALL.value)
     organisator_id = SelectField('Organisator', coerce=int, validators=[DataRequired()])
     
     # Restaurant fields
@@ -632,9 +637,11 @@ def create_event():
         from datetime import datetime, time
         event_datetime = datetime.combine(form.datum.data, time(23, 59, 59))
         
+        event_typ = EventType(form.event_typ.data)
         event = Event(
             datum=event_datetime,
-            event_typ=EventType(form.event_typ.data),
+            event_typ=event_typ,
+            audience=Event.resolve_audience_for_type(event_typ, form.audience.data),
             organisator_id=form.organisator_id.data,
             season=form.datum.data.year,
             published=True

@@ -265,15 +265,16 @@ class PushNotificationService:
             if not event or not event.is_upcoming:
                 return {"success": False, "message": "Event nicht gefunden oder bereits vorbei"}
             
-            # Finde Mitglieder die noch nicht geantwortet haben
+            # Finde Mitglieder die noch nicht geantwortet haben (Audience beachten)
             responded_member_ids = db.session.query(Participation.member_id).filter_by(
                 event_id=event_id
             ).subquery()
             
-            non_responded_members = Member.query.filter(
-                Member.is_active == True,
-                ~Member.id.in_(responded_member_ids)
-            ).all()
+            non_responded_members = (
+                event.eligible_members_query()
+                .filter(~Member.id.in_(responded_member_ids))
+                .all()
+            )
             
             # Push-Benachrichtigung Payload
             organizer = event.organisator
@@ -343,8 +344,8 @@ class PushNotificationService:
             if not event:
                 return {"error": "Event nicht gefunden"}
             
-            # Zähle verschiedene Teilnahme-Status
-            total_members = Member.query.filter_by(is_active=True).count()
+            # Zähle verschiedene Teilnahme-Status (Audience = Nenner)
+            total_members = event.eligible_members_query().count()
             participated = Participation.query.filter_by(
                 event_id=event_id, 
                 teilnahme=True
@@ -353,7 +354,7 @@ class PushNotificationService:
                 event_id=event_id, 
                 teilnahme=False
             ).count()
-            no_response = total_members - participated - declined
+            no_response = max(0, total_members - participated - declined)
             
             return {
                 "event_id": event_id,
@@ -375,22 +376,22 @@ class PushNotificationService:
         """
         Prüft alle Events und sendet 3-Wochen-Erinnerungen automatisch
         Sollte täglich als Cron-Job ausgeführt werden
-        Nur für MONATSESSEN und GENERALVERSAMMLUNG (nicht für AUSFLUG)
+        Für MONATSESSEN, GENERALVERSAMMLUNG und VORSTANDSSITZUNG (nicht AUSFLUG)
         """
         try:
-            from backend.models.event import EventType
+            from backend.models.event import RSVP_REMINDER_EVENT_TYPES
             
             # Finde Events die in 3 Wochen (21 Tagen) sind
             target_date = datetime.utcnow() + timedelta(days=21)
             start_date = target_date - timedelta(hours=12)  # 12h Toleranz
             end_date = target_date + timedelta(hours=12)
             
-            # Nur MONATSESSEN und GENERALVERSAMMLUNG, nicht AUSFLUG
+            # RSVP-Reminder: Monatsessen, GV, Vorstandssitzung (nicht Ausflug)
             events = Event.query.filter(
                 Event.datum >= start_date,
                 Event.datum <= end_date,
                 Event.published == True,
-                Event.event_typ.in_([EventType.MONATSESSEN, EventType.GENERALVERSAMMLUNG])
+                Event.event_typ.in_(RSVP_REMINDER_EVENT_TYPES)
             ).all()
             
             results = []
@@ -458,7 +459,15 @@ class PushNotificationService:
             weekday = weekday_names[event.datum.weekday()]
             
             # Restaurant-Name (mit Fallback)
-            restaurant_name = event.restaurant or event.place_name or "dem Restaurant"
+            restaurant_name = (
+                event.restaurant
+                or event.place_name
+                or (
+                    event.event_typ.value
+                    if hasattr(event.event_typ, "value")
+                    else str(event.event_typ)
+                )
+            )
             
             # Push-Benachrichtigung Payload
             payload = {
@@ -521,7 +530,7 @@ class PushNotificationService:
         Sollte jeden Montag ausgeführt werden
         """
         try:
-            from backend.models.event import EventType
+            from backend.models.event import RSVP_REMINDER_EVENT_TYPES
             
             # Prüfe ob heute Montag ist
             today = datetime.utcnow()
@@ -544,7 +553,7 @@ class PushNotificationService:
                 Event.datum >= week_start,
                 Event.datum <= week_end,
                 Event.published == True,
-                Event.event_typ.in_([EventType.MONATSESSEN, EventType.GENERALVERSAMMLUNG])
+                Event.event_typ.in_(RSVP_REMINDER_EVENT_TYPES)
             ).all()
             
             logger.info(f"Found {len(events)} events this week for weekly reminders")

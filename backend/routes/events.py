@@ -8,8 +8,9 @@ from flask_wtf import FlaskForm
 from wtforms import DateField, SelectField, StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, NumberRange
 from sqlalchemy import or_, func, cast, String
+from werkzeug.exceptions import HTTPException
 from backend.extensions import db
-from backend.models.event import Event, EventType
+from backend.models.event import Event, EventType, EventAudience
 from backend.models.participation import Participation, Esstyp
 from backend.routes.billbro import BillBroForm
 from backend.models.member import Member, Role
@@ -55,13 +56,21 @@ def _cleanup_rsvp_undo_available() -> bool:
     )
 
 
+def _get_visible_event_or_404(event_id: int) -> Event:
+    """Load event; 403 if current user may not see board-only events."""
+    event = Event.query.get_or_404(event_id)
+    if not event.is_visible_to(current_user):
+        abort(403)
+    return event
+
+
 # Push Notification API Routes
 @bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET'])
 @login_required
 def get_participation_stats(event_id):
     """Get participation statistics for an event"""
     try:
-        event = Event.query.get_or_404(event_id)
+        event = _get_visible_event_or_404(event_id)
         
         # Nur Organisator oder Admin kann Statistiken sehen
         if current_user.id != event.organisator_id and not current_user.is_admin():
@@ -70,6 +79,8 @@ def get_participation_stats(event_id):
         stats = PushNotificationService.get_event_participation_stats(event_id)
         return jsonify(stats)
         
+    except HTTPException:
+        raise
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -78,7 +89,7 @@ def get_participation_stats(event_id):
 def send_participation_reminders(event_id):
     """Send participation reminders to members who haven't responded"""
     try:
-        event = Event.query.get_or_404(event_id)
+        event = _get_visible_event_or_404(event_id)
         
         # Nur Organisator oder Admin kann Erinnerungen senden
         if current_user.id != event.organisator_id and not current_user.is_admin():
@@ -91,6 +102,8 @@ def send_participation_reminders(event_id):
         else:
             return jsonify(result), 400
             
+    except HTTPException:
+        raise
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -99,7 +112,7 @@ def send_participation_reminders(event_id):
 def send_organizer_reminder(event_id):
     """Send reminder to event organizer"""
     try:
-        event = Event.query.get_or_404(event_id)
+        event = _get_visible_event_or_404(event_id)
         
         # Nur Admin kann Organisator-Erinnerungen senden
         if not current_user.is_admin():
@@ -112,6 +125,8 @@ def send_organizer_reminder(event_id):
         else:
             return jsonify({'success': False, 'message': 'Erinnerung konnte nicht gesendet werden'}), 400
             
+    except HTTPException:
+        raise
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -120,8 +135,13 @@ class EventForm(FlaskForm):
     event_typ = SelectField('Event-Typ', choices=[
         (EventType.MONATSESSEN.value, 'Monatsessen'),
         (EventType.AUSFLUG.value, 'Ausflug'),
-        (EventType.GENERALVERSAMMLUNG.value, 'Generalversammlung')
+        (EventType.GENERALVERSAMMLUNG.value, 'Generalversammlung'),
+        (EventType.VORSTANDSSITZUNG.value, 'Vorstandssitzung'),
     ], validators=[DataRequired()])
+    audience = SelectField('Sichtbarkeit', choices=[
+        (EventAudience.ALL.value, 'Alle Mitglieder'),
+        (EventAudience.BOARD.value, 'Nur Vorstand'),
+    ], validators=[DataRequired()], default=EventAudience.ALL.value)
     organisator_id = SelectField('Organisator', coerce=int, validators=[DataRequired()])
     
     # Restaurant fields
@@ -221,11 +241,14 @@ def index():
     today_start = datetime.combine(now.date(), datetime.min.time())
     today_end = today_start + timedelta(days=1)
     today_events = (
-        Event.query
-        .filter(
-            Event.published == True,
-            Event.datum >= today_start,
-            Event.datum < today_end,
+        Event.apply_audience_filter(
+            Event.query
+            .filter(
+                Event.published == True,
+                Event.datum >= today_start,
+                Event.datum < today_end,
+            ),
+            current_user,
         )
         .order_by(Event.datum.asc())
         .all()
@@ -251,10 +274,9 @@ def index():
     years_query = (
         db.session.query(Event.season)
         .filter(Event.published == True)
-        .distinct()
-        .order_by(Event.season.desc())
-        .all()
     )
+    years_query = Event.apply_audience_filter(years_query, current_user)
+    years_query = years_query.distinct().order_by(Event.season.desc()).all()
     filter_years = [row[0] for row in years_query] if years_query else []
     filter_organizers = (
         Member.query.filter_by(is_active=True)
@@ -313,6 +335,7 @@ def index():
             Event.published == True,
             Event.datum > now,
         )
+        upcoming_query = Event.apply_audience_filter(upcoming_query, current_user)
         upcoming_query = _apply_event_filters(upcoming_query)
         context['events'] = upcoming_query.order_by(Event.datum.asc()).all()
 
@@ -325,6 +348,7 @@ def index():
             Event.published == True,
             Event.datum < now,
         )
+        query = Event.apply_audience_filter(query, current_user)
         query = _apply_event_filters(query)
 
         if archiv_search_q:
@@ -531,7 +555,7 @@ def cleanup_rsvp(event_id):
         flash('Ungültige Auswahl.', 'error')
         return redirect(url_for('events.cleanup'))
 
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not RetroCleanupService.allows_cleanup_rsvp(event):
         flash('Dieses Event gehört nicht zur Datenbereinigung.', 'error')
@@ -582,7 +606,7 @@ def cleanup_rsvp(event_id):
 @login_required
 def enable_event_ratings(event_id):
     """Erlaubt Bewertungen für ein Event."""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not (current_user.is_admin() or event.organisator_id == current_user.id):
         flash('Keine Berechtigung.', 'error')
@@ -597,7 +621,7 @@ def enable_event_ratings(event_id):
 @login_required
 def disable_event_ratings(event_id):
     """Verhindert Bewertungen für ein Event."""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
 
     if not (current_user.is_admin() or event.organisator_id == current_user.id):
         flash('Keine Berechtigung.', 'error')
@@ -612,7 +636,7 @@ def disable_event_ratings(event_id):
 @login_required
 def detail(event_id):
     """Event detail"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     active_tab = request.args.get('tab', 'info')
     if not event.allow_ratings and active_tab == 'ratings':
         active_tab = 'info'
@@ -626,8 +650,12 @@ def detail(event_id):
     # Get all participations for this event
     participations = Participation.query.filter_by(event_id=event_id).all()
     
-    # Get all active members for complete overview
-    all_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
+    # RSVP-Übersicht: bei board-only nur Vorstandsmitglieder
+    all_members = (
+        event.eligible_members_query()
+        .order_by(Member.nachname, Member.vorname)
+        .all()
+    )
 
     is_organizer = (current_user.is_admin() or event.organisator_id == current_user.id)
     billbro_form = None
@@ -644,23 +672,29 @@ def detail(event_id):
 
     # Navigation: vorheriges/nächstes Event (stabile Sortierung: datum, id)
     prev_event = (
-        Event.query.filter(
-            Event.published == True,
-            db.or_(
-                Event.datum < event.datum,
-                db.and_(Event.datum == event.datum, Event.id < event.id),
+        Event.apply_audience_filter(
+            Event.query.filter(
+                Event.published == True,
+                db.or_(
+                    Event.datum < event.datum,
+                    db.and_(Event.datum == event.datum, Event.id < event.id),
+                ),
             ),
+            current_user,
         )
         .order_by(Event.datum.desc(), Event.id.desc())
         .first()
     )
     next_event = (
-        Event.query.filter(
-            Event.published == True,
-            db.or_(
-                Event.datum > event.datum,
-                db.and_(Event.datum == event.datum, Event.id > event.id),
+        Event.apply_audience_filter(
+            Event.query.filter(
+                Event.published == True,
+                db.or_(
+                    Event.datum > event.datum,
+                    db.and_(Event.datum == event.datum, Event.id > event.id),
+                ),
             ),
+            current_user,
         )
         .order_by(Event.datum.asc(), Event.id.asc())
         .first()
@@ -686,7 +720,7 @@ def detail(event_id):
 @login_required
 def billbro_sync(event_id):
     """Kompakter BillBro-Zustand für Polling im Event-Detail (Tab BillBro)."""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     participation = Participation.query.filter_by(
         member_id=current_user.id,
         event_id=event_id,
@@ -697,18 +731,27 @@ def billbro_sync(event_id):
         return jsonify({'error': 'forbidden'}), 403
 
     attending = sum(1 for p in event.participations if p.teilnahme)
-    guesses = sum(
-        1
-        for p in event.participations
-        if p.teilnahme and p.guess_bill_amount_rappen is not None
-    )
+    if event.supports_ggl:
+        ready = sum(
+            1
+            for p in event.participations
+            if p.teilnahme and p.guess_bill_amount_rappen is not None
+        )
+    else:
+        ready = sum(
+            1
+            for p in event.participations
+            if p.teilnahme and p.esstyp is not None
+        )
     resp = jsonify(
         billbro_closed=event.billbro_closed,
         rechnungsbetrag_rappen=event.rechnungsbetrag_rappen,
         gesamtbetrag_rappen=event.gesamtbetrag_rappen,
         trinkgeld_rappen=event.trinkgeld_rappen,
         attending=attending,
-        guesses=guesses,
+        guesses=ready,
+        esstyp_ready=ready,
+        supports_ggl=event.supports_ggl,
         betrag_sparsam_rappen=event.betrag_sparsam_rappen,
         betrag_normal_rappen=event.betrag_normal_rappen,
         betrag_allin_rappen=event.betrag_allin_rappen,
@@ -721,7 +764,7 @@ def billbro_sync(event_id):
 @login_required
 def edit(event_id):
     """Edit event"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check permissions
     if not (current_user.is_admin() or event.organisator_id == current_user.id):
@@ -734,6 +777,8 @@ def edit(event_id):
     # Load organizer choices
     active_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
     form.organisator_id.choices = [(m.id, m.display_name) for m in active_members]
+    if event.audience:
+        form.audience.data = event.audience_value
     
     if form.validate_on_submit():
         try:
@@ -746,6 +791,9 @@ def edit(event_id):
             
             event.datum = form.datum.data
             event.event_typ = EventType(form.event_typ.data)
+            event.audience = Event.resolve_audience_for_type(
+                event.event_typ, form.audience.data
+            )
             event.organisator_id = new_organizer_id
             event.season = event.datum.year
             
@@ -870,7 +918,7 @@ def edit(event_id):
 @login_required
 def delete(event_id):
     """Delete event"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check permissions - only admins can delete events
     if not current_user.is_admin():
@@ -909,7 +957,7 @@ def delete(event_id):
 @login_required
 def rsvp(event_id):
     """RSVP for event - simple toggle"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Get or create participation
     participation = Participation.query.filter_by(
@@ -963,7 +1011,7 @@ def rsvp(event_id):
 @login_required
 def send_rsvp_reminder(event_id):
     """Send RSVP reminder via Push Notifications to members who haven't responded yet"""
-    event = Event.query.get_or_404(event_id)
+    event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
     if not (current_user.is_admin or event.organisator_id == current_user.id):

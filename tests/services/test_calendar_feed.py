@@ -204,3 +204,58 @@ def test_past_events_not_listed(app):
         body = CalendarFeedService.generate_feed_for_member(m)
     _, vevents = _walk_vevents(body)
     assert len(vevents) == 0
+
+
+def test_board_events_hidden_from_non_board_feed(app):
+    with app.app_context():
+        from backend.models.event import EventAudience
+
+        org = Member(
+            vorname="Org",
+            nachname="Board",
+            email="cal-board-org@example.test",
+            passwort_hash=generate_password_hash("TestPasswortMind12"),
+            vorstandsmitglied=True,
+        )
+        member = Member(
+            vorname="Mem",
+            nachname="Ber",
+            email="cal-board-member@example.test",
+            passwort_hash=generate_password_hash("TestPasswortMind12"),
+            vorstandsmitglied=False,
+        )
+        db.session.add_all([org, member])
+        db.session.flush()
+        future = date.today() + timedelta(days=20)
+        board_ev = Event(
+            organisator_id=org.id,
+            datum=datetime.combine(future, datetime.min.time().replace(hour=12)),
+            event_typ=EventType.VORSTANDSSITZUNG,
+            audience=EventAudience.BOARD,
+            season=future.year,
+            restaurant="Vereinslokal",
+            published=True,
+        )
+        public_ev = Event(
+            organisator_id=org.id,
+            datum=datetime.combine(future + timedelta(days=1), datetime.min.time().replace(hour=12)),
+            event_typ=EventType.MONATSESSEN,
+            audience=EventAudience.ALL,
+            season=future.year,
+            restaurant="Da Marco",
+            published=True,
+        )
+        db.session.add_all([board_ev, public_ev])
+        db.session.commit()
+
+        member_body = CalendarFeedService.generate_feed_for_member(member)
+        board_body = CalendarFeedService.generate_feed_for_member(org)
+
+    _, member_events = _walk_vevents(member_body)
+    _, board_events = _walk_vevents(board_body)
+    member_summaries = [str(ve["SUMMARY"]) for ve in member_events]
+    board_summaries = [str(ve["SUMMARY"]) for ve in board_events]
+    assert any("Da Marco" in s for s in member_summaries)
+    assert not any("Vereinslokal" in s for s in member_summaries)
+    assert any("Vereinslokal" in s for s in board_summaries)
+    assert any("\U0001f4cb" in s for s in board_summaries)

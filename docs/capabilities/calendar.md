@@ -69,7 +69,7 @@ Jeder Member-Token-URL liefert exakt einen iCal-Feed, der **alle veröffentlicht
 Kein Per-Member-Filtering nach Teilnahmestatus, kein Sub-Feed pro Event-Typ. Begründung:
 
 - Subjektive Filter (z.B. «nur Events, an denen ich teilnehme») führen zu Kalender-Drift, wenn Anmeldungen sich ändern — Clients halten gelöschte Events teilweise im Cache.
-- Familiärer Verein mit drei Event-Typen — die meisten Mitglieder wollen schlicht alle Vereinstermine sehen.
+- Familiärer Verein mit wenigen Event-Typen — die meisten Mitglieder wollen schlicht alle Vereinstermine sehen (Vorstandssitzungen ausgenommen via `audience`).
 
 Erweiterbar später ohne Modell-Bruch: ein zweiter Endpunkt mit Query-Parametern (`?types=...`) könnte Feed-Varianten anbieten, ohne den Haupt-Token zu invalidieren.
 
@@ -84,9 +84,9 @@ Statt eines eigenen iCal-Feeds könnten Events in einen Workspace-Google-Calenda
 
 Push-Latenz vs. Pull-Latenz ist für Vereinstermine, die sich nicht im Stundentakt ändern, kein relevanter Unterschied. Updates werden ohnehin parallel über App-Push und WhatsApp-Gruppe kommuniziert.
 
-### 4.3 Was bei Sichtbarkeits-Erweiterungen passiert (Backlog)
+### 4.3 Sichtbarkeits-Erweiterungen
 
-Sobald Vorstandssitzungen als eigener Event-Typ mit `audience = board` kommen, wird der Feed-Filter um eine Sichtbarkeits-Bedingung erweitert: «Standard-Feed zeigt `audience IN ('all')`, Vorstands-Feed zusätzlich `audience IN ('all', 'board')`.» Modell-Erweiterung ist klein, kein Doc-Bruch nötig.
+`Event.audience` (`all` / `board`) steuert die Feed-Sichtbarkeit: Standard-Mitglieder sehen nur `audience='all'`; Vorstandsmitglieder (`vorstandsmitglied=True`) zusätzlich `audience='board'`. `EventType.VORSTANDSSITZUNG` erzwingt `board`.
 
 ## 5. Datenmodell-Änderungen
 
@@ -106,7 +106,12 @@ ical_token = db.Column(db.String(64), unique=True, index=True, nullable=True)
 
 # Update-Sequenz für iCal-Clients (RFC 5545 SEQUENCE)
 ical_sequence = db.Column(db.Integer, nullable=False, default=0)
+
+# Sichtbarkeit: all = alle Mitglieder, board = nur Vorstand (+ Admin/Organisator in der App)
+audience = db.Column(db.Enum(EventAudience), nullable=False, default=EventAudience.ALL)
 ```
+
+Kalender-relevante SEQUENCE-Felder umfassen auch `audience` (Wechsel all↔board muss Clients aktualisieren).
 
 Bewusst **kein** Cancel-Feld am Event. Abgesagte Events werden in der App gelöscht (Hard-Delete oder bestehende Lösch-Mechanik), nicht als «cancelled» geflaggt. Damit:
 
@@ -158,7 +163,7 @@ Zwei separate Alembic-Commits in Phase 5:
 | `LOCATION` | `Event.place_name` + `, ` + `Event.place_address` (Fallback `Event.restaurant`) | `Da Marco, Bahnhofstrasse 12, 8001 Zürich` |
 | `DESCRIPTION` | «Organisator: …» (`display_spirit_rufname`); optional Leerzeile + `Event.notizen`; Leerzeile + `Details: <App-URL>` | siehe 6.3 |
 | `URL` | Deep-Link auf App-Event-Detail-Seite | `https://gourmen.ch/events/247` |
-| `CATEGORIES` | `Event.event_typ.value` (`MONATSESSEN`, `AUSFLUG`, `GENERALVERSAMMLUNG`) | `CATEGORIES:MONATSESSEN` |
+| `CATEGORIES` | `Event.event_typ.value` (`MONATSESSEN`, `AUSFLUG`, `GENERALVERSAMMLUNG`, `VORSTANDSSITZUNG`) | `CATEGORIES:MONATSESSEN` |
 | `ORGANIZER` | `CN=[Organisator.display_spirit_rufname]:mailto:kontakt@gourmen.ch` | `ORGANIZER;CN=Wolf Andreas:mailto:kontakt@gourmen.ch` |
 
 **Bewusst weggelassen**: `STATUS` (keine Cancelled-Events im Modell, RFC 5545 nimmt ohne `STATUS` implizit `CONFIRMED` an), `ATTENDEE` (Privacy — Teilnehmerliste im Klartext-File), `VALARM` (Reminder-Kanal-Konflikt mit App-Push, siehe Sektion 13).
@@ -170,6 +175,7 @@ Zwei separate Alembic-Commits in Phase 5:
 | `MONATSESSEN` | 🍴 |
 | `AUSFLUG` | 🚐 |
 | `GENERALVERSAMMLUNG` | 🏛️ |
+| `VORSTANDSSITZUNG` | 📋 |
 | *Fallback* (neue, nicht gemappte Typen) | 📅 |
 
 Begründung: SVG-Icons aus der App-UI können im iCal-`SUMMARY` nicht eingebettet werden — RFC 5545 erlaubt im Titel nur Unicode-Text, kein Markup. Unicode-Emojis sind der Kompromiss, der visuell zur App-Icon-Sprache passt. Auf modernen Apple/Google/Outlook-Clients sauber gerendert; Outlook ≤ 2019 zeigt teils Boxen statt Emoji, was akzeptiert ist.
@@ -595,9 +601,9 @@ Keine technische Rotation. `ical_token`-Tokens bleiben bestehen, bis das Mitglie
 
 ## 16. Verzahnung mit Folge-Capabilities
 
-### 16.1 Backlog: Vorstandssitzungen
+### 16.1 Vorstandssitzungen (umgesetzt)
 
-Sobald Vorstandssitzungen als eigener Event-Typ kommen, wird ein `Event.audience`-Feld (`all`, `board`) eingeführt. Der Feed-Filter wird erweitert: Standard-Feed zeigt nur `audience='all'`, Vorstand-Mitglieder sehen zusätzlich `audience='board'`. Trigger für diese Erweiterung ist die Schaffung des Event-Typs selbst — kein Pre-Build im aktuellen MVP.
+`EventType.VORSTANDSSITZUNG` und `Event.audience` (`all` / `board`) sind live. Standard-Feed zeigt nur `audience='all'`; Mitglieder mit `vorstandsmitglied=True` sehen zusätzlich `audience='board'`. Vorstandssitzungen erzwingen serverseitig `audience=board`.
 
 ### 16.2 Backlog: Mehrtages-Container-Events
 
@@ -685,7 +691,7 @@ Lokale Verifikation:
 - VALARM/Reminder im Feed (Push reicht; interne Klärung läuft)
 - ATTENDEE-Liste im Feed (Privacy)
 - Mehrere Feed-Varianten pro Mitglied (Variante B/C aus Capability-Doc 4.1)
-- Sichtbarkeits-Filter `audience` (Backlog, mit Vorstandssitzungen)
+- Sichtbarkeits-Filter `audience` (umgesetzt mit Vorstandssitzungen)
 - Mehrtages-Container-Events (Backlog)
 - AI-generierte Inhalte
 - Public-Calendar auf gourmen.ch
