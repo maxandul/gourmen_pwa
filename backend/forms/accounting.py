@@ -93,6 +93,15 @@ class ReceiptUploadForm(FlaskForm):
     submit = SubmitField('Weiter')
 
 
+class BankImportForm(FlaskForm):
+    """ZKB-Kontoauszug (CSV) hochladen (Schatzmeister/Admin)."""
+
+    file = FileField('ZKB-Kontoauszug (CSV)', validators=[
+        FileRequired(message='Bitte CSV-Datei auswählen')
+    ])
+    submit = SubmitField('Importieren')
+
+
 class RevisionCommentForm(FlaskForm):
     """Revisionskommentar zum Jahr oder zu einer Buchung."""
 

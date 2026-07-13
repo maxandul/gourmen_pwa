@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% macro lucide_icon(symbol_id, icon_class='icon') -%}
+<svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#{{ symbol_id }}"></use>
+</svg>
+{%- endmacro %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+
+{% block title %}Kontoauszug prüfen - Gourmen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back">
+            <a href="{{ url_for('accounting.index', tab='import', _anchor='gourmen-tabs') }}">{{ lucide_icon('chevron-left') }}<span>Zurück zur Buchhaltung</span></a>
+        </p>
+        <h1>
+            {{ lucide_icon('landmark') }}
+            Kontoauszug prüfen
+        </h1>
+        {% if statement %}
+        <p class="text-secondary">
+            {{ statement.filename }} · importiert am {{ statement.imported_at.strftime('%d.%m.%Y %H:%M') }}
+            · {{ statement.new_count }} neu, {{ statement.duplicate_count }} Duplikate
+        </p>
+        {% else %}
+        <p class="text-secondary">Alle offenen Transaktionen aus sämtlichen Importen.</p>
+        {% endif %}
+    </div>
+
+    <div class="page-content">
+        {% if not pending %}
+        <div class="alert alert--success" role="status">
+            <svg class="alert__icon" aria-hidden="true">
+                <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#circle-check"></use>
+            </svg>
+            <div class="alert__content">
+                <div class="alert__message">
+                    Alle Transaktionen sind verarbeitet.
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="section-subtitle">{{ pending|length }} offene Transaktionen</p>
+
+        {% for tx in pending %}
+        <div class="card">
+            <div class="card__header">
+                <h2 class="card__title">
+                    {% if tx.is_income %}
+                    {{ lucide_icon('arrow-down-left') }} + CHF {{ chf(tx.amount_rappen) }}
+                    {% else %}
+                    {{ lucide_icon('arrow-up-right') }} − CHF {{ chf(tx.amount_rappen) }}
+                    {% endif %}
+                    · {{ tx.booked_date.strftime('%d.%m.%Y') }}
+                </h2>
+            </div>
+            <div class="card__body">
+                <div class="info-row">
+                    <span class="info-row__label">Buchungstext</span>
+                    <span class="info-row__value">{{ tx.buchungstext }}</span>
+                </div>
+                {% if tx.zahlungszweck %}
+                <div class="info-row">
+                    <span class="info-row__label">Zahlungszweck</span>
+                    <span class="info-row__value">{{ tx.zahlungszweck }}</span>
+                </div>
+                {% endif %}
+                {% if tx.amount_original %}
+                <div class="info-row">
+                    <span class="info-row__label">Originalbetrag</span>
+                    <span class="info-row__value">{{ tx.amount_original }} (anteilig aus Sammelbuchung)</span>
+                </div>
+                {% endif %}
+                {% if tx.parent %}
+                <div class="info-row">
+                    <span class="info-row__label">Sammelbuchung</span>
+                    <span class="info-row__value">{{ tx.parent.buchungstext }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('accounting.bank_tx_book', tx_id=tx.id) }}" class="form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if not statement %}<input type="hidden" name="all" value="1">{% endif %}
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-field__label" for="tx-{{ tx.id }}-account">Konto</label>
+                            <select name="account_id" id="tx-{{ tx.id }}-account" class="form-field__select" required>
+                                <option value="">– wählen –</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.id }}" {{ 'selected' if tx.suggested_account_id == account.id else '' }}>
+                                    {{ account.code }} {{ account.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-field__label" for="tx-{{ tx.id }}-member">Mitglied (optional)</label>
+                            <select name="member_id" id="tx-{{ tx.id }}-member" class="form-field__select">
+                                <option value="0">–</option>
+                                {% for member in members %}
+                                <option value="{{ member.id }}" {{ 'selected' if tx.suggested_member_id == member.id else '' }}>
+                                    {{ member.display_name_with_spirit }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% if tx.is_income %}
+                    <div class="form-field">
+                        <label class="form-field__label" for="tx-{{ tx.id }}-claim">Offener Posten (optional)</label>
+                        <select name="claim_id" id="tx-{{ tx.id }}-claim" class="form-field__select">
+                            <option value="0">–</option>
+                            {% for claim in open_claims %}
+                            <option value="{{ claim.id }}" {{ 'selected' if suggested_claims.get(tx.id) == claim.id else '' }}>
+                                {{ claim.member.display_name }} · {{ claim.type_display }} · offen CHF {{ chf(claim.open_rappen) }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <span class="form-field__help">Bei Zuordnung wird der Posten fortgeschrieben; Überzahlungen landen automatisch auf dem Aufrundungs-Konto.</span>
+                    </div>
+                    {% endif %}
+                    <div class="form-field">
+                        <label class="form-field__label" for="tx-{{ tx.id }}-event">Event (optional)</label>
+                        <select name="event_id" id="tx-{{ tx.id }}-event" class="form-field__select">
+                            <option value="0">–</option>
+                            {% for event in events %}
+                            <option value="{{ event.id }}">
+                                {{ event.display_date }} {{ event.restaurant or event.event_typ.value }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-actions form-actions--start">
+                        <button type="submit" class="btn btn--primary btn--sm">
+                            {{ lucide_icon('check') }} Verbuchen
+                        </button>
+                    </div>
+                </form>
+                <form method="POST" action="{{ url_for('accounting.bank_tx_ignore', tx_id=tx.id) }}" class="form"
+                      onsubmit="return confirm('Transaktion ignorieren? Sie wird nicht verbucht, bleibt aber im Import sichtbar.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if not statement %}<input type="hidden" name="all" value="1">{% endif %}
+                    <div class="form-actions form-actions--start">
+                        <button type="submit" class="btn btn--outline btn--sm">
+                            {{ lucide_icon('eye-off') }} Ignorieren
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

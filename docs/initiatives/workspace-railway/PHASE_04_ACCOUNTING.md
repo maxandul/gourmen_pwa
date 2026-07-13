@@ -259,7 +259,7 @@ Jahr-Guard: Buchungen anlegen/bearbeiten nur wenn `FiscalYear.status == 'open'`.
 
 - OCR / AI-Klassifikation (Future, Datenmodell vorbereitet)
 - TWINT / ZKB-Integration (`payment_ref` ist vorbereitet, Logik kommt Phase 6)
-- Automatischer Kontoauszug-Import (Future)
+- **ZKB-CSV-Import, Offene Posten, BillBro-Zahlweg** → **Phase 4b** (`PHASE_04B_ACCOUNTING_BANK_IMPORT.md`, Spec: `docs/capabilities/accounting.md` Sektion 11) — Refokus 2026-07: der Import ist der Kern-Workflow des Moduls
 - Merch-Beleg-Verknüpfung (`suggested_merch_order_id` kommt Phase 10)
 - Doppelte Buchführung / MwSt
 - Wiederkehrende Buchungen

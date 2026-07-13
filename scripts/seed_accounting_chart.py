@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Seed fuer das Buchhaltungsmodul (Phase 4).
+"""Seed fuer das Buchhaltungsmodul (Phase 4, Kontenplan verschlankt 2026-07).
 
 Legt an (idempotent, mehrfach ausfuehrbar ohne Fehler):
-- Kontenplan gemaess docs/capabilities/accounting.md Sektion 6
+- Verschlankter Kontenplan gemaess docs/capabilities/accounting.md Sektion 6
+  (orientiert an den real bebuchten Kategorien der ZKB-Kontoauszuege und den
+  Kostenstellen aus vorlagen_buchhaltung/Vereinsfinanzen_2026.xlsx)
 - FiscalYears 2021-2026 (2021-2025 closed, 2026 open)
-- Budget-Werte 2025 und 2026 (aus vorlagen_buchhaltung/
-  20260324_Erfolgsrechnung 2025 und Budget 2026.xlsx uebernommen;
-  die Datei selbst wird nicht committet)
+- Budget-Werte 2025 und 2026 (aus der Excel-Vorlage, auf neue Konten remappt)
+
+Cleanup: Konten aus dem alten PDF-Vorlagen-Kontenplan, die nie eine Buchung
+gesehen haben, werden entfernt (nur relevant fuer DBs, in denen der alte
+Seed bereits lief). Alt-Konten mit Buchungen werden auf die neuen Namen
+umbenannt statt geloescht.
 
 Keine historischen Einzelbuchungen (Seeding Option A).
 
@@ -25,61 +30,56 @@ from backend.extensions import db
 from backend.models.accounting import (
     Account,
     AccountKind,
+    Booking,
     BudgetEntry,
     FiscalYear,
     FiscalYearStatus,
 )
 
 # (code, name, kind, group_name) – Reihenfolge = sort_order
+# Verschlankt 2026-07: nur Konten, die real bebucht werden.
+# Feinere Unterteilung bei Bedarf via Kontenplan-Verwaltung (Admin).
 CHART_OF_ACCOUNTS = [
     # Einnahmen
     ('3000', 'Mitgliederbeiträge', AccountKind.INCOME, 'Mitgliederbeiträge'),
-    ('3015', 'Freiwillige Beiträge von Mitgliedern', AccountKind.INCOME, 'Mitgliederbeiträge'),
-    ('3020', 'Gönnerbeiträge', AccountKind.INCOME, 'Mitgliederbeiträge'),
-    ('3100', 'Spenden von Privaten', AccountKind.INCOME, 'Erhaltene Zuwendungen'),
-    ('3110', 'Legate und Vermächtnisse', AccountKind.INCOME, 'Erhaltene Zuwendungen'),
-    ('3120', 'Subventionen / Spenden öffentlicher Hand', AccountKind.INCOME, 'Erhaltene Zuwendungen'),
-    ('3130', 'Einnahmen Sammelaktionen', AccountKind.INCOME, 'Erhaltene Zuwendungen'),
-    ('3300', 'Erlöse aus Materialverkäufen', AccountKind.INCOME, 'Aktivitäten und Leistungen'),
-    ('3310', 'Einnahmen aus monatlichen Essen', AccountKind.INCOME, 'Aktivitäten und Leistungen'),
-    ('3320', 'Erlöse aus Veranstaltungen', AccountKind.INCOME, 'Aktivitäten und Leistungen'),
-    ('3340', 'Mieteinnahmen', AccountKind.INCOME, 'Aktivitäten und Leistungen'),
-    ('3600', 'Inserate, Werbe- und Sponsoringeinnahmen', AccountKind.INCOME, 'Übrige Erlöse'),
-    ('3610', 'Ertrag aus Liegenschaften', AccountKind.INCOME, 'Übrige Erlöse'),
-    ('3620', 'Sonstige Erlöse (Bussen)', AccountKind.INCOME, 'Übrige Erlöse'),
+    ('3100', 'Spenden und Sponsoring', AccountKind.INCOME, 'Übrige Einnahmen'),
+    ('3310', 'Essensanteile von Mitgliedern', AccountKind.INCOME, 'Essen'),
+    ('3315', 'Aufgerundete Essensanteile', AccountKind.INCOME, 'Essen'),
+    ('3400', 'Merch-Zahlungen von Mitgliedern', AccountKind.INCOME, 'Merch'),
+    ('3410', 'Aufgerundete Merchbestellungen', AccountKind.INCOME, 'Merch'),
+    ('3500', 'Einnahmen aus Reisen', AccountKind.INCOME, 'Reisen'),
+    ('3620', 'Sonstige Einnahmen (Bussen, Rückerstattungen)', AccountKind.INCOME, 'Übrige Einnahmen'),
     # Ausgaben
-    ('4000', 'Waren und Materialaufwand', AccountKind.EXPENSE, 'Aufwand Aktivitäten'),
-    ('4400', 'Aufwand für bezogene Dienstleistungen', AccountKind.EXPENSE, 'Aufwand Aktivitäten'),
-    ('4500', 'Leistungen für Vereinszweck (Reisen / Ausflüge)', AccountKind.EXPENSE, 'Aufwand Aktivitäten'),
-    ('5000', 'Lohnaufwand', AccountKind.EXPENSE, 'Personalaufwand'),
-    ('6000', 'Raumaufwand (Mieten)', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6100', 'Ausgaben aus monatlichem Essen', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6200', 'Fahrzeug- und Transportaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6300', 'Sachversicherungen, Abgaben und Gebühren', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6400', 'Energie- und Entsorgungsaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6500', 'Büromaterial, Drucksachen, Fachliteratur', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6510', 'Telefon, Internet, Porti', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6530', 'Sekretariats-, Buchführungs- und Revisionsaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6540', 'Entschädigungen und Spesen Vorstand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6541', 'Aufwand Vereinsversammlung', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6542', 'Aufwand Vorstandssitzungen', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6570', 'Informatik- und Internetaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6660', 'Werbe- und Marketingaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
+    ('4500', 'Reisen und Ausflüge', AccountKind.EXPENSE, 'Reisen'),
+    ('6100', 'Essen mit Vereinskonto', AccountKind.EXPENSE, 'Essen'),
+    ('6541', 'Generalversammlung', AccountKind.EXPENSE, 'Vereinsanlässe'),
+    ('6542', 'Vorstandssitzungen', AccountKind.EXPENSE, 'Vereinsanlässe'),
+    ('6570', 'IT, Telefon und Internet', AccountKind.EXPENSE, 'Übriger Aufwand'),
+    ('6650', 'Merch-Einkauf bei Lieferanten', AccountKind.EXPENSE, 'Merch'),
+    ('6660', 'Marketing und Merch-Beitrag des Vereins', AccountKind.EXPENSE, 'Merch'),
     ('6700', 'Sonstiger Vereinsaufwand', AccountKind.EXPENSE, 'Übriger Aufwand'),
-    ('6800', 'Abschreibungen und Wertberichtigungen', AccountKind.EXPENSE, 'Abschreibungen'),
-    ('6900', 'Zinsaufwendungen', AccountKind.EXPENSE, 'Finanzergebnis'),
-    ('6940', 'Spesen und Gebühren (Kontoführung)', AccountKind.EXPENSE, 'Finanzergebnis'),
+    ('6710', 'Rückzahlungen an Mitglieder', AccountKind.EXPENSE, 'Übriger Aufwand'),
+    ('6940', 'Kontoführung und Kartengebühren', AccountKind.EXPENSE, 'Finanzergebnis'),
 ]
 
-# Budget-Werte in Rappen pro Konto-Code (aus Excel «Jahresabschluss 2025»:
-# Spalten Budget 2025 und Budget 2026; 6940 dort negativ ausgewiesen → Betrag).
+# Alt-Codes aus dem PDF-Vorlagen-Kontenplan, die es im neuen Plan nicht mehr
+# gibt. Ohne Buchungen -> loeschen; mit Buchungen -> deaktivieren + Warnung.
+LEGACY_CODES = [
+    '3015', '3020', '3110', '3120', '3130', '3300', '3320', '3340',
+    '3600', '3610',
+    '4000', '4400', '5000', '6000', '6200', '6300', '6400', '6500',
+    '6510', '6530', '6540', '6800', '6900',
+]
+
+# Budget-Werte in Rappen pro Konto-Code (aus Excel «Jahresabschluss 2025»,
+# remappt auf den verschlankten Kontenplan: 6510 Telefon -> 6570 IT/Telefon).
 BUDGETS = {
     2025: {
         '3000': 924000,
         '4500': 550000,
-        '6510': 10000,
         '6541': 40000,
         '6542': 10000,
+        '6570': 10000,   # ehem. 6510 Telefon
         '6660': 70000,
         '6940': 5000,
     },
@@ -87,10 +87,9 @@ BUDGETS = {
         '3000': 948000,
         '3620': 10000,
         '4500': 930000,
-        '6510': 5000,
         '6541': 40000,
         '6542': 40000,
-        '6570': 20000,
+        '6570': 25000,   # ehem. 6510 (5000) + 6570 (20000)
         '6660': 90000,
         '6940': 10000,
     },
@@ -101,7 +100,7 @@ CURRENT_OPEN_YEAR = 2026
 
 
 def seed_accounts():
-    created, updated = 0, 0
+    created, renamed = 0, 0
     for sort_order, (code, name, kind, group_name) in enumerate(CHART_OF_ACCOUNTS):
         account = Account.query.filter_by(code=code).first()
         if account is None:
@@ -112,12 +111,33 @@ def seed_accounts():
             db.session.add(account)
             created += 1
         else:
-            # Namen/Gruppen nicht ueberschreiben (Admin darf editieren) –
-            # nur sort_order nachziehen falls noch Default.
-            if account.sort_order != sort_order:
-                account.sort_order = sort_order
-                updated += 1
-    print(f"Konten: {created} angelegt, {updated} aktualisiert")
+            # Bestehende Konten (alter Seed) auf verschlankten Plan nachziehen.
+            if (account.name, account.group_name) != (name, group_name):
+                account.name = name
+                account.group_name = group_name
+                renamed += 1
+            account.sort_order = sort_order
+            account.is_active = True
+    print(f"Konten: {created} angelegt, {renamed} umbenannt/nachgezogen")
+
+
+def cleanup_legacy_accounts():
+    """Nie bebuchte Konten aus der alten PDF-Vorlage entfernen."""
+    deleted, deactivated = 0, 0
+    for code in LEGACY_CODES:
+        account = Account.query.filter_by(code=code).first()
+        if account is None:
+            continue
+        has_bookings = Booking.query.filter_by(account_id=account.id).first() is not None
+        if has_bookings:
+            account.is_active = False
+            deactivated += 1
+            print(f"WARNUNG: Alt-Konto {code} ({account.name}) hat Buchungen -> nur deaktiviert")
+        else:
+            BudgetEntry.query.filter_by(account_id=account.id).delete()
+            db.session.delete(account)
+            deleted += 1
+    print(f"Alt-Konten: {deleted} gelöscht, {deactivated} deaktiviert")
 
 
 def seed_fiscal_years():
@@ -170,6 +190,8 @@ def main():
     app = create_app()
     with app.app_context():
         seed_accounts()
+        db.session.flush()
+        cleanup_legacy_accounts()
         db.session.flush()
         seed_fiscal_years()
         db.session.flush()

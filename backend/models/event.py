@@ -8,12 +8,21 @@ class EventType(Enum):
     AUSFLUG = 'AUSFLUG'
     GENERALVERSAMMLUNG = 'GENERALVERSAMMLUNG'
     VORSTANDSSITZUNG = 'VORSTANDSSITZUNG'
+    # Ad-hoc-Essen mit der Vereinskarte (z.B. auf Reisen): BillBro ohne GGL,
+    # offen fuer alle — dient der ZKB-Zuordnung (Spec accounting.md 11.10)
+    ESSEN_BUCHHALTUNG = 'ESSEN_BUCHHALTUNG'
 
 
 class EventAudience(Enum):
     """Who may see the event in App UI and (board) personal iCal feeds."""
     ALL = 'all'
     BOARD = 'board'
+
+
+class BillPaidBy(Enum):
+    """Zahlweg der Event-Rechnung (BillBro): Vereinskonto oder auslegendes Mitglied."""
+    VEREINSKONTO = 'vereinskonto'
+    MITGLIED = 'mitglied'
 
 
 # Event types that get 3-week RSVP + Monday-before-event push reminders
@@ -96,6 +105,20 @@ class Event(db.Model):
     tip_rule = db.Column(db.String(50), default="7pct_round10")
     rounding_rule = db.Column(db.String(50), default="ceil_10")
     billbro_closed = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Zahlweg der Rechnung (Spec accounting.md 11.6): Vereinskonto oder Mitglied
+    bill_paid_by = db.Column(
+        db.Enum(
+            BillPaidBy,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+            name='billpaidby',
+        ),
+        nullable=True,
+    )
+    bill_payer_member_id = db.Column(
+        db.Integer, db.ForeignKey('members.id', ondelete='SET NULL'), nullable=True,
+    )
+    bill_payer = db.relationship('Member', foreign_keys=[bill_payer_member_id])
     
     # Publication status
     published = db.Column(db.Boolean, default=False, nullable=False)
@@ -154,6 +177,21 @@ class Event(db.Model):
     def supports_ggl(self) -> bool:
         """True if this event participates in the GGL guessing league."""
         return self.event_typ in GGL_EVENT_TYPES
+
+    @property
+    def bill_paid_by_value(self) -> str | None:
+        paid_by = self.bill_paid_by
+        if paid_by is None:
+            return None
+        return paid_by.value if hasattr(paid_by, 'value') else str(paid_by)
+
+    @property
+    def is_paid_by_club(self) -> bool:
+        return self.bill_paid_by_value == BillPaidBy.VEREINSKONTO.value
+
+    @property
+    def is_paid_by_member(self) -> bool:
+        return self.bill_paid_by_value == BillPaidBy.MITGLIED.value
 
     def is_visible_to(self, member) -> bool:
         """App-Sichtbarkeit: board-only nur für Vorstand, Admin oder Organisator."""

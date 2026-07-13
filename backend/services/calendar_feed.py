@@ -43,6 +43,7 @@ class CalendarFeedService:
         EventType.AUSFLUG: "\U0001f690",  # 🚐
         EventType.GENERALVERSAMMLUNG: "\U0001f3db\ufe0f",  # 🏛️
         EventType.VORSTANDSSITZUNG: "\U0001f4cb",  # 📋
+        EventType.ESSEN_BUCHHALTUNG: "\U0001f4b3",  # 💳
     }
 
     @classmethod

@@ -157,6 +157,75 @@
             </div>
         </section>
 
+        {% if open_claims or claims_to_confirm %}
+        <section class="dashboard-intent" aria-labelledby="dashboard-claims-heading">
+            <h2 id="dashboard-claims-heading" class="dashboard-intent__heading">Offene Posten</h2>
+            {% if open_claims %}
+            <div class="card">
+                <div class="card__header">
+                    <h3 class="card__title">
+                        {{ lucide_icon('hand-coins') }}
+                        Du schuldest CHF {{ "%.2f"|format(open_claims_total_rappen / 100) }}
+                    </h3>
+                </div>
+                <div class="card__body">
+                    {% for claim in open_claims %}
+                    <div class="info-row">
+                        <span class="info-row__label">
+                            {{ claim.type_display }}
+                            {% if claim.event %}<br><span class="text-secondary">{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}</span>
+                            {% elif claim.fiscal_year %}<br><span class="text-secondary">{{ claim.fiscal_year.year }}</span>{% endif %}
+                        </span>
+                        <span class="info-row__value">
+                            CHF {{ "%.2f"|format(claim.open_rappen / 100) }}
+                            {% if claim.status.value == 'teilweise' %}
+                            <span class="chip chip--info">Teilweise bezahlt</span>
+                            {% endif %}
+                            {% if claim.is_club_claim %}
+                            <br><span class="text-secondary">Aufs Vereinskonto überweisen – wird nach dem Kontoauszug-Import automatisch beglichen.</span>
+                            {% elif claim.creditor %}
+                            <br><span class="text-secondary">Direkt an {{ claim.creditor.display_name }} überweisen.</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if claims_to_confirm %}
+            <div class="card">
+                <div class="card__header">
+                    <h3 class="card__title">
+                        {{ lucide_icon('circle-check') }}
+                        Eingänge bestätigen
+                    </h3>
+                </div>
+                <div class="card__body">
+                    <p class="text-secondary">
+                        Du hast für diese Anteile ausgelegt. Bestätige den Eingang, sobald das Geld bei dir angekommen ist.
+                    </p>
+                    {% for claim in claims_to_confirm %}
+                    <div class="info-row">
+                        <span class="info-row__label">
+                            {{ claim.member.display_name_with_spirit }}
+                            {% if claim.event %}<br><span class="text-secondary">{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}</span>{% endif %}
+                        </span>
+                        <span class="info-row__value">
+                            CHF {{ "%.2f"|format(claim.open_rappen / 100) }}
+                            <form method="POST" action="{{ url_for('accounting.claim_confirm', claim_id=claim.id) }}" class="form"
+                                  onsubmit="return confirm('Eingang von {{ claim.member.display_name }} über CHF {{ "%.2f"|format(claim.open_rappen / 100) }} bestätigen?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn--outline btn--sm">Erhalten</button>
+                            </form>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
         <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
             <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>
             <div class="settings-nav dashboard-explore-nav">

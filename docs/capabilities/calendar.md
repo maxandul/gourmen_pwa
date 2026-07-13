@@ -163,7 +163,7 @@ Zwei separate Alembic-Commits in Phase 5:
 | `LOCATION` | `Event.place_name` + `, ` + `Event.place_address` (Fallback `Event.restaurant`) | `Da Marco, Bahnhofstrasse 12, 8001 Zürich` |
 | `DESCRIPTION` | «Organisator: …» (`display_spirit_rufname`); optional Leerzeile + `Event.notizen`; Leerzeile + `Details: <App-URL>` | siehe 6.3 |
 | `URL` | Deep-Link auf App-Event-Detail-Seite | `https://gourmen.ch/events/247` |
-| `CATEGORIES` | `Event.event_typ.value` (`MONATSESSEN`, `AUSFLUG`, `GENERALVERSAMMLUNG`, `VORSTANDSSITZUNG`) | `CATEGORIES:MONATSESSEN` |
+| `CATEGORIES` | `Event.event_typ.value` (`MONATSESSEN`, `AUSFLUG`, `GENERALVERSAMMLUNG`, `VORSTANDSSITZUNG`, `ESSEN_BUCHHALTUNG`) | `CATEGORIES:MONATSESSEN` |
 | `ORGANIZER` | `CN=[Organisator.display_spirit_rufname]:mailto:kontakt@gourmen.ch` | `ORGANIZER;CN=Wolf Andreas:mailto:kontakt@gourmen.ch` |
 
 **Bewusst weggelassen**: `STATUS` (keine Cancelled-Events im Modell, RFC 5545 nimmt ohne `STATUS` implizit `CONFIRMED` an), `ATTENDEE` (Privacy — Teilnehmerliste im Klartext-File), `VALARM` (Reminder-Kanal-Konflikt mit App-Push, siehe Sektion 13).
@@ -176,6 +176,7 @@ Zwei separate Alembic-Commits in Phase 5:
 | `AUSFLUG` | 🚐 |
 | `GENERALVERSAMMLUNG` | 🏛️ |
 | `VORSTANDSSITZUNG` | 📋 |
+| `ESSEN_BUCHHALTUNG` | 💳 |
 | *Fallback* (neue, nicht gemappte Typen) | 📅 |
 
 Begründung: SVG-Icons aus der App-UI können im iCal-`SUMMARY` nicht eingebettet werden — RFC 5545 erlaubt im Titel nur Unicode-Text, kein Markup. Unicode-Emojis sind der Kompromiss, der visuell zur App-Icon-Sprache passt. Auf modernen Apple/Google/Outlook-Clients sauber gerendert; Outlook ≤ 2019 zeigt teils Boxen statt Emoji, was akzeptiert ist.

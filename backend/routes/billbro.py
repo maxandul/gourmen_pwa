@@ -5,8 +5,9 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Optional
 from backend.extensions import db
-from backend.models.event import Event
+from backend.models.event import BillPaidBy, Event
 from backend.models.participation import Participation, Esstyp
+from backend.services.accounting import AccountingService, AccountingError
 from backend.services.money import MoneyService
 from backend.services.ggl_rules import GGLService
 from backend.services.security import SecurityService, AuditAction
@@ -74,6 +75,32 @@ def calculate_weighted_shares(event, gesamtbetrag_rappen):
                     participation.calculated_share_rappen = event.betrag_allin_rappen
 
 bp = Blueprint('billbro', __name__)
+
+
+def _sync_billbro_claims(event) -> None:
+    """Essensanteil-Claims anlegen, sobald Anteile und Zahlweg feststehen.
+
+    Idempotent; wird bei Finalisierung und beim Setzen des Zahlwegs gerufen.
+    """
+    if event.bill_paid_by is None or not event.gesamtbetrag_rappen:
+        return
+    try:
+        created = AccountingService.create_claims_for_billbro(event)
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return
+    if created:
+        if event.is_paid_by_club:
+            flash(
+                f'{len(created)} offene Posten angelegt – die Anteile gehen aufs Vereinskonto.',
+                'success',
+            )
+        else:
+            payer = event.bill_payer.display_name if event.bill_payer else 'das Mitglied'
+            flash(
+                f'{len(created)} offene Posten angelegt – die Anteile gehen direkt an {payer}.',
+                'success',
+            )
 
 class BillBroForm(FlaskForm):
     esstyp = SelectField('Ess-Typ', choices=[
@@ -281,6 +308,64 @@ def enter_bill(event_id):
     flash('Rechnungsbetrag eingegeben - bitte Gesamtbetrag bestätigen oder anpassen', 'info')
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-tip-suggestion'))
 
+@bp.route('/<int:event_id>/set_payment', methods=['POST'])
+@login_required
+def set_payment(event_id):
+    """Zahlweg der Rechnung festlegen: Vereinskonto oder Mitglied (Organisator)."""
+    event = _get_visible_event_or_404(event_id)
+
+    if not (event.organisator_id == current_user.id):
+        flash('Nur der Organisator kann den Zahlweg festlegen', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    paid_by = request.form.get('paid_by')
+    if paid_by not in (BillPaidBy.VEREINSKONTO.value, BillPaidBy.MITGLIED.value):
+        flash('Ungültiger Zahlweg', 'error')
+        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+
+    payer_member_id = request.form.get('payer_member_id', type=int)
+    if paid_by == BillPaidBy.MITGLIED.value:
+        payer_participates = any(
+            p.teilnahme and p.member_id == payer_member_id
+            for p in event.participations
+        )
+        if not payer_member_id or not payer_participates:
+            flash('Bitte ein teilnehmendes Mitglied als Zahler wählen', 'error')
+            return redirect(url_for(
+                'events.detail', event_id=event_id, tab='billbro',
+                _anchor='billbro-payment',
+            ))
+        event.bill_paid_by = BillPaidBy.MITGLIED
+        event.bill_payer_member_id = payer_member_id
+    else:
+        event.bill_paid_by = BillPaidBy.VEREINSKONTO
+        event.bill_payer_member_id = None
+
+    db.session.commit()
+
+    SecurityService.log_audit_event(
+        AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
+        extra_data={
+            'action': 'set_payment',
+            'paid_by': paid_by,
+            'payer_member_id': event.bill_payer_member_id,
+        }
+    )
+
+    if event.is_paid_by_club:
+        flash('Zahlweg gespeichert: Die Rechnung geht aufs Vereinskonto.', 'success')
+    else:
+        flash(
+            f'Zahlweg gespeichert: {event.bill_payer.display_name} legt aus, '
+            'die Anteile gehen direkt an ihn.',
+            'success',
+        )
+    _sync_billbro_claims(event)
+    return redirect(url_for(
+        'events.detail', event_id=event_id, tab='billbro', _anchor='billbro-payment',
+    ))
+
+
 @bp.route('/<int:event_id>/start_session', methods=['POST'])
 @login_required
 def start_session(event_id):
@@ -423,6 +508,7 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
+    _sync_billbro_claims(event)
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/undo_final', methods=['POST'])
@@ -449,12 +535,14 @@ def undo_final(event_id):
         participation.calculated_share_rappen = None
 
     db.session.commit()
+    deleted = AccountingService.reset_claims_for_event(event)
 
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
         extra_data={
             'event_id': event.id,
-            'action': 'undo_final'
+            'action': 'undo_final',
+            'claims_deleted': deleted,
         }
     )
 
@@ -503,6 +591,7 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
+    _sync_billbro_claims(event)
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/reset_bill', methods=['POST'])
@@ -531,12 +620,14 @@ def reset_bill(event_id):
         participation.calculated_share_rappen = None
 
     db.session.commit()
+    deleted = AccountingService.reset_claims_for_event(event)
 
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_ENTER_BILL, 'event', event.id,
         extra_data={
             'event_id': event.id,
-            'action': 'reset_bill'
+            'action': 'reset_bill',
+            'claims_deleted': deleted,
         }
     )
 

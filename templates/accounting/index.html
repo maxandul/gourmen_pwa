@@ -84,7 +84,7 @@
                         </div>
                         {% if current_user.is_admin() and next_fiscal_year %}
                         <form method="POST" action="{{ url_for('accounting.year_create') }}" class="form accounting-year-create"
-                              onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Budget wird vom Vorjahr übernommen.');">
+                              onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Der Budget-Vorschlag wird aus den Vorjahres-Zahlen berechnet.');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="year" value="{{ next_fiscal_year }}">
                             <div class="form-actions form-actions--start">
@@ -116,6 +116,19 @@
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'belege' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'belege' else 'false' }}">
                     {{ lucide_icon('receipt') }} Belege
+                </a>
+                {% if is_treasurer %}
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='import', _anchor='gourmen-tabs') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'import' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'import' else 'false' }}">
+                    {{ lucide_icon('landmark') }} Import
+                    {% if pending_tx_count %}<span class="chip chip--warning">{{ pending_tx_count }}</span>{% endif %}
+                </a>
+                {% endif %}
+                <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='posten', _anchor='gourmen-tabs') }}"
+                   class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'posten' else '' }}"
+                   role="tab" aria-selected="{{ 'true' if active_tab == 'posten' else 'false' }}">
+                    {{ lucide_icon('hand-coins') }} Offene Posten
                 </a>
                 <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='budget', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'budget' else '' }}"
@@ -427,6 +440,193 @@
                         <div class="alert__content">
                             <div class="alert__message">
                                 Keine Belege für die aktuellen Filter.
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# ---------------- Import (Schatzmeister) ---------------- #}
+                {% if is_treasurer %}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'import' else '' }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">{{ lucide_icon('landmark') }} ZKB-Kontoauszug importieren</h2>
+                        </div>
+                        <div class="card__body">
+                            <p class="text-secondary">
+                                CSV-Export aus der ZKB-App hochladen. Bereits importierte
+                                Transaktionen werden automatisch übersprungen.
+                            </p>
+                            <form method="POST" action="{{ url_for('accounting.bank_import_upload') }}"
+                                  enctype="multipart/form-data" class="form">
+                                {{ import_form.hidden_tag() }}
+                                <div class="form-field">
+                                    <label class="form-field__label" for="bank-import-file">{{ import_form.file.label.text }}</label>
+                                    {{ import_form.file(class='form-field__input', id='bank-import-file', accept='.csv') }}
+                                </div>
+                                <div class="form-actions form-actions--start">
+                                    <button type="submit" class="btn btn--primary">
+                                        {{ lucide_icon('upload') }} Importieren
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% if pending_tx_count %}
+                    <div class="accounting-tab-actions">
+                        <a href="{{ url_for('accounting.bank_review_all') }}" class="btn btn--primary">
+                            {{ lucide_icon('list-checks') }}
+                            {{ pending_tx_count }} offene Transaktionen prüfen
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if bank_imports %}
+                    <div class="data-table-scroll-outer">
+                    <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Import-Historie">
+                        <table class="data-table data-table--sticky-first">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Datei</th>
+                                    <th scope="col">Importiert</th>
+                                    <th scope="col">Neu</th>
+                                    <th scope="col">Duplikate</th>
+                                    <th scope="col">Offen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for imp in bank_imports %}
+                                <tr>
+                                    <td>
+                                        <a class="data-table__link" href="{{ url_for('accounting.bank_import_review', import_id=imp.id) }}"
+                                           aria-label="Import {{ imp.filename }} prüfen">
+                                            <span class="data-table__link-label">{{ imp.filename }}</span>
+                                            {{ lucide_icon('chevron-right', 'icon data-table__chev') }}
+                                        </a>
+                                        <span class="data-table__sub">{{ imp.importer.display_name_with_spirit }}</span>
+                                    </td>
+                                    <td>{{ imp.imported_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>{{ imp.new_count }}</td>
+                                    <td>{{ imp.duplicate_count }}</td>
+                                    <td>
+                                        {% if imp.pending_count %}
+                                        <span class="chip chip--warning">{{ imp.pending_count }}</span>
+                                        {% else %}
+                                        <span class="chip chip--success">0</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert--info" role="status">
+                        <svg class="alert__icon" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#info"></use>
+                        </svg>
+                        <div class="alert__content">
+                            <div class="alert__message">
+                                Noch keine Kontoauszüge importiert.
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {# ---------------- Offene Posten ---------------- #}
+                <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'posten' else '' }}" role="tabpanel">
+                    {% if is_treasurer and membership_claims_missing %}
+                    <div class="accounting-tab-actions">
+                        <form method="POST" action="{{ url_for('accounting.year_claims_create', fiscal_year_id=fiscal_year.id) }}" class="form"
+                              onsubmit="return confirm('Beitrags-Posten für alle aktiven Mitglieder anlegen? Jahresbeitrag: CHF {{ chf(fiscal_year.membership_fee_rappen) }}.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn--primary">
+                                {{ lucide_icon('hand-coins') }}
+                                Beitrags-Posten {{ fiscal_year.year }} anlegen
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if claims_overview %}
+                    <div class="data-table-scroll-outer">
+                    <div class="table-responsive data-table-wrap data-table-scroll-inner" role="region" aria-label="Offene Posten pro Mitglied">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Posten</th>
+                                    <th scope="col">Erwartet</th>
+                                    <th scope="col">Bezahlt</th>
+                                    <th scope="col">Offen</th>
+                                    <th scope="col">Status</th>
+                                    {% if is_treasurer %}<th scope="col">Aktion</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in claims_overview %}
+                                <tr class="data-table__group-row">
+                                    <th colspan="{{ 6 if is_treasurer else 5 }}" scope="colgroup">
+                                        {{ entry.member.display_name_with_spirit }}
+                                        · offen CHF {{ chf(entry.open_rappen) }}
+                                        · bezahlt CHF {{ chf(entry.paid_rappen) }}
+                                    </th>
+                                </tr>
+                                {% for claim in entry.claims %}
+                                <tr>
+                                    <td>
+                                        {{ claim.type_display }}
+                                        <span class="data-table__sub">
+                                            {% if claim.event %}{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}
+                                            {% elif claim.fiscal_year %}{{ claim.fiscal_year.year }}
+                                            {% elif claim.note %}{{ claim.note }}{% endif %}
+                                            {% if not claim.is_club_claim and claim.creditor %} · an {{ claim.creditor.display_name }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>CHF {{ chf(claim.expected_rappen) }}</td>
+                                    <td>CHF {{ chf(claim.paid_rappen) }}</td>
+                                    <td>CHF {{ chf(claim.open_rappen) }}</td>
+                                    <td>
+                                        {% if claim.status.value == 'beglichen' %}
+                                        <span class="chip chip--success">{{ claim.status_display }}</span>
+                                        {% elif claim.status.value == 'erlassen' %}
+                                        <span class="chip chip--info">{{ claim.status_display }}</span>
+                                        {% else %}
+                                        <span class="chip chip--warning">{{ claim.status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if is_treasurer %}
+                                    <td>
+                                        {% if claim.is_open and claim.is_club_claim %}
+                                        <form method="POST" action="{{ url_for('accounting.claim_settle', claim_id=claim.id) }}" class="form"
+                                              onsubmit="return confirm('Posten manuell als beglichen markieren? Normalerweise geschieht das automatisch über den ZKB-Import.');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn--outline btn--sm">Beglichen</button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-secondary">–</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert--info" role="status">
+                        <svg class="alert__icon" aria-hidden="true">
+                            <use href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}#info"></use>
+                        </svg>
+                        <div class="alert__content">
+                            <div class="alert__message">
+                                Keine offenen Posten vorhanden.
                             </div>
                         </div>
                     </div>
