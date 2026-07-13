@@ -224,6 +224,7 @@ class Receipt(db.Model):
     )
     drive_file_id = db.Column(db.String(255), nullable=False)
     drive_file_name = db.Column(db.String(255), nullable=False)
+    display_name = db.Column(db.String(120))
     drive_folder_id = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(50))
     uploader_id = db.Column(
@@ -259,6 +260,11 @@ class Receipt(db.Model):
     @property
     def status_display(self):
         return 'Verbucht' if self.is_booked else 'Ausstehend'
+
+    @property
+    def label(self):
+        """Kurzer Anzeige-Name fuer Listen: display_name > Kommentar > Dateiname."""
+        return self.display_name or self.comment or self.drive_file_name
 
 
 class RevisionComment(db.Model):
