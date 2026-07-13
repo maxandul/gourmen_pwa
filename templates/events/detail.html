@@ -387,6 +387,66 @@
                         </p>
                     </div>
 
+                    {# Zahlweg der Rechnung (Phase 4b): Vereinskonto oder auslegendes Mitglied #}
+                    {% if is_organizer or event.bill_paid_by %}
+                    <div class="card" id="billbro-payment">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                {{ lucide_icon('hand-coins') }}
+                                Zahlweg der Rechnung
+                            </h2>
+                        </div>
+                        <div class="card__body">
+                            {% if event.bill_paid_by %}
+                            <div class="info-row">
+                                <span class="info-row__label">Bezahlt über</span>
+                                <span class="info-row__value">
+                                    {% if event.is_paid_by_club %}
+                                    <span class="chip chip--info">Vereinskonto</span>
+                                    <br><span class="text-secondary">Die Anteile werden aufs Vereinskonto überwiesen und über den Kontoauszug-Import abgeglichen.</span>
+                                    {% else %}
+                                    <span class="chip chip--info">{{ event.bill_payer.display_name_with_spirit if event.bill_payer else 'Mitglied' }}</span>
+                                    <br><span class="text-secondary">Die Anteile gehen direkt an {{ event.bill_payer.display_name if event.bill_payer else 'das Mitglied' }} – ohne Vereinsbuchhaltung.</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% if is_organizer %}
+                            <form method="POST" action="{{ url_for('billbro.set_payment', event_id=event.id) }}" class="form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="billbro-paid-by">Wer bezahlt die Rechnung?</label>
+                                        <select name="paid_by" id="billbro-paid-by" class="form-field__select" required>
+                                            <option value="vereinskonto" {{ 'selected' if event.is_paid_by_club else '' }}>Vereinskonto (Vereinskarte)</option>
+                                            <option value="mitglied" {{ 'selected' if event.is_paid_by_member else '' }}>Ein Mitglied legt aus</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-field__label" for="billbro-payer">Auslegendes Mitglied</label>
+                                        <select name="payer_member_id" id="billbro-payer" class="form-field__select">
+                                            <option value="">–</option>
+                                            {% for p in event.participations if p.teilnahme %}
+                                            <option value="{{ p.member_id }}" {{ 'selected' if event.bill_payer_member_id == p.member_id else '' }}>
+                                                {{ p.member.display_name_with_spirit }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="form-field__help">Nur nötig, wenn ein Mitglied auslegt.</span>
+                                    </div>
+                                </div>
+                                <div class="form-actions form-actions--start">
+                                    <button type="submit" class="btn btn--primary btn--sm">
+                                        {{ lucide_icon('check') }}
+                                        Zahlweg speichern
+                                    </button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% set share_label = '—' %}
                     {% if has_final and participation and participation.esstyp %}
                         {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}

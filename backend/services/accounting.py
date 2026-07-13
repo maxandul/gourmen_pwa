@@ -628,6 +628,25 @@ class AccountingService:
         return created
 
     @classmethod
+    def reset_claims_for_event(cls, event) -> int:
+        """Unbezahlte Essensanteil-Claims eines Events löschen (BillBro-Reset).
+
+        Posten mit Zahlungen bleiben stehen und müssen manuell geklärt werden.
+        """
+        claims = MemberClaim.query.filter_by(
+            event_id=event.id, claim_type=ClaimType.ESSENSANTEIL,
+        ).all()
+        deleted = 0
+        for claim in claims:
+            if claim.paid_rappen == 0 and claim.status in (
+                ClaimStatus.OFFEN, ClaimStatus.TEILWEISE,
+            ):
+                db.session.delete(claim)
+                deleted += 1
+        db.session.commit()
+        return deleted
+
+    @classmethod
     def create_claim_for_merch_order(cls, order) -> MemberClaim | None:
         """Merch-Claim über den Mitglieder-Preis anlegen (Spec 11.8, idempotent)."""
         existing = MemberClaim.query.filter_by(

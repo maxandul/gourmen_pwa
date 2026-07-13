@@ -1123,6 +1123,11 @@ def update_order_status(order_id):
                     order.delivered_at = datetime.utcnow()
                 
                 db.session.commit()
+
+                # Offener Posten für die Mitglieder-Zahlung (Phase 4b, idempotent)
+                if new_status in (OrderStatus.WIRD_GELIEFERT.value, OrderStatus.GELIEFERT.value):
+                    from backend.services.accounting import AccountingService
+                    AccountingService.create_claim_for_merch_order(order)
                 
                 flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
             else:
@@ -1160,6 +1165,11 @@ def update_order_status_alt(order_id):
                 order.delivered_at = datetime.utcnow()
             
             db.session.commit()
+
+            # Offener Posten für die Mitglieder-Zahlung (Phase 4b, idempotent)
+            if new_status in (OrderStatus.WIRD_GELIEFERT.value, OrderStatus.GELIEFERT.value):
+                from backend.services.accounting import AccountingService
+                AccountingService.create_claim_for_merch_order(order)
             
             flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
         else:
