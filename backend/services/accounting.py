@@ -610,13 +610,15 @@ class AccountingService:
             raise AccountingValidationError(
                 "Zahlweg «Mitglied» braucht ein zahlendes Mitglied."
             )
-        existing_member_ids = {
-            c.member_id
+        existing_by_member = {
+            c.member_id: c
             for c in MemberClaim.query.filter_by(
                 event_id=event.id, claim_type=ClaimType.ESSENSANTEIL,
             ).all()
         }
+        expected_debtor_ids: set[int] = set()
         created = []
+        note = f'Essensanteil {event.display_date}'
         for participation in event.participations:
             if not participation.teilnahme:
                 continue
@@ -625,7 +627,15 @@ class AccountingService:
                 continue
             if participation.member_id == creditor_id:
                 continue
-            if participation.member_id in existing_member_ids:
+            expected_debtor_ids.add(participation.member_id)
+            existing = existing_by_member.get(participation.member_id)
+            if existing is not None:
+                if existing.paid_rappen == 0 and existing.status in (
+                    ClaimStatus.OFFEN, ClaimStatus.TEILWEISE,
+                ):
+                    existing.creditor_member_id = creditor_id
+                    existing.expected_rappen = share
+                    existing.note = note
                 continue
             claim = MemberClaim(
                 member_id=participation.member_id,
@@ -633,10 +643,17 @@ class AccountingService:
                 claim_type=ClaimType.ESSENSANTEIL,
                 event_id=event.id,
                 expected_rappen=share,
-                note=f'Essensanteil {event.display_date}',
+                note=note,
             )
             db.session.add(claim)
             created.append(claim)
+        for member_id, claim in existing_by_member.items():
+            if member_id in expected_debtor_ids:
+                continue
+            if claim.paid_rappen == 0 and claim.status in (
+                ClaimStatus.OFFEN, ClaimStatus.TEILWEISE,
+            ):
+                db.session.delete(claim)
         db.session.commit()
         return created
 
@@ -686,8 +703,11 @@ class AccountingService:
         claim = cls.get_claim(claim_id)
         if not claim.is_open:
             raise AccountingValidationError("Dieser Posten ist bereits abgeschlossen.")
-        claim.status = ClaimStatus.ERLASSEN if waive else ClaimStatus.BEGLICHEN
-        claim.settled_at = datetime.utcnow()
+        if waive:
+            claim.status = ClaimStatus.ERLASSEN
+            claim.settled_at = datetime.utcnow()
+        else:
+            claim.register_payment(claim.open_rappen)
         db.session.commit()
         return claim
 
@@ -717,8 +737,10 @@ class AccountingService:
                 'paid_rappen': 0,
                 'claims': [],
             })
-            if claim.status != ClaimStatus.ERLASSEN:
+            if claim.is_open:
                 entry['open_rappen'] += claim.open_rappen
+                entry['paid_rappen'] += min(claim.paid_rappen, claim.expected_rappen)
+            elif claim.status != ClaimStatus.ERLASSEN:
                 entry['paid_rappen'] += min(claim.paid_rappen, claim.expected_rappen)
             entry['claims'].append(claim)
         return sorted(
