@@ -61,6 +61,7 @@ DKIM-Signaturen kommen aus Workspace (Personenpost) und Resend (System-Mails) pa
 | 2 | App: System-Mail auf Workspace | ~0.5–1 Tag | Phase 1 stabil |
 | 3 | App: Dateien auf Google Shared Drive | ~3–5 Tage | Phase 1, Service Account / Domain-wide Delegation geklaert |
 | 4 | Buchhaltungs-Modul | ~1–2 Wochen | Phase 3 (Belege = Drive) |
+| 4b | ZKB-Import + Offene Posten (`PHASE_04B_ACCOUNTING_BANK_IMPORT.md`) | ~1–2 Wochen | Phase 4 in Prod |
 | 5 | Kalender (iCal) | ~1 Tag | – |
 | 6 | TWINT/Payments | ~5 Tage | Phase 4, Phase 2 |
 | 7 | WhatsApp | ~1 Woche + Meta-Wartezeit | Phase 2 |
@@ -87,6 +88,7 @@ Detail: jeweils `PHASE_NN_*.md` in diesem Ordner.
 | 2 | done | master | 2026-05-07 | Resend in Prod (PR #11); `/admin/mail/test` verifiziert. Optional nachziehen: Forgot-Password/Onboarding/2FA E2E, mail-tester.com, Resend/Privacy-Text auf oeffentlicher Seite — siehe `PHASE_02_APP_SYSTEM_MAIL.md` |
 | 3 | done (legacy Kategorie-UI entfernt in Phase 9) | master | 2026-05-13 | Code merged (PR #12), Hotfix Migration `d2b4e8f5a312` auf `4377231`; DB Head `e3c5f9a6b423`. **2026-05-15:** Konzeptwende Drive-Browser → Phase 9; `scripts/setup_drive.py` entfernt. |
 | 4 | done (Code; Merge + Prod-Migration/Seed offen) | `phase/04-workspace-accounting` | 2026-07-13 | Buchhaltungs-Modul komplett: Models + 3 Migrationen (Head `e1a2c7b4d905`), Seed (Kontenplan, FiscalYears 2021–2026, Budget 2025/2026), Tab-Index (inkl. Statistik/Kontenplan als Tabs), Beleg-Upload, Buchungsworkflow, Revisions-Workflow inkl. Revisorenbericht-PDF (`reportlab`), Statistik (Chart.js), CSV/PDF-Export, Kontenplan-Verwaltung. **2026-07-13 UI-Nachzug:** Journal/Belege/Meine-Belege auf `data-table` mit Chevron-Links, Tab-Aktionsbuttons (`accounting-tab-actions`), Filter-Border-Fix, `Receipt.display_name` (Anzeige-Name) + optionale Direktverknüpfung Beleg↔Buchung beim Upload; PWA 3.14.0. Spec: `docs/capabilities/accounting.md`. Nach Merge: Migrationen laufen automatisch via `preDeployCommand` (`flask db upgrade`) — nur **Seed-Script** ist manueller Einmal-Schritt (Budget-Werte brauchen `vorlagen_buchhaltung/…xlsx`, nicht im Repo). |
+| 4b | pending | – | 2026-07-13 | **Refokus Buchhaltung**: ZKB-CSV-Import als Kern-Workflow, Offene Posten (`MemberClaim`), BillBro-Zahlweg (Vereinskonto vs. Mitglied), Kontenplan verschlankt (Seed-Update bereits auf `phase/04-workspace-accounting`), EventType «Essen für Buchhaltung», Budget-Vorschlag bei Jahreseröffnung. Spec: `docs/capabilities/accounting.md` Sektion 6 + 11. Briefing: `PHASE_04B_ACCOUNTING_BANK_IMPORT.md`. |
 | 5 | done | master (war `phase/05-workspace-ical-feed`) | 2026-05-14 | iCal-Feed pro Mitglied (Service, Migrationen, UI Polish Disclosure/Aktionen, Rate-Limit). Spec: `docs/capabilities/calendar.md`. |
 | 6 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_06_PAYMENTS.md` |
 | 7 | pending | – | – | siehe `_archive/2026-04_modules-and-hosting/PHASE_07_WHATSAPP.md` |

@@ -2,7 +2,7 @@
 
 > **Zweck**: Das Buchhaltungsmodul bildet die gesamte Vereinsfinanzverwaltung in der PWA ab — Buchungsjournal, Budget, Belegverwaltung, Jahresabschluss und Revisionsprozess. Ziel ist eine vollständig app-basierte Arbeitsweise: kein Excel-Ping-Pong mehr, kein manuelles Zusammensuchen von Belegen, kein separater Revisoren-Workflow ausserhalb der App.
 >
-> **Status**: Konzept abgeschlossen, bereit für Phase-4-Implementation. **Owner**: Andreas. **Stand**: 2026-06-08.
+> **Status**: Phase 4 (Grundmodul) implementiert. Refokus 2026-07-13: Kern-Workflow ist der **ZKB-Kontoauszug-Import** (Sektion 11) — umzusetzen in Phase 4b. **Owner**: Andreas. **Stand**: 2026-07-13.
 >
 > **Verwandte Docs**: `docs/STRATEGY_2026.md` (strategischer Rahmen), `docs/initiatives/workspace-railway/PHASE_04_ACCOUNTING.md` (Cursor-Briefing), `docs/capabilities/drive.md` (Belege-Storage via Drive).
 
@@ -34,6 +34,11 @@ Aus `STRATEGY_2026.md`:
 | Revisor | «Ich kann Kommentare zu einzelnen Buchungen hinterlassen und das Jahr formal bestätigen.» |
 | Revisor | «Nach meiner Bestätigung generiert die App automatisch den Revisorenbericht als PDF.» |
 | Admin | «Ich kann den Kontenplan in der App bearbeiten — Konten hinzufügen, umbenennen, deaktivieren.» |
+| Schatzmeister | «Ich lade den monatlichen ZKB-Kontoauszug (CSV) hoch und bekomme alle neuen Transaktionen als Buchungsvorschläge — mit erkannten Mitgliedern, Konten und offenen Posten.» |
+| Schatzmeister | «Ich sehe pro Mitglied, welche Beträge (Beiträge, Essensanteile, Merch) noch offen sind und was wann bezahlt wurde.» |
+| Mitglied | «Ich sehe auf dem Dashboard meine offenen Posten; nach Eingang und Verbuchung meiner Zahlung stehen sie auf 'beglichen'.» |
+| Mitglied | «Wenn ich eine Event-Rechnung privat bezahlt habe, bestätige ich in der App die Eingänge der Anteile der anderen.» |
+| Organisator | «Beim BillBro-Start gebe ich an, ob mit dem Vereinskonto bezahlt wird oder welches Mitglied die Rechnung übernimmt.» |
 
 ## 3. Architektur-Entscheide
 
@@ -219,56 +224,41 @@ Zwei separate Commits:
 
 Rollen-Mapping auf bestehende Modelle: `Funktion.SCHATZMEISTER`, `Funktion.RECHNUNGSPRUEFER`, `Role.ADMIN`.
 
-## 6. Kontenplan (Seed)
+## 6. Kontenplan (Seed) — verschlankt 2026-07
 
-Aus dem bestehenden Excel 2021–2026 übernommen. Kontonummern bleiben erhalten; im UI werden nur die Namen angezeigt.
+Der ursprüngliche Kontenplan stammte aus den PDF-Erfolgsrechnungen (veraltete Vorlage) und enthielt viele Konten, die nie eine Buchung gesehen haben — diese sind entfernt. Massgebend für die Verschlankung: die real bebuchten Kategorien aus den ZKB-Kontoauszügen 2021–2026 und die Kostenstellen-Logik des Schatzmeisters in `vorlagen_buchhaltung/Vereinsfinanzen_2026.xlsx` (Sheet «Konto»). Die Kostenstellen dort werden nicht 1:1 übernommen, sondern auf folgende Konten abgebildet. Kontonummern-Schema bleibt (3xxx Einnahmen, 4xxx–6xxx Ausgaben); im UI werden nur die Namen angezeigt.
 
 ### Einnahmen
 
-| Code | Name | Gruppe |
-|---|---|---|
-| 3000 | Mitgliederbeiträge | Mitgliederbeiträge |
-| 3015 | Freiwillige Beiträge von Mitgliedern | Mitgliederbeiträge |
-| 3020 | Gönnerbeiträge | Mitgliederbeiträge |
-| 3100 | Spenden von Privaten | Erhaltene Zuwendungen |
-| 3110 | Legate und Vermächtnisse | Erhaltene Zuwendungen |
-| 3120 | Subventionen / Spenden öffentlicher Hand | Erhaltene Zuwendungen |
-| 3130 | Einnahmen Sammelaktionen | Erhaltene Zuwendungen |
-| 3300 | Erlöse aus Materialverkäufen | Aktivitäten und Leistungen |
-| 3310 | Einnahmen aus monatlichen Essen | Aktivitäten und Leistungen |
-| 3320 | Erlöse aus Veranstaltungen | Aktivitäten und Leistungen |
-| 3340 | Mieteinnahmen | Aktivitäten und Leistungen |
-| 3600 | Inserate, Werbe- und Sponsoringeinnahmen | Übrige Erlöse |
-| 3610 | Ertrag aus Liegenschaften | Übrige Erlöse |
-| 3620 | Sonstige Erlöse (Bussen) | Übrige Erlöse |
+| Code | Name | Gruppe | Herkunft / Beispiele |
+|---|---|---|---|
+| 3000 | Mitgliederbeiträge | Mitgliederbeiträge | Monatsraten und Jahresbeträge (Sektion 11.7) |
+| 3100 | Spenden und Sponsoring | Übrige Einnahmen | Mehrzahlungen als Spende deklariert |
+| 3310 | Essensanteile von Mitgliedern | Essen | Rücküberweisungen nach Zahlung mit Vereinskonto («Einzahlung MG für Essen») |
+| 3315 | Aufgerundete Essensanteile | Essen | Ausserordentliche Einnahme: Differenz bei aufgerundeten Essensanteilen (Sektion 11.5) |
+| 3400 | Merch-Zahlungen von Mitgliedern | Merch | Zahlungen der Mitglieder für Merch-Bestellungen |
+| 3410 | Aufgerundete Merchbestellungen | Merch | Ausserordentliche Einnahme: Überzahlung bei Merch (z.B. bewusste Spende beim Rückzahlungsverzicht) |
+| 3500 | Einnahmen aus Reisen | Reisen | Kostenbeteiligungen, Rückerstattungen von Anbietern zu Reisen |
+| 3620 | Sonstige Einnahmen (Bussen, Rückerstattungen) | Übrige Einnahmen | Bussen, sonstige Gutschriften |
 
 ### Ausgaben
 
-| Code | Name | Gruppe |
-|---|---|---|
-| 4000 | Waren und Materialaufwand | Aufwand Aktivitäten |
-| 4400 | Aufwand für bezogene Dienstleistungen | Aufwand Aktivitäten |
-| 4500 | Leistungen für Vereinszweck (Reisen / Ausflüge) | Aufwand Aktivitäten |
-| 5000 | Lohnaufwand | Personalaufwand |
-| 6000 | Raumaufwand (Mieten) | Übriger Aufwand |
-| 6100 | Ausgaben aus monatlichem Essen | Übriger Aufwand |
-| 6200 | Fahrzeug- und Transportaufwand | Übriger Aufwand |
-| 6300 | Sachversicherungen, Abgaben und Gebühren | Übriger Aufwand |
-| 6400 | Energie- und Entsorgungsaufwand | Übriger Aufwand |
-| 6500 | Büromaterial, Drucksachen, Fachliteratur | Übriger Aufwand |
-| 6510 | Telefon, Internet, Porti | Übriger Aufwand |
-| 6530 | Sekretariats-, Buchführungs- und Revisionsaufwand | Übriger Aufwand |
-| 6540 | Entschädigungen und Spesen Vorstand | Übriger Aufwand |
-| 6541 | Aufwand Vereinsversammlung | Übriger Aufwand |
-| 6542 | Aufwand Vorstandssitzungen | Übriger Aufwand |
-| 6570 | Informatik- und Internetaufwand | Übriger Aufwand |
-| 6660 | Werbe- und Marketingaufwand | Übriger Aufwand |
-| 6700 | Sonstiger Vereinsaufwand | Übriger Aufwand |
-| 6800 | Abschreibungen und Wertberichtigungen | Abschreibungen |
-| 6900 | Zinsaufwendungen | Finanzergebnis |
-| 6940 | Spesen und Gebühren (Kontoführung) | Finanzergebnis |
+| Code | Name | Gruppe | Herkunft / Beispiele |
+|---|---|---|---|
+| 4500 | Reisen und Ausflüge | Reisen | Hotel, Transport, Essen, Erlebnis auf Vereinsreisen (Kartenzahlungen und eBanking) |
+| 6100 | Essen mit Vereinskonto | Essen | Restaurant-Zahlung per Gourmen-Karte (Monatsessen, «Essen für Buchhaltung») |
+| 6541 | Generalversammlung | Vereinsanlässe | Raum, Snacks, Verpflegung GV |
+| 6542 | Vorstandssitzungen | Vereinsanlässe | Verpflegung Vorstand |
+| 6570 | IT, Telefon und Internet | Übriger Aufwand | Hosting, Sunrise, Domains |
+| 6650 | Merch-Einkauf bei Lieferanten | Merch | Lieferantenrechnungen der Bestellrunden |
+| 6660 | Marketing und Merch-Beitrag des Vereins | Merch | Vereinsbeitrag an Merch der Mitglieder, Werbematerial |
+| 6700 | Sonstiger Vereinsaufwand | Übriger Aufwand | Alles ohne eigenes Konto (inkl. Kleinst-Abschreibungen) |
+| 6710 | Rückzahlungen an Mitglieder | Übriger Aufwand | Rücküberweisungen vom Vereinskonto (Rabattweitergabe, Auslagenersatz) |
+| 6940 | Kontoführung und Kartengebühren | Finanzergebnis | ZKB Kontoführung, Debit-Karten-Gebühren |
 
-Seed-Script: `scripts/seed_accounting_chart.py`. Beim ersten Start von `/accounting` prüfen ob Konten existieren — falls nicht, Hinweis «Kontenplan initialisieren» anzeigen.
+Feinere Unterteilung (z.B. Reisen nach Hotel/Transport/Essen/Erlebnis wie in der Excel des Schatzmeisters) ist bei Bedarf jederzeit über die Kontenplan-Verwaltung möglich; das Budget wird auf Gruppenebene ausgewertet. Die Merch-Gruppe wird in der Budget-Ansicht netto ausgewiesen (Sektion 11.8).
+
+Seed-Script: `scripts/seed_accounting_chart.py` — legt die Konten oben an, benennt bestehende Konten aus dem alten Seed um (3310, 6100, 6570, 6660) und entfernt Alt-Konten ohne Buchungen. Beim ersten Start von `/accounting` prüfen ob Konten existieren — falls nicht, Hinweis «Kontenplan initialisieren» anzeigen.
 
 ## 7. Beleg-Upload
 
@@ -440,6 +430,164 @@ Datenpunkte werden als JSON im Template gerendert (`data-chart='{{ chart_data | 
 
 `templates/accounting/stats.html` — Vorlage: `templates/events/index.html` (page-header, card-Struktur). Kein Tab (Stats ist eine eigene Seite, Link im Accounting-Index).
 
+## 11. ZKB-Kontoauszug-Import und Offene Posten (Refokus 2026-07, Phase 4b)
+
+> **Kontext**: Die hauptsächliche Unterstützung des Buchhaltungsmoduls liegt beim monatlichen CSV-Import des ZKB-Kontoauszugs. Fast alle Vereinsbuchungen laufen über das ZKB-Konto — der Import ist damit die primäre Buchungsquelle, nicht die manuelle Erfassung. Referenz-Dateien: `vorlagen_buchhaltung/Kontoauszug 2025.csv` und `Kontoauszug 2026.csv` (echte Exporte aus der ZKB-App). Die aktuelle Kontoführung des Schatzmeisters (`vorlagen_buchhaltung/Vereinsfinanzen_2026.xlsx`, Sheet «Konto» und «Jahresabschluss») liefert die Kostenstellen-Logik und die aktuellen Zahlen — sie muss nicht 1:1 übernommen werden, ist aber die Ideenquelle für den verschlankten Kontenplan (Sektion 6).
+
+### 11.1 CSV-Format (ZKB-App-Export)
+
+Header:
+
+```
+"Datum";"Buchungstext";"Whg";"Betrag Detail";"ZKB-Referenz";"Referenznummer";"Belastung CHF";"Gutschrift CHF";"Valuta";"Saldo CHF";"Zahlungszweck";"Details"
+```
+
+Eigenschaften und Parsing-Regeln:
+
+- Semikolon-getrennt, alle Felder in Anführungszeichen; Datumsformat `DD.MM.YYYY`; Beträge mit Punkt als Dezimaltrenner. Encoding beim Einlesen tolerant behandeln (UTF-8 mit/ohne BOM und cp1252 versuchen).
+- Neueste Zeile zuoberst. Monatliche Exporte können sich mit früheren Importen überlappen → **Dedup über `ZKB-Referenz`** (eindeutig pro Transaktion).
+- **Sammelbuchungen**: Zeilen wie `"Belastungen eBanking (7)"` haben Detail-Zeilen direkt darunter mit **leerem Datum**, Gegenpartei im `Buchungstext`, Betrag in `Betrag Detail` (+ `Whg`) und Verwendungszweck in der `Zahlungszweck`-Spalte (Position variiert — die Detail-Zeilen haben keine eigene ZKB-Referenz). Detail-Zeilen werden dem Parent zugeordnet (Schlüssel: Parent-Referenz + Laufindex) und einzeln verbuchbar gemacht.
+- **Fremdwährung**: Detail-Beträge können in EUR sein, während der Parent-Betrag in CHF belastet wird (z.B. `"Belastungen eBanking (2), EUR 1762.25"` → CHF 1626.01). Der CHF-Betrag wird proportional auf die Detail-Zeilen verteilt; im Review-Schritt manuell korrigierbar.
+- `Gutschrift CHF` = Einnahme, `Belastung CHF` = Ausgabe. `Auftraggeber`-Name und -Adresse stehen im `Buchungstext` (Prefix `Gutschrift Auftraggeber:`) bzw. in `Details`.
+
+### 11.2 Datenmodell (neu, Phase 4b)
+
+```python
+BankStatementImport:
+    id, fiscal_year_id FK, filename, imported_by FK Member, imported_at,
+    row_count, new_count, duplicate_count
+
+BankTransaction:
+    id, import_id FK, zkb_ref String UNIQUE nullable  # NULL bei Detail-Zeilen
+    parent_id FK BankTransaction nullable             # Detail-Zeile einer Sammelbuchung
+    line_key String UNIQUE                            # zkb_ref bzw. '{parent_ref}#{index}' für Dedup
+    booked_date Date, valuta Date nullable
+    amount_rappen Integer, direction Enum('in','out')
+    currency String(3) default 'CHF', amount_original String nullable  # z.B. 'EUR 922.25'
+    buchungstext String, zahlungszweck String nullable, details String nullable
+    status Enum('pending', 'booked', 'ignored')
+    booking_id FK Booking nullable                    # gesetzt nach Verbuchung
+    suggested_account_id FK Account nullable          # Auto-Vorschlag
+    suggested_member_id FK Member nullable            # Auto-Vorschlag via Alias
+    raw_json JSON                                     # Original-Zeile
+
+MemberBankAlias:
+    id, member_id FK, alias_text String  # normalisierter Auftraggeber-Name
+    # Namen/Adressen im CSV stimmen nicht zwingend 1:1 mit der Mitglieder-DB überein
+    # (Zweitnamen, GROSSSCHREIBUNG, Umlaut-Transkription «Mueller»/«Müller», alte Adressen).
+    # Beim ersten manuellen Zuordnen wird der Alias gelernt; künftige Importe matchen automatisch.
+
+MemberClaim (Forderung / offener Posten):
+    id, member_id FK                                  # Schuldner
+    creditor_member_id FK Member nullable             # NULL = Verein (läuft über Buchhaltung);
+                                                      # gesetzt = privates Auslegen (läuft NICHT über Buchhaltung)
+    claim_type Enum('MITGLIEDERBEITRAG', 'ESSENSANTEIL', 'MERCH', 'REISE', 'SONSTIGES')
+    fiscal_year_id FK nullable, event_id FK nullable, merch_order_id FK nullable
+    expected_rappen Integer, paid_rappen Integer default 0
+    status Enum('offen', 'teilweise', 'beglichen', 'erlassen')
+    settled_at DateTime nullable, created_at, note String nullable
+```
+
+Zusätzlich auf bestehenden Modellen:
+
+- `Booking.bank_transaction`-Rückreferenz (via `BankTransaction.booking_id`) — Buchungen aus dem Import sind als solche erkennbar.
+- `Event`: `bill_paid_by` Enum(`'vereinskonto'`, `'mitglied'`) nullable + `bill_payer_member_id` FK nullable (Sektion 11.6).
+- `FiscalYear`: `membership_fee_rappen` Integer nullable (Jahresbeitrag pro Mitglied, 2026: CHF 840).
+
+### 11.3 Import-Ablauf (Schatzmeister/Admin)
+
+```
+1. Upload: CSV-Datei hochladen (neuer Tab «Import» im Accounting-Index oder Workflow-Seite)
+2. Parsing: Zeilen einlesen, Sammelbuchungen aufsplitten, Beträge in Rappen wandeln
+3. Dedup: bereits importierte line_keys überspringen (Zähler «X neu, Y bereits vorhanden»)
+4. Auto-Vorschläge pro Transaktion:
+   - Konto-Vorschlag (Regeln, Sektion 11.4)
+   - Mitglied-Vorschlag (Alias-Matching, Sektion 11.2)
+   - Offene-Posten-Matching: passt eine Gutschrift zu einer offenen MemberClaim?
+5. Review-Screen: Liste aller pending-Transaktionen; pro Zeile Konto/Mitglied/Event/Claim
+   bestätigen oder anpassen; einzelne Zeilen ignorieren (z.B. interne Umbuchungen)
+6. Verbuchen: pro bestätigter Zeile eine Booking anlegen (payment_ref = zkb_ref),
+   Claims fortschreiben (Sektion 11.5), Status → 'booked'
+```
+
+Der Import ist idempotent: dieselbe Datei mehrfach hochladen erzeugt keine Duplikate. Teilweise verarbeitete Importe können später weiterbearbeitet werden (pending-Transaktionen bleiben in der Import-Inbox).
+
+### 11.4 Auto-Matching-Regeln (Konto-Vorschlag)
+
+| Muster | Vorschlag |
+|---|---|
+| `Kontoführung`, `Gebühr Kontoführung`, `Gebühr ZKB Visa Debit Card`, `Jahresgebühr … Debit Card` | Konto «Kontoführung und Kartengebühren», ohne Mitglied |
+| Gutschrift + Mitglied erkannt + offener Beitrag (Claim `MITGLIEDERBEITRAG`) | Konto «Mitgliederbeiträge» + Claim-Zuordnung |
+| Gutschrift + Mitglied erkannt + offener Essensanteil (Claim `ESSENSANTEIL`, Betrag ≈) | Konto «Essensanteile von Mitgliedern» + Claim-Zuordnung |
+| Gutschrift + Mitglied erkannt + offene Merch-Forderung | Konto «Merch-Zahlungen von Mitgliedern» + Claim-Zuordnung |
+| `Einkauf ZKB Visa Debit Card` + Datum ≈ Event mit `bill_paid_by = vereinskonto` | Konto «Essen mit Vereinskonto» + Event-Zuordnung |
+| Belastung an erkanntes Mitglied | Konto «Rückzahlungen an Mitglieder» |
+| Sonst | kein Vorschlag — manuell im Review |
+
+Vorschläge sind immer nur Vorschläge; der Schatzmeister bestätigt jede Zeile. Bestätigte Mitglied-Zuordnungen erzeugen/aktualisieren `MemberBankAlias` (lernendes Matching).
+
+### 11.5 Forderungen und Offene-Posten-Übersicht
+
+`MemberClaim` bildet ab, wer dem Verein (oder einem auslegenden Mitglied) wieviel schuldet. Quellen:
+
+- **Mitgliederbeiträge** (Sektion 11.7): pro Mitglied und Jahr eine Claim über den Jahresbeitrag.
+- **BillBro-Essensanteile** (Sektion 11.6): wenn mit dem Vereinskonto bezahlt wurde, pro teilnehmendem Mitglied eine Claim über den berechneten Anteil.
+- **Merch-Bestellungen** (Sektion 11.8): pro Bestellung eine Claim über den Mitglieder-Preis.
+- **Reisen** (Sektion 11.9): optional, z.B. Kostenbeteiligungen.
+
+Verbuchung von Zahlungseingängen gegen Claims:
+
+- Zahlungen können **gesplittet** eingehen (z.B. Beitrag in Monatsraten) → `paid_rappen` kumuliert, Status `offen` → `teilweise` → `beglichen`.
+- **Aufrunden**: Zahlt ein Mitglied mehr als die offene Forderung, wird die Differenz als **ausserordentliche Einnahme** verbucht — Konto «Aufgerundete Essensanteile» bzw. «Aufgerundete Merchbestellungen» (Sektion 6). Die Claim gilt als beglichen.
+- Nach Verbuchung sieht das Mitglied den Posten auf dem Dashboard als «beglichen».
+
+**Übersicht in der Buchhaltung** (neuer Tab «Offene Posten»): pro Mitglied alle offenen und beglichenen Posten — welcher Zahlungsausgang vom Vereinskonto noch offen ist, wieviel wann bereits bezahlt wurde; dasselbe für die erwarteten Mitgliederbeiträge. Filter: Typ, Status, Mitglied.
+
+### 11.6 BillBro-Integration (Zahlweg)
+
+Am Anfang des BillBro-Workflows (beim Organisator) gibt es neu die Angabe, **wie die Rechnung bezahlt wird**:
+
+- **Vereinskonto** (`bill_paid_by = 'vereinskonto'`): Nach Abschluss der Anteilsberechnung entsteht pro teilnehmendem Mitglied eine `MemberClaim` (Typ `ESSENSANTEIL`, Gläubiger = Verein). Die Kartenzahlung erscheint später im ZKB-Export (Konto «Essen mit Vereinskonto»), die Rücküberweisungen der Mitglieder werden per Import den Claims zugeordnet. Aufgerundete Beträge → «Aufgerundete Essensanteile» (Beispiel: Memuzin 2025 — Zahlung CHF 700 mit Vereinskarte, Rückzahlungen 677.40 in Anteilen von 82.00–92.00). Nach Zahlungseingang und Verbuchung wechselt der offene Betrag auf dem Dashboard des Mitglieds auf «beglichen».
+- **Mitglied zahlt** (`bill_paid_by = 'mitglied'` + `bill_payer_member_id`): Ein teilnehmendes Mitglied wird als Zahler zugewiesen; die anderen überweisen ihre Anteile direkt an dieses Mitglied. **Läuft nicht über die Vereinsbuchhaltung** — es entstehen Claims mit `creditor_member_id` = Zahler, ohne Bookings. Das zahlende Mitglied bestätigt die Eingänge in der App (pro Teilnehmer «erhalten» markieren); die Schuldner sehen den Status auf ihrem Dashboard.
+
+### 11.7 Mitgliederbeiträge (Soll-Stellung und Splittung)
+
+- Der Jahresbeitrag pro Mitglied ist pro Geschäftsjahr hinterlegt (`FiscalYear.membership_fee_rappen`, 2026: CHF 840). **Beitragssoll des Jahres = Anzahl aktive Mitglieder × Jahresbeitrag.**
+- Beim Eröffnen des Geschäftsjahres wird pro aktivem Mitglied eine `MemberClaim` (Typ `MITGLIEDERBEITRAG`) über den Jahresbeitrag erzeugt; der Betrag ist pro Mitglied überschreibbar (Sonderfälle).
+- **Splittung**: Nach aktueller Bestimmung kann der Beitrag bis Ende Juni des laufenden Jahres als Gesamtbetrag oder in 6 gleichen Monatsraten beglichen werden. Diese Regel existierte nur, um dem Schatzmeister Verbuchungsaufwand zu ersparen — mit automatischer Verbuchung über die App sind **beliebige Splittungen** unproblematisch. Das Modell schreibt deshalb keine Raten vor: jeder Zahlungseingang reduziert die offene Forderung (Sektion 11.5).
+- Die reale Zahlungspraxis aus den Kontoauszügen (monatlich 50/70/98, Jahresbeträge 600/840, Nachzahlungen 240) wird damit vollständig abgedeckt.
+
+### 11.8 Merch-Integration
+
+Ablauf: Der Marketingchef eröffnet eine Bestellrunde mit **Listenpreis** → Mitglieder bestellen → Marketingchef bestellt bei den Lieferanten und kennt dann den **effektiven Preis** → Rechnung wird mit dem Vereinskonto beglichen und erscheint im ZKB-Export.
+
+- Lieferanten-Zahlung: Konto «Merch-Einkauf bei Lieferanten» (Import, Zuordnung zur Bestellrunde).
+- Mitglieder-Zahlungen: pro `MerchOrder` eine `MemberClaim` (Typ `MERCH`) über den Mitglieder-Preis; Eingänge via Import zuordnen. Überzahlung → «Aufgerundete Merchbestellungen».
+- Rückzahlungen an Mitglieder (z.B. Rabattweitergabe wie im Mai 2026) → Konto «Rückzahlungen an Mitglieder», reduziert bzw. schliesst die Claim.
+- Es gibt ein **Budget für Merch-Beiträge des Vereins** an die Mitglieder: in der Budget-Ansicht wird die Kontengruppe «Merch» **netto** ausgewiesen (Ausgaben − Mitglieder-Einnahmen) und gegen das Budget gestellt.
+
+### 11.9 Reisen (Vereinsausflüge)
+
+- Der Reisekommissar erfasst eine **Vorab-Buchung**, wenn er z.B. ein Hotel bucht — den Rechnungsbeleg entweder sofort oder später. Kommt danach der ZKB-Eintrag per Import, wird er der bestehenden Buchung zugeordnet (Betrag/Datum-Matching im Review) statt doppelt verbucht.
+- Vergisst er die Vorab-Erfassung, entsteht die Buchung erst beim CSV-Import — beides ist gültig.
+- Für Reisen gibt es ein **Budget** (Kontengruppe «Reisen», Sektion 6); der Budget-Wert wird auf Gruppenebene ausgewiesen.
+
+### 11.10 Neue Event-Kategorie: «Essen für Buchhaltung»
+
+Neuer `EventType.ESSEN_BUCHHALTUNG`:
+
+- Läuft wie die Vorstandssitzung **ohne GGL-Teile** (kein Schätzspiel, keine Rangliste, keine Punkte), aber mit `audience = ALL` — offen für alle Mitglieder.
+- Zweck: auf Reisen oder bei sonstigen Ad-hoc-Essen mit der Vereinskarte zahlen zu können und die ZKB-Einträge später über die App dem Event (und den Teilnehmer-Anteilen) zuzuordnen.
+- Kein 3-Wochen-RSVP-Reminder (Ad-hoc-Charakter); BillBro-Anteilsberechnung inkl. Zahlweg-Angabe (Sektion 11.6) verfügbar.
+
+### 11.11 Budget-Vorschlag bei Jahreseröffnung
+
+Wenn ein neues Geschäftsjahr eröffnet wird, schlägt die App das Budget pro Konto vor:
+
+- **Mitgliederbeiträge**: Anzahl aktive Mitglieder × Jahresbeitrag (`membership_fee_rappen`).
+- **Übrige Konten**: Ist-Werte des Vorjahres (gerundet auf CHF 10).
+- Alle Vorschläge sind editierbar, bevor sie gespeichert werden (Budget-Tab).
+
 ## 12. Export
 
 PDF und CSV sind **Zusatz**, nicht primäre Arbeitsweise.
@@ -471,7 +619,7 @@ Aus STRATEGY_2026.md: Buchhaltung ist explizit als Kandidat für AI/Automation g
 | Beleg-OCR (Betrag, Datum, Händler erkennen) | Future: optionaler API-Call zu Google Document AI oder OpenAI Vision. Datenmodell (`Receipt.ocr_data` JSON) ist vorbereitet. |
 | Buchungssatz-Klassifikation | Future: aus OCR-Daten Konto-Vorschlag ableiten. Ersetzt Pre-Tagging durch Uploader. |
 | Automatischer Buchungseingang aus Mail | Nicht geplant — n8n wurde bewusst verworfen. |
-| ZKB-Kontoauszug-Import | Future: CSV-Import der ZKB-Transaktionen als Batch-Buchungsvorschläge. |
+| ZKB-Kontoauszug-Import | **Kern-Feature (Refokus 2026-07)** — Sektion 11, Umsetzung Phase 4b. Regelbasiertes Matching, kein AI. |
 
 **Entscheidung MVP**: Kein AI-Einsatz. OCR und Klassifikation kommen wenn der Grundbetrieb stabil ist.
 
@@ -505,6 +653,19 @@ Mitglied-eigene Beleg-Übersicht (im Member-Blueprint):
 GET /member/receipts                     → Eigene eingereichte Belege mit Status
 ```
 
+Neu in Phase 4b (Sektion 11):
+```
+GET/POST /accounting/import              → ZKB-CSV hochladen + Import-Historie
+GET  /accounting/import/<id>/review      → Review-Screen (pending-Transaktionen zuordnen)
+POST /accounting/import/tx/<id>/book     → Transaktion verbuchen (Konto/Mitglied/Event/Claim)
+POST /accounting/import/tx/<id>/ignore   → Transaktion ignorieren
+GET  /accounting/claims                  → Offene-Posten-Übersicht (Tab, Filter: Typ/Status/Mitglied)
+POST /accounting/claims/<id>/settle      → Claim manuell abschliessen/erlassen
+POST /billbro/<event_id>/payment_method  → Zahlweg setzen (Vereinskonto / Mitglied)
+POST /billbro/<event_id>/confirm_payment/<member_id> → Privatzahler bestätigt Eingang
+GET  /member/claims (bzw. Dashboard)     → Eigene offene Posten mit Status
+```
+
 ## 17. Decision Log
 
 | Datum | Entscheid | Begründung |
@@ -533,11 +694,19 @@ GET /member/receipts                     → Eigene eingereichte Belege mit Stat
 | 2026-06-10 | Abschluss-Tab mit billbro-workflow-block | Bestehende Klassen, kein neues Muster nötig; phasenbewusster Hinweistext für jede Rolle |
 | 2026-06-10 | Beleg-Upload + Buchung als Workflow-Seiten (cleanup-step-nav) | Geführte Mehrschritt-Abläufe mit bestehendem Schritt-Navigations-Muster |
 | 2026-06-10 | Seeding Option A | Kontenplan + FiscalYears 2021–2026 + Budget 2025/2026 aus Excel; keine historischen Einzelbuchungen |
+| 2026-07-13 | **Refokus: ZKB-CSV-Import als Kern-Workflow** | Fast alle Buchungen laufen über das ZKB-Konto; monatlicher Export aus der ZKB-App ist die primäre Buchungsquelle, manuelle Erfassung der Sonderfall |
+| 2026-07-13 | Kontenplan verschlankt | Alte PDF-Vorlage enthielt nie bebuchte Konten; neue Liste orientiert sich an real bebuchten Kategorien und den Kostenstellen aus `Vereinsfinanzen_2026.xlsx` |
+| 2026-07-13 | `MemberClaim` als Offene-Posten-Modell | Beiträge, Essensanteile, Merch und Reisen einheitlich als Forderungen; Teilzahlungen und Aufrundungen (→ ausserordentliche Einnahme) abgedeckt |
+| 2026-07-13 | `MemberBankAlias` für Mitglied-Matching | CSV-Namen/Adressen stimmen nicht 1:1 mit der DB überein (Zweitnamen, Umlaute, Umzüge); lernendes Alias-Matching statt fixer Regeln |
+| 2026-07-13 | BillBro-Zahlweg (Vereinskonto vs. Mitglied) | Privat ausgelegte Rechnungen laufen nicht über die Vereinsbuchhaltung; Bestätigung der Eingänge durch das auslegende Mitglied |
+| 2026-07-13 | Beitrags-Splittung frei | 6-Monatsraten-Regel existierte nur wegen manuellem Verbuchungsaufwand; mit App-Verbuchung sind beliebige Teilzahlungen möglich |
+| 2026-07-13 | Neuer EventType `ESSEN_BUCHHALTUNG` | Ad-hoc-Essen mit Vereinskarte (z.B. auf Reisen) ohne GGL, offen für alle — für saubere ZKB-Zuordnung |
+| 2026-07-13 | Budget-Vorschlag bei Jahreseröffnung | Mitgliederbeiträge = aktive Mitglieder × Jahresbeitrag; übrige Konten = Vorjahres-Ist; alles editierbar |
 
 ## 18. Offene Punkte
 
 - **Kassen-Konto**: Noch kein Bedarf. Wenn Festbetrieb mit Barkasse kommt, zweites Konto-Objekt anlegen — Modell unterstützt das.
-- **ZKB-CSV-Import**: Manueller Import des Kontoauszugs als Buchungsvorschläge wäre nützlich (ZKB-Format bekannt aus `vorlagen_buchhaltung/`). Future Consideration für Phase 4b oder Phase 6.
+- **ZKB-CSV-Import**: ~~Future Consideration~~ → **Kern-Feature**, spezifiziert in Sektion 11, Umsetzung in Phase 4b (`docs/initiatives/workspace-railway/PHASE_04B_ACCOUNTING_BANK_IMPORT.md`).
 - **TWINT/ZKB Open Banking**: Tiefere Evaluation in Phase 6. `payment_ref` ist schon vorbereitet.
 - **Merch-Verknüpfung**: `Receipt.suggested_event_id` ist vorhanden; eine `suggested_merch_order_id` kann bei Phase 10 ergänzt werden ohne Modell-Bruch.
 - **Datenschutz**: Buchungen und Belege enthalten Finanzdaten von Mitgliedern. Zugriff strikt nach Sektion 5. `vorlagen_buchhaltung/` ist in `.gitignore`.
