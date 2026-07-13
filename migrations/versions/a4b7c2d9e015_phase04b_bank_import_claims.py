@@ -28,6 +28,7 @@ claim_type = sa.Enum(
 )
 claim_status = sa.Enum("OFFEN", "TEILWEISE", "BEGLICHEN", "ERLASSEN", name="claimstatus")
 bill_paid_by = sa.Enum("vereinskonto", "mitglied", name="billpaidby")
+booking_direction = sa.Enum("IN", "OUT", name="bookingdirection")
 
 
 def upgrade():
@@ -40,6 +41,9 @@ def upgrade():
         claim_type.create(bind, checkfirst=True)
         claim_status.create(bind, checkfirst=True)
         bill_paid_by.create(bind, checkfirst=True)
+        # Bereits von Phase-4-Migration c8d3e9f1a274 oder fehlgeschlagenem Retry;
+        # checkfirst verhindert DuplicateObject bei erneutem Deploy.
+        booking_direction.create(bind, checkfirst=True)
 
     # --- fiscal_years: Jahresbeitrag pro Mitglied ---
     with op.batch_alter_table("fiscal_years", schema=None) as batch_op:
@@ -87,7 +91,7 @@ def upgrade():
         sa.Column("amount_rappen", sa.Integer(), nullable=False),
         sa.Column(
             "direction",
-            sa.Enum("IN", "OUT", name="bookingdirection", create_type=False),
+            booking_direction,
             nullable=False,
         ),
         sa.Column("currency", sa.String(length=3), nullable=False),
