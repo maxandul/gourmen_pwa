@@ -45,6 +45,12 @@ def upgrade():
         # checkfirst verhindert DuplicateObject bei erneutem Deploy.
         booking_direction.create(bind, checkfirst=True)
 
+    # create_type=False: Typ wurde oben (oder in c8d3e9f1a274) angelegt – create_table
+    # darf bookingdirection nicht erneut CREATE TYPE emittieren (Retry-Kollision).
+    booking_direction_col = sa.Enum(
+        "IN", "OUT", name="bookingdirection", create_type=False,
+    )
+
     # --- fiscal_years: Jahresbeitrag pro Mitglied ---
     with op.batch_alter_table("fiscal_years", schema=None) as batch_op:
         batch_op.add_column(sa.Column("membership_fee_rappen", sa.Integer(), nullable=True))
@@ -91,7 +97,7 @@ def upgrade():
         sa.Column("amount_rappen", sa.Integer(), nullable=False),
         sa.Column(
             "direction",
-            booking_direction,
+            booking_direction_col,
             nullable=False,
         ),
         sa.Column("currency", sa.String(length=3), nullable=False),
