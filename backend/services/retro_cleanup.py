@@ -125,16 +125,23 @@ class RetroCleanupService:
 
     @classmethod
     def _is_completed(cls, event, participation, has_rating: bool, member_id: int) -> bool:
-        if not participation or not participation.responded_at:
+        """Abgeschlossen = Absage, oder Zusage ohne nötige Bewertung, oder Zusage+Bewertung.
+
+        ``responded_at`` darf fehlen (ältere BillBro-Pfade): Absage und vorhandene
+        Bewertung gelten trotzdem als erledigt, damit Einträge nicht stecken bleiben.
+        """
+        if not participation:
             return False
 
+        # Explizite Absage (auch ohne responded_at, z.B. historisch nach mark_absent)
+        if not participation.teilnahme:
+            return True
+
+        # Zusage: Bewertung nur wenn erlaubt
         if not getattr(event, "allow_ratings", True):
             return True
 
-        if participation.teilnahme:
-            return has_rating
-
-        return True
+        return has_rating
 
     @classmethod
     def _is_open(cls, event, participation, has_rating: bool, member_id: int) -> bool:

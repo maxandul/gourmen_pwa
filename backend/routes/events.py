@@ -56,6 +56,24 @@ def _cleanup_rsvp_undo_available() -> bool:
     )
 
 
+def _redirect_cleanup_after_change(event_id: int, focus=None, preferred_i: int | None = None):
+    """Nach RSVP/Undo: bleibe beim gleichen Event, sonst am Listenplatz preferred_i."""
+    open_events = RetroCleanupService.list_open_cleanup_events(current_user.id)
+    if not open_events:
+        return redirect(url_for('events.cleanup'))
+
+    ids = [e.id for e in open_events]
+    if event_id in ids:
+        i = ids.index(event_id)
+    else:
+        i = 0 if preferred_i is None else max(0, min(preferred_i, len(open_events) - 1))
+
+    kwargs = {'i': i}
+    if focus:
+        kwargs['focus'] = focus
+    return redirect(url_for('events.cleanup', **kwargs))
+
+
 def _get_visible_event_or_404(event_id: int) -> Event:
     """Load event; 403 if current user may not see board-only events."""
     event = Event.query.get_or_404(event_id)
@@ -541,10 +559,8 @@ def cleanup_undo_rsvp():
         db.session.commit()
 
     flash('Die letzte Zu-/Absage wurde rückgängig gemacht.', 'success')
-    open_events = RetroCleanupService.list_open_cleanup_events(current_user.id)
-    ids = [e.id for e in open_events]
-    i = ids.index(event_id) if event_id in ids else 0
-    return redirect(url_for('events.cleanup', i=i))
+    preferred_i = request.form.get('cleanup_i', type=int)
+    return _redirect_cleanup_after_change(event_id, preferred_i=preferred_i)
 
 
 @bp.route('/<int:event_id>/cleanup/rsvp', methods=['POST'])
@@ -552,6 +568,7 @@ def cleanup_undo_rsvp():
 def cleanup_rsvp(event_id):
     """Setzt Teilnahme explizit im Datenbereinigungs-Flow."""
     status = request.form.get('status')
+    preferred_i = request.form.get('cleanup_i', type=int)
     if status not in ('yes', 'no'):
         flash('Ungültige Auswahl.', 'error')
         return redirect(url_for('events.cleanup'))
@@ -601,7 +618,7 @@ def cleanup_rsvp(event_id):
         if (status == 'yes' and event.allow_ratings)
         else None
     )
-    return redirect(url_for('events.cleanup', focus=focus))
+    return _redirect_cleanup_after_change(event_id, focus=focus, preferred_i=preferred_i)
 
 @bp.route('/<int:event_id>/ratings/enable', methods=['POST'])
 @login_required

@@ -68,14 +68,17 @@
                 {% endif %}
             </div>
         </nav>
-        {% if not participation or not participation.responded_at %}
-        <p class="events-cleanup-hint">Gib an, ob du am Event dabei warst:</p>
-        {% else %}
+        {% if participation and participation.teilnahme %}
         <p class="events-cleanup-hint">Du bist beim Event dabei gewesen. Gib eine Bewertung ab oder ändere deinen Teilnahmestatus:</p>
+        {% elif participation and not participation.teilnahme %}
+        <p class="events-cleanup-hint">Du bist als abgesagt erfasst. Bestätige «Nicht dabei» oder korrigiere auf «War dabei»:</p>
+        {% else %}
+        <p class="events-cleanup-hint">Gib an, ob du am Event dabei warst:</p>
         {% endif %}
         {% if cleanup_rsvp_undo_available|default(false) %}
         <form method="POST" action="{{ url_for('events.cleanup_undo_rsvp') }}" class="cleanup-undo-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
             <button type="submit" class="btn btn--outline btn--sm">{{ lucide_icon('undo-2') }} Letzte Zu-/Absage rückgängig</button>
         </form>
         {% endif %}
@@ -117,23 +120,33 @@
                 {% if participation and participation.teilnahme %}
                     <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
                         <input type="hidden" name="status" value="no">
                         <button type="submit" class="btn btn--danger">Nicht dabei</button>
                     </form>
                 {% elif participation and not participation.teilnahme %}
                     <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
+                        <input type="hidden" name="status" value="no">
+                        <button type="submit" class="btn btn--outline">Nicht dabei bestätigen</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
                         <input type="hidden" name="status" value="yes">
                         <button type="submit" class="btn btn--success">War dabei</button>
                     </form>
                 {% else %}
                     <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
                         <input type="hidden" name="status" value="yes">
                         <button type="submit" class="btn btn--success">War dabei</button>
                     </form>
                     <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="cleanup_i" value="{{ cleanup_idx }}">
                         <input type="hidden" name="status" value="no">
                         <button type="submit" class="btn btn--danger">Nicht dabei</button>
                     </form>
@@ -152,7 +165,7 @@
             <div class="card__body">
                 <form method="POST" action="{{ url_for('ratings.rate_event', event_id=event.id) }}" class="form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="next" value="{{ url_for('events.cleanup') }}">
+                    <input type="hidden" name="next" value="{{ url_for('events.cleanup', i=cleanup_idx) }}">
                     <div class="form-row">
                         <div class="form-field">
                             <label class="form-field__label" for="food_rating_cleanup">Essen</label>

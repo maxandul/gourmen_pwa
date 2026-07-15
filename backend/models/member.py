@@ -33,6 +33,16 @@ ZIMMERWUNSCH_CHOICES = [
     ('Egal', 'Egal')
 ]
 
+
+def select_choices_with_legacy(base_choices, stored_value):
+    """Erweitert Select-Choices um einen gespeicherten Wert ausserhalb der Standardliste (Legacy-Freitext)."""
+    choices = list(base_choices)
+    keys = {c[0] for c in choices}
+    if stored_value and stored_value not in keys:
+        choices.append((stored_value, stored_value))
+    return choices
+
+
 class Member(db.Model, UserMixin):
     """Member model - contains non-sensitive data only"""
     __tablename__ = 'members'

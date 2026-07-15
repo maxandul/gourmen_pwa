@@ -264,6 +264,15 @@ Default `BESTELLT`, weitere Werte je nach Workflow (`AUSGELIEFERT` etc. – im C
 - `allow_ratings` = Bewertungen aktiviert (default true)
 - `billbro_closed` = BillBro-Eingabe gesperrt (nach Abschluss/Auswertung)
 
+### Bereinigung (`events.cleanup` / `RetroCleanupService`)
+
+Nacharbeit für **vergangene** Events (Datum vor heute UTC): fehlende Zu-/Absage und/oder fehlende Bewertung.
+
+- **Offen**: keine `Participation`, oder Zusage (`teilnahme=True`) mit `allow_ratings` und ohne `EventRating`
+- **Erledigt**: Absage (`teilnahme=False`), oder Zusage ohne nötige Bewertung (`allow_ratings=False`), oder Zusage inkl. Bewertung
+- **`Participation.responded_at`**: Zeitpunkt der Zu-/Absage. BillBro darf dieses Feld nicht löschen (`update_guess`); Organisator-Aktionen `mark_absent` / `mark_present` setzen es. Fehlendes `responded_at` blockiert die Bereinigung nicht mehr, wenn Absage oder Bewertung bereits vorliegen
+- Einstieg: Dashboard-Kachel «Bereinigung»; Navigation per `?i=` in der offenen Liste
+
 ## Saisonbegriff
 
 `Event.season` ist das Jahr des Events. Aggregationen (GGL-Ranking, Stats) gruppieren nach Saison.

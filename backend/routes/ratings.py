@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_login import login_required, current_user
 from backend.extensions import db
@@ -66,6 +68,9 @@ def rate_event(event_id):
             highlights=form.highlights.data
         )
         db.session.add(rating)
+        # Bewertung impliziert Anwesenheit; fehlendes responded_at nachziehen (Cleanup)
+        if participation and participation.teilnahme and not participation.responded_at:
+            participation.responded_at = datetime.utcnow()
         db.session.commit()
         undo = session.get(CLEANUP_RSVP_UNDO_SESSION_KEY)
         if undo and undo.get('event_id') == event_id:

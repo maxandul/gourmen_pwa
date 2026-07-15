@@ -10,7 +10,14 @@ from flask_wtf.csrf import generate_csrf
 from wtforms import StringField, SelectField, BooleanField, DateField, SubmitField, PasswordField, FieldList
 from wtforms.validators import DataRequired, Email, Length, Optional
 from backend.extensions import db
-from backend.models.member import Member, Role, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
+from backend.models.member import (
+    Member,
+    Role,
+    Funktion,
+    NATIONALITAET_CHOICES,
+    ZIMMERWUNSCH_CHOICES,
+    select_choices_with_legacy,
+)
 from backend.models.event import Event, EventType, EventAudience
 from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
@@ -28,14 +35,6 @@ def normalize_to_month_start(value):
         return None
     return value.replace(day=1)
 
-
-def _select_choices_with_legacy(base_choices, stored_value):
-    """Erweitert Select-Choices um einen gespeicherten Wert, der nicht in der Standardliste steht (Legacy-Freitext)."""
-    choices = list(base_choices)
-    keys = {c[0] for c in choices}
-    if stored_value and stored_value not in keys:
-        choices.append((stored_value, stored_value))
-    return choices
 
 def admin_required(f):
     """Decorator to require admin access"""
@@ -190,7 +189,7 @@ class MemberForm(FlaskForm):
     telefon = StringField('Telefon')
     
     # Personal data
-    geburtsdatum = DateField('Geburtsdatum')
+    geburtsdatum = DateField('Geburtsdatum', validators=[Optional()])
     nationalitaet = SelectField(
         'Nationalität',
         choices=NATIONALITAET_CHOICES,
@@ -213,7 +212,7 @@ class MemberForm(FlaskForm):
         (Funktion.REISEKOMMISSAR.value, 'Reisekommissar'),
         (Funktion.RECHNUNGSPRUEFER.value, 'Rechnungsprüfer')
     ])
-    beitritt = DateField('Beitritt', format='%Y-%m-%d')
+    beitritt = DateField('Beitritt', format='%Y-%m-%d', validators=[Optional()])
     vorstandsmitglied = BooleanField('Vorstandsmitglied')
     
     # Physical data
@@ -456,8 +455,8 @@ def edit_member(member_id):
     else:
         zw_for_choices = member.zimmerwunsch
         nat_for_choices = member.nationalitaet
-    form.zimmerwunsch.choices = _select_choices_with_legacy(ZIMMERWUNSCH_CHOICES, zw_for_choices)
-    form.nationalitaet.choices = _select_choices_with_legacy(NATIONALITAET_CHOICES, nat_for_choices)
+    form.zimmerwunsch.choices = select_choices_with_legacy(ZIMMERWUNSCH_CHOICES, zw_for_choices)
+    form.nationalitaet.choices = select_choices_with_legacy(NATIONALITAET_CHOICES, nat_for_choices)
     
     # Populate form with existing data
     if request.method == 'GET':
@@ -515,32 +514,43 @@ def edit_member(member_id):
         member.vorstandsmitglied = form.vorstandsmitglied.data
         
         # Physical data
-        member.koerpergroesse = int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() and form.koerpergroesse.data.strip() != '' else None
-        member.koerpergewicht = int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() and form.koerpergewicht.data.strip() != '' else None
-        member.schuhgroesse = float(form.schuhgroesse.data) if form.schuhgroesse.data and form.schuhgroesse.data.strip() and form.schuhgroesse.data.strip() != '' else None
-        
-        # Clothing
-        member.kleider_oberteil = form.kleider_oberteil.data or None
-        member.kleider_hosen = form.kleider_hosen.data or None
-        member.kleider_cap = form.kleider_cap.data or None
-        
-        # Preferences
-        member.zimmerwunsch = form.zimmerwunsch.data or None
-        member.spirit_animal = form.spirit_animal.data or None
-        member.fuehrerschein = form.fuehrerschein.data or None
-        
-        # System
-        member.role = Role(form.role.data)
-        member.is_active = form.is_active.data
-        
-        db.session.commit()
-        
-        SecurityService.log_audit_event(
-            AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
-        )
-        
-        flash('Mitglied erfolgreich bearbeitet', 'success')
-        return redirect(url_for('admin.members'))
+        try:
+            member.koerpergroesse = int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() else None
+            member.koerpergewicht = int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() else None
+            raw_schuh = (form.schuhgroesse.data or '').strip().replace(',', '.')
+            member.schuhgroesse = float(raw_schuh) if raw_schuh else None
+        except ValueError:
+            flash('Körper-/Schuhgrösse: bitte gültige Zahlen eingeben.', 'error')
+        else:
+            # Clothing
+            member.kleider_oberteil = form.kleider_oberteil.data or None
+            member.kleider_hosen = form.kleider_hosen.data or None
+            member.kleider_cap = form.kleider_cap.data or None
+
+            # Preferences
+            member.zimmerwunsch = form.zimmerwunsch.data or None
+            member.spirit_animal = form.spirit_animal.data or None
+            member.fuehrerschein = form.fuehrerschein.data or None
+
+            # System
+            member.role = Role(form.role.data)
+            member.is_active = form.is_active.data
+
+            db.session.commit()
+
+            SecurityService.log_audit_event(
+                AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
+            )
+
+            flash('Mitglied erfolgreich bearbeitet', 'success')
+            return redirect(url_for('admin.members'))
+
+    elif request.method == 'POST':
+        flash('Bitte Eingaben prüfen — es gibt Fehler im Formular.', 'error')
+        for field_name, errors in form.errors.items():
+            label = getattr(form, field_name).label.text if hasattr(form, field_name) else field_name
+            for error in errors:
+                flash(f'{label}: {error}', 'error')
 
     cal_audit = (
         AuditEvent.query.filter_by(

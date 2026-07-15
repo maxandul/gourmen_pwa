@@ -209,7 +209,7 @@ class MyForm(FlaskForm):
 - **Validators explizit**, niemals `optional()` ohne Begründung
 - **Choices als Tuple** `(value, label)`, value matcht Enum-Werten
 - **Submit-Button am Ende** als `SubmitField`
-- **Mitgliedsdaten Admin/Profil**: `nationalitaet` und `zimmerwunsch` nutzen dieselben Listen `NATIONALITAET_CHOICES` und `ZIMMERWUNSCH_CHOICES` aus `backend.models.member`. In `admin.edit_member` werden von der Liste abweichende gespeicherte Werte (Legacy-Freitext) temporär als Zusatz-Choice ergänzt (`_select_choices_with_legacy`), damit Speichern ohne Datenverlust möglich ist.
+- **Mitgliedsdaten Admin/Profil**: `nationalitaet` und `zimmerwunsch` nutzen dieselben Listen `NATIONALITAET_CHOICES` und `ZIMMERWUNSCH_CHOICES` aus `backend.models.member`. Abweichende gespeicherte Werte (Legacy-Freitext) werden in **Admin und Profil** via `select_choices_with_legacy` (ebenfalls in `member.py`) temporär als Zusatz-Choice ergänzt. Optionale `DateField`s brauchen explizit `validators=[Optional()]` — sonst scheitert WTForms bei leerem String still und speichert nicht.
 - **Komplexe Module**: alle Forms eines Moduls in einer eigenen Datei `backend/forms/<modul>.py` (Beispiel: `backend/forms/accounting.py`), kein Inline-Definieren im Route-File. Reine State-Mutations via POST-Button (z.B. Jahresfreigabe) laufen als einfache HTML-Forms mit manuellem `csrf_token()` (Validierung via `flask_wtf.csrf.validate_csrf`).
 
 ## Logging

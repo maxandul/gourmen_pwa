@@ -3,10 +3,16 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
+from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, BooleanField, HiddenField
 from wtforms.validators import DataRequired, Email, Optional
 from backend.extensions import db
-from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
+from backend.models.member import (
+    Member,
+    Funktion,
+    NATIONALITAET_CHOICES,
+    ZIMMERWUNSCH_CHOICES,
+    select_choices_with_legacy,
+)
 from backend.models.member_sensitive import MemberSensitive
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, AuditAction, require_step_up
@@ -44,9 +50,10 @@ class ProfileForm(FlaskForm):
     ort = StringField('Ort')
     
     # Physical data
-    koerpergroesse = IntegerField('Körpergröße (cm)', validators=[Optional()])
+    koerpergroesse = IntegerField('Körpergrösse (cm)', validators=[Optional()])
     koerpergewicht = IntegerField('Körpergewicht (kg)', validators=[Optional()])
-    schuhgroesse = FloatField('Schuhgröße (EU)', validators=[Optional()])
+    # StringField: erlaubt "42,5" (CH); Parsing beim Speichern
+    schuhgroesse = StringField('Schuhgrösse (EU)', validators=[Optional()])
     
     # Clothing data
     kleider_oberteil = StringField('Kleidergröße Oberteil')
@@ -92,11 +99,34 @@ def receipts():
     my_receipts = AccountingService.get_receipts_for_member(current_user)
     return render_template('member/receipts.html', receipts=my_receipts)
 
+def _parse_optional_float(raw) -> float | None:
+    """Parst optionale Float-Eingaben; akzeptiert Komma als Dezimaltrenner."""
+    if raw is None:
+        return None
+    text = str(raw).strip().replace(',', '.')
+    if not text:
+        return None
+    return float(text)
+
+
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     """User profile page"""
     form = ProfileForm(prefix='profile')
+
+    if request.method == 'POST':
+        nat_for_choices = request.form.get(form.nationalitaet.name)
+        if nat_for_choices is None:
+            nat_for_choices = current_user.nationalitaet
+        zw_for_choices = request.form.get(form.zimmerwunsch.name)
+        if zw_for_choices is None:
+            zw_for_choices = current_user.zimmerwunsch
+    else:
+        nat_for_choices = current_user.nationalitaet
+        zw_for_choices = current_user.zimmerwunsch
+    form.nationalitaet.choices = select_choices_with_legacy(NATIONALITAET_CHOICES, nat_for_choices)
+    form.zimmerwunsch.choices = select_choices_with_legacy(ZIMMERWUNSCH_CHOICES, zw_for_choices)
     
     if request.method == 'GET':
         # Personal data
@@ -118,7 +148,9 @@ def profile():
         # Physical data
         form.koerpergroesse.data = current_user.koerpergroesse
         form.koerpergewicht.data = current_user.koerpergewicht
-        form.schuhgroesse.data = current_user.schuhgroesse
+        form.schuhgroesse.data = (
+            str(current_user.schuhgroesse) if current_user.schuhgroesse is not None else ''
+        )
         
         # Clothing data
         form.kleider_oberteil.data = current_user.kleider_oberteil
@@ -133,9 +165,14 @@ def profile():
         form.active_tab.data = request.args.get('tab', 'profile')
     
     # Determine active tab (prioritize form data for POST, then query params, then default)
-    # For POST requests, form data takes precedence to preserve tab state during submission
+    # Prefixed forms send profile-active_tab / sensitive-active_tab — form.data lesen.
     if request.method == 'POST':
-        active_tab = request.form.get('active_tab') or request.args.get('tab') or 'profile'
+        active_tab = (
+            form.active_tab.data
+            or request.form.get('sensitive-active_tab')
+            or request.args.get('tab')
+            or 'profile'
+        )
     else:
         active_tab = request.args.get('tab') or 'profile'
     
@@ -249,7 +286,18 @@ def profile():
             # Physical data
             current_user.koerpergroesse = form.koerpergroesse.data
             current_user.koerpergewicht = form.koerpergewicht.data
-            current_user.schuhgroesse = form.schuhgroesse.data
+            try:
+                current_user.schuhgroesse = _parse_optional_float(form.schuhgroesse.data)
+            except ValueError:
+                flash('Schuhgrösse: bitte eine Zahl eingeben (z.B. 42 oder 42,5).', 'error')
+                return render_template(
+                    'member/profile.html',
+                    form=form,
+                    sensitive_form=sensitive_form,
+                    sensitive_data=sensitive_data_decrypted,
+                    active_tab=active_tab,
+                    has_step_up=SecurityService.check_step_up_access(),
+                )
             
             # Clothing data
             current_user.kleider_oberteil = form.kleider_oberteil.data

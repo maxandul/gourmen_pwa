@@ -741,13 +741,12 @@ def update_guess(event_id):
         flash('BillBro ist geschlossen – keine Änderungen mehr möglich', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
-    # Clear existing guess / esstyp to allow new one
+    # Clear existing guess / esstyp to allow new one (RSVP-Zeit bleibt erhalten)
     participation.guess_bill_amount_rappen = None
     participation.esstyp = None
     participation.diff_amount_rappen = None
     participation.rank = None
     participation.points = None
-    participation.responded_at = None
     
     db.session.commit()
     
@@ -904,7 +903,8 @@ def mark_absent(event_id, member_id):
     participation.diff_amount_rappen = None
     participation.rank = None
     participation.calculated_share_rappen = None
-    participation.responded_at = None
+    # Organisator-Entscheidung zählt als Zu-/Absage (Cleanup darf nicht stecken bleiben)
+    participation.responded_at = datetime.utcnow()
     
     db.session.commit()
     
@@ -950,6 +950,8 @@ def mark_present(event_id, member_id):
     
     # Mark as present
     participation.teilnahme = True
+    # Organisator-Entscheidung zählt als Zu-/Absage (Cleanup darf nicht stecken bleiben)
+    participation.responded_at = datetime.utcnow()
     
     db.session.commit()
     
