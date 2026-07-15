@@ -56,11 +56,13 @@ Modelle gemäss Spec Sektion 11.2. Alembic-Migration in eigenem Commit (up + dow
 
 ### Commit 2 – Seed-Update: Kontenplan verschlanken
 
-`scripts/seed_accounting_chart.py` gemäss Spec Sektion 6:
+`scripts/seed_accounting_chart.py` gemäss Spec Sektion 6 + 11:
 - Neue/umbenannte Konten anlegen (3000, 3100, 3310, 3315, 3400, 3410, 3500, 3620, 4500, 6100, 6541, 6542, 6570, 6650, 6660, 6700, 6710, 6940)
 - Alt-Konten **ohne Buchungen** deaktivieren oder löschen (nie bebuchte Konten aus der PDF-Vorlage)
 - Budget-Werte auf die neuen Codes remappen
-- `FiscalYear.membership_fee_rappen` setzen (2026: 84000)
+- `FiscalYear.membership_fee_rappen` setzen (2025/2026: 84000)
+- Ist-Sammelbuchungen 2022–2025 aus Erfolgsrechnung (Sparkapital); 2026 via ZKB-Import
+- Beitrags-Claims für offenes Jahr; optional lokale Kontoauszug-CSVs als pending Import
 - Idempotent bleiben
 
 ### Commit 3 – Service: `BankImportService` + Claims im `AccountingService`
