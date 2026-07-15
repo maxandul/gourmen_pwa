@@ -606,6 +606,37 @@ class BankImportService:
         db.session.commit()
         return tx
 
+    @classmethod
+    def delete_import(cls, import_id: int) -> str:
+        """Gesamten Import löschen (z.B. falsche Datei).
+
+        Nur erlaubt, wenn noch keine Transaktion verbucht ist. Gibt den
+        Dateinamen zurück. line_keys werden freigegeben → erneuter Upload
+        derselben Datei ist danach wieder möglich.
+        """
+        statement = cls.get_statement(import_id)
+        booked = [
+            tx for tx in statement.transactions
+            if tx.status == BankTransactionStatus.BOOKED
+        ]
+        if booked:
+            raise BankImportError(
+                f'Import «{statement.filename}» hat bereits {len(booked)} '
+                'verbuchte Transaktionen und kann nicht gelöscht werden.'
+            )
+        filename = statement.filename
+        # Detail-Zeilen zuerst (self-FK parent_id), dann Rest inkl. Import-Header.
+        BankTransaction.query.filter_by(import_id=statement.id).filter(
+            BankTransaction.parent_id.isnot(None),
+        ).delete(synchronize_session=False)
+        BankTransaction.query.filter_by(import_id=statement.id).delete(
+            synchronize_session=False,
+        )
+        db.session.delete(statement)
+        db.session.commit()
+        logger.info('Bank-Import %s («%s») gelöscht', import_id, filename)
+        return filename
+
     @staticmethod
     def _booking_description(tx: BankTransaction) -> str:
         parts = [tx.zahlungszweck or tx.buchungstext]
