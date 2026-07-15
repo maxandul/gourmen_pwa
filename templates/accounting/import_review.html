@@ -23,6 +23,17 @@
             {{ statement.filename }} · importiert am {{ statement.imported_at.strftime('%d.%m.%Y %H:%M') }}
             · {{ statement.new_count }} neu, {{ statement.duplicate_count }} Duplikate
         </p>
+        {% if statement.can_delete %}
+        <form method="POST"
+              action="{{ url_for('accounting.bank_import_delete', import_id=statement.id) }}"
+              class="form-actions form-actions--start"
+              onsubmit="return confirm('Import «{{ statement.filename }}» wirklich löschen? Alle noch nicht verbuchten Zeilen entfallen; die Datei kann danach erneut hochgeladen werden.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn--danger btn--sm">
+                {{ lucide_icon('trash-2') }} Import löschen
+            </button>
+        </form>
+        {% endif %}
         {% else %}
         <p class="text-secondary">Alle offenen Transaktionen aus sämtlichen Importen.</p>
         {% endif %}

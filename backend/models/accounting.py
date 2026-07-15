@@ -386,6 +386,18 @@ class BankStatementImport(db.Model):
     def pending_count(self):
         return sum(1 for tx in self.transactions if tx.is_pending)
 
+    @property
+    def booked_count(self):
+        return sum(
+            1 for tx in self.transactions
+            if tx.status == BankTransactionStatus.BOOKED
+        )
+
+    @property
+    def can_delete(self):
+        """Löschbar nur solange keine Zeile verbucht ist."""
+        return self.booked_count == 0
+
 
 class BankTransaction(db.Model):
     """Eine Zeile aus dem ZKB-Kontoauszug (inkl. Detail-Zeilen von Sammelbuchungen).

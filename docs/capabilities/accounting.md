@@ -512,6 +512,8 @@ Zusätzlich auf bestehenden Modellen:
 
 Der Import ist idempotent: dieselbe Datei mehrfach hochladen erzeugt keine Duplikate. Teilweise verarbeitete Importe können später weiterbearbeitet werden (pending-Transaktionen bleiben in der Import-Inbox).
 
+**Import löschen**: Solange noch keine Zeile verbucht ist, kann der Schatzmeister den gesamten Import löschen (falsche Datei / erneuter Test-Upload). Dabei werden pending- und ignored-Transaktionen entfernt und die Dedup-Schlüssel (`line_key`) freigegeben — derselbe CSV kann danach erneut importiert werden. Sobald mindestens eine Zeile verbucht ist, ist Löschen gesperrt (verbuchte Bookings bleiben unangetastet).
+
 ### 11.4 Auto-Matching-Regeln (Konto-Vorschlag)
 
 | Muster | Vorschlag |
@@ -657,6 +659,7 @@ Neu in Phase 4b (Sektion 11):
 ```
 GET/POST /accounting/import              → ZKB-CSV hochladen + Import-Historie
 GET  /accounting/import/<id>/review      → Review-Screen (pending-Transaktionen zuordnen)
+POST /accounting/import/<id>/delete      → Import löschen (nur ohne verbuchte Zeilen; freigibt Dedup)
 POST /accounting/import/tx/<id>/book     → Transaktion verbuchen (Konto/Mitglied/Event/Claim)
 POST /accounting/import/tx/<id>/ignore   → Transaktion ignorieren
 GET  /accounting/claims                  → Offene-Posten-Übersicht (Tab, Filter: Typ/Status/Mitglied)

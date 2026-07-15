@@ -1072,6 +1072,20 @@ def bank_tx_ignore(tx_id: int):
     return _review_redirect(tx)
 
 
+@bp.route('/import/<int:import_id>/delete', methods=['POST'])
+@login_required
+def bank_import_delete(import_id: int):
+    """Import inkl. pending/ignored Zeilen löschen (nur ohne verbuchte Zeilen)."""
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    try:
+        filename = BankImportService.delete_import(import_id)
+        flash(f'Import «{filename}» gelöscht. Die Datei kann erneut hochgeladen werden.', 'success')
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return redirect(url_for('accounting.index', tab='import', _anchor='gourmen-tabs'))
+
+
 # ---------------------------------------------------------------------------
 # Offene Posten (MemberClaims)
 # ---------------------------------------------------------------------------

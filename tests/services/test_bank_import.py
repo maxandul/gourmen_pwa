@@ -139,6 +139,44 @@ def test_import_is_idempotent(app):
         assert BankTransaction.query.count() == 8
 
 
+def test_delete_import_allows_reupload(app):
+    from backend.models.accounting import BankStatementImport
+    from backend.services.bank_import import BankImportError
+
+    with app.app_context():
+        treasurer, *_ = _seed_base()
+        statement = BankImportService.import_statement(_fixture_upload(), treasurer)
+        import_id = statement.id
+        assert BankTransaction.query.count() == 8
+
+        filename = BankImportService.delete_import(import_id)
+        assert filename
+        assert BankStatementImport.query.count() == 0
+        assert BankTransaction.query.count() == 0
+
+        again = BankImportService.import_statement(_fixture_upload(), treasurer)
+        assert again.new_count == 8
+        assert BankTransaction.query.count() == 8
+
+
+def test_delete_import_rejects_when_booked(app):
+    from backend.services.bank_import import BankImportError
+
+    with app.app_context():
+        treasurer, *_ = _seed_base()
+        statement = BankImportService.import_statement(_fixture_upload(), treasurer)
+        fee_tx = BankTransaction.query.filter_by(zkb_ref='TESTREF00000001').one()
+        account = Account.query.filter_by(code='6940').one()
+        BankImportService.book_transaction(
+            fee_tx.id, account_id=account.id, member_id=None,
+            event_id=None, claim_id=None, booked_by=treasurer,
+        )
+
+        with pytest.raises(BankImportError, match='verbuchte'):
+            BankImportService.delete_import(statement.id)
+        assert BankTransaction.query.count() == 8
+
+
 def test_import_suggests_fee_account_and_members(app):
     with app.app_context():
         treasurer, max_muster, roman, _fy = _seed_base()
