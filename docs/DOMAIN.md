@@ -239,7 +239,7 @@ Vierstellige Konto-Nummern, angelehnt an KMU-Kontenrahmen. Seit dem Refokus (Pha
 - **4xxx Aufwand Aktivitäten**: `4500` Reisen und Ausflüge
 - **6xxx übriger Aufwand**: `6100` Essen mit Vereinskonto, `6541/6542` GV/Vorstandssitzungen, `6570` IT/Telefon, `6650/6660` Merch-Einkauf/-Beitrag, `6700` Sonstiges, `6710` Rückzahlungen, `6940` Konto-/Kartengebühren
 
-Seed: `python scripts/seed_accounting_chart.py` (idempotent; Kontenplan + FiscalYears 2021–2026 + Budget 2025/2026; entfernt/deaktiviert Alt-Konten ohne/mit Buchungen).
+Seed: `python scripts/seed_accounting_chart.py` (idempotent; Kontenplan + FiscalYears 2021–2026 inkl. `membership_fee_rappen` + Budget 2025/2026 + Ist-Sammelbuchungen 2022–2025 aus den Erfolgsrechnungen + Beitrags-Claims für 2026; optional lokale ZKB-CSVs unter `vorlagen_buchhaltung/` als pending Import; entfernt/deaktiviert Alt-Konten ohne/mit Buchungen). 2026-Einzelbuchungen kommen bewusst über den ZKB-Import-Review, nicht als Seed.
 
 ## Merchandise
 

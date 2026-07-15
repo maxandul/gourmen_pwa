@@ -258,7 +258,7 @@ Der ursprüngliche Kontenplan stammte aus den PDF-Erfolgsrechnungen (veraltete V
 
 Feinere Unterteilung (z.B. Reisen nach Hotel/Transport/Essen/Erlebnis wie in der Excel des Schatzmeisters) ist bei Bedarf jederzeit über die Kontenplan-Verwaltung möglich; das Budget wird auf Gruppenebene ausgewertet. Die Merch-Gruppe wird in der Budget-Ansicht netto ausgewiesen (Sektion 11.8).
 
-Seed-Script: `scripts/seed_accounting_chart.py` — legt die Konten oben an, benennt bestehende Konten aus dem alten Seed um (3310, 6100, 6570, 6660) und entfernt Alt-Konten ohne Buchungen. Beim ersten Start von `/accounting` prüfen ob Konten existieren — falls nicht, Hinweis «Kontenplan initialisieren» anzeigen.
+Seed-Script: `scripts/seed_accounting_chart.py` — legt die Konten oben an, benennt bestehende Konten aus dem alten Seed um (3310, 6100, 6570, 6660), entfernt Alt-Konten ohne Buchungen, setzt `membership_fee_rappen`, Budget 2025/2026, Ist-Sammelbuchungen 2022–2025 (aus Erfolgsrechnung, eine Buchung pro Konto/Jahr mit `payment_ref=SEED-IST-…`) und Beitrags-Claims für das offene Jahr. Lokale ZKB-CSVs unter `vorlagen_buchhaltung/` werden optional als pending Import eingelesen; 2026-Einzelbuchungen entstehen über den Import-Review, nicht als Seed. Beim ersten Start von `/accounting` prüfen ob Konten existieren — falls nicht, Hinweis «Kontenplan initialisieren» anzeigen.
 
 ## 7. Beleg-Upload
 
