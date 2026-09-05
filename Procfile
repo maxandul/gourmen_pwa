@@ -1,1 +1,1 @@
-web: gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=1 --timeout=300 --worker-class=sync --preload --access-logfile=- --error-logfile=- --log-level=info 
+web: gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=1 --threads=8 --timeout=300 --worker-class=gthread --preload --access-logfile=- --error-logfile=- --log-level=info 

@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, jsonify, redirect, url_for, request
+from flask import (
+    Blueprint,
+    current_app,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user
 from backend.extensions import db
 from backend.models.member import Member
@@ -10,6 +19,8 @@ from backend.services.monatsessen_stats import (
 )
 
 bp = Blueprint('public', __name__)
+
+NEWLINE = chr(10)
 
 LANDING_HITLIST_TEASER = 5
 RESTAURANTS_PER_PAGE = 10
@@ -114,6 +125,100 @@ def restaurants():
             restaurant_count=0,
             hitlist_sort='rating',
         )
+
+def _public_base_url() -> str:
+    """Absolute Basis-URL fuer robots.txt und sitemap.xml."""
+    return current_app.config.get('PUBLIC_APP_BASE_URL', 'https://www.gourmen.ch').rstrip('/')
+
+
+# Oeffentliche Seiten, die in den Suchindex gehoeren. Alles andere (Login,
+# Dashboard, Vereinsbereich) bleibt bewusst draussen.
+SITEMAP_ENDPOINTS = [
+    ('public.landing', '1.0', 'weekly'),
+    ('public.about', '0.8', 'monthly'),
+    ('public.restaurants', '0.8', 'weekly'),
+]
+
+# Interne Bereiche, die Crawler nicht anfassen sollen.
+ROBOTS_DISALLOW = [
+    '/auth/',
+    '/dashboard/',
+    '/events/',
+    '/member/',
+    '/admin/',
+    '/billbro/',
+    '/ggl/',
+    '/ratings/',
+    '/accounting/',
+    '/docs/',
+    '/notifications/',
+    '/calendar/',
+    '/api/',
+    '/health',
+    '/test',
+]
+
+
+@bp.route('/robots.txt')
+def robots_txt():
+    """robots.txt inklusive Sitemap-Verweis.
+
+    Lieferte vorher 404. Google kommt zwar auch ohne robots.txt zurecht, aber
+    ohne den Sitemap-Hinweis fehlt Crawlern der Einstiegspunkt in eine Site,
+    auf die kaum jemand von aussen verlinkt - und die internen Bereiche waren
+    nirgends explizit ausgeschlossen.
+    """
+    base = _public_base_url()
+
+    lines = ['User-agent: *']
+    lines.extend('Disallow: ' + path for path in ROBOTS_DISALLOW)
+    lines.append('')
+    lines.append('Sitemap: ' + base + '/sitemap.xml')
+    lines.append('')
+
+    response = make_response(NEWLINE.join(lines))
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+
+@bp.route('/sitemap.xml')
+def sitemap_xml():
+    """XML-Sitemap der oeffentlichen Seiten.
+
+    Klein, aber der Weg, ueber den eine Site ohne eingehende Links ueberhaupt
+    erst gefunden und gecrawlt wird. In der Google Search Console einreichen.
+    """
+    base = _public_base_url()
+    lastmod = datetime.utcnow().date().isoformat()
+
+    entries = []
+    for endpoint, priority, changefreq in SITEMAP_ENDPOINTS:
+        try:
+            loc = base + url_for(endpoint)
+        except Exception:
+            continue
+        entries.append(
+            '  <url>'
+            + NEWLINE + '    <loc>' + loc + '</loc>'
+            + NEWLINE + '    <lastmod>' + lastmod + '</lastmod>'
+            + NEWLINE + '    <changefreq>' + changefreq + '</changefreq>'
+            + NEWLINE + '    <priority>' + priority + '</priority>'
+            + NEWLINE + '  </url>'
+        )
+
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>' + NEWLINE
+        + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + NEWLINE
+        + NEWLINE.join(entries) + NEWLINE
+        + '</urlset>' + NEWLINE
+    )
+
+    response = make_response(xml)
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
 
 @bp.route('/health/db')
 def health_db():

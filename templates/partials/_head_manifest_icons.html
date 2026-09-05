@@ -2,12 +2,16 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='brand/logo-master-round.svg') }}">
+    <!-- Kein SVG-Favicon: brand/logo-master-round.svg ist ein 2.85-MB-Master-Asset
+         (eingebettete 1300x1300-Bitmap), das Browser als Favicon vollstaendig
+         laden. Die PNG-Icons unten decken alle Groessen ab. -->
     <link rel="alternate icon" href="{{ url_for('static', filename='favicon.6d319de4.ico') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/pwa/icon-16.498c3d3b.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/pwa/icon-32.fc5d4966.png') }}">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/pwa/icon-192.ee7f0987.png') }}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='img/pwa/icon-512.21a600c7.png') }}">
+    <!-- Kein 512er-Favicon-Link: kein Browser braucht ein 512x512-Favicon, die
+         Datei ist aber 444 KB gross. Fuer die PWA-Installation ist sie ueber
+         manifest.json weiterhin deklariert. -->
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/pwa/apple-touch-icon-180.8b095258.png') }}">
@@ -20,7 +24,7 @@
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-750x1334.2f203bcb.png') }}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1242x2208.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1125x2436.ad53ee81.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-828x1792.a5161c83.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-828x1792.48346ca1.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1080x2340.fc19a065.png') }}" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3)">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1170x2532.7cdf1bee.png') }}" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='img/pwa/splash/splash-1284x2778.6b83d7f0.png') }}" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">

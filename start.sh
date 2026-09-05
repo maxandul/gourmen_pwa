@@ -12,7 +12,17 @@ if [ "$SERVICE_TYPE" = "cron" ]; then
     fi
 elif [ "$SERVICE_TYPE" = "web" ]; then
     echo "Starting web service..."
-    exec gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=1 --timeout=300 --worker-class=sync --preload --access-logfile=- --error-logfile=- --log-level=info
+    # Nebenlaeufigkeit: gthread mit 8 Threads statt eines einzelnen sync-Workers.
+    # Mit worker-class=sync bediente die App genau EINEN Request gleichzeitig -
+    # bei rund 50 Assets pro Seitenaufruf wurden die Stylesheets damit hinter
+    # allem anderen serialisiert.
+    #
+    # Bewusst weiterhin --workers=1: Flask-Limiter laeuft ohne REDIS_URL mit
+    # In-Memory-Storage, den sich mehrere Prozesse nicht teilen koennten - die
+    # Login-Rate-Limits waeren dann pro Worker statt global. Threads teilen den
+    # Speicher und lassen die Limits intakt. Sobald REDIS_URL gesetzt ist,
+    # koennen zusaetzlich Worker hochgezogen werden.
+    exec gunicorn 'backend.app:create_app()' --bind 0.0.0.0:$PORT --workers=1 --threads=8 --timeout=300 --worker-class=gthread --preload --access-logfile=- --error-logfile=- --log-level=info
 else
     echo "ERROR: SERVICE_TYPE not set or invalid. Set to 'web' or 'cron'"
     exit 1

@@ -3,7 +3,7 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.15.1';
+const VERSION = '3.16.0';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
@@ -14,10 +14,12 @@ const ACTIVE_CACHES = new Set([STATIC_CACHE, DYNAMIC_CACHE, CACHE_NAME]);
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
 const STATIC_ASSETS = [
     '/static/manifest.json',
-    '/static/css/main-v2.c1e6a159.css',
+    '/static/css/main-v2.fa47ba3e.css',
     '/static/css/public.604da1b3.css',
+    '/static/icons/lucide-sprite.7e463391.svg',
     '/static/favicon.6d319de4.ico',
-    '/static/favicon.0c03bb1d.svg',
+    '/static/img/brand/logo-round-256.fcebdffa.webp',
+    '/static/img/brand/logo-round-512.a0d83b7d.webp',
     '/static/img/pwa/icon-16.498c3d3b.png',
     '/static/img/pwa/icon-32.fc5d4966.png',
     '/static/img/pwa/icon-192.ee7f0987.png',
@@ -30,7 +32,7 @@ const STATIC_ASSETS = [
     '/static/img/pwa/apple-touch-icon-180.8b095258.png',
     '/static/img/pwa/badge-72.d5fcf4dc.png',
     '/static/img/pwa/badge-96.054a5b81.png',
-    '/static/offline.b3ed91d6.html'
+    '/static/offline.4ebb2a42.html'
 ];
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
@@ -144,7 +146,14 @@ self.addEventListener('fetch', (event) => {
         // Offline-Fallback ist die offline.html aus STATIC_CACHE.
         event.respondWith(networkOnlyHtml(event));
     } else if (isStaticAsset(request)) {
-        event.respondWith(cacheFirst(request, STATIC_CACHE));
+        // Gehashte Dateien sind unveraenderlich -> reines cache-first.
+        // Nicht gehashte (z. B. js/v2/*.js?v=x) -> stale-while-revalidate:
+        // sofort aus dem Cache rendern, Update still im Hintergrund holen.
+        event.respondWith(
+            isImmutableAsset(request)
+                ? cacheFirst(request, STATIC_CACHE)
+                : staleWhileRevalidate(request, STATIC_CACHE)
+        );
     } else if (isApiRequest(request)) {
         event.respondWith(networkFirst(request, DYNAMIC_CACHE));
     } else {
@@ -262,7 +271,7 @@ async function networkOnlyHtml(event) {
         });
     } catch (error) {
         console.log('Service Worker: HTML offline -> offline.html', error && error.message);
-        const offlineResponse = await caches.match('/static/offline.b3ed91d6.html');
+        const offlineResponse = await caches.match('/static/offline.4ebb2a42.html');
         if (offlineResponse) return offlineResponse;
         return new Response('Offline - Keine Verbindung', {
             status: 503,
@@ -270,6 +279,35 @@ async function networkOnlyHtml(event) {
             headers: { 'Content-Type': 'text/plain; charset=utf-8' }
         });
     }
+}
+
+// Stale-While-Revalidate: liefert sofort die gecachte Antwort (falls vorhanden)
+// und aktualisiert den Cache parallel im Hintergrund. Fuer Static-Assets ohne
+// Content-Hash - der Nutzer wartet nie aufs Netz, bekommt aber beim naechsten
+// Aufruf die neue Version.
+async function staleWhileRevalidate(request, cacheName) {
+    const cachedResponse = await caches.match(request);
+
+    const networkPromise = fetch(request, { credentials: 'same-origin' })
+        .then(async (networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+                try {
+                    const cache = await caches.open(cacheName);
+                    await cache.put(request, networkResponse.clone());
+                } catch (_) {
+                    // Caching-Fehler duerfen die Auslieferung nie blockieren
+                }
+            }
+            return networkResponse;
+        })
+        .catch(() => null);
+
+    if (cachedResponse) return cachedResponse;
+
+    const networkResponse = await networkPromise;
+    if (networkResponse) return networkResponse;
+
+    return new Response('', { status: 504, statusText: 'Gateway Timeout' });
 }
 
 // Cache First Strategy
@@ -344,7 +382,7 @@ async function networkFirst(request, cacheName) {
         
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.b3ed91d6.html');
+        const offlineResponse = await caches.match('/static/offline.4ebb2a42.html');
         if (offlineResponse) {
             return offlineResponse;
         }
@@ -369,10 +407,30 @@ function isNavigationRequest(request) {
     return accept.includes('text/html');
 }
 
-// Check if request is for static assets
+// Erkennt Static-Assets unter /static/.
+//
+// Frueher matchte diese Funktion NUR die rund 20 hartcodierten Pfade aus
+// STATIC_ASSETS. Alles andere - insbesondere das Icon-Sprite (418 KB) und
+// die per @import nachgeladenen CSS-Dateien - fiel in den networkFirst-Zweig
+// und wurde damit bei jedem Seitenaufruf mit erzwungenem no-cache neu vom Netz
+// geholt. Hinter einem scannenden Firmenproxy hat das regelmaessig die
+// render-blockierenden Stylesheets zerrissen (Seite ohne Layout).
+const STATIC_ASSET_EXTENSIONS = /\.(css|js|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|json|map)$/i;
+
+// Fingerprinted = Content-Hash im Dateinamen (z. B. main-v2.fa47ba3e.css).
+// Diese Dateien sind unveraenderlich: eine Aenderung erzeugt einen neuen Namen.
+const FINGERPRINTED = /\.[0-9a-f]{8}\.[a-z0-9]+$/i;
+
 function isStaticAsset(request) {
     const url = new URL(request.url);
-    return STATIC_ASSET_SET.has(url.pathname);
+    if (url.origin !== self.location.origin) return false;
+    if (STATIC_ASSET_SET.has(url.pathname)) return true;
+    return url.pathname.startsWith('/static/') && STATIC_ASSET_EXTENSIONS.test(url.pathname);
+}
+
+function isImmutableAsset(request) {
+    const url = new URL(request.url);
+    return STATIC_ASSET_SET.has(url.pathname) || FINGERPRINTED.test(url.pathname);
 }
 
 // Check if request is for API

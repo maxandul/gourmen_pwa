@@ -8,13 +8,21 @@
 
     {% include 'partials/_head_pwa_meta.html' %}
 
-    <!-- Open Graph / Facebook / WhatsApp: global einheitlich wie Landingpage -->
+    <!-- SEO: Description, Canonical, Indexierungssteuerung.
+         Die Description ist das, was Google im Suchergebnis als Snippet zeigt -
+         sie muss beschreiben, wonach Leute suchen, nicht wie die App intern heisst.
+         Unterseiten ueberschreiben sie via {% raw %}{% block meta_description %}{% endraw %}. -->
+    <meta name="description" content="{% block meta_description %}Gourmen ist ein kulinarischer Verein aus Zürich. Seit 2021 gehen wir jeden Monat gemeinsam essen, bewerten die Lokale und führen daraus unsere Gourmen-Hitlist.{% endblock %}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <meta name="robots" content="{% block robots %}{% if is_public_page %}index, follow{% else %}noindex, nofollow{% endif %}{% endblock %}">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url_for('public.landing', _external=True, _scheme='https') }}">
-    <meta property="og:title" content="Gourmen">
-    <meta property="og:description" content="Kulinarischer Verein Zürich">
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.15.1">
-    <meta property="og:image:secure_url" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.15.1">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{% block og_title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Kulinarischer Verein aus Zürich – monatliche Restaurantbesuche seit 2021.{% endblock %}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.16.0">
+    <meta property="og:image:secure_url" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.16.0">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -23,13 +31,16 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="{{ url_for('public.landing', _external=True, _scheme='https') }}">
-    <meta name="twitter:title" content="Gourmen">
-    <meta name="twitter:description" content="Kulinarischer Verein Zürich">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.15.1">
+    <meta name="twitter:url" content="{{ canonical_url }}">
+    <meta name="twitter:title" content="{{ self.og_title() }}">
+    <meta name="twitter:description" content="{{ self.og_description() }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-round-share.png', _external=True, _scheme='https') }}?v=3.16.0">
 
     {% include 'partials/_head_manifest_icons.html' %}
     {% include 'partials/_head_stylesheets.html' %}
+
+    <!-- Strukturierte Daten (nur oeffentliche Seiten) -->
+    {% block structured_data %}{% endblock %}
 
     <!-- Custom Head Block -->
     {% block head %}{% endblock %}
@@ -56,17 +67,17 @@
     <!-- JavaScript wird über app.js geladen -->
     
     <!-- V2 Design System JavaScript -->
-    <script src="{{ url_for('static', filename='js/v2/theme.js') }}?v=3.15.1"></script>
-    <script src="{{ url_for('static', filename='js/v2/theme-toggle.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/toast.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/scroll-to-top.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/accordion.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/search.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/focus-trap.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/tabs.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/topbar-scroll.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/public-drawer.js') }}?v=3.15.1" defer></script>
-    <script src="{{ url_for('static', filename='js/v2/restaurants-table-scroll.js') }}?v=3.15.1" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/theme.js') }}?v=3.16.0"></script>
+    <script src="{{ url_for('static', filename='js/v2/theme-toggle.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/toast.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/scroll-to-top.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/accordion.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/search.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/focus-trap.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/tabs.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/topbar-scroll.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/public-drawer.js') }}?v=3.16.0" defer></script>
+    <script src="{{ url_for('static', filename='js/v2/restaurants-table-scroll.js') }}?v=3.16.0" defer></script>
     
     {% block scripts %}{% endblock %}
 </body>

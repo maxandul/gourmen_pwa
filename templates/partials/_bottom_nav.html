@@ -2,7 +2,7 @@
     <nav class="bottom-nav">
         <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}nav-item--active{% endif %}" aria-label="Dashboard">
             <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <use href="/static/icons/lucide-sprite.svg#layout-dashboard"></use>
+                <use href="/static/icons/lucide-sprite.7e463391.svg#layout-dashboard"></use>
             </svg>
             <span class="nav-text">Dashboard</span>
         </a>
@@ -28,7 +28,7 @@
         </a>
         <a href="{{ url_for('member.index') }}" class="nav-item {% if request.endpoint and (request.endpoint.startswith('member.') or request.endpoint.startswith('account.') or request.endpoint.startswith('admin.')) %}nav-item--active{% endif %}" aria-label="Verein">
             <svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <use href="/static/icons/lucide-sprite.svg#landmark"></use>
+                <use href="/static/icons/lucide-sprite.7e463391.svg#landmark"></use>
             </svg>
             <span class="nav-text">Verein</span>
         </a>
