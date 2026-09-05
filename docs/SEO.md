@@ -9,8 +9,8 @@ Zwei Symptome, zwei verschiedene Ursachen:
 
 1. **Die Landingpage kam aus Firmennetzen unformatiert an** — als würde das CSS
    nicht greifen.
-2. **`www.gourmen.ch` war über Google nicht auffindbar.** Eine `site:`-Suche
-   lieferte null Treffer, die Domain war offenbar nie gecrawlt worden.
+2. **`www.gourmen.ch` wurde über Google nicht gefunden.** Nicht, weil die Seite
+   fehlte — sondern weil sie auf Seite 5 steht. Siehe unten.
 
 ## Was am Laden schiefging
 
@@ -86,10 +86,63 @@ Das Script gibt den neuen Dateinamen aus. Dieser muss nachgezogen werden in:
 Danach `python scripts/update_pwa_version.py <version>`, damit der Service
 Worker die neuen Dateien auch wirklich ausrollt.
 
-## Was der Auffindbarkeit fehlte
+## Auffindbarkeit: die tatsächliche Lage
 
-`/robots.txt` und `/sitemap.xml` lieferten 404, es gab keine Canonical-URLs,
-und die Meta-Description beschrieb die Software statt den Verein
+**Wichtig, weil eine frühere Fassung dieses Dokuments das Gegenteil behauptete:
+Die Seite ist indexiert und war es die ganze Zeit.** Die Behauptung, sie sei nie
+gecrawlt worden, stützte sich auf eine `site:`-Suche über einen Suchdienst, der
+nicht Google ist — kein belastbarer Beleg. Die Search Console war ausserdem
+längst eingerichtet und per DNS-TXT verifiziert.
+
+Zahlen aus der Search Console (Domain-Property `gourmen.ch`, Stand 5. September
+2026, Zeitraum 12 Monate):
+
+| Kennzahl | Wert |
+|---|---|
+| Indexierte Seiten | 3 |
+| Nicht indexiert | 6 (Duplikat ohne Canonical 2, Weiterleitung 2, gecrawlt aber nicht indexiert 2) |
+| Impressionen | 157 |
+| Klicks | **0** |
+| Durchschnittliche Position | **50,2** |
+| Position für die Suchanfrage „gourmen" | **44,2** |
+| **Externe Links** | **0** |
+
+Das ist kein Indexierungs-, sondern ein Autoritätsproblem. Die Seite rangiert
+selbst für den eigenen Vereinsnamen auf Seite 5 — dorthin scrollt niemand.
+
+Zwei Muster in den Suchanfragen sind aufschlussreich:
+
+- Die meisten Impressionen kommen über **Restaurantnamen** („salmen schlieren",
+  „restaurant gümmenen", „schlemmerei emmen"). Das ist die Hitlist-Tabelle, die
+  arbeitet — der einzige Teil der Site mit substanziellem Inhalt.
+- „gourmand restaurant" taucht in der Liste auf. Google hält „Gourmen"
+  offenbar teilweise für eine Verschreibung von „gourmet"/„gourmand" und
+  erkennt den Namen nicht als eigenständige Entität.
+
+### Der Hebel: externe Links
+
+**Null externe Links** ist die Erklärung für alles darüber. Google hat kein
+einziges Signal von aussen, dass es diese Seite gibt oder dass sie für
+irgendetwas relevant wäre. Keine technische Massnahme an der Site kann das
+ersetzen.
+
+Was hilft, in dieser Reihenfolge:
+
+1. **Instagram-Bio** (`@gourmen_zh`) — der schnellste Link, den es gibt.
+2. **Websites der besuchten Restaurants** — viele führen Presse-/Gäste-Seiten.
+3. **Zürcher Vereinsverzeichnisse**, Vereinsregister der Stadt, lokale
+   Gastro-Verzeichnisse.
+
+Sobald der Name in fremden Kontexten auftaucht, lernt Google „Gourmen" als
+Eigennamen statt als Tippfehler. Das JSON-LD-`Organization`-Markup auf der
+Landingpage (`name` + `alternateName`) unterstützt das, kann es aber allein
+nicht leisten.
+
+## Was technisch gefehlt hat
+
+Das behebt nicht das Ranking, räumt aber echte Mängel aus: `/robots.txt` und
+`/sitemap.xml` lieferten 404, es gab keine Canonical-URLs, und die
+Meta-Description beschrieb die Software statt den Verein
 ("Gourmen-Verein Webapp - Verwaltung und Organisation"). Ergänzt wurden:
 
 - `robots.txt` mit Sitemap-Verweis, interne Bereiche gesperrt
@@ -104,22 +157,35 @@ Festgehalten in `tests/routes/test_seo.py`.
 
 ## Offen — muss manuell erledigt werden
 
-Diese zwei Punkte lassen sich nicht im Code lösen und sind vermutlich der
-eigentliche Grund, warum die Site nicht im Index ist.
+### 1. Sitemap in der Search Console einreichen
 
-### 1. Google Search Console einrichten
+Die Search Console ist eingerichtet, aber `/sitemap.xml` lieferte bis zum
+5. September 2026 einen 404. Ein damals eingetragener Sitemap-Verweis steht
+seither mit Abruffehler drin und hat nie eine URL geliefert. Jetzt unter
+*Sitemaps* `https://www.gourmen.ch/sitemap.xml` (neu) einreichen und einen
+etwaigen alten, fehlerhaften Eintrag entfernen.
 
-Ohne eingehende Links findet Google eine Domain praktisch nicht von selbst.
+### 2. Externe Links aufbauen
 
-1. [search.google.com/search-console](https://search.google.com/search-console)
-   öffnen, Property für `gourmen.ch` (Domain-Property) anlegen.
-2. Verifizierung per DNS-TXT-Record beim Domain-Provider.
-3. Unter *Sitemaps* `https://www.gourmen.ch/sitemap.xml` einreichen.
-4. Unter *URL-Prüfung* die Startseite eingeben und Indexierung beantragen.
+Siehe „Der Hebel: externe Links" oben. Das ist der einzige Punkt, der die
+Position tatsächlich bewegt.
 
-Bis die Site im Index auftaucht, vergehen erfahrungsgemäss Tage bis Wochen.
+### 3. Domain bei Zscaler kategorisieren lassen
 
-### 2. Apex-Redirect muss den Pfad behalten
+Im Firmennetz des Betreibers blockiert Zscaler die Stylesheets mit 403 und
+zeigt stattdessen eine Coaching-Seite („Seite nicht kategorisiert — wirklich
+aufrufen?"). Beim HTML-Dokument kann man bestätigen, bei einem
+`<link rel="stylesheet">` nicht — der Browser bekommt HTML statt CSS, verwirft
+es, und die Seite bleibt unformatiert.
+
+Ursache ist nicht die Site, sondern dass `gourmen.ch` in Zscalers globaler
+URL-Datenbank als „Miscellaneous or Unknown" geführt wird. Einreichung über
+[sitereview.zscaler.com](https://sitereview.zscaler.com/) — das Tool funktioniert
+**nur aus einer Zscaler-Cloud-Verbindung heraus**, also vom Firmenlaptop.
+Zielkategorie „Society and Lifestyle". Die Datenbank ist bei allen
+Zscaler-Kunden weltweit dieselbe: eine Einreichung genügt.
+
+### 4. Apex-Redirect muss den Pfad behalten
 
 `gourmen.ch/restaurants` leitet aktuell auf `https://www.gourmen.ch/` um — die
 Startseite, nicht die angefragte Seite. Geprüft am 5. September 2026:
@@ -155,5 +221,5 @@ Pfad und Query — abgedeckt durch
   Zeichen sichtbaren Text. Für Suchbegriffe wie „Restaurant Tipps Zürich"
   reicht das nicht; die Hitlist mit echten Beschreibungen wäre der natürliche
   Hebel.
-- **Eingehende Links.** Instagram-Bio, Vereinsverzeichnisse, die Websites der
-  besuchten Restaurants — ohne externe Links bleibt jede Optimierung zahnlos.
+- **Eingehende Links.** Der wichtigste Punkt überhaupt, siehe oben. Ohne
+  externe Links bleibt jede technische Optimierung zahnlos.
