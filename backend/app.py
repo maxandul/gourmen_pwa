@@ -1,4 +1,5 @@
 import os
+import re
 from flask import Flask, render_template, redirect, request
 from flask import send_from_directory, make_response
 from backend.extensions import db
@@ -7,6 +8,10 @@ from backend.extensions import init_extensions
 from sqlalchemy import text
 from backend.models import member, member_sensitive, member_mfa, mfa_backup_code, event, participation, document, audit_event, auth_token
 # PushSubscription Model wird über backend.models importiert wenn benötigt
+
+# Content-Hash im Dateinamen, z. B. main-v2.fa47ba3e.css -> unveraenderlich cachebar.
+_FINGERPRINTED_ASSET = re.compile(r"\.[0-9a-f]{8}\.[a-z0-9]+$", re.IGNORECASE)
+
 
 def create_app(config_name=None):
     """Application factory"""
@@ -26,19 +31,29 @@ def create_app(config_name=None):
         init_extensions(app)
 
         @app.before_request
-        def redirect_apex_calendar_feed_to_www():
-            """Apex gourmen.ch leitet sonst ohne Pfad zu www um; ICS-URL muss den Pfad behalten."""
-            if request.method != "GET":
+        def redirect_apex_to_www():
+            """Apex gourmen.ch -> www.gourmen.ch, unter Beibehaltung von Pfad und Query.
+
+            Wichtig fuer SEO und Deeplinks: Eine Umleitung, die den Pfad verwirft,
+            wirft jeden Besucher (und jeden Crawler) von gourmen.ch/restaurants auf
+            die Startseite und laesst die Linkkraft der Unterseiten verpuffen.
+
+            Achtung: Dieser Handler greift nur, wenn Apex-Requests die App auch
+            wirklich erreichen. Derzeit leitet bereits eine Ebene davor (DNS-/
+            Edge-Redirect beim Domain-Provider) pauschal auf https://www.gourmen.ch
+            um - ohne Pfad. Solange das so konfiguriert ist, laeuft dieser Code
+            nicht an; siehe docs/SEO.md.
+            """
+            if request.method not in ("GET", "HEAD"):
                 return None
             host = (request.host or "").split(":")[0].lower()
             if host != "gourmen.ch":
                 return None
-            path = request.path or ""
-            if not path.startswith("/calendar/") or not path.endswith(".ics"):
-                return None
+            target = f"https://www.gourmen.ch{request.path or '/'}"
             qs = request.query_string.decode("utf-8")
-            suffix = f"?{qs}" if qs else ""
-            return redirect(f"https://www.gourmen.ch{path}{suffix}", code=301)
+            if qs:
+                target = f"{target}?{qs}"
+            return redirect(target, code=301)
         
         # Test database connection
         try:
@@ -93,6 +108,33 @@ def create_app(config_name=None):
         def after_request(response):
             if response.content_type and response.content_type.startswith('text/html'):
                 response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
+
+        @app.after_request
+        def add_static_cache_headers(response):
+            """Cache-Header fuer /static/.
+
+            Flask liefert statische Dateien per Default mit `Cache-Control: no-cache`
+            aus. Bei rund 50 Assets pro Seitenaufruf heisst das: 50 Revalidierungen
+            gegen den Server - hinter einem scannenden Firmenproxy ein spuerbarer
+            Klotz, der render-blockierendes CSS ausbremst oder abreissen laesst.
+
+            Gehashte Dateien (main-v2.<hash>.css) sind unveraenderlich und werden
+            ein Jahr gecacht. Alles andere unter /static/ bekommt eine kurze
+            Lebensdauer, damit ein vergessener Cache-Buster nicht zur Dauerlast wird.
+            """
+            if response.status_code != 200 or not request.path.startswith('/static/'):
+                return response
+
+            if _FINGERPRINTED_ASSET.search(request.path):
+                response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            else:
+                response.headers['Cache-Control'] = 'public, max-age=3600'
+
+            # Werkzeug setzt `Content-Disposition: inline; filename=...`. Fuer
+            # Subresourcen bringt der Header nichts, triggert aber die
+            # Download-Inspektion mancher Security-Gateways.
+            response.headers.pop('Content-Disposition', None)
             return response
         
         # Test endpoint
@@ -162,6 +204,33 @@ def register_context_processors(app):
     @app.context_processor
     def inject_config():
         return dict(config=app.config)
+
+    @app.context_processor
+    def inject_seo():
+        """Canonical-URL und Indexierungs-Flag fuer die Meta-Tags in base.html.
+
+        Ohne Canonical konkurrieren fuer Google mehrere URL-Varianten derselben
+        Seite (mit/ohne Query, apex/www) miteinander und verwaessern das Ranking.
+        `is_public_page` steuert index/noindex: der eingeloggte Vereinsbereich
+        gehoert nicht in den Suchindex.
+        """
+        from flask import has_request_context
+
+        base = app.config.get('PUBLIC_APP_BASE_URL', 'https://www.gourmen.ch').rstrip('/')
+
+        if not has_request_context():
+            return dict(canonical_url=base + '/', is_public_page=False)
+
+        canonical = f"{base}{request.path or '/'}"
+
+        # Paginierte Listen kanonisieren auf sich selbst - sonst wertet Google
+        # Seite 2+ als Duplikat von Seite 1 und indexiert sie gar nicht erst.
+        page_raw = request.args.get('page', '')
+        if page_raw.isdigit() and int(page_raw) > 1:
+            canonical = f"{canonical}?page={int(page_raw)}"
+
+        endpoint = request.endpoint or ''
+        return dict(canonical_url=canonical, is_public_page=endpoint.startswith('public.'))
 
     @app.context_processor
     def inject_retro_cleanup():

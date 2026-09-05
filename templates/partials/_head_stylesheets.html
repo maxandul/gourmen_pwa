@@ -1,3 +1,8 @@
-    <!-- CSS — V2 Bundle (REDESIGN §16.1) -->
-    <link rel="preload" href="{{ url_for('static', filename='icons/lucide-sprite.7e463391.svg') }}" as="image" type="image/svg+xml">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.c1e6a159.css') }}">
+    <!-- CSS — V2 Bundle (REDESIGN §16.1)
+         Ein einziger Request: main-v2.css wird von scripts/build_css.py aus
+         css/v2/{tokens,base,layout,components}.css konkateniert. Frueher stand
+         hier eine @import-Kette, die den Browser zwang, erst die 3.6-KB-Huelle
+         zu laden und zu parsen, bevor er das eigentliche Design-System anfordern
+         konnte - ein render-blockierender Wasserfall, der hinter langsamen
+         Proxies riss und die Seite unformatiert zurueck liess. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-v2.fa47ba3e.css') }}">

@@ -12,10 +12,39 @@
 
 {% block title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
 
-{% block og_title %}Gourmen{% endblock %}
-{% block og_description %}Kulinarischer Verein Zürich{% endblock %}
-{% block twitter_title %}Gourmen{% endblock %}
-{% block twitter_description %}Kulinarischer Verein Zürich{% endblock %}
+{% block meta_description %}Gourmen ist ein kulinarischer Verein aus Zürich. Seit 2021 gehen wir jeden Monat gemeinsam essen, bewerten jedes Lokal und pflegen daraus die Gourmen-Hitlist der besten Restaurants in Zürich und Umgebung.{% endblock %}
+
+{% block og_title %}Gourmen – Kulinarischer Verein Zürich{% endblock %}
+{% block og_description %}Seit 2021 jeden Monat gemeinsam essen: Restaurantbesuche, Bewertungen und die Gourmen-Hitlist aus Zürich.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Gourmen",
+  "alternateName": "Gourmen – Kulinarischer Verein Zürich",
+  "url": "https://www.gourmen.ch/",
+  "logo": "https://www.gourmen.ch/static/img/pwa/icon-512.21a600c7.png",
+  "description": "Kulinarischer Verein aus Zürich. Seit 2021 monatliche Restaurantbesuche mit eigener Bewertung und Hitlist.",
+  "slogan": "Meh isch meh!",
+  "foundingDate": "2021",
+  "email": "fohvollenmaenllichen@gmail.com",
+  "areaServed": {
+    "@type": "City",
+    "name": "Zürich"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Zürich",
+    "addressCountry": "CH"
+  },
+  "sameAs": [
+    "https://instagram.com/gourmen_zh"
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container landing">
@@ -26,7 +55,7 @@
             <p class="lead landing-lead-quote">«Meh isch meh!»</p>
         </div>
         <div class="landing-hero__visual">
-            <img src="{{ url_for('static', filename='brand/logo-master-round.svg') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
+            <img src="{{ url_for('static', filename='img/brand/logo-round-512.a0d83b7d.webp') }}" alt="" class="landing-logo" width="200" height="200" decoding="async" />
         </div>
     </section>
 
