@@ -3,7 +3,7 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.16.1';
+const VERSION = '3.16.2';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
@@ -16,7 +16,7 @@ const STATIC_ASSETS = [
     '/static/manifest.json',
     '/static/css/main-v2.fa47ba3e.css',
     '/static/css/public.604da1b3.css',
-    '/static/icons/lucide-sprite.08741b5b.svg',
+    '/static/icons/lucide-sprite.072ce5e4.svg',
     '/static/favicon.6d319de4.ico',
     '/static/img/brand/logo-round-256.fcebdffa.webp',
     '/static/img/brand/logo-round-512.a0d83b7d.webp',
@@ -32,7 +32,7 @@ const STATIC_ASSETS = [
     '/static/img/pwa/apple-touch-icon-180.8b095258.png',
     '/static/img/pwa/badge-72.d5fcf4dc.png',
     '/static/img/pwa/badge-96.054a5b81.png',
-    '/static/offline.c07be0d1.html'
+    '/static/offline.1fe76e29.html'
 ];
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
@@ -271,7 +271,7 @@ async function networkOnlyHtml(event) {
         });
     } catch (error) {
         console.log('Service Worker: HTML offline -> offline.html', error && error.message);
-        const offlineResponse = await caches.match('/static/offline.c07be0d1.html');
+        const offlineResponse = await caches.match('/static/offline.1fe76e29.html');
         if (offlineResponse) return offlineResponse;
         return new Response('Offline - Keine Verbindung', {
             status: 503,
@@ -382,7 +382,7 @@ async function networkFirst(request, cacheName) {
         
         // Fallback: Return a simple offline message
         // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.c07be0d1.html');
+        const offlineResponse = await caches.match('/static/offline.1fe76e29.html');
         if (offlineResponse) {
             return offlineResponse;
         }

@@ -29,7 +29,7 @@ function getLucideSpriteBaseHref() {
             return href.slice(0, hash);
         }
     }
-    return '/static/icons/lucide-sprite.08741b5b.svg';
+    return '/static/icons/lucide-sprite.072ce5e4.svg';
 }
 
 function lucideInlineIcon(symbolId, extraIconClasses) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- @license lucide-static v0.562.0 - ISC -->
 <!-- GENERIERT - NICHT VON HAND BEARBEITEN.
-     Subset von icons/lucide-sprite-full.svg mit den 129 tatsaechlich benutzten Symbolen.
+     Subset von icons/lucide-sprite-full.svg mit den 128 tatsaechlich benutzten Symbolen.
      Neu bauen: python scripts/build_icon_sprite.py -->
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
   <defs>
@@ -564,17 +564,6 @@
       <circle cx="8" cy="21" r="1" />
       <circle cx="19" cy="21" r="1" />
       <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-    </symbol>
-    <symbol id="sliders-horizontal">
-      <path d="M10 5H3" />
-      <path d="M12 19H3" />
-      <path d="M14 3v4" />
-      <path d="M16 17v4" />
-      <path d="M21 12h-9" />
-      <path d="M21 19h-5" />
-      <path d="M21 5h-7" />
-      <path d="M8 10v4" />
-      <path d="M8 12H3" />
     </symbol>
     <symbol id="smartphone">
       <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
