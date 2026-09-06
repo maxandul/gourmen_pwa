@@ -40,6 +40,10 @@ def main() -> None:
         if p.name not in keep_names:
             p.unlink(missing_ok=True)
             removed.append(p)
+    for p in (static / "icons").glob("lucide-sprite.*.svg"):
+        if p.name not in keep_names:
+            p.unlink(missing_ok=True)
+            removed.append(p)
     for p in static.glob("offline.*.html"):
         if p.name not in keep_names:
             p.unlink(missing_ok=True)
