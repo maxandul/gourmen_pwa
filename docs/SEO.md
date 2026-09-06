@@ -33,15 +33,18 @@ gut 1 MB render-blockierend, ohne jedes Caching, serialisiert durch einen
 Prozess. Von zuhause geht das knapp durch; hinter einem scannenden Proxy nicht
 zuverlässig.
 
-Nach den Änderungen sind es 1.03 MB — und beim zweiten Aufruf praktisch nichts
-mehr, weil alles gehashte immutable gecacht und vom Service Worker vorgehalten
-wird.
+Nach den Änderungen sind es rund 650 KB — und beim zweiten Aufruf praktisch
+nichts mehr, weil alles gehashte immutable gecacht und vom Service Worker
+vorgehalten wird.
 
 ### Was dagegen gemacht wurde
 
 - `scripts/build_css.py` konkateniert `css/v2/{tokens,base,layout,components}.css`
   zu einem gehashten `main-v2.<hash>.css`. **Ein** Request statt fünf.
 - Alle Sprite-Referenzen zeigen auf die gehashte Datei — eine URL, ein Download.
+- `scripts/build_icon_sprite.py` schneidet aus dem vollen lucide-static-Sprite
+  (1666 Symbole, 418 KB) ein Subset der tatsächlich referenzierten Icons:
+  129 Symbole, 29 KB.
 - `add_static_cache_headers` in `backend/app.py`: gehashte Dateien ein Jahr
   `immutable`, alles andere unter `/static/` eine Stunde. `sw.js` bleibt
   bewusst `no-cache`, sonst kommen SW-Updates nie an.
@@ -67,6 +70,38 @@ Das Script bildet nach, was das SVG tut — Bitmap extrahieren, per
 extrahiert und skaliert, bekommt ein dunkles Quadrat: die runde Form steckt im
 `clipPath`, nicht im Bild. Die neuen Dateinamen müssen in `templates/` und
 `static/sw.js` nachgezogen werden.
+
+### Icons ändern
+
+Ausgeliefert wird `static/icons/lucide-sprite.svg` — ein **Build-Artefakt**.
+Quelle ist `static/icons/lucide-sprite-full.svg`, das komplette
+lucide-static-Sprite; es wird nie ausgeliefert und bei einem Lucide-Update
+einfach ersetzt. Nach jedem neuen oder entfernten Icon:
+
+```bash
+python scripts/build_icon_sprite.py
+```
+
+Das Script sammelt die Icon-Namen aus allen Quellen — literale
+`lucide_icon('name')`-Aufrufe, `<use href="...#name">`-Attribute, das zweite
+Argument von `dashboard_intent_tile()`, im Template gesetzte Variablen wie
+`flash_icon`, `lucideInlineIcon()` in `static/js/app.js` sowie
+`mime_to_lucide_icon()` und die `icon_name`-Defaults in
+`backend/services/drive_storage.py` (die erreichen die Docs-Templates als
+`hit.icon_name` / `row.icon_name`).
+
+Es bricht ab, wenn ein referenzierter Name im vollen Sprite nicht existiert.
+Das ist Absicht: ein `<use href="...#tippfehler">` wirft weder 404 noch
+Konsolenmeldung, es rendert einfach nichts. Genau so waren `alert-circle`,
+`more-vertical`, `sliders`, `note` und `upload-cloud` unbemerkt kaputt — Lucide
+hatte sie umbenannt. Ebenso bricht der Build ab, wenn ein Icon-Argument ein
+Ausdruck ist, den das Script nicht auflösen kann; wer eine neue dynamische
+Quelle einbaut, trägt sie in `ALLOWED_DYNAMIC_ARGS` ein.
+
+Der neue Dateiname muss nachgezogen werden in `templates/`,
+`static/offline.html`, `static/js/app.js` und `static/sw.js` (Liste
+`STATIC_ASSETS`). Abgedeckt durch `tests/routes/test_icon_sprite.py`, das gegen
+das tatsächlich ausgelieferte Sprite prüft.
 
 ### CSS ändern
 
@@ -211,12 +246,6 @@ Pfad und Query — abgedeckt durch
 
 ## Naheliegende nächste Schritte
 
-- **Sprite verkleinern.** `static/icons/lucide-sprite.svg` enthält 1666 Symbole
-  (418 KB), verwendet werden rund 120. Ein Subset brächte die Datei auf etwa
-  35 KB. Achtung bei der Umsetzung: neben den literalen `lucide_icon('name')`
-  -Aufrufen gibt es dynamische Namen aus `mime_to_lucide_icon()` in
-  `backend/services/drive_storage.py` und aus den `dashboard_intent_tile`
-  -Aufrufen — die müssen mit ins Subset.
 - **Mehr Inhalt auf den öffentlichen Seiten.** Die Landingpage hat rund 670
   Zeichen sichtbaren Text. Für Suchbegriffe wie „Restaurant Tipps Zürich"
   reicht das nicht; die Hitlist mit echten Beschreibungen wäre der natürliche
