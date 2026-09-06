@@ -45,9 +45,7 @@
                         <div class="card__body">
                             <details class="disclosure">
                                 <summary class="disclosure__summary">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                          <polyline points="6 9 12 15 18 9"></polyline>
-                                        </svg>
+                                        {{ lucide_icon('chevron-down') }}
                                         Filter
                                         {% set current_sort = sort_by or 'member' %}
                                         {% if status_filter or member_filter_id or current_sort %}
@@ -354,9 +352,7 @@
                                     <span class="chip chip--danger">Inaktiv</span>
                                     {% endif %}
                                     <button class="card__toggle" type="button" aria-label="Abschnitt umschalten" aria-expanded="false">
-                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                            <polyline points="6 9 12 15 18 9"></polyline>
-                                        </svg>
+                                        {{ lucide_icon('chevron-down') }}
                                     </button>
                                 </div>
                             </div>
