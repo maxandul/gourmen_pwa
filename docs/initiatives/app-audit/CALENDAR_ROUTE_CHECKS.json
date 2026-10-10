@@ -1,0 +1,96 @@
+{
+  "scope": "Original POST routes and service; isolated synthetic SQLite. CSRF/rate-limit disabled; no real calendar client or external operations.",
+  "results": [
+    {
+      "id": "CAL-13",
+      "case": "unchanged",
+      "status": 302,
+      "sequence": 0,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": false,
+      "date": "2026-10-01",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-14",
+      "case": "date",
+      "status": 302,
+      "sequence": 1,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": false,
+      "date": "2026-10-02",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-15",
+      "case": "notes",
+      "status": 302,
+      "sequence": 0,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": true,
+      "date": "2026-10-01",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-16",
+      "case": "multiple",
+      "status": 302,
+      "sequence": 1,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": true,
+      "date": "2026-10-03",
+      "restaurant": "Neuer Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-17",
+      "case": "audience",
+      "status": 302,
+      "sequence": 0,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": false,
+      "date": "2026-10-01",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-18",
+      "case": "board_type",
+      "status": 302,
+      "sequence": 1,
+      "uid_stable": true,
+      "audience": "board",
+      "description_changed": false,
+      "date": "2026-10-01",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": false
+    },
+    {
+      "id": "CAL-19",
+      "case": "unauthorized",
+      "status": 302,
+      "sequence": 0,
+      "uid_stable": true,
+      "audience": "all",
+      "description_changed": false,
+      "date": "2026-10-01",
+      "restaurant": "Audit-Ort",
+      "in_regular_feed": true
+    },
+    {
+      "id": "CAL-20",
+      "case": "admin delete isolated synthetic event",
+      "status": 302,
+      "feed_before": true,
+      "feed_after": false
+    }
+  ]
+}

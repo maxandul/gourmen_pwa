@@ -1,0 +1,169 @@
+{
+  "scope": [
+    "static/css/v2/tokens.css",
+    "static/css/v2/base.css",
+    "static/css/v2/layout.css",
+    "static/css/v2/components.css",
+    "static/css/public.css"
+  ],
+  "definitions": 167,
+  "unresolved_in_css_sources": [
+    {
+      "token": "--leading-normal",
+      "fallback": false,
+      "path": "static/css/v2/layout.css",
+      "line": 398
+    },
+    {
+      "token": "--color-text-muted",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 1080
+    },
+    {
+      "token": "--tabs-nav-height",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 2742
+    },
+    {
+      "token": "--tabs-nav-height",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 2764
+    },
+    {
+      "token": "--tabs-nav-height",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 2875
+    },
+    {
+      "token": "--color-bg-tertiary",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 3442
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3598
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3599
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3600
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3604
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3605
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3606
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3613
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3614
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3623
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3624
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3634
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3635
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3644
+    },
+    {
+      "token": "--rating-hue",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 3645
+    },
+    {
+      "token": "--space-11",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 3793
+    },
+    {
+      "token": "--color-bg-primary",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 3918
+    },
+    {
+      "token": "--font-size-sm",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 5311
+    },
+    {
+      "token": "--font-size-sm",
+      "fallback": false,
+      "path": "static/css/v2/components.css",
+      "line": 5339
+    },
+    {
+      "token": "--font-mono",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 6537
+    },
+    {
+      "token": "--budget-meter-fill",
+      "fallback": true,
+      "path": "static/css/v2/components.css",
+      "line": 6750
+    }
+  ],
+  "limitations": "Text inventory only; definitions may be injected by JS or templates; fallback flag does not evaluate nested var(). No computed-style or deletion proof."
+}

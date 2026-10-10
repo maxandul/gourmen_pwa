@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-20",
+  "environment": "Original app via loopback serve_ui_fixture.py, Codex in-app browser; synthetic member 2, then logged out, then synthetic admin 1.",
+  "method": "UI interactions and read-only DOM observations; transcribed from tool results. Screenshots viewed in session, not saved.",
+  "checks": [
+    {"id":"B-21","scenario":"receipt_next_without_file","role":"member","width":390,"step":"1","focused_id":"file","inline_alerts":[],"native_validation_visible":"Wähle eine Datei aus.","submitted":false},
+    {"id":"B-22","scenario":"public_drawer_open_escape","role":"anonymous","width":390,"open_state":{"open":true,"modal":true,"display":"block","focus_label":"Navigation schliessen"},"after_escape":{"open":false,"expanded":"false","focus_id":"public-nav-menu-btn"}},
+    {"id":"B-23","scenario":"public_drawer_resize_390_to_1024","role":"anonymous","before":"/ueber-uns","after_resize":{"open":true,"modal":true,"display":"none","trigger_display":"none","focus_tag":"BODY"},"hitlist_click_before_escape":{"tool_returned_success":true,"url_path":"/ueber-uns"},"after_escape":{"open":false,"modal":false},"hitlist_click_after_escape":{"url_path":"/restaurants"}},
+    {"id":"B-24","scenario":"accounting_saldo_fullscreen_keyboard","role":"admin","width":820,"dialog":{"id":"accounting-chart-fullscreen-modal","display":"flex","hidden":false,"data_open":"true"},"initial_focus_label":"Saldo-Verlauf im Vollbild anzeigen","focus_inside_dialog":false,"after_tab_label":"Jahresvergleich im Vollbild anzeigen","after_tab_inside_dialog":false,"after_escape":{"hidden":true,"data_open":"false"}},
+    {"id":"B-25","scenario":"ggl_history_empty_fixture","role":"admin","width":820,"message":"Noch keine Verlaufsdaten für Saison 2026 verfügbar.","chart_dialog_tested":false}
+  ],
+  "limitations":["No real file upload or camera activation.","No calendar activation, regeneration or deactivation.","No GGL chart populated-state or nested Drive dialog verification.","Resize simulates CSS viewport transition, not a real tablet orientation change.","No performance or complete accessibility assessment."]
+}

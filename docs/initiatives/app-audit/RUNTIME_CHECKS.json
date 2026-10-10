@@ -1,0 +1,2107 @@
+{
+  "registered_routes": [
+    {
+      "endpoint": "static",
+      "rule": "/static/<path:filename>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.landing",
+      "rule": "/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.about",
+      "rule": "/ueber-uns",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.restaurants",
+      "rule": "/restaurants",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.robots_txt",
+      "rule": "/robots.txt",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.sitemap_xml",
+      "rule": "/sitemap.xml",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "public.health_db",
+      "rule": "/health/db",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "auth.login",
+      "rule": "/auth/login",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.logout",
+      "rule": "/auth/logout",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "auth.verify_2fa",
+      "rule": "/auth/2fa/verify",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.enroll_2fa",
+      "rule": "/auth/2fa/enroll",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.disable_2fa",
+      "rule": "/auth/2fa/disable",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.step_up",
+      "rule": "/auth/step-up",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.change_password",
+      "rule": "/auth/change-password",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.forgot_password",
+      "rule": "/auth/forgot-password",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.reset_password",
+      "rule": "/auth/reset-password/<token>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.request_2fa_reset",
+      "rule": "/auth/2fa/reset-request",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.reset_2fa",
+      "rule": "/auth/2fa/reset/<token>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.activate",
+      "rule": "/auth/activate/<token>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.remember_device",
+      "rule": "/auth/2fa/remember-device",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "auth.backup_codes",
+      "rule": "/auth/2fa/backup-codes",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "dashboard.index",
+      "rule": "/dashboard/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.get_participation_stats",
+      "rule": "/events/api/events/<int:event_id>/participation-stats",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.send_participation_reminders",
+      "rule": "/events/api/events/<int:event_id>/send-reminders",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.send_organizer_reminder",
+      "rule": "/events/api/events/<int:event_id>/send-organizer-reminder",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.index",
+      "rule": "/events/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.year_planning",
+      "rule": "/events/year-planning",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.create_year_planning",
+      "rule": "/events/year-planning",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.archive",
+      "rule": "/events/archive",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.hamburg2026",
+      "rule": "/events/hamburg2026",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.cleanup",
+      "rule": "/events/cleanup",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.cleanup_undo_rsvp",
+      "rule": "/events/cleanup/undo-rsvp",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.cleanup_rsvp",
+      "rule": "/events/<int:event_id>/cleanup/rsvp",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.enable_event_ratings",
+      "rule": "/events/<int:event_id>/ratings/enable",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.disable_event_ratings",
+      "rule": "/events/<int:event_id>/ratings/disable",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.detail",
+      "rule": "/events/<int:event_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.billbro_sync",
+      "rule": "/events/<int:event_id>/billbro-sync",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.edit",
+      "rule": "/events/<int:event_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.delete",
+      "rule": "/events/<int:event_id>/delete",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.rsvp",
+      "rule": "/events/<int:event_id>/rsvp",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.send_rsvp_reminder",
+      "rule": "/events/<int:event_id>/send_rsvp_reminder",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "events.places_autocomplete",
+      "rule": "/events/places/autocomplete",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.places_details",
+      "rule": "/events/places/details",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.places_config",
+      "rule": "/events/places/config",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "events.stats",
+      "rule": "/events/stats",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "billbro.index",
+      "rule": "/billbro/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "billbro.compute",
+      "rule": "/billbro/<int:event_id>/compute",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.enter_bill",
+      "rule": "/billbro/<int:event_id>/enter_bill",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.set_payment",
+      "rule": "/billbro/<int:event_id>/set_payment",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.start_session",
+      "rule": "/billbro/<int:event_id>/start_session",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.send_reminder",
+      "rule": "/billbro/<int:event_id>/send_reminder",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.set_total",
+      "rule": "/billbro/<int:event_id>/set_total",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.undo_final",
+      "rule": "/billbro/<int:event_id>/undo_final",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.accept_suggested_total",
+      "rule": "/billbro/<int:event_id>/accept_suggested_total",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.reset_bill",
+      "rule": "/billbro/<int:event_id>/reset_bill",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.share_whatsapp",
+      "rule": "/billbro/<int:event_id>/share_whatsapp",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "billbro.update_guess",
+      "rule": "/billbro/<int:event_id>/update_guess",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.record_guess",
+      "rule": "/billbro/<int:event_id>/record_guess/<int:member_id>",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.calculator",
+      "rule": "/billbro/<int:event_id>/calculator",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "billbro.export_pdf",
+      "rule": "/billbro/<int:event_id>/export_pdf",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "billbro.mark_absent",
+      "rule": "/billbro/<int:event_id>/mark_absent/<int:member_id>",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.mark_present",
+      "rule": "/billbro/<int:event_id>/mark_present/<int:member_id>",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "billbro.toggle_billbro_status",
+      "rule": "/billbro/<int:event_id>/toggle_status",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "ggl.index",
+      "rule": "/ggl/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "ggl.season",
+      "rule": "/ggl/season/<int:season_year>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.index",
+      "rule": "/member/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.receipts",
+      "rule": "/member/receipts",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.profile",
+      "rule": "/member/profile",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.security",
+      "rule": "/member/security",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.technical",
+      "rule": "/member/technical",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.merch",
+      "rule": "/member/merch",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.merch_order",
+      "rule": "/member/merch/order",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.merch_orders",
+      "rule": "/member/merch/orders",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.merch_order_detail",
+      "rule": "/member/merch/order/<int:order_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.merch_order_edit",
+      "rule": "/member/merch/order/<int:order_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.google_email_save",
+      "rule": "/member/google-email/save",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.google_email_resend",
+      "rule": "/member/google-email/resend",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.google_email_verify",
+      "rule": "/member/google-email/verify/<token>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "member.calendar_feed_enable",
+      "rule": "/member/settings/calendar/enable",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.calendar_feed_regenerate",
+      "rule": "/member/settings/calendar/regenerate",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "member.calendar_feed_disable",
+      "rule": "/member/settings/calendar/disable",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.index",
+      "rule": "/admin/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.mail_test",
+      "rule": "/admin/mail/test",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.members",
+      "rule": "/admin/members",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.create_member",
+      "rule": "/admin/members/new",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.edit_member",
+      "rule": "/admin/members/<int:member_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.member_sensitive",
+      "rule": "/admin/members/<int:member_id>/sensitive",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.create_event",
+      "rule": "/admin/events/new",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.reset_member_password",
+      "rule": "/admin/members/<int:member_id>/reset-password",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.reset_member_2fa",
+      "rule": "/admin/members/<int:member_id>/reset-2fa",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.member_security_overview",
+      "rule": "/admin/members/<int:member_id>/security-overview",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.show_temp_password",
+      "rule": "/admin/temp-password",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.merch",
+      "rule": "/admin/merch",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.merch_orders",
+      "rule": "/admin/merch/orders",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.merch_order_detail",
+      "rule": "/admin/merch/orders/<int:order_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.update_order_status",
+      "rule": "/admin/merch/orders/<int:order_id>/status",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.update_order_status_alt",
+      "rule": "/admin/merch/orders/<int:order_id>/status-update",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.merch_article_detail",
+      "rule": "/admin/merch/articles/<int:article_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "admin.create_merch_article",
+      "rule": "/admin/merch/articles/new",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.edit_merch_article",
+      "rule": "/admin/merch/articles/<int:article_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.create_merch_variant",
+      "rule": "/admin/merch/articles/<int:article_id>/variants/new",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "admin.edit_merch_variant",
+      "rule": "/admin/merch/variants/<int:variant_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "notifications.get_vapid_public_key",
+      "rule": "/notifications/vapid-public-key",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "notifications.subscribe",
+      "rule": "/notifications/subscribe",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "notifications.unsubscribe",
+      "rule": "/notifications/unsubscribe",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "notifications.test_notification",
+      "rule": "/notifications/test",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "ratings.rate_event",
+      "rule": "/ratings/event/<int:event_id>/rate",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "ratings.view_ratings",
+      "rule": "/ratings/event/<int:event_id>/ratings",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "ratings.get_ratings_api",
+      "rule": "/ratings/event/<int:event_id>/ratings/api",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "ratings.edit_rating",
+      "rule": "/ratings/event/<int:event_id>/rating/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "ratings.delete_rating",
+      "rule": "/ratings/event/<int:event_id>/rating/delete",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.get_vapid_public_key",
+      "rule": "/api/vapid-public-key",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.subscribe_to_push",
+      "rule": "/api/push/subscribe",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.unsubscribe_from_push",
+      "rule": "/api/push/unsubscribe",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.get_subscription_status",
+      "rule": "/api/push/subscription-status",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.test_push_notification",
+      "rule": "/api/push/test",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "push_notifications.trigger_3_week_reminders",
+      "rule": "/api/push/cron/3-week-reminders",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "cron.cron_3_week_reminders",
+      "rule": "/cron/3-week-reminders",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "cron.cron_status",
+      "rule": "/cron/status",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "cron.cron_weekly_reminders",
+      "rule": "/cron/weekly-reminders",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "cron.cron_rating_reminders",
+      "rule": "/cron/rating-reminders",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "cron.cron_test",
+      "rule": "/cron/test",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.index",
+      "rule": "/docs/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.folder_view",
+      "rule": "/docs/folder/<drive_folder_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.detail",
+      "rule": "/docs/file/<int:doc_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.api_root",
+      "rule": "/docs/api/root",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.api_folder_children",
+      "rule": "/docs/api/folder/<drive_folder_id>/children",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.upload",
+      "rule": "/docs/upload",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.rename",
+      "rule": "/docs/file/<int:doc_id>/rename",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.move",
+      "rule": "/docs/file/<int:doc_id>/move",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.archive",
+      "rule": "/docs/file/<int:doc_id>/archive",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.restore",
+      "rule": "/docs/file/<int:doc_id>/restore",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.hard_delete",
+      "rule": "/docs/file/<int:doc_id>/delete",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "docs.download",
+      "rule": "/docs/file/<int:doc_id>/download",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "docs.admin_resync",
+      "rule": "/docs/admin/resync",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "calendar_feed.member_ical",
+      "rule": "/calendar/<token>.ics",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.index",
+      "rule": "/accounting/",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.booking_detail",
+      "rule": "/accounting/booking/<int:booking_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.booking_edit",
+      "rule": "/accounting/booking/<int:booking_id>/edit",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.booking_attach_receipt",
+      "rule": "/accounting/booking/<int:booking_id>/receipt",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.receipt_upload",
+      "rule": "/accounting/receipt/upload",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.receipt_view",
+      "rule": "/accounting/receipt/<int:receipt_id>",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.booking_new",
+      "rule": "/accounting/booking/new",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_comment",
+      "rule": "/accounting/year/<int:fiscal_year_id>/comment",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.comment_resolve",
+      "rule": "/accounting/comment/<int:comment_id>/resolve",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.export_csv",
+      "rule": "/accounting/export/<int:fiscal_year_id>/csv",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.export_pdf",
+      "rule": "/accounting/export/<int:fiscal_year_id>/pdf",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.accounts",
+      "rule": "/accounting/accounts",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.account_edit",
+      "rule": "/accounting/accounts/<int:account_id>/edit",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.stats",
+      "rule": "/accounting/stats",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_withdraw",
+      "rule": "/accounting/year/<int:fiscal_year_id>/withdraw",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_revoke",
+      "rule": "/accounting/year/<int:fiscal_year_id>/revoke",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_create",
+      "rule": "/accounting/year/create",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_submit",
+      "rule": "/accounting/year/<int:fiscal_year_id>/submit",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_approve",
+      "rule": "/accounting/year/<int:fiscal_year_id>/approve",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_import_upload",
+      "rule": "/accounting/import",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_import_review",
+      "rule": "/accounting/import/<int:import_id>/review",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_review_all",
+      "rule": "/accounting/import/review",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_tx_book",
+      "rule": "/accounting/import/tx/<int:tx_id>/book",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_tx_ignore",
+      "rule": "/accounting/import/tx/<int:tx_id>/ignore",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.bank_import_delete",
+      "rule": "/accounting/import/<int:import_id>/delete",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_claims_create",
+      "rule": "/accounting/year/<int:fiscal_year_id>/claims/create",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.claim_settle",
+      "rule": "/accounting/claims/<int:claim_id>/settle",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.claim_confirm",
+      "rule": "/accounting/claims/<int:claim_id>/confirm",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "accounting.year_budget",
+      "rule": "/accounting/year/<int:fiscal_year_id>/budget",
+      "methods": [
+        "OPTIONS",
+        "POST"
+      ]
+    },
+    {
+      "endpoint": "service_worker",
+      "rule": "/sw.js",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "test",
+      "rule": "/test",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    {
+      "endpoint": "health",
+      "rule": "/health",
+      "methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ]
+    }
+  ],
+  "template_references": [
+    {
+      "path": "backend/app.py",
+      "line": 185,
+      "template": "errors/404.html",
+      "exists": true
+    },
+    {
+      "path": "backend/app.py",
+      "line": 190,
+      "template": "errors/500.html",
+      "exists": true
+    },
+    {
+      "path": "backend/app.py",
+      "line": 194,
+      "template": "errors/403.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 291,
+      "template": "accounting/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 348,
+      "template": "accounting/booking_detail.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 508,
+      "template": "accounting/receipt_upload.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 597,
+      "template": "accounting/booking_new.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 759,
+      "template": "accounting/account_edit.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 1008,
+      "template": "accounting/import_review.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 1022,
+      "template": "accounting/import_review.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "line": 205,
+      "template": "accounting/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 113,
+      "template": "admin/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 132,
+      "template": "emails/test.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 303,
+      "template": "admin/members.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 439,
+      "template": "admin/create_member.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 556,
+      "template": "admin/edit_member_enhanced.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 701,
+      "template": "admin/create_event.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 742,
+      "template": "admin/reset_member_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 785,
+      "template": "admin/reset_member_2fa.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 806,
+      "template": "admin/member_security_overview.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 832,
+      "template": "admin/temp_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1058,
+      "template": "admin/merch/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1098,
+      "template": "admin/merch/order_detail.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1196,
+      "template": "admin/merch/article_detail.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1257,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1326,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 397,
+      "template": "emails/onboarding.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 591,
+      "template": "admin/member_sensitive.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 719,
+      "template": "admin/reset_member_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 756,
+      "template": "admin/reset_member_2fa.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1214,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1218,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1277,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "line": 1282,
+      "template": "admin/merch/article_form.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 163,
+      "template": "auth/login.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 271,
+      "template": "auth/verify_2fa.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 322,
+      "template": "auth/enroll_2fa_simple.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 358,
+      "template": "auth/disable_2fa.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 433,
+      "template": "auth/step_up.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 479,
+      "template": "auth/change_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 532,
+      "template": "auth/forgot_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 580,
+      "template": "auth/reset_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 640,
+      "template": "auth/request_2fa_reset.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 733,
+      "template": "auth/reset_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 773,
+      "template": "auth/backup_codes.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 445,
+      "template": "auth/change_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 451,
+      "template": "auth/change_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 456,
+      "template": "auth/change_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 500,
+      "template": "emails/password_reset.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 563,
+      "template": "auth/reset_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 716,
+      "template": "auth/reset_password.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/auth.py",
+      "line": 606,
+      "template": "emails/2fa_reset.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/billbro.py",
+      "line": 148,
+      "template": "billbro/index.html",
+      "exists": false
+    },
+    {
+      "path": "backend/routes/billbro.py",
+      "line": 846,
+      "template": "billbro/calculator.html",
+      "exists": false
+    },
+    {
+      "path": "backend/routes/dashboard.py",
+      "line": 105,
+      "template": "dashboard/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/demo.py",
+      "line": 14,
+      "template": "demo/design-system.html",
+      "exists": false
+    },
+    {
+      "path": "backend/routes/docs.py",
+      "line": 103,
+      "template": "docs/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/docs.py",
+      "line": 150,
+      "template": "docs/folder.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/docs.py",
+      "line": 213,
+      "template": "docs/detail.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 395,
+      "template": "events/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 409,
+      "template": "events/year_planning.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 438,
+      "template": "events/year_planning.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 461,
+      "template": "events/hamburg2026.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 497,
+      "template": "events/cleanup.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 704,
+      "template": "events/detail.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 911,
+      "template": "events/edit.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 472,
+      "template": "events/cleanup.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/events.py",
+      "line": 904,
+      "template": "events/edit.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/ggl.py",
+      "line": 68,
+      "template": "ggl/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 83,
+      "template": "member/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 93,
+      "template": "member/receipts.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 267,
+      "template": "member/profile.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 278,
+      "template": "member/security.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 300,
+      "template": "member/technical.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 335,
+      "template": "member/merch/index.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 435,
+      "template": "member/merch/order.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 445,
+      "template": "member/merch/orders.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 556,
+      "template": "member/merch/order_edit.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/member.py",
+      "line": 701,
+      "template": "emails/google_email_verify.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/public.py",
+      "line": 77,
+      "template": "public/about.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/public.py",
+      "line": 54,
+      "template": "public/landing.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/public.py",
+      "line": 107,
+      "template": "public/restaurants.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/public.py",
+      "line": 64,
+      "template": "public/landing.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/public.py",
+      "line": 118,
+      "template": "public/restaurants.html",
+      "exists": true
+    },
+    {
+      "path": "backend/routes/stats.py",
+      "line": 31,
+      "template": "stats/index.html",
+      "exists": false
+    }
+  ],
+  "get_smoke": [
+    {
+      "url": "/",
+      "status": 302,
+      "location": "/dashboard/",
+      "html_bytes": 209
+    },
+    {
+      "url": "/ueber-uns",
+      "status": 200,
+      "location": null,
+      "html_bytes": 21869
+    },
+    {
+      "url": "/restaurants",
+      "status": 200,
+      "location": null,
+      "html_bytes": 24066
+    },
+    {
+      "url": "/dashboard/",
+      "status": 200,
+      "location": null,
+      "html_bytes": 24731
+    },
+    {
+      "url": "/events/",
+      "status": 200,
+      "location": null,
+      "html_bytes": 30559
+    },
+    {
+      "url": "/events/?tab=archiv",
+      "status": 200,
+      "location": null,
+      "html_bytes": 32236
+    },
+    {
+      "url": "/events/?tab=statistik",
+      "status": 200,
+      "location": null,
+      "html_bytes": 30528
+    },
+    {
+      "url": "/events/1",
+      "status": 200,
+      "location": null,
+      "html_bytes": 53029
+    },
+    {
+      "url": "/events/1?tab=billbro",
+      "status": 200,
+      "location": null,
+      "html_bytes": 53029
+    },
+    {
+      "url": "/ggl/",
+      "status": 200,
+      "location": null,
+      "html_bytes": 26647
+    },
+    {
+      "url": "/member/",
+      "status": 200,
+      "location": null,
+      "html_bytes": 26249
+    },
+    {
+      "url": "/member/profile",
+      "status": 200,
+      "location": null,
+      "html_bytes": 38327
+    },
+    {
+      "url": "/member/security",
+      "status": 200,
+      "location": null,
+      "html_bytes": 22560
+    },
+    {
+      "url": "/billbro/?event_id=1",
+      "error_type": "TemplateNotFound",
+      "message": "billbro/index.html"
+    },
+    {
+      "url": "/billbro/1/calculator",
+      "error_type": "TemplateNotFound",
+      "message": "billbro/calculator.html"
+    },
+    {
+      "url": "/accounting/",
+      "status": 403,
+      "location": null,
+      "html_bytes": 19148
+    },
+    {
+      "url": "/health",
+      "status": 200,
+      "location": null,
+      "html_bytes": 57
+    },
+    {
+      "url": "/health/db",
+      "status": 200,
+      "location": null,
+      "html_bytes": 48
+    }
+  ]
+}

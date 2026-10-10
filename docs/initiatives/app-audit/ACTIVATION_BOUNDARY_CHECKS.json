@@ -1,0 +1,98 @@
+{
+  "date": "2026-09-28",
+  "groups": 6,
+  "results": [
+    {
+      "case": "success",
+      "response": {
+        "status": 302,
+        "redirect": "/dashboard/"
+      },
+      "state": {
+        "password_changed": true,
+        "token_used": true,
+        "audit_count": 1
+      },
+      "authenticated": true,
+      "replay_status": 302,
+      "replay_redirect": "/auth/login",
+      "state_after_replay": {
+        "password_changed": true,
+        "token_used": true,
+        "audit_count": 1
+      }
+    },
+    {
+      "case": "expired",
+      "response": {
+        "status": 302,
+        "redirect": "/auth/login"
+      },
+      "state": {
+        "password_changed": false,
+        "token_used": false,
+        "audit_count": 0
+      },
+      "authenticated": false
+    },
+    {
+      "case": "inactive",
+      "response": {
+        "status": 302,
+        "redirect": "/auth/login"
+      },
+      "state": {
+        "password_changed": false,
+        "token_used": false,
+        "audit_count": 0
+      },
+      "authenticated": false
+    },
+    {
+      "case": "wrong_purpose",
+      "response": {
+        "status": 302,
+        "redirect": "/auth/login"
+      },
+      "state": {
+        "password_changed": false,
+        "token_used": false,
+        "audit_count": 0
+      },
+      "authenticated": false
+    },
+    {
+      "case": "invalid_password",
+      "response": {
+        "status": 200,
+        "redirect": null
+      },
+      "state": {
+        "password_changed": false,
+        "token_used": false,
+        "audit_count": 0
+      },
+      "authenticated": false
+    },
+    {
+      "case": "audit_failure",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "state": {
+        "password_changed": true,
+        "token_used": true,
+        "audit_count": 0
+      },
+      "authenticated": false,
+      "replay_status": 302,
+      "replay_redirect": "/auth/login",
+      "state_after_replay": {
+        "password_changed": true,
+        "token_used": true,
+        "audit_count": 0
+      }
+    }
+  ],
+  "limits": "Original form/route and local hashing; SQLite memory and testing CSRF/rate limits disabled. Tokens/passwords synthetic and never printed. No real mail/account changes. No browser, exact expiry instant, concurrent replay or MFA-enabled activation test."
+}

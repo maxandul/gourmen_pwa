@@ -1,0 +1,41 @@
+{
+  "scope": "Original local route/service; frozen VEVENT timestamp argument; synthetic in-memory DB; no external calendar client. CSRF and rate limit disabled in testing.",
+  "results": [
+    {
+      "id": "CAL-01",
+      "case": "same timestamp, unchanged data",
+      "initial_status": 200,
+      "conditional_status": 304
+    },
+    {
+      "id": "CAL-02",
+      "case": "five minutes later, unchanged data",
+      "conditional_status": 200,
+      "etag_changed": true,
+      "changed_event_properties": [
+        "DTSTAMP"
+      ],
+      "event_count": 2
+    },
+    {
+      "id": "CAL-03",
+      "case": "notes changed",
+      "description_changed": true,
+      "sequence_before": 0,
+      "sequence_after": 0
+    },
+    {
+      "id": "CAL-04",
+      "case": "restaurant changed positive control",
+      "sequence_after": 1
+    },
+    {
+      "id": "CAL-05",
+      "case": "audience changed",
+      "declared_relevant": true,
+      "snapshot_contains_audience": false,
+      "sequence_before": 1,
+      "sequence_after": 1
+    }
+  ]
+}

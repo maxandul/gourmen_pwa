@@ -1,0 +1,69 @@
+[
+  {
+    "case": "profile_duplicate_email",
+    "result": {
+      "error": "IntegrityError",
+      "http": null,
+      "original_email_retained": true
+    }
+  },
+  {
+    "case": "negative_physical_values",
+    "result": {
+      "http": 302,
+      "height": -5,
+      "weight": -2,
+      "shoe": -1.0
+    }
+  },
+  {
+    "case": "clear_optional_and_ignore_privileged_fields",
+    "result": {
+      "http": 302,
+      "phone_cleared": true,
+      "role": "MEMBER",
+      "active": true
+    }
+  },
+  {
+    "case": "admin_invalid_numeric_field",
+    "result": {
+      "http": null,
+      "error": "ValueError",
+      "height": null
+    }
+  },
+  {
+    "case": "self_sensitive_get_deletes_on_error",
+    "result": {
+      "http": 200,
+      "error": null,
+      "sensitive_rows_after_get": 0
+    }
+  },
+  {
+    "case": "admin_sensitive_get_deletes_on_error",
+    "result": {
+      "http": null,
+      "error": "UndefinedError",
+      "sensitive_rows_after_get": 0
+    }
+  },
+  {
+    "case": "admin_sensitive_valid_data_render",
+    "result": {
+      "http": null,
+      "error": "UndefinedError",
+      "sensitive_rows": 1
+    }
+  },
+  {
+    "case": "member_admin_and_sensitive_guards",
+    "result": {
+      "admin_edit_http": 403,
+      "other_sensitive_http": 403,
+      "own_sensitive_without_step_http": 302,
+      "own_location": "/auth/step-up?next=/member/profile?tab%3Dsensitive"
+    }
+  }
+]

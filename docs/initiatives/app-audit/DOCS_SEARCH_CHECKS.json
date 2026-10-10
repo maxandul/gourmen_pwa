@@ -1,0 +1,88 @@
+{
+  "date": "2026-09-21",
+  "results": [
+    {
+      "case": "root_empty",
+      "status": 200,
+      "search_calls": 1,
+      "folder_calls": 0,
+      "error_message": false,
+      "no_hits": true,
+      "no_root_folders": false,
+      "query_preserved": true,
+      "plain_folder_link": false
+    },
+    {
+      "case": "root_error",
+      "status": 200,
+      "search_calls": 1,
+      "folder_calls": 0,
+      "error_message": true,
+      "no_hits": true,
+      "no_root_folders": false,
+      "query_preserved": true,
+      "plain_folder_link": false
+    },
+    {
+      "case": "folder_empty",
+      "status": 200,
+      "search_calls": 1,
+      "folder_calls": 1,
+      "error_message": false,
+      "no_hits": true,
+      "no_root_folders": false,
+      "query_preserved": true,
+      "plain_folder_link": true
+    },
+    {
+      "case": "folder_error",
+      "status": 200,
+      "search_calls": 1,
+      "folder_calls": 1,
+      "error_message": true,
+      "no_hits": true,
+      "no_root_folders": false,
+      "query_preserved": true,
+      "plain_folder_link": true
+    },
+    {
+      "case": "root_short_query",
+      "status": 200,
+      "search_calls": 0,
+      "folder_calls": 0,
+      "error_message": false,
+      "no_hits": false,
+      "no_root_folders": true,
+      "query_preserved": false,
+      "plain_folder_link": false
+    },
+    {
+      "case": "root_hit_folder_link",
+      "status": 200,
+      "search_calls": 1,
+      "folder_calls": 0,
+      "error_message": false,
+      "no_hits": false,
+      "no_root_folders": false,
+      "query_preserved": true,
+      "plain_folder_link": true
+    },
+    {
+      "case": "scope_target_after_50_global_hits",
+      "first_page_outside_scope": 50,
+      "api_pages": 1,
+      "returned_ids": [],
+      "second_page_contains_target": true
+    },
+    {
+      "case": "scope_target_after_49_global_hits",
+      "first_page_outside_scope": 49,
+      "api_pages": 2,
+      "returned_ids": [
+        "inside"
+      ],
+      "second_page_contains_target": true
+    }
+  ],
+  "limits": "Eight isolated groups. Original routes/templates; search/listing stubbed for rendering. Original search service with synthetic paginated API for last two cases. No browser, real Drive, uploads or production data. SQLite memory; testing CSRF/rate limiting disabled."
+}

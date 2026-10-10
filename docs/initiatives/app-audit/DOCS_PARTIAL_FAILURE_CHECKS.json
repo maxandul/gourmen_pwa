@@ -1,0 +1,93 @@
+{
+  "date": "2026-09-21",
+  "groups": 5,
+  "results": [
+    {
+      "action": "rename",
+      "failure": "document_commit",
+      "propagated_error": "OperationalError",
+      "query_before_rollback_error": null,
+      "before_retry": {
+        "db_parent": "source",
+        "remote_parent": "source",
+        "remote_name": "Audit-Neu.pdf",
+        "audit_count": 0,
+        "updates": 1
+      },
+      "after_retry_db_parent": "source",
+      "total_updates": 2,
+      "audit_actions": [
+        "DOCUMENT_RENAMED"
+      ]
+    },
+    {
+      "action": "move",
+      "failure": "document_commit",
+      "propagated_error": "OperationalError",
+      "query_before_rollback_error": null,
+      "before_retry": {
+        "db_parent": "source",
+        "remote_parent": "target",
+        "remote_name": "Audit.pdf",
+        "audit_count": 0,
+        "updates": 1
+      },
+      "after_retry_db_parent": "source",
+      "total_updates": 1,
+      "audit_actions": []
+    },
+    {
+      "action": "archive",
+      "failure": "document_commit",
+      "propagated_error": "OperationalError",
+      "query_before_rollback_error": null,
+      "before_retry": {
+        "db_parent": "source",
+        "remote_parent": "archive",
+        "remote_name": "Audit.pdf",
+        "audit_count": 0,
+        "updates": 1
+      },
+      "after_retry_db_parent": "source",
+      "total_updates": 1,
+      "audit_actions": [
+        "DOCUMENT_ARCHIVED"
+      ]
+    },
+    {
+      "action": "restore",
+      "failure": "document_commit",
+      "propagated_error": "OperationalError",
+      "query_before_rollback_error": null,
+      "before_retry": {
+        "db_parent": "archive",
+        "remote_parent": "target",
+        "remote_name": "Audit.pdf",
+        "audit_count": 0,
+        "updates": 1
+      },
+      "after_retry_db_parent": "archive",
+      "total_updates": 1,
+      "audit_actions": [
+        "DOCUMENT_RESTORED"
+      ]
+    },
+    {
+      "action": "move",
+      "failure": "audit_insert",
+      "propagated_error": null,
+      "query_before_rollback_error": "PendingRollbackError",
+      "before_retry": {
+        "db_parent": "target",
+        "remote_parent": "target",
+        "remote_name": "Audit.pdf",
+        "audit_count": 0,
+        "updates": 1
+      },
+      "after_retry_db_parent": "target",
+      "total_updates": 1,
+      "audit_actions": []
+    }
+  ],
+  "limits": "Original lifecycle methods, fake Drive transport, SQLite memory. Commit failure injected before commit call; audit failure injected in real ORM flush. Explicit rollback before recovery. No route/browser/production test. Rename collision query always empty in fake, so retry does not validate collision idempotency. Audit failure case performs no second action despite after_retry field names."
+}

@@ -1,0 +1,40 @@
+{
+  "method": "5 isolated frozen-clock/transport probes, SQLite memory; original date filters and installed pywebpush; no real scheduler/network or timing measurement",
+  "results": [
+    {
+      "id": "TIME-01",
+      "scenario": "3_week_due_then_next_day",
+      "processed": [
+        1,
+        0
+      ]
+    },
+    {
+      "id": "TIME-02",
+      "scenario": "weekly_monday_then_tuesday",
+      "processed": [
+        1,
+        0
+      ]
+    },
+    {
+      "id": "TIME-03",
+      "scenario": "rating_next_day_then_day_after",
+      "processed": [
+        1,
+        0
+      ]
+    },
+    {
+      "id": "TIME-04",
+      "scenario": "current_push_transport_arguments",
+      "timeout_supplied": false,
+      "installed_webpush_default_timeout": null
+    },
+    {
+      "id": "TIME-05",
+      "scenario": "installed_webpush_forwards_default",
+      "timeout_to_send": null
+    }
+  ]
+}

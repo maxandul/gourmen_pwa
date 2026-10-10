@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-21",
+  "groups": 3,
+  "inventory_calls": 64,
+  "results": [
+    {
+      "pending_member_change": false,
+      "audit_insert_failure": false,
+      "name_after_outer_rollback": "Vorher",
+      "audit_count": 1
+    },
+    {
+      "pending_member_change": true,
+      "audit_insert_failure": false,
+      "name_after_outer_rollback": "NochNichtFreigegeben",
+      "audit_count": 1
+    },
+    {
+      "pending_member_change": true,
+      "audit_insert_failure": true,
+      "name_after_outer_rollback": "Vorher",
+      "audit_count": 0
+    }
+  ],
+  "limits": "Original helper, SQLite memory, synthetic pending member change. Outer rollback is deliberate test action. Inventory is AST coverage only, not proof of each caller contract or product bug. No real member changes, credentials, network or production."
+}

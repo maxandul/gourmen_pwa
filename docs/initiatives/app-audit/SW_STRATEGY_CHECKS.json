@@ -1,0 +1,80 @@
+{
+  "method": "Original SW in Node VM with URL-keyed Cache mock and native Request/Response; no browser, no network, no production.",
+  "results": [
+    {
+      "id": "SW-01",
+      "scenario": "online_navigation_not_cached",
+      "cache_entries": 0
+    },
+    {
+      "id": "SW-02",
+      "scenario": "offline_navigation",
+      "status": 200,
+      "type": "text/html",
+      "body": "<html>offline</html>"
+    },
+    {
+      "id": "SW-03",
+      "scenario": "uncached_api_offline",
+      "status": 200,
+      "type": "text/html",
+      "json_parse_failed": true
+    },
+    {
+      "id": "SW-04",
+      "scenario": "same_url_fallback_no_account_key",
+      "body": {
+        "synthetic_user": "A"
+      },
+      "cache_names": [
+        "gourmen-dynamic-v3.16.0"
+      ],
+      "limitation": "Synthetic response, no actual account switch, cookies or Vary matching; extends A-010 algorithm evidence only."
+    },
+    {
+      "id": "SW-05",
+      "scenario": "hashed_static_cache_hit",
+      "body": "cached css",
+      "network_calls": 0
+    },
+    {
+      "id": "SW-06",
+      "scenario": "mutable_static_background_lifetime",
+      "body": "old js",
+      "network_pending": true,
+      "event_wait_until_calls": 0,
+      "limitation": "Does not simulate worker termination; no measured update loss."
+    },
+    {
+      "id": "SW-07",
+      "scenario": "activation_cache_deletion",
+      "remaining": [],
+      "limitation": "No unrelated production cache was accessed or removed."
+    },
+    {
+      "id": "SW-08",
+      "scenario": "install_all_asset_fetches_fail",
+      "install_promise_resolved": true,
+      "fetch_calls": 20,
+      "cached_entries": 0
+    },
+    {
+      "id": "SW-09",
+      "scenario": "controller_change_reload",
+      "initially_controlled": false,
+      "reloads_after_first": 0,
+      "reloads_after_second": 1,
+      "reloads_after_third": 1,
+      "limitation": "Actual shipped PWA handler executed; reload is a spy, no real page or unsaved form destroyed."
+    },
+    {
+      "id": "SW-10",
+      "scenario": "controller_change_reload",
+      "initially_controlled": true,
+      "reloads_after_first": 1,
+      "reloads_after_second": 1,
+      "reloads_after_third": 1,
+      "limitation": "Actual shipped PWA handler executed; reload is a spy, no real page or unsaved form destroyed."
+    }
+  ]
+}

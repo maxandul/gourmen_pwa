@@ -1,0 +1,10 @@
+{
+  "date":"2026-09-20",
+  "environment":"Local synthetic admin, 390px; original docs templates/controllers; fixture-only root/child folder listings and one simulated server failure. No file selected, uploaded or changed.",
+  "source":"Manually transcribed browser tool observations",
+  "B-41":{"action":"Upload then folder picker","openModalDialogs":["docs-upload-modal","docs-folder-picker-dialog"],"pickerInitialFocus":"Schliessen","result":"Nested modal opens, focus in top dialog"},
+  "B-42":{"action":"Expand root and Audit-Unterlagen, select Audit-Protokolle and apply via Enter","rootToggleName":"+ or –","childToggleNames":"Unterordner laden","ariaExpanded":null,"selectionAriaSelected":null,"selectionAriaPressed":null,"selectedClassPresent":true,"afterApply":{"openDialog":"docs-upload-modal","focus":"Ordner wählen","visibleFolderLabel":"Audit-Protokolle","title":"Audit-Entwurf"}},
+  "B-43":{"action":"Reopen picker, Escape; Escape upload; reopen upload","afterPickerEscapeFocus":"Ordner wählen","afterUploadEscapeFocus":"Hochladen","openDialogsAfterSecondEscape":0,"reopenedTitle":"Audit-Entwurf","reopenedFolderLabel":"Audit-Protokolle"},
+  "B-44":{"action":"Expand synthetic Audit-Ladefehler folder","message":"Ordnerliste konnte nicht geladen werden.","messageRole":null,"messageAriaLive":null,"focus":"Unterordner laden","escapeCanClose":true},
+  "limits":"No screenreader run, focus-loop exhaustion, real Drive, root-fetch failure or upload validation. Visible folder label verified; hidden submitted folder ID not verified by this browser probe."
+}

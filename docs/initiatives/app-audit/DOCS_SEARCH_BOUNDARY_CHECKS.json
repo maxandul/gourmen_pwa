@@ -1,0 +1,338 @@
+{
+  "date": "2026-09-21",
+  "groups": 6,
+  "results": [
+    {
+      "ids": [
+        "direct",
+        "nested"
+      ],
+      "paths": [
+        [
+          "target"
+        ],
+        [
+          "target",
+          "deep"
+        ]
+      ],
+      "case": "direct_nested_sibling_parentless_scope",
+      "list_calls": 1,
+      "metadata_calls": 4,
+      "queries": [
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    },
+    {
+      "ids": [],
+      "paths": [],
+      "case": "apostrophe_backslash_unicode",
+      "list_calls": 1,
+      "metadata_calls": 0,
+      "queries": [
+        "fullText contains 'Menü O\\'Brien\\\\2026' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    },
+    {
+      "ids": [
+        "found"
+      ],
+      "paths": [
+        [
+          "target"
+        ]
+      ],
+      "case": "empty_page_with_continuation",
+      "list_calls": 2,
+      "metadata_calls": 1,
+      "queries": [
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'",
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    },
+    {
+      "exception": "HttpError",
+      "status": 403,
+      "case": "second_page_http_error",
+      "list_calls": 2,
+      "metadata_calls": 0,
+      "queries": [
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'",
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    },
+    {
+      "exception": "HttpError",
+      "status": 403,
+      "case": "breadcrumb_http_error",
+      "list_calls": 1,
+      "metadata_calls": 1,
+      "queries": [
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    },
+    {
+      "ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48",
+        "49"
+      ],
+      "paths": [
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ],
+        [
+          "target",
+          "deep"
+        ]
+      ],
+      "case": "fifty_hits_same_two_level_parent",
+      "list_calls": 1,
+      "metadata_calls": 100,
+      "queries": [
+        "fullText contains 'Audit' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+      ]
+    }
+  ],
+  "limits": "Original search and breadcrumb methods, synthetic Google transport. No browser, route error response, real Google query validation or elapsed-time benchmark. 403 exceptions are preserved as observations; no actual account access."
+}

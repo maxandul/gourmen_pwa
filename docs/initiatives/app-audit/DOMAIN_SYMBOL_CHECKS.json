@@ -1,0 +1,133 @@
+{
+  "method": "AST enum definitions and literal AuditAction attribute references; DOMAIN audit sections only. Not runtime logging coverage, aliases/dynamic getattr excluded.",
+  "audit_action_count": 59,
+  "documented_audit_symbols": [
+    "CALENDAR_FEED_DISABLED",
+    "CALENDAR_FEED_ENABLED",
+    "CALENDAR_FEED_REGENERATED",
+    "CHANGE_PASSWORD",
+    "DISABLE_MFA",
+    "DOCUMENT_ARCHIVED",
+    "DOCUMENT_AUTO_IMPORTED",
+    "DOCUMENT_AUTO_REMOVED",
+    "DOCUMENT_AUTO_SYNCED",
+    "DOCUMENT_DOWNLOADED",
+    "DOCUMENT_MOVED",
+    "DOCUMENT_PERMANENTLY_DELETED",
+    "DOCUMENT_RENAMED",
+    "DOCUMENT_RESTORED",
+    "DOCUMENT_UPLOADED",
+    "DRIVE_AUTO_SYNC_DRIFT_FIXED",
+    "DRIVE_HARD_DELETE_CONFIRMED",
+    "DRIVE_MEMBER_INVITED",
+    "DRIVE_MEMBER_REMOVED",
+    "DRIVE_RESYNC_TRIGGERED",
+    "ENABLE_2FA",
+    "GOOGLE_EMAIL_VERIFIED",
+    "GOOGLE_EMAIL_VERIFY_REQUESTED",
+    "LOGIN",
+    "LOGOUT",
+    "READ_SENSITIVE_DATA",
+    "REQUEST_2FA_RESET",
+    "RESET_2FA",
+    "RESET_PASSWORD",
+    "USE_BACKUP_CODE"
+  ],
+  "documented_but_undefined": [
+    "DOCUMENT_DOWNLOADED",
+    "DRIVE_AUTO_SYNC_DRIFT_FIXED",
+    "DRIVE_HARD_DELETE_CONFIRMED",
+    "DRIVE_MEMBER_INVITED",
+    "DRIVE_MEMBER_REMOVED",
+    "DRIVE_RESYNC_TRIGGERED",
+    "LOGOUT",
+    "READ_SENSITIVE_DATA"
+  ],
+  "defined_but_not_in_documented_examples": [
+    "ADMIN_CREATE_EVENT",
+    "ADMIN_CREATE_MEMBER",
+    "ADMIN_EDIT_MEMBER",
+    "ADMIN_RESET_2FA",
+    "ADMIN_RESET_PASSWORD",
+    "BILLBRO_COMPUTE",
+    "BILLBRO_ENTER_BILL",
+    "BILLBRO_MARK_ABSENT",
+    "BILLBRO_MARK_PRESENT",
+    "BILLBRO_RECORD_GUESS",
+    "BILLBRO_SEND_REMINDER",
+    "BILLBRO_SET_TOTAL",
+    "BILLBRO_START_SESSION",
+    "BILLBRO_TOGGLE_STATUS",
+    "DELETE_DOC_HARD",
+    "DELETE_DOC_SOFT",
+    "DRIVE_MEMBERSHIP_ADDED",
+    "DRIVE_MEMBERSHIP_FAILED",
+    "DRIVE_MEMBERSHIP_REMOVED",
+    "DRIVE_QUOTA_EXCEEDED",
+    "DRIVE_RESYNC_RAN",
+    "ENABLE_MFA",
+    "EVENT_DELETE",
+    "EVENT_EDIT",
+    "EVENT_ORGANIZER_CHANGED",
+    "EVENT_SEND_REMINDER",
+    "PUSH_SUBSCRIBE",
+    "PUSH_UNSUBSCRIBE",
+    "READ_SENSITIVE_OTHERS",
+    "READ_SENSITIVE_SELF",
+    "REQUEST_PASSWORD_RESET",
+    "RSVP_UPDATE",
+    "SEND_ONBOARDING_MAIL",
+    "UPDATE_SENSITIVE_OTHERS",
+    "UPDATE_SENSITIVE_SELF",
+    "USE_ONBOARDING_TOKEN",
+    "VIEW_MFA"
+  ],
+  "literal_reference_count": 124,
+  "undefined_literal_references": [],
+  "enum_definitions": {
+    "Role": {
+      "MEMBER": "MEMBER",
+      "ADMIN": "ADMIN"
+    },
+    "Funktion": {
+      "MEMBER": "MEMBER",
+      "VEREINSPRAESIDENT": "VEREINSPRAESIDENT",
+      "KOMMISSIONSPRAESIDENT": "KOMMISSIONSPRAESIDENT",
+      "SCHATZMEISTER": "SCHATZMEISTER",
+      "MARKETINGCHEF": "MARKETINGCHEF",
+      "REISEKOMMISSAR": "REISEKOMMISSAR",
+      "RECHNUNGSPRUEFER": "RECHNUNGSPRUEFER"
+    },
+    "EventType": {
+      "MONATSESSEN": "MONATSESSEN",
+      "AUSFLUG": "AUSFLUG",
+      "GENERALVERSAMMLUNG": "GENERALVERSAMMLUNG",
+      "VORSTANDSSITZUNG": "VORSTANDSSITZUNG",
+      "ESSEN_BUCHHALTUNG": "ESSEN_BUCHHALTUNG"
+    },
+    "EventAudience": {
+      "ALL": "all",
+      "BOARD": "board"
+    },
+    "BillPaidBy": {
+      "VEREINSKONTO": "vereinskonto",
+      "MITGLIED": "mitglied"
+    },
+    "OrderStatus": {
+      "BESTELLT": "BESTELLT",
+      "WIRD_GELIEFERT": "WIRD_GELIEFERT",
+      "GELIEFERT": "GELIEFERT"
+    },
+    "FiscalYearStatus": {
+      "OPEN": "open",
+      "IN_REVIEW": "in_review",
+      "CLOSED": "closed"
+    },
+    "ClaimStatus": {
+      "OFFEN": "offen",
+      "TEILWEISE": "teilweise",
+      "BEGLICHEN": "beglichen",
+      "ERLASSEN": "erlassen"
+    }
+  }
+}

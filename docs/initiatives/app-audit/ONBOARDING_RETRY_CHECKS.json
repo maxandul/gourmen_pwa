@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-28",
+  "groups": 3,
+  "results": [
+    {
+      "case": "success",
+      "response": {
+        "status": 302,
+        "redirect": "/admin/members"
+      },
+      "member_exists": true,
+      "token_count": 1,
+      "audit_actions": [
+        "ADMIN_CREATE_MEMBER",
+        "SEND_ONBOARDING_MAIL"
+      ],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "retry": {
+        "response": {
+          "exception": "IntegrityError"
+        },
+        "mail_calls": 0,
+        "matching_members": 1,
+        "token_count": 1
+      },
+      "flash_categories": [
+        "success"
+      ]
+    },
+    {
+      "case": "mail_failure",
+      "response": {
+        "status": 302,
+        "redirect": "/admin/members"
+      },
+      "member_exists": true,
+      "token_count": 1,
+      "audit_actions": [
+        "ADMIN_CREATE_MEMBER",
+        "SEND_ONBOARDING_MAIL"
+      ],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "retry": {
+        "response": {
+          "exception": "IntegrityError"
+        },
+        "mail_calls": 0,
+        "matching_members": 1,
+        "token_count": 1
+      },
+      "flash_categories": [
+        "warning"
+      ]
+    },
+    {
+      "case": "first_audit_failure",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "member_exists": true,
+      "token_count": 0,
+      "audit_actions": [],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "retry": {
+        "response": {
+          "exception": "IntegrityError"
+        },
+        "mail_calls": 0,
+        "matching_members": 1,
+        "token_count": 0
+      },
+      "flash_categories": []
+    }
+  ],
+  "limits": "Two original POST requests per group, fresh request contexts, SQLite memory, all mail intercepted. No production accounts, real mail, browser or PostgreSQL test. Identical email only; normalization and concurrent requests not tested."
+}

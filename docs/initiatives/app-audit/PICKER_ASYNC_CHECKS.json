@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-20",
+  "method": "Original controller in Node VM with minimal synthetic DOM and manually resolved fetch promises. No browser, layout, native modal/focus or real network verification.",
+  "results": [
+    {
+      "id": "PICK-01",
+      "result": "Two populated sibling branches survive reversed response order; collapse A retains B1. Existing A-129 ordering reproduced."
+    },
+    {
+      "id": "PICK-02",
+      "result": "Late children response renders only into detached container; reopened branch retains fresh content without duplicates."
+    },
+    {
+      "id": "PICK-03",
+      "result": "Two pending opener clicks produce duplicate root rows.",
+      "rootRows": 2
+    },
+    {
+      "id": "PICK-04",
+      "result": "Second pending root response calls showModal after user closed picker.",
+      "reopened": true
+    }
+  ]
+}

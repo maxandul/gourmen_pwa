@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-20",
+  "source": "Manually transcribed browser AX/DOM observations",
+  "environment": "Local isolated fixture, synthetic admin, original controller and native dialog, 1280x720. Root responses delayed 2 and 12 seconds per pair; no actual Drive access.",
+  "preliminaryAttempt": "Double-click followed by separate observation/close calls was temporally ambiguous; excluded from confirmation.",
+  "confirmedSequence": "Two opener clicks in one tool invocation, wait for visible picker, click its Schliessen button. Snapshot confirms only upload dialog remains, focus Ordner wählen. Later observation after pending response confirms picker visible again.",
+  "B-53": {"description": "Duplicate root rows after two pending opening requests", "rootRows": 2, "visibleNames": ["Dokumente", "Dokumente"]},
+  "B-54": {"description": "Closed picker reopens after delayed second root response", "pickerAfterClose": false, "pickerAfterLateResponse": true, "focusAfterClose": "Ordner wählen", "focusAfterLateResponse": "Schliessen in folder picker"},
+  "limits": "One browser/role/viewport and synthetic delay. No file selected or uploaded. A short visibility wait expired before response; final observation was made after delay. No assertion about real network timing or frequency. Tab closed and local server stopped."
+}

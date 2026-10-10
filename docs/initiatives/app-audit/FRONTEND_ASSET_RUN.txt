@@ -1,0 +1,93 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 14:31:09,087] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 14:31:10,511] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 14:31:10,513] INFO in app: App created successfully - skipping migrations
+[2026-09-20 14:31:10,513] INFO in app: Flask app created and configured successfully
+{
+  "asset_count": 77,
+  "css": [
+    {
+      "path": "static/css/v2/tokens.css",
+      "lines": 325,
+      "bytes": 11336,
+      "important_occurrences": 0,
+      "media_occurrences": 0
+    },
+    {
+      "path": "static/css/v2/base.css",
+      "lines": 458,
+      "bytes": 10441,
+      "important_occurrences": 1,
+      "media_occurrences": 3
+    },
+    {
+      "path": "static/css/v2/layout.css",
+      "lines": 584,
+      "bytes": 13631,
+      "important_occurrences": 0,
+      "media_occurrences": 9
+    },
+    {
+      "path": "static/css/v2/components.css",
+      "lines": 6758,
+      "bytes": 156642,
+      "important_occurrences": 6,
+      "media_occurrences": 30
+    },
+    {
+      "path": "static/css/public.css",
+      "lines": 652,
+      "bytes": 14492,
+      "important_occurrences": 0,
+      "media_occurrences": 4
+    }
+  ],
+  "bundle_matches": true,
+  "hash_matches": true,
+  "pages": [
+    {
+      "page": "/",
+      "asset_count": 16,
+      "bytes": 356011
+    },
+    {
+      "page": "/auth/login",
+      "asset_count": 14,
+      "bytes": 341519
+    },
+    {
+      "page": "/restaurants",
+      "asset_count": 15,
+      "bytes": 356011
+    },
+    {
+      "page": "/ueber-uns",
+      "asset_count": 15,
+      "bytes": 356011
+    }
+  ],
+  "no_direct_ref_nonhashed": [
+    "static/css/animations.css",
+    "static/css/components.css",
+    "static/css/core.css",
+    "static/css/features.css",
+    "static/css/layout.css",
+    "static/css/main-v2.css",
+    "static/css/mobile-touch.css",
+    "static/css/notifications.css",
+    "static/css/public.css",
+    "static/css/pwa.css",
+    "static/css/responsive.css",
+    "static/css/utilities.css",
+    "static/css/v2/base.css",
+    "static/css/v2/components.css",
+    "static/css/v2/layout.css",
+    "static/js/app.js",
+    "static/js/google-maps.js",
+    "static/js/places-autocomplete.js",
+    "static/js/pwa.js"
+  ]
+}

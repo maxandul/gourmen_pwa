@@ -1,0 +1,32 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 15:27:33,309] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 15:27:34,236] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 15:27:34,236] INFO in app: App created successfully - skipping migrations
+[2026-09-20 15:27:34,236] INFO in app: Flask app created and configured successfully
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/dashboard/", "repetition": 1, "http": 200, "html_bytes": 25864, "sql_count": 29, "orm_loads": {"Member": 5, "Participation": 35, "Event": 10}, "writes": 0}
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/events/", "repetition": 1, "http": 200, "html_bytes": 31708, "sql_count": 16, "orm_loads": {"Member": 5, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/events/?tab=archiv", "repetition": 1, "http": 200, "html_bytes": 62322, "sql_count": 32, "orm_loads": {"Member": 5, "Event": 5, "Participation": 30}, "writes": 0}
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/ggl/?tab=tabelle", "repetition": 1, "http": 200, "html_bytes": 29270, "sql_count": 46, "orm_loads": {"Member": 13, "Participation": 95, "Event": 25}, "writes": 0}
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/member/merch", "repetition": 1, "http": 200, "html_bytes": 41324, "sql_count": 20, "orm_loads": {"Member": 1, "MerchArticle": 3, "MerchVariant": 3, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "baseline", "events": 5, "members": 5, "articles": 3, "url": "/restaurants", "repetition": 1, "http": 200, "html_bytes": 28085, "sql_count": 2, "orm_loads": {"Event": 5}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/dashboard/", "repetition": 1, "http": 200, "html_bytes": 25865, "sql_count": 104, "orm_loads": {"Member": 5, "Participation": 210, "Event": 60}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/events/", "repetition": 1, "http": 200, "html_bytes": 31708, "sql_count": 66, "orm_loads": {"Member": 5, "Event": 30, "Participation": 30}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/events/?tab=archiv", "repetition": 1, "http": 200, "html_bytes": 91338, "sql_count": 97, "orm_loads": {"Member": 5, "Event": 30, "Participation": 80}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/ggl/?tab=tabelle", "repetition": 1, "http": 200, "html_bytes": 29283, "sql_count": 171, "orm_loads": {"Member": 13, "Participation": 570, "Event": 150}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/member/merch", "repetition": 1, "http": 200, "html_bytes": 41324, "sql_count": 70, "orm_loads": {"Member": 1, "MerchArticle": 3, "MerchVariant": 3, "Event": 30, "Participation": 30}, "writes": 0}
+{"fixture": "events_30", "events": 30, "members": 5, "articles": 3, "url": "/restaurants", "repetition": 1, "http": 200, "html_bytes": 32723, "sql_count": 2, "orm_loads": {"Event": 30}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/dashboard/", "repetition": 1, "http": 200, "html_bytes": 25864, "sql_count": 29, "orm_loads": {"Member": 30, "Participation": 160, "Event": 10}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/events/", "repetition": 1, "http": 200, "html_bytes": 37079, "sql_count": 16, "orm_loads": {"Member": 30, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/events/?tab=archiv", "repetition": 1, "http": 200, "html_bytes": 67693, "sql_count": 32, "orm_loads": {"Member": 30, "Event": 5, "Participation": 155}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/ggl/?tab=tabelle", "repetition": 1, "http": 200, "html_bytes": 41792, "sql_count": 71, "orm_loads": {"Member": 88, "Participation": 470, "Event": 25}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/member/merch", "repetition": 1, "http": 200, "html_bytes": 41324, "sql_count": 20, "orm_loads": {"Member": 1, "MerchArticle": 3, "MerchVariant": 3, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "members_30", "events": 5, "members": 30, "articles": 3, "url": "/restaurants", "repetition": 1, "http": 200, "html_bytes": 28085, "sql_count": 2, "orm_loads": {"Event": 5}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/dashboard/", "repetition": 1, "http": 200, "html_bytes": 25864, "sql_count": 29, "orm_loads": {"Member": 5, "Participation": 35, "Event": 10}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/events/", "repetition": 1, "http": 200, "html_bytes": 31708, "sql_count": 16, "orm_loads": {"Member": 5, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/events/?tab=archiv", "repetition": 1, "http": 200, "html_bytes": 62322, "sql_count": 32, "orm_loads": {"Member": 5, "Event": 5, "Participation": 30}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/ggl/?tab=tabelle", "repetition": 1, "http": 200, "html_bytes": 29270, "sql_count": 46, "orm_loads": {"Member": 13, "Participation": 95, "Event": 25}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/member/merch", "repetition": 1, "http": 200, "html_bytes": 202706, "sql_count": 74, "orm_loads": {"Member": 1, "MerchArticle": 30, "MerchVariant": 30, "Event": 5, "Participation": 5}, "writes": 0}
+{"fixture": "articles_30", "events": 5, "members": 5, "articles": 30, "url": "/restaurants", "repetition": 1, "http": 200, "html_bytes": 28085, "sql_count": 2, "orm_loads": {"Event": 5}, "writes": 0}

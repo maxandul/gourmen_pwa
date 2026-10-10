@@ -1,0 +1,81 @@
+{
+  "date": "2026-09-21",
+  "groups": 5,
+  "results": [
+    {
+      "case": "login_default_redirect",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "durable_after_failure": {
+        "event_exists": true,
+        "participation": false,
+        "calendar_enabled": false,
+        "audit_count": 0
+      },
+      "session_authenticated": false
+    },
+    {
+      "case": "login_explicit_next",
+      "response": {
+        "status": 302,
+        "redirect": "/dashboard/"
+      },
+      "durable_after_failure": {
+        "event_exists": true,
+        "participation": false,
+        "calendar_enabled": false,
+        "audit_count": 0
+      },
+      "session_authenticated": true
+    },
+    {
+      "case": "rsvp_failure_then_retry",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "durable_after_failure": {
+        "event_exists": true,
+        "participation": true,
+        "calendar_enabled": false,
+        "audit_count": 0
+      },
+      "retry_status": 302,
+      "durable_after_retry": {
+        "event_exists": true,
+        "participation": false,
+        "calendar_enabled": false,
+        "audit_count": 1
+      },
+      "session_authenticated": true
+    },
+    {
+      "case": "calendar_enable",
+      "response": {
+        "status": 201,
+        "redirect": null
+      },
+      "durable_after_failure": {
+        "event_exists": true,
+        "participation": false,
+        "calendar_enabled": true,
+        "audit_count": 0
+      },
+      "session_authenticated": true
+    },
+    {
+      "case": "event_delete",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "durable_after_failure": {
+        "event_exists": true,
+        "participation": false,
+        "calendar_enabled": false,
+        "audit_count": 0
+      },
+      "session_authenticated": true
+    }
+  ],
+  "limits": "Original Flask routes and audit helper. Synthetic audit insert error through ORM before_insert; SQLite memory; real local password verification, no real credentials. Exceptions propagate in testing, no claim about production HTTP body. Global testing CSRF/rate limits disabled. Fresh app context per request/state inspection. No emails, Drive or production operations."
+}

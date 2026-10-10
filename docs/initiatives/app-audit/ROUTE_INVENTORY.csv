@@ -1,0 +1,173 @@
+﻿path,line,function,route_declaration,decorators,registration,review_status
+backend/app.py,96,service_worker,app.route('/sw.js'),app.route('/sw.js'),unverified,pending
+backend/app.py,142,test,app.route('/test'),app.route('/test'),unverified,pending
+backend/app.py,147,health,app.route('/health'),app.route('/health'),unverified,pending
+backend/app.py,167,health_error,app.route('/health'),app.route('/health'),unverified,pending
+backend/app.py,171,index,app.route('/'),app.route('/'),unverified,pending
+backend/app.py,175,test,app.route('/test'),app.route('/test'),unverified,pending
+backend/routes/accounting.py,197,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/accounting.py,333,booking_detail,bp.route('/booking/<int:booking_id>'),bp.route('/booking/<int:booking_id>') | login_required,unverified,pending
+backend/routes/accounting.py,363,booking_edit,"bp.route('/booking/<int:booking_id>/edit', methods=['POST'])","bp.route('/booking/<int:booking_id>/edit', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,397,booking_attach_receipt,"bp.route('/booking/<int:booking_id>/receipt', methods=['POST'])","bp.route('/booking/<int:booking_id>/receipt', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,467,receipt_upload,"bp.route('/receipt/upload', methods=['GET', 'POST'])","bp.route('/receipt/upload', methods=['GET', 'POST']) | login_required | limiter.limit('10 per minute', methods=['POST'])",unverified,pending
+backend/routes/accounting.py,517,receipt_view,bp.route('/receipt/<int:receipt_id>'),bp.route('/receipt/<int:receipt_id>') | login_required,unverified,pending
+backend/routes/accounting.py,542,booking_new,"bp.route('/booking/new', methods=['GET', 'POST'])","bp.route('/booking/new', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/accounting.py,612,year_comment,"bp.route('/year/<int:fiscal_year_id>/comment', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/comment', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,639,comment_resolve,"bp.route('/comment/<int:comment_id>/resolve', methods=['POST'])","bp.route('/comment/<int:comment_id>/resolve', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,664,export_csv,bp.route('/export/<int:fiscal_year_id>/csv'),bp.route('/export/<int:fiscal_year_id>/csv') | login_required,unverified,pending
+backend/routes/accounting.py,679,export_pdf,bp.route('/export/<int:fiscal_year_id>/pdf'),bp.route('/export/<int:fiscal_year_id>/pdf') | login_required,unverified,pending
+backend/routes/accounting.py,699,accounts,"bp.route('/accounts', methods=['GET', 'POST'])","bp.route('/accounts', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/accounting.py,731,account_edit,"bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST'])","bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/accounting.py,769,stats,bp.route('/stats'),bp.route('/stats') | login_required,unverified,pending
+backend/routes/accounting.py,790,year_withdraw,"bp.route('/year/<int:fiscal_year_id>/withdraw', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/withdraw', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,809,year_revoke,"bp.route('/year/<int:fiscal_year_id>/revoke', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/revoke', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,828,year_create,"bp.route('/year/create', methods=['POST'])","bp.route('/year/create', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,852,year_submit,"bp.route('/year/<int:fiscal_year_id>/submit', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/submit', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,887,year_approve,"bp.route('/year/<int:fiscal_year_id>/approve', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/approve', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,978,bank_import_upload,"bp.route('/import', methods=['POST'])","bp.route('/import', methods=['POST']) | login_required | limiter.limit('5 per minute')",unverified,pending
+backend/routes/accounting.py,1001,bank_import_review,bp.route('/import/<int:import_id>/review'),bp.route('/import/<int:import_id>/review') | login_required,unverified,pending
+backend/routes/accounting.py,1018,bank_review_all,bp.route('/import/review'),bp.route('/import/review') | login_required,unverified,pending
+backend/routes/accounting.py,1038,bank_tx_book,"bp.route('/import/tx/<int:tx_id>/book', methods=['POST'])","bp.route('/import/tx/<int:tx_id>/book', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1063,bank_tx_ignore,"bp.route('/import/tx/<int:tx_id>/ignore', methods=['POST'])","bp.route('/import/tx/<int:tx_id>/ignore', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1077,bank_import_delete,"bp.route('/import/<int:import_id>/delete', methods=['POST'])","bp.route('/import/<int:import_id>/delete', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1096,year_claims_create,"bp.route('/year/<int:fiscal_year_id>/claims/create', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/claims/create', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1111,claim_settle,"bp.route('/claims/<int:claim_id>/settle', methods=['POST'])","bp.route('/claims/<int:claim_id>/settle', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1130,claim_confirm,"bp.route('/claims/<int:claim_id>/confirm', methods=['POST'])","bp.route('/claims/<int:claim_id>/confirm', methods=['POST']) | login_required",unverified,pending
+backend/routes/accounting.py,1151,year_budget,"bp.route('/year/<int:fiscal_year_id>/budget', methods=['POST'])","bp.route('/year/<int:fiscal_year_id>/budget', methods=['POST']) | login_required",unverified,pending
+backend/routes/admin.py,74,index,bp.route('/'),bp.route('/') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,130,mail_test,bp.route('/mail/test'),bp.route('/mail/test') | login_required | admin_required,unverified,pending
+backend/routes/admin.py,300,members,bp.route('/members'),bp.route('/members') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,310,create_member,"bp.route('/members/new', methods=['GET', 'POST'])","bp.route('/members/new', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,444,edit_member,"bp.route('/members/<int:member_id>/edit', methods=['GET', 'POST'])","bp.route('/members/<int:member_id>/edit', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,567,member_sensitive,"bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST'])","bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST']) | login_required | admin_required | require_step_up",unverified,pending
+backend/routes/admin.py,628,create_event,"bp.route('/events/new', methods=['GET', 'POST'])","bp.route('/events/new', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,711,reset_member_password,"bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])","bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST']) | login_required | admin_required | require_step_up",unverified,pending
+backend/routes/admin.py,748,reset_member_2fa,"bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST'])","bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST']) | login_required | admin_required | require_step_up",unverified,pending
+backend/routes/admin.py,790,member_security_overview,bp.route('/members/<int:member_id>/security-overview'),bp.route('/members/<int:member_id>/security-overview') | login_required | admin_required,unverified,pending
+backend/routes/admin.py,815,show_temp_password,bp.route('/temp-password'),bp.route('/temp-password') | login_required | admin_required,unverified,pending
+backend/routes/admin.py,840,merch,bp.route('/merch'),bp.route('/merch') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,1085,merch_orders,bp.route('/merch/orders'),bp.route('/merch/orders') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,1092,merch_order_detail,bp.route('/merch/orders/<int:order_id>'),bp.route('/merch/orders/<int:order_id>') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,1103,update_order_status,"bp.route('/merch/orders/<int:order_id>/status', methods=['GET', 'POST'])","bp.route('/merch/orders/<int:order_id>/status', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,1151,update_order_status_alt,"bp.route('/merch/orders/<int:order_id>/status-update', methods=['POST'])","bp.route('/merch/orders/<int:order_id>/status-update', methods=['POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,1188,merch_article_detail,bp.route('/merch/articles/<int:article_id>'),bp.route('/merch/articles/<int:article_id>') | login_required | verein_member_required,unverified,pending
+backend/routes/admin.py,1201,create_merch_article,"bp.route('/merch/articles/new', methods=['GET', 'POST'])","bp.route('/merch/articles/new', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,1262,edit_merch_article,"bp.route('/merch/articles/<int:article_id>/edit', methods=['GET', 'POST'])","bp.route('/merch/articles/<int:article_id>/edit', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,1334,create_merch_variant,"bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST'])","bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/admin.py,1341,edit_merch_variant,"bp.route('/merch/variants/<int:variant_id>/edit', methods=['GET', 'POST'])","bp.route('/merch/variants/<int:variant_id>/edit', methods=['GET', 'POST']) | login_required | admin_required",unverified,pending
+backend/routes/auth.py,97,login,"bp.route('/login', methods=['GET', 'POST'])","bp.route('/login', methods=['GET', 'POST']) | limiter.limit('5 per minute', methods=['POST'])",unverified,pending
+backend/routes/auth.py,167,logout,bp.route('/logout'),bp.route('/logout') | login_required,unverified,pending
+backend/routes/auth.py,174,verify_2fa,"bp.route('/2fa/verify', methods=['GET', 'POST'])","bp.route('/2fa/verify', methods=['GET', 'POST'])",unverified,pending
+backend/routes/auth.py,275,enroll_2fa,"bp.route('/2fa/enroll', methods=['GET', 'POST'])","bp.route('/2fa/enroll', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/auth.py,329,disable_2fa,"bp.route('/2fa/disable', methods=['GET', 'POST'])","bp.route('/2fa/disable', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/auth.py,362,step_up,"bp.route('/step-up', methods=['GET', 'POST'])","bp.route('/step-up', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/auth.py,437,change_password,"bp.route('/change-password', methods=['GET', 'POST'])","bp.route('/change-password', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/auth.py,483,forgot_password,"bp.route('/forgot-password', methods=['GET', 'POST'])","bp.route('/forgot-password', methods=['GET', 'POST']) | limiter.limit('3 per hour', methods=['POST'])",unverified,pending
+backend/routes/auth.py,535,reset_password,"bp.route('/reset-password/<token>', methods=['GET', 'POST'])","bp.route('/reset-password/<token>', methods=['GET', 'POST'])",unverified,pending
+backend/routes/auth.py,585,request_2fa_reset,"bp.route('/2fa/reset-request', methods=['GET', 'POST'])","bp.route('/2fa/reset-request', methods=['GET', 'POST']) | limiter.limit('3 per hour')",unverified,pending
+backend/routes/auth.py,643,reset_2fa,"bp.route('/2fa/reset/<token>', methods=['GET', 'POST'])","bp.route('/2fa/reset/<token>', methods=['GET', 'POST'])",unverified,pending
+backend/routes/auth.py,690,activate,"bp.route('/activate/<token>', methods=['GET', 'POST'])","bp.route('/activate/<token>', methods=['GET', 'POST'])",unverified,pending
+backend/routes/auth.py,738,remember_device,"bp.route('/2fa/remember-device', methods=['POST'])","bp.route('/2fa/remember-device', methods=['POST']) | login_required",unverified,pending
+backend/routes/auth.py,757,backup_codes,bp.route('/2fa/backup-codes'),bp.route('/2fa/backup-codes') | login_required,unverified,pending
+backend/routes/billbro.py,117,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/billbro.py,158,compute,"bp.route('/<int:event_id>/compute', methods=['POST'])","bp.route('/<int:event_id>/compute', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,255,enter_bill,"bp.route('/<int:event_id>/enter_bill', methods=['POST'])","bp.route('/<int:event_id>/enter_bill', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,313,set_payment,"bp.route('/<int:event_id>/set_payment', methods=['POST'])","bp.route('/<int:event_id>/set_payment', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,371,start_session,"bp.route('/<int:event_id>/start_session', methods=['POST'])","bp.route('/<int:event_id>/start_session', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,413,send_reminder,"bp.route('/<int:event_id>/send_reminder', methods=['POST'])","bp.route('/<int:event_id>/send_reminder', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,459,set_total,"bp.route('/<int:event_id>/set_total', methods=['POST'])","bp.route('/<int:event_id>/set_total', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,516,undo_final,"bp.route('/<int:event_id>/undo_final', methods=['POST'])","bp.route('/<int:event_id>/undo_final', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,554,accept_suggested_total,"bp.route('/<int:event_id>/accept_suggested_total', methods=['POST'])","bp.route('/<int:event_id>/accept_suggested_total', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,599,reset_bill,"bp.route('/<int:event_id>/reset_bill', methods=['POST'])","bp.route('/<int:event_id>/reset_bill', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,639,share_whatsapp,bp.route('/<int:event_id>/share_whatsapp'),bp.route('/<int:event_id>/share_whatsapp') | login_required,unverified,pending
+backend/routes/billbro.py,726,update_guess,"bp.route('/<int:event_id>/update_guess', methods=['POST'])","bp.route('/<int:event_id>/update_guess', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,764,record_guess,"bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST'])","bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,837,calculator,bp.route('/<int:event_id>/calculator'),bp.route('/<int:event_id>/calculator') | login_required,unverified,pending
+backend/routes/billbro.py,850,export_pdf,bp.route('/<int:event_id>/export_pdf'),bp.route('/<int:event_id>/export_pdf') | login_required,unverified,pending
+backend/routes/billbro.py,874,mark_absent,"bp.route('/<int:event_id>/mark_absent/<int:member_id>', methods=['POST'])","bp.route('/<int:event_id>/mark_absent/<int:member_id>', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,926,mark_present,"bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST'])","bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST']) | login_required",unverified,pending
+backend/routes/billbro.py,971,toggle_billbro_status,"bp.route('/<int:event_id>/toggle_status', methods=['POST'])","bp.route('/<int:event_id>/toggle_status', methods=['POST']) | login_required",unverified,pending
+backend/routes/calendar_feed.py,23,member_ical,"bp.route('/calendar/<token>.ics', methods=['GET'])","bp.route('/calendar/<token>.ics', methods=['GET']) | limiter.limit('60 per minute', key_func=_calendar_feed_rate_limit_key, methods=['GET'], override_defaults=True)",unverified,pending
+backend/routes/cron.py,41,cron_3_week_reminders,"bp.route('/cron/3-week-reminders', methods=['POST', 'GET'])","bp.route('/cron/3-week-reminders', methods=['POST', 'GET']) | csrf.exempt",unverified,pending
+backend/routes/cron.py,66,cron_status,"bp.route('/cron/status', methods=['GET'])","bp.route('/cron/status', methods=['GET']) | csrf.exempt",unverified,pending
+backend/routes/cron.py,84,cron_weekly_reminders,"bp.route('/cron/weekly-reminders', methods=['POST', 'GET'])","bp.route('/cron/weekly-reminders', methods=['POST', 'GET']) | csrf.exempt",unverified,pending
+backend/routes/cron.py,109,cron_rating_reminders,"bp.route('/cron/rating-reminders', methods=['POST', 'GET'])","bp.route('/cron/rating-reminders', methods=['POST', 'GET']) | csrf.exempt",unverified,pending
+backend/routes/cron.py,134,cron_test,"bp.route('/cron/test', methods=['POST'])","bp.route('/cron/test', methods=['POST']) | csrf.exempt",unverified,pending
+backend/routes/dashboard.py,16,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/demo.py,12,design_system,bp.route('/design-system'),bp.route('/design-system') | login_required,unverified,pending
+backend/routes/docs.py,81,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/docs.py,118,folder_view,bp.route('/folder/<drive_folder_id>'),bp.route('/folder/<drive_folder_id>') | login_required,unverified,pending
+backend/routes/docs.py,177,detail,bp.route('/file/<int:doc_id>'),bp.route('/file/<int:doc_id>') | login_required,unverified,pending
+backend/routes/docs.py,232,api_root,"bp.route('/api/root', methods=['GET'])","bp.route('/api/root', methods=['GET']) | login_required",unverified,pending
+backend/routes/docs.py,240,api_folder_children,"bp.route('/api/folder/<drive_folder_id>/children', methods=['GET'])","bp.route('/api/folder/<drive_folder_id>/children', methods=['GET']) | login_required",unverified,pending
+backend/routes/docs.py,260,upload,"bp.route('/upload', methods=['POST'])","bp.route('/upload', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,326,rename,"bp.route('/file/<int:doc_id>/rename', methods=['POST'])","bp.route('/file/<int:doc_id>/rename', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,350,move,"bp.route('/file/<int:doc_id>/move', methods=['POST'])","bp.route('/file/<int:doc_id>/move', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,377,archive,"bp.route('/file/<int:doc_id>/archive', methods=['POST'])","bp.route('/file/<int:doc_id>/archive', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,403,restore,"bp.route('/file/<int:doc_id>/restore', methods=['POST'])","bp.route('/file/<int:doc_id>/restore', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,427,hard_delete,"bp.route('/file/<int:doc_id>/delete', methods=['POST'])","bp.route('/file/<int:doc_id>/delete', methods=['POST']) | login_required",unverified,pending
+backend/routes/docs.py,464,download,bp.route('/file/<int:doc_id>/download'),bp.route('/file/<int:doc_id>/download') | login_required,unverified,pending
+backend/routes/docs.py,491,admin_resync,"bp.route('/admin/resync', methods=['POST'])","bp.route('/admin/resync', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,70,get_participation_stats,"bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET'])","bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET']) | login_required",unverified,pending
+backend/routes/events.py,89,send_participation_reminders,"bp.route('/api/events/<int:event_id>/send-reminders', methods=['POST'])","bp.route('/api/events/<int:event_id>/send-reminders', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,112,send_organizer_reminder,"bp.route('/api/events/<int:event_id>/send-organizer-reminder', methods=['POST'])","bp.route('/api/events/<int:event_id>/send-organizer-reminder', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,227,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/events.py,399,year_planning,bp.route('/year-planning'),bp.route('/year-planning') | login_required,unverified,pending
+backend/routes/events.py,413,create_year_planning,"bp.route('/year-planning', methods=['POST'])","bp.route('/year-planning', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,442,archive,bp.route('/archive'),bp.route('/archive') | login_required,unverified,pending
+backend/routes/events.py,453,hamburg2026,bp.route('/hamburg2026'),bp.route('/hamburg2026') | login_required,unverified,pending
+backend/routes/events.py,465,cleanup,bp.route('/cleanup'),bp.route('/cleanup') | login_required,unverified,pending
+backend/routes/events.py,514,cleanup_undo_rsvp,"bp.route('/cleanup/undo-rsvp', methods=['POST'])","bp.route('/cleanup/undo-rsvp', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,552,cleanup_rsvp,"bp.route('/<int:event_id>/cleanup/rsvp', methods=['POST'])","bp.route('/<int:event_id>/cleanup/rsvp', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,608,enable_event_ratings,"bp.route('/<int:event_id>/ratings/enable', methods=['POST'])","bp.route('/<int:event_id>/ratings/enable', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,623,disable_event_ratings,"bp.route('/<int:event_id>/ratings/disable', methods=['POST'])","bp.route('/<int:event_id>/ratings/disable', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,638,detail,bp.route('/<int:event_id>'),bp.route('/<int:event_id>') | login_required,unverified,pending
+backend/routes/events.py,722,billbro_sync,"bp.route('/<int:event_id>/billbro-sync', methods=['GET'])","bp.route('/<int:event_id>/billbro-sync', methods=['GET']) | login_required",unverified,pending
+backend/routes/events.py,766,edit,"bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])","bp.route('/<int:event_id>/edit', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/events.py,920,delete,"bp.route('/<int:event_id>/delete', methods=['POST'])","bp.route('/<int:event_id>/delete', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,959,rsvp,"bp.route('/<int:event_id>/rsvp', methods=['POST'])","bp.route('/<int:event_id>/rsvp', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,1013,send_rsvp_reminder,"bp.route('/<int:event_id>/send_rsvp_reminder', methods=['POST'])","bp.route('/<int:event_id>/send_rsvp_reminder', methods=['POST']) | login_required",unverified,pending
+backend/routes/events.py,1050,places_autocomplete,bp.route('/places/autocomplete'),bp.route('/places/autocomplete') | login_required,unverified,pending
+backend/routes/events.py,1068,places_details,bp.route('/places/details'),bp.route('/places/details') | login_required,unverified,pending
+backend/routes/events.py,1084,places_config,bp.route('/places/config'),bp.route('/places/config') | login_required,unverified,pending
+backend/routes/events.py,1100,stats,bp.route('/stats'),bp.route('/stats') | login_required,unverified,pending
+backend/routes/ggl.py,17,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/ggl.py,85,season,bp.route('/season/<int:season_year>'),bp.route('/season/<int:season_year>') | login_required,unverified,pending
+backend/routes/member.py,81,index,bp.route('/'),bp.route('/') | login_required,unverified,pending
+backend/routes/member.py,88,receipts,bp.route('/receipts'),bp.route('/receipts') | login_required,unverified,pending
+backend/routes/member.py,97,profile,"bp.route('/profile', methods=['GET', 'POST'])","bp.route('/profile', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/member.py,276,security,bp.route('/security'),bp.route('/security') | login_required,unverified,pending
+backend/routes/member.py,282,technical,bp.route('/technical'),bp.route('/technical') | login_required,unverified,pending
+backend/routes/member.py,310,merch,bp.route('/merch'),bp.route('/merch') | login_required,unverified,pending
+backend/routes/member.py,345,merch_order,"bp.route('/merch/order', methods=['GET', 'POST'])","bp.route('/merch/order', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/member.py,439,merch_orders,bp.route('/merch/orders'),bp.route('/merch/orders') | login_required,unverified,pending
+backend/routes/member.py,449,merch_order_detail,bp.route('/merch/order/<int:order_id>'),bp.route('/merch/order/<int:order_id>') | login_required,unverified,pending
+backend/routes/member.py,458,merch_order_edit,"bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])","bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/member.py,576,google_email_save,"bp.route('/google-email/save', methods=['POST'])","bp.route('/google-email/save', methods=['POST']) | login_required",unverified,pending
+backend/routes/member.py,610,google_email_resend,"bp.route('/google-email/resend', methods=['POST'])","bp.route('/google-email/resend', methods=['POST']) | login_required",unverified,pending
+backend/routes/member.py,624,google_email_verify,bp.route('/google-email/verify/<token>'),bp.route('/google-email/verify/<token>'),unverified,pending
+backend/routes/member.py,733,calendar_feed_enable,"bp.route('/settings/calendar/enable', methods=['POST'])","bp.route('/settings/calendar/enable', methods=['POST']) | login_required",unverified,pending
+backend/routes/member.py,760,calendar_feed_regenerate,"bp.route('/settings/calendar/regenerate', methods=['POST'])","bp.route('/settings/calendar/regenerate', methods=['POST']) | login_required",unverified,pending
+backend/routes/member.py,778,calendar_feed_disable,"bp.route('/settings/calendar/disable', methods=['POST'])","bp.route('/settings/calendar/disable', methods=['POST']) | login_required",unverified,pending
+backend/routes/notifications.py,13,get_vapid_public_key,bp.route('/vapid-public-key'),bp.route('/vapid-public-key'),unverified,pending
+backend/routes/notifications.py,24,subscribe,"bp.route('/subscribe', methods=['POST'])","bp.route('/subscribe', methods=['POST']) | login_required",unverified,pending
+backend/routes/notifications.py,63,unsubscribe,"bp.route('/unsubscribe', methods=['POST'])","bp.route('/unsubscribe', methods=['POST']) | login_required",unverified,pending
+backend/routes/notifications.py,84,test_notification,"bp.route('/test', methods=['POST'])","bp.route('/test', methods=['POST']) | login_required",unverified,pending
+backend/routes/public.py,30,landing,bp.route('/'),bp.route('/'),unverified,pending
+backend/routes/public.py,75,about,bp.route('/ueber-uns'),bp.route('/ueber-uns'),unverified,pending
+backend/routes/public.py,81,restaurants,bp.route('/restaurants'),bp.route('/restaurants'),unverified,pending
+backend/routes/public.py,163,robots_txt,bp.route('/robots.txt'),bp.route('/robots.txt'),unverified,pending
+backend/routes/public.py,186,sitemap_xml,bp.route('/sitemap.xml'),bp.route('/sitemap.xml'),unverified,pending
+backend/routes/public.py,224,health_db,bp.route('/health/db'),bp.route('/health/db'),unverified,pending
+backend/routes/push_notifications.py,34,get_vapid_public_key,"bp.route('/api/vapid-public-key', methods=['GET'])","bp.route('/api/vapid-public-key', methods=['GET'])",unverified,pending
+backend/routes/push_notifications.py,47,subscribe_to_push,"bp.route('/api/push/subscribe', methods=['POST'])","bp.route('/api/push/subscribe', methods=['POST']) | login_required",unverified,pending
+backend/routes/push_notifications.py,88,unsubscribe_from_push,"bp.route('/api/push/unsubscribe', methods=['POST'])","bp.route('/api/push/unsubscribe', methods=['POST']) | login_required",unverified,pending
+backend/routes/push_notifications.py,113,get_subscription_status,"bp.route('/api/push/subscription-status', methods=['GET'])","bp.route('/api/push/subscription-status', methods=['GET']) | login_required",unverified,pending
+backend/routes/push_notifications.py,142,test_push_notification,"bp.route('/api/push/test', methods=['POST'])","bp.route('/api/push/test', methods=['POST']) | login_required",unverified,pending
+backend/routes/push_notifications.py,202,trigger_3_week_reminders,"bp.route('/api/push/cron/3-week-reminders', methods=['POST'])","bp.route('/api/push/cron/3-week-reminders', methods=['POST']) | csrf.exempt",unverified,pending
+backend/routes/ratings.py,22,rate_event,"bp.route('/event/<int:event_id>/rate', methods=['GET', 'POST'])","bp.route('/event/<int:event_id>/rate', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/ratings.py,90,view_ratings,bp.route('/event/<int:event_id>/ratings'),bp.route('/event/<int:event_id>/ratings') | login_required,unverified,pending
+backend/routes/ratings.py,113,get_ratings_api,bp.route('/event/<int:event_id>/ratings/api'),bp.route('/event/<int:event_id>/ratings/api') | login_required,unverified,pending
+backend/routes/ratings.py,140,edit_rating,"bp.route('/event/<int:event_id>/rating/edit', methods=['GET', 'POST'])","bp.route('/event/<int:event_id>/rating/edit', methods=['GET', 'POST']) | login_required",unverified,pending
+backend/routes/ratings.py,179,delete_rating,"bp.route('/event/<int:event_id>/rating/delete', methods=['POST'])","bp.route('/event/<int:event_id>/rating/delete', methods=['POST']) | login_required",unverified,pending
+backend/routes/stats.py,12,index,bp.route('/'),bp.route('/') | login_required,unverified,pending

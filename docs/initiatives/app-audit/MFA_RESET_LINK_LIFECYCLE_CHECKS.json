@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-10",
+  "groups": 2,
+  "results": [
+    {
+      "case": "mail_reset",
+      "intercepted_mail_requests": 2,
+      "distinct_reenrollment_secret": true,
+      "normal_login_required_mfa_before_old_link": true,
+      "old_link_disabled_new_mfa": true,
+      "new_backup_codes_deleted": true,
+      "password_only_login_after_old_link": true,
+      "replay_after_third_enrollment_blocked": true
+    },
+    {
+      "case": "admin_reset",
+      "intercepted_mail_requests": 1,
+      "distinct_reenrollment_secret": true,
+      "normal_login_required_mfa_before_old_link": true,
+      "old_link_disabled_new_mfa": true,
+      "new_backup_codes_deleted": true,
+      "password_only_login_after_old_link": true,
+      "replay_after_third_enrollment_blocked": true
+    }
+  ],
+  "limits": "Original login/enrollment/TOTP, request/reset and admin step-up/reset routes. Mail send_async intercepted; SQLite memory, synthetic accounts and process-only encryption key. No actual mail, production or secrets printed. Logging suppressed. Testing CSRF/rate limits disabled; no browser/concurrency/Postgres coverage. Valid unused old link required."
+}

@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-21",
+  "environment": "Local audit display route, original folder template and action controller, synthetic regular member, 1280x720. Two synthetic rows, Alpha active and Beta archived. No file mutations submitted.",
+  "B-55": {"action": "Open Alpha rename, change to Audit-Abbruch, cancel, reopen, Escape", "initialValue": "Audit-Protokoll-Alpha", "valueAfterReopen": "Audit-Protokoll-Alpha", "focusAfterCancel": "Umbenennen", "openDialogsAfterCancel": 0},
+  "B-56": {"action": "Open Alpha move and Escape", "sourceFilenameInDialog": false, "targetLabel": "Kein Ordner gewählt", "focusAfterEscape": "Verschieben", "openDialogsAfterEscape": 0},
+  "B-57": {"action": "Open Alpha archive and cancel", "sourceFilenameInDialog": false, "body": "Diese Datei wird in den konfigurierten Archiv-Ordner im Shared Drive verschoben."},
+  "B-58": {"action": "Open Beta rename, Escape, open Beta restore and cancel", "renameValue": "Audit-Protokoll-Beta", "renameAction": "/docs/file/902/rename", "restoreAction": "/docs/file/902/restore", "sourceFilenameInRestoreDialog": false, "restoreTargetLabel": "Kein Ordner gewählt", "focusAfterCancel": "Wiederherstellen", "openDialogsAfterCancel": 0},
+  "limits": "List context only; detail template shares components but not browser-tested here. No submit, full focus cycle, nested target selection, mobile viewport or screenreader test. Tab closed, local server stopped."
+}

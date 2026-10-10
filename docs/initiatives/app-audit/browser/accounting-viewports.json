@@ -1,0 +1,47 @@
+[
+  {
+    "client": 375,
+    "mainLeft": 0,
+    "mainRight": 375,
+    "scroll": 375,
+    "tabViewport": 311,
+    "tabs": 1196,
+    "width": 390
+  },
+  {
+    "client": 805,
+    "mainLeft": 0,
+    "mainRight": 805,
+    "scroll": 805,
+    "tabViewport": 709,
+    "tabs": 1196,
+    "width": 820
+  },
+  {
+    "client": 1024,
+    "mainLeft": 200,
+    "mainRight": 1224,
+    "scroll": 1224,
+    "tabViewport": 928,
+    "tabs": 1196,
+    "width": 1024
+  },
+  {
+    "client": 1280,
+    "mainLeft": 200,
+    "mainRight": 1400,
+    "scroll": 1400,
+    "tabViewport": 1104,
+    "tabs": 1196,
+    "width": 1280
+  },
+  {
+    "client": 1440,
+    "mainLeft": 200,
+    "mainRight": 1400,
+    "scroll": 1440,
+    "tabViewport": 1104,
+    "tabs": 1196,
+    "width": 1440
+  }
+]

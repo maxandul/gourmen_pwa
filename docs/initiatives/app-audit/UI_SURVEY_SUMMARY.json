@@ -1,0 +1,63 @@
+{
+  "templates_surveyed": 83,
+  "files_with_pattern": {
+    "standard_tab_nav": 7,
+    "custom_tab_nav": 1,
+    "details": 16,
+    "native_dialog": 6,
+    "custom_modal": 4,
+    "filter_surface": 13,
+    "collapsible_card": 2,
+    "forms": 45,
+    "canvas": 4,
+    "literal_style_attributes": 27,
+    "local_lucide_macro": 43,
+    "uses_shared_form_macros": 9,
+    "bindDisclosure": 5
+  },
+  "standard_tab_files": [
+    "templates/accounting/index.html",
+    "templates/admin/merch/index.html",
+    "templates/events/detail.html",
+    "templates/events/index.html",
+    "templates/ggl/index.html",
+    "templates/member/merch/index.html",
+    "templates/member/profile.html"
+  ],
+  "custom_modal_files": [
+    "templates/accounting/_tab_statistik.html",
+    "templates/accounting/stats.html",
+    "templates/events/index.html",
+    "templates/ggl/index.html"
+  ],
+  "native_dialog_files": [
+    "templates/docs/_drive_quick_modals.html",
+    "templates/docs/_folder_picker_modal.html",
+    "templates/docs/_upload_modal.html",
+    "templates/docs/detail.html",
+    "templates/member/technical.html",
+    "templates/partials/_user_bar.html"
+  ],
+  "filter_files": [
+    "templates/accounting/_tab_kontenplan.html",
+    "templates/accounting/accounts.html",
+    "templates/accounting/index.html",
+    "templates/accounting/stats.html",
+    "templates/admin/merch/index.html",
+    "templates/admin/merch/order_detail.html",
+    "templates/docs/folder.html",
+    "templates/docs/index.html",
+    "templates/events/detail.html",
+    "templates/events/index.html",
+    "templates/ggl/index.html",
+    "templates/member/merch/index.html",
+    "templates/member/profile.html"
+  ],
+  "event_form_similarity": {
+    "left": "templates/admin/create_event.html",
+    "right": "templates/events/edit.html",
+    "identical_lines_in_matching_blocks": 466,
+    "left_lines": 494,
+    "right_lines": 505
+  }
+}

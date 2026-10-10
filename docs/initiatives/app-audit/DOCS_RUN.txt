@@ -1,0 +1,95 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 13:37:22,198] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 13:37:23,525] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 13:37:23,525] INFO in app: App created successfully - skipping migrations
+[2026-09-20 13:37:23,525] INFO in app: Flask app created and configured successfully
+[2026-09-20 13:37:24,015] ERROR in docs: Drive-Rename fehlgeschlagen: synthetic
+Traceback (most recent call last):
+  File "C:\gourmen_pwa\backend\routes\docs.py", line 335, in rename
+    DriveStorageService.rename_document(document, new_title, current_user)
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1198, in _execute_mock_call
+    raise effect
+backend.services.drive_storage.DriveError: synthetic
+auto_sync fuer document 1 fehlgeschlagen: <HttpError 403 when requesting None returned "synthetic permission failure". Details: "synthetic permission failure">
+[2026-09-20 13:37:24,141] ERROR in docs: Drive-Move fehlgeschlagen: synthetic
+Traceback (most recent call last):
+  File "C:\gourmen_pwa\backend\routes\docs.py", line 362, in move
+    DriveStorageService.move_document(document, parent_raw, current_user)
+  File "C:\gourmen_pwa\backend\services\drive_storage.py", line 1154, in move_document
+    cls._move_drive_file(
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ulric\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\unittest\mock.py", line 1198, in _execute_mock_call
+    raise effect
+backend.services.drive_storage.DriveError: synthetic
+[
+  {
+    "case": "csrf_and_feature_guards",
+    "result": {
+      "missing_csrf": 403,
+      "feature_off": 404,
+      "service_calls": 0
+    }
+  },
+  {
+    "case": "delete_role_archive_confirmation_guards",
+    "result": {
+      "member": 403,
+      "outside_archive": 302,
+      "wrong_name": 302,
+      "delete_calls": 0,
+      "documents": 1
+    }
+  },
+  {
+    "case": "rename_error_external_redirect",
+    "result": {
+      "http": 302,
+      "location": "https://example.invalid/audit"
+    }
+  },
+  {
+    "case": "remote_rename_http_error",
+    "result": {
+      "http": null,
+      "error": "HttpError",
+      "documents": 1
+    }
+  },
+  {
+    "case": "detail_metadata_error_after_sync",
+    "result": {
+      "http": null,
+      "error": "HttpError",
+      "documents": 1
+    }
+  },
+  {
+    "case": "move_failure_preserves_db_parent",
+    "result": {
+      "http": 302,
+      "parent_unchanged": true
+    }
+  },
+  {
+    "case": "docs_upload_event_choices_visibility",
+    "result": {
+      "http": 200,
+      "board_event_label_exposed": true,
+      "event_visible": false
+    }
+  }
+]

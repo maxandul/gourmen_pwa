@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-28",
+  "groups": 3,
+  "results": [
+    {
+      "case": "mfa_enabled_valid_onboarding",
+      "login_control": {
+        "user_id": null,
+        "pending_mfa": 1
+      },
+      "activation_status": 302,
+      "activation_session": {
+        "user_id": "1",
+        "pending_mfa": null
+      },
+      "dashboard_status": 200
+    },
+    {
+      "case": "other_account_already_logged_in",
+      "unchanged": true,
+      "session": {
+        "user_id": "2",
+        "pending_mfa": null
+      },
+      "redirect": "/dashboard/"
+    },
+    {
+      "case": "login_after_activation_audit_failure",
+      "activation_error": "PendingRollbackError",
+      "recovery_status": 302,
+      "recovery_session": {
+        "user_id": "1",
+        "pending_mfa": null
+      }
+    }
+  ],
+  "limits": "Original routes, synthetic valid unused onboarding token plus directly seeded enabled MFA record, no real TOTP secret/code or MFA setup mutation. Demonstrates conditional route behavior, not prevalence/reachability of that combination in production. SQLite memory; testing CSRF/rate limits disabled. No mail or actual accounts."
+}

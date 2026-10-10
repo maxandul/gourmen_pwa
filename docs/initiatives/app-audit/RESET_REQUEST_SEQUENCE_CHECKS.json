@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-10",
+  "groups": 2,
+  "results": [
+    {
+      "case": "two_requests",
+      "intercepted_mail_requests": 2,
+      "original_admin_login_and_step_up": null,
+      "outstanding_old_links_after_password_change": 1,
+      "old_link_overwrites_password": true,
+      "previous_password_rejected": true
+    },
+    {
+      "case": "admin_reset",
+      "intercepted_mail_requests": 1,
+      "original_admin_login_and_step_up": true,
+      "outstanding_old_links_after_password_change": 1,
+      "old_link_overwrites_password": true,
+      "previous_password_rejected": true
+    }
+  ],
+  "limits": "Original forgot-password requests, reset routes and admin login/step-up/reset. Only send_async intercepted. SQLite memory, synthetic members/passwords; no mail, network, browser, MFA, production or concurrency. Testing CSRF/rate limits disabled. No token, cookie or password values reported."
+}

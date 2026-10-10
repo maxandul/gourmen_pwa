@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-20",
+  "source": "Manually transcribed browser-tool observations; real keyboard events, read-only DOM measurements",
+  "environment": "Local isolated synthetic fixture, original templates and JS; no order submitted",
+  "B-31": {
+    "role": "regular member", "width": 390,
+    "articles": ["Audit-Shirt", "Audit-Tasse"],
+    "steps": ["Tab reaches first toggle", "Enter opens", "Tab reaches color select", "Select Navy/M and enter quantity 2", "Space on toggle collapses", "Tab skips hidden fields and reaches second article toggle", "Enter opens second article", "Enter on first toggle reopens first article"],
+    "collapsedFirstValues": ["Navy", "M", "2"],
+    "reopenedFirstValues": ["Navy", "M", "2"],
+    "summary": "Ausgewählte Artikel 2 Gesamtbetrag 60.00 CHF",
+    "toggleAccessibleNames": ["Abschnitt umschalten", "Abschnitt umschalten"],
+    "ariaExpandedMatchesVisibility": true,
+    "limits": "Variant selections used browser select/fill actions; collapse/expand and tab traversal used keyboard. No full keyboard-only purchase workflow claimed."
+  },
+  "B-32": {
+    "role": "regular member", "width":390,
+    "table": "Event archive",
+    "entry": "Focus search box, Tab reaches first event link",
+    "clientWidth":285,"scrollWidth":533,
+    "initialScrollLeft":0,"afterRight":40,"afterMoreRight":248,"maximum":248,
+    "firstCellXAtEnd":45,"outerClassAtEnd":"data-table-scroll-outer",
+    "result":"Horizontal keyboard scroll works; first column remains sticky and right fade clears at end."
+  },
+  "B-33": {
+    "role":"admin", "table":"Members",
+    "entry":"Tab from Neues Mitglied reaches first Bearbeiten link at right end",
+    "measurements":[
+      {"width":390,"clientWidth":324,"scrollWidth":2286,"entryScrollLeft":1749,"afterLeft":1709},
+      {"width":820,"clientWidth":722,"scrollWidth":2286,"entryScrollLeft":1564,"afterLeft":1524}
+    ],
+    "result":"Keyboard scrolling works from focused action link. Entry causes large horizontal jump; orientation concern, not proven inoperability."
+  },
+  "limits":"One desktop browser with simulated widths. No screenreader, physical touch, other browser, GGL ranking or accounting-table keyboard coverage."
+}

@@ -1,0 +1,78 @@
+.....................................................................    [100%]
+============================== warnings summary ===============================
+tests/routes/test_calendar_feed_http.py: 8 warnings
+tests/routes/test_docs_smoke.py: 4 warnings
+tests/services/test_bank_import.py: 221 warnings
+tests/services/test_calendar_feed.py: 32 warnings
+  C:\gourmen_pwa\venv\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/routes/test_calendar_feed_http.py::test_calendar_feed_429_after_60_requests
+  C:\gourmen_pwa\venv\Lib\site-packages\flask_limiter\extension.py:324: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+    warnings.warn(
+
+tests/routes/test_docs_smoke.py::test_docs_index_renders_with_event_dropdown
+  C:\gourmen_pwa\backend\extensions.py:68: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return Member.query.get(int(user_id))
+
+tests/routes/test_docs_smoke.py::test_docs_index_renders_with_event_dropdown
+  C:\gourmen_pwa\backend\services\retro_cleanup.py:62: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    member = Member.query.get(member_id)
+
+tests/routes/test_docs_smoke.py::test_docs_index_renders_with_event_dropdown
+  C:\gourmen_pwa\backend\services\retro_cleanup.py:24: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    member = Member.query.get(member_id)
+
+tests/routes/test_docs_smoke.py::test_docs_index_renders_with_event_dropdown
+  C:\gourmen_pwa\backend\services\retro_cleanup.py:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return datetime.combine(datetime.utcnow().date(), time.min)
+
+tests/routes/test_seo.py::test_sitemap_listet_die_oeffentlichen_seiten
+  C:\gourmen_pwa\backend\routes\public.py:193: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    lastmod = datetime.utcnow().date().isoformat()
+
+tests/routes/test_seo.py::test_oeffentliche_seite_hat_canonical_und_ist_indexierbar[/-https://www.gourmen.ch/]
+tests/routes/test_seo.py::test_oeffentliche_seite_hat_aussagekraeftige_description[/-https://www.gourmen.ch/]
+tests/routes/test_seo.py::test_landing_liefert_organization_markup
+tests/routes/test_static_caching.py::test_alle_statischen_referenzen_der_landingpage_aufloesbar
+  C:\gourmen_pwa\backend\routes\public.py:39: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/routes/test_seo.py::test_oeffentliche_seite_hat_canonical_und_ist_indexierbar[/restaurants-https://www.gourmen.ch/restaurants]
+tests/routes/test_seo.py::test_oeffentliche_seite_hat_aussagekraeftige_description[/restaurants-https://www.gourmen.ch/restaurants]
+tests/routes/test_seo.py::test_paginierte_hitlist_kanonisiert_auf_sich_selbst
+  C:\gourmen_pwa\backend\routes\public.py:92: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/services/test_bank_import.py::test_delete_import_allows_reupload
+  C:\gourmen_pwa\backend\services\bank_import.py:636: SAWarning: DELETE statement on table 'bank_transactions' expected to delete 7 row(s); 0 were matched.  Please set confirm_deleted_rows=False within the mapper configuration to prevent this warning.
+    db.session.commit()
+
+tests/services/test_bank_import.py::test_delete_import_allows_reupload
+  C:\gourmen_pwa\backend\services\bank_import.py:636: SAWarning: DELETE statement on table 'bank_transactions' expected to delete 1 row(s); 0 were matched.  Please set confirm_deleted_rows=False within the mapper configuration to prevent this warning.
+    db.session.commit()
+
+tests/services/test_bank_import.py::test_book_transaction_overpay_creates_rounding_booking
+tests/services/test_bank_import.py::test_billbro_claims_club_vs_private
+tests/services/test_bank_import.py::test_settle_claim_updates_paid_rappen
+  C:\gourmen_pwa\backend\models\accounting.py:616: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.settled_at = settled or datetime.utcnow()
+
+tests/services/test_calendar_feed.py::test_feed_parses_and_has_vtimezone_and_vevent_properties
+  C:\gourmen_pwa\tests\services\test_calendar_feed.py:63: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    member = Member.query.get(mid)
+
+tests/services/test_calendar_feed.py::test_feed_dtstart_dtend_zurich_evening
+  C:\gourmen_pwa\tests\services\test_calendar_feed.py:98: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    ev = Event.query.get(eid)
+
+tests/services/test_calendar_feed.py::test_feed_dtstart_dtend_zurich_evening
+  C:\gourmen_pwa\tests\services\test_calendar_feed.py:100: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    member = Member.query.get(mid)
+
+tests/services/test_calendar_feed.py::test_etag_is_stable_hash
+  C:\gourmen_pwa\tests\services\test_calendar_feed.py:176: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    member = Member.query.get(mid)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+69 passed, 287 warnings in 37.76s

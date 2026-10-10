@@ -1,0 +1,1620 @@
+{
+  "templates/accounting/_tab_kontenplan.html": [
+    {
+      "tag": "details",
+      "line": 5,
+      "attrs": {
+        "id": "accounting-kontenplan-create-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 11,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.accounts', year=fiscal_year.id) }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/_tab_statistik.html": [
+    {
+      "tag": "canvas",
+      "line": 21,
+      "attrs": {
+        "id": "chart-saldo",
+        "role": "img",
+        "aria-label": "Kumulierter Saldo über die Monate {{ fiscal_year.year }}"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 72,
+      "attrs": {
+        "id": "chart-years",
+        "role": "img",
+        "aria-label": "Einnahmen, Ausgaben und Ergebnis pro Jahr"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 99,
+      "attrs": {
+        "id": "chart-donut",
+        "role": "img",
+        "aria-label": "Anteil der Kontengruppen an den Gesamtausgaben {{ fiscal_year.year }}"
+      }
+    },
+    {
+      "tag": "div",
+      "line": 176,
+      "attrs": {
+        "id": "accounting-chart-fullscreen-modal",
+        "class": "modal",
+        "data-open": "false",
+        "hidden": null,
+        "role": "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "accounting-chart-fullscreen-title"
+      }
+    }
+  ],
+  "templates/accounting/account_edit.html": [
+    {
+      "tag": "form",
+      "line": 26,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.account_edit', account_id=account.id) }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/accounts.html": [
+    {
+      "tag": "details",
+      "line": 26,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 32,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.accounts') }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/booking_detail.html": [
+    {
+      "tag": "form",
+      "line": 93,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.booking_attach_receipt', booking_id=booking.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 128,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.booking_edit', booking_id=booking.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 200,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 212,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/booking_new.html": [
+    {
+      "tag": "form",
+      "line": 32,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/import_review.html": [
+    {
+      "tag": "form",
+      "line": 27,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.bank_import_delete', import_id=statement.id) }}",
+        "class": "form-actions form-actions--start",
+        "onsubmit": "return confirm('Import «{{ statement.filename }}» wirklich löschen? Alle noch nicht verbuchten Zeilen entfallen; die Datei kann danach erneut hochgeladen werden.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 93,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.bank_tx_book', tx_id=tx.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 151,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.bank_tx_ignore', tx_id=tx.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Transaktion ignorieren? Sie wird nicht verbucht, bleibt aber im Import sichtbar.');"
+      }
+    }
+  ],
+  "templates/accounting/index.html": [
+    {
+      "tag": "details",
+      "line": 42,
+      "attrs": {
+        "id": "accounting-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 50,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('accounting.index') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 86,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_create') }}",
+        "class": "form accounting-year-create",
+        "onsubmit": "return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Der Budget-Vorschlag wird aus den Vorjahres-Zahlen berechnet.');"
+      }
+    },
+    {
+      "tag": "nav",
+      "line": 104,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 206,
+      "attrs": {
+        "id": "accounting-journal-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 218,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('accounting.index') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 320,
+      "attrs": {
+        "id": "accounting-belege-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 332,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('accounting.index') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 461,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.bank_import_upload') }}",
+        "enctype": "multipart/form-data",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 523,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.bank_import_delete', import_id=imp.id) }}",
+        "onsubmit": "return confirm('Import «{{ imp.filename }}» wirklich löschen? Alle noch nicht verbuchten Zeilen entfallen; die Datei kann danach erneut hochgeladen werden.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 563,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_claims_create', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Beitrags-Posten für alle aktiven Mitglieder anlegen? Jahresbeitrag: CHF {{ chf(fiscal_year.membership_fee_rappen) }}.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 623,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.claim_settle', claim_id=claim.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Posten manuell als beglichen markieren? Normalerweise geschieht das automatisch über den ZKB-Import.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 686,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_budget', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 758,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_submit', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Jahr {{ fiscal_year.year }} zur Prüfung freigeben? Buchungen und Belege sind danach gesperrt.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 770,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_withdraw', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Freigabe für {{ fiscal_year.year }} zurückziehen? Das Jahr wird wieder offen und Buchungen sind bearbeitbar.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 782,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_approve', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Jahr {{ fiscal_year.year }} bestätigen? Das Jahr wird endgültig abgeschlossen und der Revisorenbericht generiert.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 794,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_revoke', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Abschluss {{ fiscal_year.year }} rückgängig machen? Das Jahr geht zurück in die Prüfung.');"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 851,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 863,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/accounting/receipt_upload.html": [
+    {
+      "tag": "form",
+      "line": 36,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.receipt_upload') }}",
+        "enctype": "multipart/form-data",
+        "class": "form",
+        "id": "receipt-upload-form"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 75,
+      "attrs": {
+        "class": "disclosure accounting-receipt-upload__tagging",
+        "id": "receipt-tagging-disclosure",
+        "{{": null,
+        "'open'": null,
+        "if": null,
+        "context_booking": null,
+        "else": null,
+        "''": null,
+        "}}": null
+      }
+    }
+  ],
+  "templates/accounting/stats.html": [
+    {
+      "tag": "details",
+      "line": 27,
+      "attrs": {
+        "id": "accounting-stats-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 34,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('accounting.stats') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 79,
+      "attrs": {
+        "id": "chart-saldo",
+        "role": "img",
+        "aria-label": "Kumulierter Saldo über die Monate {{ fiscal_year.year }}"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 132,
+      "attrs": {
+        "id": "chart-years",
+        "role": "img",
+        "aria-label": "Einnahmen, Ausgaben und Ergebnis pro Jahr"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 160,
+      "attrs": {
+        "id": "chart-donut",
+        "role": "img",
+        "aria-label": "Anteil der Kontengruppen an den Gesamtausgaben {{ fiscal_year.year }}"
+      }
+    },
+    {
+      "tag": "div",
+      "line": 240,
+      "attrs": {
+        "id": "accounting-chart-fullscreen-modal",
+        "class": "modal",
+        "data-open": "false",
+        "hidden": null,
+        "role": "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "accounting-chart-fullscreen-title"
+      }
+    }
+  ],
+  "templates/admin/create_event.html": [
+    {
+      "tag": "form",
+      "line": 363,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/admin/create_member.html": [
+    {
+      "tag": "form",
+      "line": 24,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/admin/edit_member_enhanced.html": [
+    {
+      "tag": "form",
+      "line": 24,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/admin/index.html": [
+    {
+      "tag": "form",
+      "line": 130,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('docs.admin_resync') }}",
+        "onsubmit": "return confirm('Drive-Re-Sync starten? Dies kann je nach Drive-Inhalt einige Minuten dauern.');"
+      }
+    }
+  ],
+  "templates/admin/member_security_overview.html": [],
+  "templates/admin/member_sensitive.html": [
+    {
+      "tag": "form",
+      "line": 26,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/admin/members.html": [],
+  "templates/admin/merch/article_detail.html": [],
+  "templates/admin/merch/article_form.html": [
+    {
+      "tag": "form",
+      "line": 28,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/admin/merch/index.html": [
+    {
+      "tag": "nav",
+      "line": 24,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 46,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 73,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('admin.merch') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 126,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('admin.update_order_status', order_id=order.id) }}",
+        "class": "status-form"
+      }
+    }
+  ],
+  "templates/admin/merch/order_detail.html": [
+    {
+      "tag": "details",
+      "line": 27,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 36,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('admin.update_order_status', order_id=order.id) }}",
+        "class": "form form--inline"
+      }
+    }
+  ],
+  "templates/admin/reset_member_2fa.html": [
+    {
+      "tag": "form",
+      "line": 57,
+      "attrs": {
+        "method": "POST",
+        "class": "form",
+        "style": "margin-top: var(--space-4);"
+      }
+    }
+  ],
+  "templates/admin/reset_member_password.html": [
+    {
+      "tag": "form",
+      "line": 45,
+      "attrs": {
+        "method": "POST",
+        "class": "form",
+        "style": "margin-top: var(--space-4);"
+      }
+    }
+  ],
+  "templates/admin/temp_password.html": [],
+  "templates/auth/backup_codes.html": [],
+  "templates/auth/change_password.html": [
+    {
+      "tag": "form",
+      "line": 21,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/disable_2fa.html": [
+    {
+      "tag": "form",
+      "line": 35,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/enroll_2fa_simple.html": [
+    {
+      "tag": "form",
+      "line": 58,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/forgot_password.html": [
+    {
+      "tag": "form",
+      "line": 21,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/login.html": [
+    {
+      "tag": "form",
+      "line": 24,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/request_2fa_reset.html": [
+    {
+      "tag": "form",
+      "line": 21,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/reset_password.html": [
+    {
+      "tag": "form",
+      "line": 21,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/step_up.html": [
+    {
+      "tag": "form",
+      "line": 23,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/auth/verify_2fa.html": [
+    {
+      "tag": "form",
+      "line": 29,
+      "attrs": {
+        "method": "POST",
+        "class": "form",
+        "id": "totp-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 65,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/base.html": [],
+  "templates/dashboard/index.html": [
+    {
+      "tag": "form",
+      "line": 215,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('accounting.claim_confirm', claim_id=claim.id) }}",
+        "class": "form",
+        "onsubmit": "return confirm('Eingang von {{ claim.member.display_name }} über CHF {{ ",
+        "%.2f\"|format(claim.open_rappen": null,
+        "100)": null,
+        "}}": null,
+        "bestätigen?');\"": null
+      }
+    }
+  ],
+  "templates/docs/_drive_quick_modals.html": [
+    {
+      "tag": "dialog",
+      "line": 3,
+      "attrs": {
+        "class": "docs-action-modal",
+        "id": "drive-quick-rename-dialog",
+        "aria-labelledby": "drive-quick-rename-title"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 4,
+      "attrs": {
+        "method": "POST",
+        "id": "drive-quick-rename-form",
+        "class": "docs-action-modal__form"
+      }
+    },
+    {
+      "tag": "dialog",
+      "line": 24,
+      "attrs": {
+        "class": "docs-action-modal",
+        "id": "drive-quick-move-dialog",
+        "aria-labelledby": "drive-quick-move-title"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 25,
+      "attrs": {
+        "method": "POST",
+        "id": "drive-quick-move-form",
+        "class": "docs-action-modal__form"
+      }
+    },
+    {
+      "tag": "dialog",
+      "line": 53,
+      "attrs": {
+        "class": "docs-action-modal",
+        "id": "drive-quick-archive-dialog",
+        "aria-labelledby": "drive-quick-archive-title"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 54,
+      "attrs": {
+        "method": "POST",
+        "id": "drive-quick-archive-form",
+        "class": "docs-action-modal__form"
+      }
+    },
+    {
+      "tag": "dialog",
+      "line": 71,
+      "attrs": {
+        "class": "docs-action-modal",
+        "id": "drive-quick-restore-dialog",
+        "aria-labelledby": "drive-quick-restore-title"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 72,
+      "attrs": {
+        "method": "POST",
+        "id": "drive-quick-restore-form",
+        "class": "docs-action-modal__form"
+      }
+    }
+  ],
+  "templates/docs/_folder_picker_modal.html": [
+    {
+      "tag": "dialog",
+      "line": 2,
+      "attrs": {
+        "class": "docs-folder-picker docs-action-modal",
+        "id": "docs-folder-picker-dialog",
+        "aria-labelledby": "docs-folder-picker-title"
+      }
+    }
+  ],
+  "templates/docs/_upload_modal.html": [
+    {
+      "tag": "dialog",
+      "line": 2,
+      "attrs": {
+        "class": "docs-upload-modal",
+        "id": "docs-upload-modal",
+        "aria-labelledby": "docs-upload-modal-title",
+        "data-docs-upload-modal": null,
+        "data-default-folder-id": "{{ upload_folder_id }}",
+        "data-max-mb": "{{ max_file_size_mb }}",
+        "data-allowed-mimes": "{{ allowed_mime_types|tojson }}"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 7,
+      "attrs": {
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "action": "{{ url_for('docs.upload') }}",
+        "class": "docs-upload-modal__form",
+        "novalidate": null
+      }
+    }
+  ],
+  "templates/docs/detail.html": [
+    {
+      "tag": "dialog",
+      "line": 103,
+      "attrs": {
+        "class": "docs-action-modal",
+        "id": "docs-delete-modal",
+        "aria-labelledby": "docs-delete-title"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 104,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('docs.hard_delete', doc_id=document.id) }}",
+        "class": "docs-action-modal__form"
+      }
+    }
+  ],
+  "templates/docs/folder.html": [
+    {
+      "tag": "details",
+      "line": 33,
+      "attrs": {
+        "class": "disclosure",
+        "{%": null,
+        "if": null,
+        "search_query": null,
+        "%}open{%": null,
+        "endif": null,
+        "%}": null
+      }
+    },
+    {
+      "tag": "form",
+      "line": 39,
+      "attrs": {
+        "method": "get",
+        "action": "{{ url_for('docs.folder_view', drive_folder_id=drive_folder_id) }}",
+        "class": "form docs-browser__search-form",
+        "role": "search"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 125,
+      "attrs": {
+        "class": "docs-file-row__kebab"
+      }
+    }
+  ],
+  "templates/docs/index.html": [
+    {
+      "tag": "details",
+      "line": 19,
+      "attrs": {
+        "id": "docs-browser-toolbar",
+        "class": "disclosure",
+        "{%": null,
+        "if": null,
+        "search_query": null,
+        "%}open{%": null,
+        "endif": null,
+        "%}": null
+      }
+    },
+    {
+      "tag": "form",
+      "line": 29,
+      "attrs": {
+        "method": "get",
+        "action": "{{ url_for('docs.index') }}",
+        "class": "form docs-browser__search-form",
+        "role": "search"
+      }
+    }
+  ],
+  "templates/emails/2fa_reset.html": [],
+  "templates/emails/base.html": [],
+  "templates/emails/google_email_verify.html": [],
+  "templates/emails/onboarding.html": [],
+  "templates/emails/password_reset.html": [],
+  "templates/emails/test.html": [],
+  "templates/errors/403.html": [],
+  "templates/errors/404.html": [],
+  "templates/errors/500.html": [],
+  "templates/events/cleanup.html": [
+    {
+      "tag": "form",
+      "line": 43,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_undo_rsvp') }}",
+        "class": "cleanup-undo-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 77,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_undo_rsvp') }}",
+        "class": "cleanup-undo-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 118,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_rsvp', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 124,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_rsvp', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 130,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_rsvp', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 135,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.cleanup_rsvp', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 153,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('ratings.rate_event', event_id=event.id) }}",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/events/detail.html": [
+    {
+      "tag": "details",
+      "line": 52,
+      "attrs": {
+        "id": "event-detail-edit-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 64,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.disable_event_ratings', event_id=event.id) }}",
+        "class": "form form--inline"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 74,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.enable_event_ratings', event_id=event.id) }}",
+        "class": "form form--inline"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 85,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.delete', event_id=event.id) }}",
+        "onsubmit": "return confirm('Willst du dieses Event wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.');",
+        "class": "form form--inline"
+      }
+    },
+    {
+      "tag": "nav",
+      "line": 103,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 141,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.rsvp', event_id=event.id) }}",
+        "class": "status-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 416,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.set_payment', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 518,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.undo_final', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 595,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.update_guess', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 629,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.compute', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 686,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.update_guess', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 703,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.compute', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 752,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 760,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 802,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 815,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.toggle_billbro_status', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 837,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.enter_bill', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 878,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.accept_suggested_total', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 905,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.set_total', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 926,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('billbro.reset_bill', event_id=event.id) }}",
+        "class": "form form--inline"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 1007,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('ratings.edit_rating', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 1048,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('ratings.rate_event', event_id=event.id) }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 1099,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('ratings.delete_rating', event_id=event.id) }}",
+        "class": "form form--inline"
+      }
+    }
+  ],
+  "templates/events/edit.html": [
+    {
+      "tag": "form",
+      "line": 363,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/events/hamburg2026.html": [
+    {
+      "tag": "div",
+      "line": 880,
+      "attrs": {
+        "class": "hamburg-tabs__nav",
+        "role": "tablist",
+        "aria-label": "Programm Tag-für-Tag"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 900,
+      "attrs": {
+        "class": "hamburg-section hamburg-section--collapsible"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 910,
+      "attrs": {
+        "class": "hamburg-section hamburg-section--collapsible"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 924,
+      "attrs": {
+        "class": "hamburg-section hamburg-section--collapsible"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 965,
+      "attrs": {
+        "class": "hamburg-section hamburg-section--collapsible"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 995,
+      "attrs": {
+        "class": "hamburg-section hamburg-section--collapsible"
+      }
+    }
+  ],
+  "templates/events/index.html": [
+    {
+      "tag": "details",
+      "line": 39,
+      "attrs": {
+        "id": "events-index-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 57,
+      "attrs": {
+        "method": "GET",
+        "action": "{{ url_for('events.index') }}",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "nav",
+      "line": 116,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 175,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.rsvp', event_id=today_event.id) }}",
+        "class": "status-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 284,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('events.rsvp', event_id=event.id) }}",
+        "class": "status-form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 339,
+      "attrs": {
+        "method": "get",
+        "action": "{{ url_for('events.index') }}",
+        "class": "landing-hitlist-filter events-archive-filter",
+        "role": "search",
+        "aria-label": "Archiv durchsuchen"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 514,
+      "attrs": {
+        "id": "events-stats-top-flop-disclosure",
+        "class": "disclosure disclosure--in-insight"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 566,
+      "attrs": {
+        "id": "events-stats-chart-members",
+        "width": "400",
+        "height": "240",
+        "aria-label": "Teilnahmequoten je Mitglied",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 595,
+      "attrs": {
+        "id": "events-stats-chart-avg-share-trend",
+        "width": "400",
+        "height": "240",
+        "aria-label": "Entwicklung der durchschnittlichen Kosten je Monatsessen mit BillBro",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 624,
+      "attrs": {
+        "id": "events-stats-chart-organizers",
+        "width": "400",
+        "height": "200",
+        "aria-label": "Durchschnittskosten je Organisator",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 693,
+      "attrs": {
+        "id": "events-stats-chart-organizer-ratings",
+        "width": "400",
+        "height": "200",
+        "aria-label": "Durchschnittliche Gesamtbewertung je Organisator",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 722,
+      "attrs": {
+        "id": "events-stats-chart-kitchens",
+        "width": "400",
+        "height": "220",
+        "aria-label": "Küchen als absolute Anzahl",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "div",
+      "line": 729,
+      "attrs": {
+        "id": "events-stats-chart-fullscreen-modal",
+        "class": "modal",
+        "data-open": "false",
+        "hidden": null,
+        "role": "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "events-stats-chart-fullscreen-title"
+      }
+    }
+  ],
+  "templates/events/year_planning.html": [
+    {
+      "tag": "form",
+      "line": 44,
+      "attrs": {
+        "method": "POST",
+        "class": "form max-400 mt-6"
+      }
+    }
+  ],
+  "templates/ggl/index.html": [
+    {
+      "tag": "details",
+      "line": 26,
+      "attrs": {
+        "id": "ggl-filter-disclosure",
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 33,
+      "attrs": {
+        "method": "GET",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "nav",
+      "line": 58,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 187,
+      "attrs": {
+        "id": "ggl-progression-chart",
+        "width": "400",
+        "height": "200",
+        "aria-label": "Kumulierte Punkte — Verlauf über die Saison",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "canvas",
+      "line": 218,
+      "attrs": {
+        "id": "ggl-diff-chart",
+        "width": "400",
+        "height": "200",
+        "aria-label": "Durchschnittliche absolute Schätzdifferenz in CHF — Verlauf über die Saison",
+        "role": "img"
+      }
+    },
+    {
+      "tag": "div",
+      "line": 227,
+      "attrs": {
+        "id": "ggl-chart-fullscreen-modal",
+        "class": "modal",
+        "data-open": "false",
+        "hidden": null,
+        "role": "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "ggl-chart-fullscreen-title"
+      }
+    }
+  ],
+  "templates/member/index.html": [],
+  "templates/member/merch/index.html": [
+    {
+      "tag": "nav",
+      "line": 26,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 46,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('member.merch_order') }}",
+        "class": "form",
+        "id": "merch-order-form"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 192,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 201,
+      "attrs": {
+        "method": "GET",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/member/merch/order.html": [
+    {
+      "tag": "form",
+      "line": 26,
+      "attrs": {
+        "method": "POST",
+        "class": "form",
+        "id": "merch-order-form"
+      }
+    }
+  ],
+  "templates/member/merch/order_edit.html": [
+    {
+      "tag": "form",
+      "line": 29,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('member.merch_order_edit', order_id=order.id) }}",
+        "class": "form",
+        "id": "merch-order-form"
+      }
+    }
+  ],
+  "templates/member/merch/orders.html": [],
+  "templates/member/profile.html": [
+    {
+      "tag": "nav",
+      "line": 26,
+      "attrs": {
+        "class": "tabs__nav",
+        "role": "tablist"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 48,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 298,
+      "attrs": {
+        "method": "POST",
+        "action": "{{ url_for('member.google_email_save') }}",
+        "class": "form profile-google-section"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 361,
+      "attrs": {
+        "id": "google-email-resend",
+        "method": "POST",
+        "action": "{{ url_for('member.google_email_resend') }}",
+        "style": "display:none;"
+      }
+    },
+    {
+      "tag": "form",
+      "line": 382,
+      "attrs": {
+        "method": "POST",
+        "class": "form"
+      }
+    }
+  ],
+  "templates/member/receipts.html": [],
+  "templates/member/security.html": [],
+  "templates/member/technical.html": [
+    {
+      "tag": "details",
+      "line": 78,
+      "attrs": {
+        "class": "disclosure calendar-subscribe__howto"
+      }
+    },
+    {
+      "tag": "dialog",
+      "line": 128,
+      "attrs": {
+        "class": "calendar-subscribe-dialog",
+        "id": "calendar-feed-regenerate-dialog",
+        "aria-labelledby": "cal-regen-title"
+      }
+    },
+    {
+      "tag": "dialog",
+      "line": 138,
+      "attrs": {
+        "class": "calendar-subscribe-dialog",
+        "id": "calendar-feed-disable-dialog",
+        "aria-labelledby": "cal-dis-title"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 233,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 247,
+      "attrs": {
+        "class": "disclosure"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 272,
+      "attrs": {
+        "class": "disclosure"
+      }
+    }
+  ],
+  "templates/offline.html": [],
+  "templates/partials/_bottom_nav.html": [],
+  "templates/partials/_flash_messages.html": [],
+  "templates/partials/_form_macros.html": [],
+  "templates/partials/_head_deferred_scripts.html": [],
+  "templates/partials/_head_manifest_icons.html": [],
+  "templates/partials/_head_pwa_meta.html": [],
+  "templates/partials/_head_stylesheets.html": [],
+  "templates/partials/_head_theme_script.html": [],
+  "templates/partials/_landing_instagram.html": [],
+  "templates/partials/_lucide_icon.html": [],
+  "templates/partials/_sidebar.html": [],
+  "templates/partials/_user_bar.html": [
+    {
+      "tag": "dialog",
+      "line": 51,
+      "attrs": {
+        "id": "public-nav-drawer",
+        "class": "public-drawer",
+        "aria-labelledby": "public-drawer-title"
+      }
+    },
+    {
+      "tag": "details",
+      "line": 103,
+      "attrs": {
+        "class": "user-menu"
+      }
+    }
+  ],
+  "templates/public/about.html": [],
+  "templates/public/landing.html": [],
+  "templates/public/restaurants.html": [
+    {
+      "tag": "form",
+      "line": 47,
+      "attrs": {
+        "class": "landing-hitlist-filter",
+        "role": "search",
+        "aria-label": "Restaurant, Küche oder Adresse in der Gourmen-Hitlist suchen"
+      }
+    }
+  ]
+}

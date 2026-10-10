@@ -1,0 +1,410 @@
+[
+  {
+    "case": "order_0_M",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch/orders",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 0,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 0
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "order_-1_M",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch/orders",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 0,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 0
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "order_1_missing",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch/orders",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 0,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 0
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "order_1_M",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch/orders",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "reopen_edit_stale_claim",
+    "result": {
+      "first": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "GELIEFERT",
+            "delivered_at": "2026-09-20 10:03:46.162816",
+            "items": 1
+          }
+        ],
+        "claims": [
+          {
+            "expected": 2000,
+            "paid": 0
+          }
+        ]
+      },
+      "edit": {
+        "status": 302,
+        "location": "/member/merch?tab=orders&order_id=1",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 6000,
+            "status": "WIRD_GELIEFERT",
+            "delivered_at": "2026-09-20 10:03:46.162816",
+            "items": 1
+          }
+        ],
+        "claims": [
+          {
+            "expected": 2000,
+            "paid": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "edit_article_with_existing_order",
+    "result": {
+      "response": {
+        "status": 200,
+        "location": null,
+        "foreign_key_error_visible": true
+      },
+      "name": "Audit Shirt",
+      "variants": 1,
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "inactive_variant_silently_removed",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch?tab=orders&order_id=1",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 0,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 0
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "ownership_and_status_guards",
+    "result": {
+      "other_order_read": 404,
+      "other_order_edit": {
+        "status": 404,
+        "location": null,
+        "foreign_key_error_visible": false
+      },
+      "status_as_member": {
+        "status": 403,
+        "location": null,
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "repeat_order_post",
+    "result": {
+      "orders": [
+        {
+          "id": 1,
+          "total": 2000,
+          "status": "BESTELLT",
+          "delivered_at": null,
+          "items": 1
+        },
+        {
+          "id": 2,
+          "total": 2000,
+          "status": "BESTELLT",
+          "delivered_at": null,
+          "items": 1
+        }
+      ],
+      "claims": []
+    }
+  },
+  {
+    "case": "get_shop_inactive_ordered_variant",
+    "result": {
+      "response": {
+        "exception": "IntegrityError",
+        "message": "(raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)\n(sqlite3.Integrity"
+      },
+      "variants_remaining": 1,
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "status_committed_before_claim_failure",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/admin/merch/orders/1",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "WIRD_GELIEFERT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "price_decimal_precision",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/admin/merch/articles/2",
+        "foreign_key_error_visible": false
+      },
+      "price": 1998,
+      "variants": [
+        {
+          "color": "Navy",
+          "size": "M"
+        }
+      ]
+    }
+  },
+  {
+    "case": "price_negative",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/admin/merch/articles/2",
+        "foreign_key_error_visible": false
+      },
+      "price": -500,
+      "variants": [
+        {
+          "color": "Navy",
+          "size": "M"
+        }
+      ]
+    }
+  },
+  {
+    "case": "duplicate_variant_input",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/admin/merch/articles/2",
+        "foreign_key_error_visible": false
+      },
+      "price": 2000,
+      "variants": [
+        {
+          "color": "Navy",
+          "size": "M"
+        },
+        {
+          "color": "Navy",
+          "size": "M"
+        }
+      ]
+    }
+  },
+  {
+    "case": "uneven_form_arrays",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/member/merch/orders",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "status_protocol_relative_redirect",
+    "result": {
+      "status": 302,
+      "location": "//example.invalid/audit",
+      "foreign_key_error_visible": false
+    }
+  },
+  {
+    "case": "unchanged_order_repriced",
+    "result": {
+      "before_edit": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 2000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      },
+      "response": {
+        "status": 302,
+        "location": "/member/merch?tab=orders&order_id=1",
+        "foreign_key_error_visible": false
+      },
+      "after": {
+        "orders": [
+          {
+            "id": 1,
+            "total": 3000,
+            "status": "BESTELLT",
+            "delivered_at": null,
+            "items": 1
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "grouping_changes_status_filter",
+    "result": [
+      {
+        "sort": "member",
+        "status": 200,
+        "status_filter": null,
+        "order_count": 1
+      },
+      {
+        "sort": "article",
+        "status": 200,
+        "status_filter": "BESTELLT",
+        "order_count": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "method": "9 isolated probes; SQLite memory, original services/routes/runner, mocked delivery/thread; no real network, no concurrent process test",
+  "results": [
+    {
+      "id": "NOT-01",
+      "scenario": "same_event_two_sequential_runs",
+      "organizer_calls": 2,
+      "member_batch_calls": 2,
+      "processed": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "NOT-02",
+      "scenario": "all_deliveries_fail",
+      "batch_success": true,
+      "processed": 1,
+      "organizer_sent": false,
+      "members_success": false
+    },
+    {
+      "id": "NOT-03",
+      "scenario": "push_status_410",
+      "subscription_active": false
+    },
+    {
+      "id": "NOT-04",
+      "scenario": "push_status_503",
+      "subscription_active": true
+    },
+    {
+      "id": "NOT-05",
+      "scenario": "async_returns_before_delivery",
+      "result": {
+        "success": true,
+        "message_id": null,
+        "error": null,
+        "queued": true
+      },
+      "daemon": true,
+      "send_calls_before_worker": 0
+    },
+    {
+      "id": "NOT-06",
+      "scenario": "async_worker_failure",
+      "caller_result_still_success": true,
+      "warning_logged": true
+    },
+    {
+      "id": "NOT-07",
+      "scenario": "production_class_no_token_request",
+      "debug": false,
+      "ENV": null,
+      "regular_status": 401,
+      "test_status": 200,
+      "runner_calls": 1
+    },
+    {
+      "id": "NOT-08",
+      "scenario": "explicit_ENV_production",
+      "test_status": 403
+    },
+    {
+      "id": "NOT-09",
+      "scenario": "runner_nested_delivery_failure",
+      "exit_code": 0,
+      "limits": "Original runner; batch results replaced; token cleanup on empty in-memory table."
+    }
+  ]
+}

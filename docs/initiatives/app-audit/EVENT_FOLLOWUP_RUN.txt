@@ -1,0 +1,250 @@
+[
+  {
+    "case": "rating_next_external_redirect",
+    "result": {
+      "status": 302,
+      "location": "https://example.invalid/audit"
+    }
+  },
+  {
+    "case": "rating_invalid_loses_input",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-form"
+      },
+      "rating_count": 0,
+      "entered_highlight_in_response": false,
+      "range_error_visible": true
+    }
+  },
+  {
+    "case": "rating_future_event",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-all"
+      },
+      "rating_count": 1
+    }
+  },
+  {
+    "case": "rating_nonparticipant_access_difference",
+    "result": {
+      "api": {
+        "status": 403,
+        "location": null
+      },
+      "detail_displays_highlight": true,
+      "new_rating": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-all"
+      },
+      "rating_count": 1
+    }
+  },
+  {
+    "case": "organizer_change_deletes_data_and_leaves_absence",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "new_organizer": 2,
+      "old_organizer_row_exists": 0,
+      "new_organizer_attends": false,
+      "stored_datetime": "2026-05-08T00:00:00"
+    }
+  },
+  {
+    "case": "create_board_audience_enforced",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/2"
+      },
+      "created": {
+        "audience": "board",
+        "date": "2026-06-12T23:59:59",
+        "organizer_participations": 1
+      }
+    }
+  },
+  {
+    "case": "create_invalid_places_number",
+    "result": {
+      "response": {
+        "exception": "ValueError",
+        "message": "could not convert string to float: 'not-a-number'"
+      },
+      "created": null
+    }
+  },
+  {
+    "case": "year_planning_duplicate_and_repeat",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/"
+      },
+      "after_first": 13,
+      "repeat": {
+        "status": 302,
+        "location": "/events/"
+      },
+      "after_repeat": 25,
+      "january_dates": [
+        "2027-01-08T00:00:00",
+        "2027-01-08T00:00:00",
+        "2027-01-08T23:59:59"
+      ],
+      "planned_participation_count": 0
+    }
+  },
+  {
+    "case": "ggl_fractional_and_tie_view_disagreement",
+    "result": [
+      {
+        "member": 1,
+        "db_points": 2.5,
+        "table_rank": 1,
+        "table_points": 2.5,
+        "performance_rank": 1,
+        "performance_points": 2
+      },
+      {
+        "member": 2,
+        "db_points": 2.5,
+        "table_rank": 1,
+        "table_points": 2.5,
+        "performance_rank": 2,
+        "performance_points": 2
+      },
+      {
+        "member": 3,
+        "db_points": 1,
+        "table_rank": 3,
+        "table_points": 1,
+        "performance_rank": 3,
+        "performance_points": 1
+      }
+    ]
+  },
+  {
+    "case": "event_type_change_retains_ggl_scores",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "supports_ggl": false,
+      "season_points": [
+        2.5,
+        2.5,
+        1
+      ],
+      "race_events": [
+        1
+      ]
+    }
+  },
+  {
+    "case": "ggl_inactive_member_views",
+    "result": {
+      "table_members": [
+        1,
+        3
+      ],
+      "race_members": [
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  {
+    "case": "admin_ui_actions_denied_by_routes",
+    "result": {
+      "organizer_action_in_html": false,
+      "enter_bill": {
+        "status": 302,
+        "location": "/events/1?tab=billbro"
+      },
+      "stored_bill": null
+    }
+  },
+  {
+    "case": "rating_repeated_post_no_duplicate",
+    "result": {
+      "first": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-all"
+      },
+      "second": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-all"
+      },
+      "count": 1,
+      "food_rating": 5
+    }
+  },
+  {
+    "case": "rating_clears_matching_cleanup_undo",
+    "result": {
+      "rating": {
+        "status": 302,
+        "location": "/events/1?tab=ratings#event-ratings-all"
+      },
+      "rating_count": 1,
+      "undo_exists": false
+    }
+  },
+  {
+    "case": "edit_today_switches_past_classification",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "before_is_past": false,
+      "after_is_past": true,
+      "after_datetime": "2026-09-07T00:00:00",
+      "still_is_today": true
+    }
+  },
+  {
+    "case": "planning_rejects_nonadmin_and_invalid_year",
+    "result": {
+      "nonadmin": {
+        "status": 302,
+        "location": "/events/"
+      },
+      "count_after_nonadmin": 1,
+      "invalid_year": {
+        "status": 200,
+        "location": null
+      },
+      "count_after_invalid": 1
+    }
+  },
+  {
+    "case": "event_date_updates_ggl_season",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "stored_season": 2025,
+      "old_season_points": [
+        0,
+        0,
+        0
+      ],
+      "new_season_points": [
+        2.5,
+        2.5,
+        1
+      ]
+    }
+  }
+]

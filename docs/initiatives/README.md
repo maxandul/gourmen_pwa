@@ -46,6 +46,7 @@ docs/initiatives/<slug>/
 | Slug | Status | Beschreibung | Start | Ende |
 |---|---|---|---|---|
 | `workspace-railway` | aktiv | Google Workspace (Mail + Shared Drive) + Railway-PWA; Domain/DNS Infomaniak; System-Mail via Resend | 2026-05 | – |
+| [`app-audit`](app-audit/README.md) | aktiv | Erste [Gesamtbeurteilung und vorlaeufiges Zielbild](app-audit/GESAMTBEURTEILUNG.md) mit sechs Umsetzungspaketen erstellt; gezielte Restpruefung und Feedback offen, keine App-Umsetzung freigegeben | 2026-09-06 | – |
 
 Strategischer Rahmen für alle aktiven Initiativen: **`docs/STRATEGY_2026.md`**.
 

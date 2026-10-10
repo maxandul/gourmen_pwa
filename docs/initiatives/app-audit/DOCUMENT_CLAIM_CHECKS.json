@@ -1,0 +1,34 @@
+{
+  "method": "5 local helper/HTTP probes; no live DNS, search engine, network or real DB",
+  "results": [
+    {
+      "scenario": "hamburg_cutoff",
+      "time": "2026-06-01T05:59:59",
+      "visible": true
+    },
+    {
+      "scenario": "hamburg_cutoff",
+      "time": "2026-06-01T06:00:00",
+      "visible": false
+    },
+    {
+      "scenario": "local_apex_redirect",
+      "http": 301,
+      "location": "https://www.gourmen.ch/restaurants?sort=rating"
+    },
+    {
+      "scenario": "robots",
+      "http": 200,
+      "private_member_disallow": true
+    },
+    {
+      "scenario": "sitemap",
+      "http": 200,
+      "locations": [
+        "https://www.gourmen.ch/",
+        "https://www.gourmen.ch/ueber-uns",
+        "https://www.gourmen.ch/restaurants"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-20",
+  "environment": "Isolated local fixture; 27 past events; synthetic admin. Security warning renders original template with synthetic MFA view-model, without modifying credentials.",
+  "source": "Manually transcribed browser tool observations",
+  "B-29": {
+    "page": "Seite 2 von 3",
+    "stylesheet": "/static/css/main-v2.fa47ba3e.css",
+    "navComputed": {"display": "block", "gap": "normal", "flexWrap": "nowrap"},
+    "viewports": [
+      {"width": 320, "previous": {"x":44,"y":677.890625,"height":36}, "next": {"x":44,"y":713.890625,"height":36}},
+      {"width":390,"previousY":713.890625,"nextY":713.890625,"statusRight":223.46875,"nextLeft":223.46875},
+      {"width":820,"previousY":709.890625,"nextY":709.890625,"statusRight":243.46875,"nextLeft":243.46875},
+      {"width":1440,"previousY":783.890625,"nextY":783.890625,"statusRight":443.46875,"nextLeft":443.46875}
+    ],
+    "navigation": ["1 to 2", "2 to 3", "3 to 2"],
+    "search": {"query":"Audit-Archiv","resetPage":1,"nextPage":2,"queryPreserved":true,"url":"/events/?tab=archiv&page=2&q=Audit-Archiv#gourmen-tabs"}
+  },
+  "B-30": {"text":"Keine Backup-Codes verfügbar","color":"rgb(79, 100, 119)","parentColor":"rgb(27, 35, 46)","fontWeight":"400","role":null,"display":"block","interpretation":"Normal paragraph secondary text styling; no text-warning rule in active V2 sources. Text remains readable."},
+  "limits": "Synthetic desktop-browser viewport overrides, not physical devices; no contrast/assistive-technology certification. No real MFA action. Filter tests cover search only, not every year/organizer combination."
+}

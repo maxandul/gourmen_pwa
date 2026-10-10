@@ -1,0 +1,50 @@
+{
+  "method": "Original JS in Node VM with minimal synthetic DOM; no browser layout, storage exceptions or real OS events.",
+  "checks": [
+    {
+      "scenario": "initial_default",
+      "actual": {
+        "dom": "light",
+        "reported": "light",
+        "button": "light",
+        "checked": "false"
+      }
+    },
+    {
+      "scenario": "system_changes_to_dark_without_saved_choice",
+      "actual": {
+        "dom": "dark",
+        "reported": "light",
+        "button": "light",
+        "checked": "false"
+      }
+    },
+    {
+      "scenario": "toggle_after_system_change",
+      "actual": {
+        "dom": "dark",
+        "reported": "dark",
+        "button": "dark",
+        "checked": "true"
+      }
+    },
+    {
+      "scenario": "manual_light_ignores_system_change",
+      "actual": {
+        "dom": "light",
+        "reported": "light",
+        "button": "light",
+        "checked": "false"
+      }
+    },
+    {
+      "scenario": "reset_to_dark_system",
+      "actual": {
+        "dom": "dark",
+        "reported": "light",
+        "button": "light",
+        "checked": "false"
+      }
+    }
+  ]
+}

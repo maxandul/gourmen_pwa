@@ -1,0 +1,79 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 12:44:52,232] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 12:44:53,537] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 12:44:53,537] INFO in app: App created successfully - skipping migrations
+[2026-09-20 12:44:53,537] INFO in app: Flask app created and configured successfully
+[
+  {
+    "case": "member_upload_choices_disclosure",
+    "result": {
+      "upload_http": 200,
+      "booking_label_exposed": true,
+      "board_label_exposed": true,
+      "booking_detail_http": 403,
+      "event_visible": false
+    }
+  },
+  {
+    "case": "member_direct_receipt_upload_redirect",
+    "result": {
+      "http": 302,
+      "location": "/accounting/booking/1",
+      "follow_http": 403,
+      "receipt_booking": 1,
+      "uploader": 4
+    }
+  },
+  {
+    "case": "receipt_download_ownership",
+    "result": {
+      "checks": [
+        {
+          "role": "admin",
+          "http": 200
+        },
+        {
+          "role": "treasurer",
+          "http": 200
+        },
+        {
+          "role": "reviewer",
+          "http": 200
+        },
+        {
+          "role": "owner",
+          "http": 200
+        },
+        {
+          "role": "other_member",
+          "http": 403
+        }
+      ],
+      "download_calls": 4
+    }
+  },
+  {
+    "case": "revoke_correct_reapprove_history",
+    "result": {
+      "approvals_after_revoke": 0,
+      "final_status": "closed",
+      "new_approval_error": null,
+      "approval_count": 1,
+      "report_ids": [
+        null
+      ]
+    }
+  },
+  {
+    "case": "unresolved_comment_approval_and_resolution",
+    "result": {
+      "approved_with_open_comment": "closed",
+      "member_resolve_http": 403,
+      "treasurer_resolve_http": 302,
+      "resolved_after_close": true
+    }
+  }
+]

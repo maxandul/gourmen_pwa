@@ -1,0 +1,105 @@
+[
+  {
+    "case": "folder_target_matrix",
+    "result": [
+      {
+        "target": "root",
+        "error": null
+      },
+      {
+        "target": "inside",
+        "error": null
+      },
+      {
+        "target": "nested",
+        "error": null
+      },
+      {
+        "target": "outside",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "cycle",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "trash",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "file",
+        "error": "DriveValidationError"
+      }
+    ]
+  },
+  {
+    "case": "upload_validation_matrix",
+    "result": [
+      {
+        "case": "valid",
+        "error": null
+      },
+      {
+        "case": "empty",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "large",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "type",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "title",
+        "error": "DriveValidationError"
+      }
+    ]
+  },
+  {
+    "case": "invalid_event_upload_compensation",
+    "result": {
+      "error": "IntegrityError",
+      "remote_create_calls": 1,
+      "compensation_calls": 1,
+      "document_count": 1
+    }
+  },
+  {
+    "case": "sync_permission_error_preserves_cache",
+    "result": {
+      "rows": 1,
+      "has_error_note": true,
+      "actions": []
+    }
+  },
+  {
+    "case": "trash_restore_loses_uploader",
+    "result": {
+      "rows_while_trashed": 0,
+      "rows_after_restore": 1,
+      "uploader_after_restore": null
+    }
+  },
+  {
+    "case": "resync_second_page_failure",
+    "result": {
+      "error": "HttpError",
+      "cached_files": [
+        "audit-file",
+        "new-file"
+      ]
+    }
+  },
+  {
+    "case": "sync_parent_drift_preserves_uploader",
+    "result": {
+      "parent": "folder-new",
+      "uploader_preserved": true,
+      "actions": [
+        "parent_updated"
+      ]
+    }
+  }
+]

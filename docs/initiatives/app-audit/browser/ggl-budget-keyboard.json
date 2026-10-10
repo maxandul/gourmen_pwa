@@ -1,0 +1,28 @@
+{
+  "date":"2026-09-20",
+  "source":"Manually transcribed browser observations; actual Tab/arrow events and read-only DOM measurements",
+  "environment":"Existing isolated local fixture, original routes/templates, four synthetic active members and two accounts; no booking/budget submitted",
+  "B-34":{
+    "role":"regular member","page":"/ggl/?tab=tabelle","width":390,
+    "entry":"Tab from Spielverlauf focuses scroll wrapper without explicit tabindex",
+    "clientWidth":300,"scrollWidth":541,"scrollLeft":[0,40,241],"maximum":241,
+    "firstTwoCellXAfterOneRight":[45,77],"firstTwoCellXAtEnd":[45,77],
+    "firstTwoCellPosition":["sticky","sticky"],"fadeAtEnd":false,
+    "limits":"Four zero-point rows, not populated race/progression data; no long-name or large-rank case"
+  },
+  "B-35":{
+    "role":"admin","page":"/accounting/?tab=budget","width":390,
+    "entry":"Tab from Kontenplan focuses first amount_chf number input and scrolls right",
+    "clientWidth":285,"scrollWidth":424,"entryScrollLeft":139,
+    "nextTab":"Speichern button; not activated","afterLeft":99,
+    "firstAccountCell":{"position":"static","x":-54},
+    "valuesAfterProbe":["0.00","0.00"]
+  },
+  "B-36":{
+    "role":"revisor","page":"/accounting/?tab=budget","width":320,
+    "entry":"Tab from Statistik focuses Budget 2026 scroll region",
+    "clientWidth":215,"scrollWidth":301,"initialScrollLeft":0,"afterRight":40,
+    "firstAccountCellXAfterRight":5,"editControlsVisible":false
+  },
+  "limits":"One desktop browser with viewport overrides; no screenreader, touch or other-browser coverage. Journal, receipts, open claims and import tables remain untested in this keyboard pass."
+}

@@ -1,0 +1,127 @@
+{
+  "date": "2026-09-21",
+  "groups": 8,
+  "results": [
+    {
+      "case": "rename_success",
+      "db_parent": "source",
+      "remote_parent": "source",
+      "remote_name": "Audit-Neu.pdf",
+      "update_count": 1,
+      "remains_in_archive": false,
+      "audit": [
+        {
+          "action": "DOCUMENT_RENAMED",
+          "extra": {
+            "from": "Audit.pdf",
+            "to": "Audit-Neu.pdf"
+          }
+        }
+      ]
+    },
+    {
+      "case": "move_success",
+      "db_parent": "target",
+      "remote_parent": "target",
+      "remote_name": "Audit.pdf",
+      "update_count": 1,
+      "remains_in_archive": false,
+      "audit": [
+        {
+          "action": "DOCUMENT_MOVED",
+          "extra": {
+            "from_folder_id": "source",
+            "to_folder_id": "target"
+          }
+        }
+      ]
+    },
+    {
+      "case": "archive_success",
+      "db_parent": "archive",
+      "remote_parent": "archive",
+      "remote_name": "Audit.pdf",
+      "update_count": 1,
+      "remains_in_archive": true,
+      "audit": [
+        {
+          "action": "DOCUMENT_ARCHIVED",
+          "extra": {
+            "from_folder_id": "source",
+            "archive_folder_id": "archive"
+          }
+        }
+      ]
+    },
+    {
+      "case": "restore_success",
+      "db_parent": "target",
+      "remote_parent": "target",
+      "remote_name": "Audit.pdf",
+      "update_count": 1,
+      "remains_in_archive": false,
+      "audit": [
+        {
+          "action": "DOCUMENT_RESTORED",
+          "extra": {
+            "from_archive_folder_id": "archive",
+            "to_folder_id": "target"
+          }
+        }
+      ]
+    },
+    {
+      "case": "same_parent_noop",
+      "db_parent": "target",
+      "remote_parent": "target",
+      "remote_name": "Audit.pdf",
+      "update_count": 0,
+      "remains_in_archive": false,
+      "audit": []
+    },
+    {
+      "case": "same_remote_target_stale_db",
+      "db_parent": "source",
+      "remote_parent": "target",
+      "remote_name": "Audit.pdf",
+      "update_count": 0,
+      "remains_in_archive": false,
+      "audit": []
+    },
+    {
+      "case": "restore_into_archive",
+      "db_parent": "archive",
+      "remote_parent": "archive",
+      "remote_name": "Audit.pdf",
+      "update_count": 0,
+      "remains_in_archive": true,
+      "audit": [
+        {
+          "action": "DOCUMENT_RESTORED",
+          "extra": {
+            "from_archive_folder_id": "archive",
+            "to_folder_id": "archive"
+          }
+        }
+      ]
+    },
+    {
+      "case": "restore_into_archive-child",
+      "db_parent": "archive-child",
+      "remote_parent": "archive-child",
+      "remote_name": "Audit.pdf",
+      "update_count": 1,
+      "remains_in_archive": true,
+      "audit": [
+        {
+          "action": "DOCUMENT_RESTORED",
+          "extra": {
+            "from_archive_folder_id": "archive",
+            "to_folder_id": "archive-child"
+          }
+        }
+      ]
+    }
+  ],
+  "limits": "Original lifecycle, target validation, archive ancestry, collision-check logic and audit writer. Only Drive builder replaced by stateful fake transport. SQLite in memory, successful DB commits; no production, browser, real Drive or partial DB/API failures."
+}

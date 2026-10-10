@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-20",
+  "source": "Manually transcribed browser-tool observations",
+  "environment": "Local isolated fixture, synthetic admin, 390x850 viewport, original folder picker controller. Root API fails once with synthetic 503.",
+  "B-47": {"action": "Enter Audit-Wiederaufnahme, open picker twice after transient root failure", "firstAttemptPickerOpen": false, "secondAttemptPickerOpen": true, "preservedTitle": "Audit-Wiederaufnahme"},
+  "B-48": {
+    "action": "Expand root, then first child Audit-Unterlagen",
+    "rowsInVisualOrder": [
+      {"name": "Dokumente", "inlinePaddingLeft": "", "y": 344.390625},
+      {"name": "Audit-Unterlagen", "inlinePaddingLeft": "12px", "y": 382.78125},
+      {"name": "Audit-Ladefehler", "inlinePaddingLeft": "12px", "y": 421.171875},
+      {"name": "Audit-Protokolle", "inlinePaddingLeft": "24px", "y": 459.5625}
+    ],
+    "actualParentOfAuditProtokolle": "Audit-Unterlagen",
+    "finding": "A-129"
+  },
+  "B-49": {"action": "Select Audit-Protokolle, collapse Audit-Unterlagen, apply selection", "selectedFolderVisibleAfterCollapse": false, "selectionSummaryVisibleAfterCollapse": false, "applyEnabledAfterCollapse": true, "uploadFolderLabelAfterApply": "Audit-Protokolle", "uploadTitleAfterApply": "Audit-Wiederaufnahme", "focusAfterApply": "Ordner wählen"},
+  "limits": "One browser, viewport and admin role. Visible target label verified, not submitted folder ID. No file selected or uploaded. No actual Drive access. Viewport reset, tab closed and local server stopped."
+}

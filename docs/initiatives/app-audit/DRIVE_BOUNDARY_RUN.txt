@@ -1,0 +1,114 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 13:42:53,558] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 13:42:55,192] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 13:42:55,192] INFO in app: App created successfully - skipping migrations
+[2026-09-20 13:42:55,192] INFO in app: Flask app created and configured successfully
+auto_sync fuer document 1 fehlgeschlagen: <HttpError 403 when requesting None returned "synthetic failure". Details: "synthetic failure">
+[
+  {
+    "case": "folder_target_matrix",
+    "result": [
+      {
+        "target": "root",
+        "error": null
+      },
+      {
+        "target": "inside",
+        "error": null
+      },
+      {
+        "target": "nested",
+        "error": null
+      },
+      {
+        "target": "outside",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "cycle",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "trash",
+        "error": "DriveValidationError"
+      },
+      {
+        "target": "file",
+        "error": "DriveValidationError"
+      }
+    ]
+  },
+  {
+    "case": "upload_validation_matrix",
+    "result": [
+      {
+        "case": "valid",
+        "error": null
+      },
+      {
+        "case": "empty",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "large",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "type",
+        "error": "DriveValidationError"
+      },
+      {
+        "case": "title",
+        "error": "DriveValidationError"
+      }
+    ]
+  },
+  {
+    "case": "invalid_event_upload_compensation",
+    "result": {
+      "error": "IntegrityError",
+      "remote_create_calls": 1,
+      "compensation_calls": 1,
+      "document_count": 1
+    }
+  },
+  {
+    "case": "sync_permission_error_preserves_cache",
+    "result": {
+      "rows": 1,
+      "has_error_note": true,
+      "actions": []
+    }
+  },
+  {
+    "case": "trash_restore_loses_uploader",
+    "result": {
+      "rows_while_trashed": 0,
+      "rows_after_restore": 1,
+      "uploader_after_restore": null
+    }
+  },
+  {
+    "case": "resync_second_page_failure",
+    "result": {
+      "error": "HttpError",
+      "cached_files": [
+        "audit-file",
+        "new-file"
+      ]
+    }
+  },
+  {
+    "case": "sync_parent_drift_preserves_uploader",
+    "result": {
+      "parent": "folder-new",
+      "uploader_preserved": true,
+      "actions": [
+        "parent_updated"
+      ]
+    }
+  }
+]

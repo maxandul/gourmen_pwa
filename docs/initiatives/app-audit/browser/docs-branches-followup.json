@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-20",
+  "source": "Manually transcribed browser AX/DOM observations and local server request log",
+  "environment": "Original folder-picker controller, isolated fixture, synthetic admin, viewport 938x856",
+  "B-50": {"action": "Expand Audit-Unterlagen and Audit-Ladefehler", "result": "Audit-Protokolle stays visible while sibling shows folder loading error. Collapsing Audit-Unterlagen removes Protokolle but keeps sibling error."},
+  "B-51": {"action": "Collapse failed branch and expand again", "result": "First click removes error, second click requests children again and shows one error. Other expanded branch stays visible.", "serverRequests": ["GET audit-failure/children 500", "GET audit-failure/children 500"], "recoveryAfterServiceRestored": "not tested"},
+  "B-52": {"action": "Expand Audit-Protokolle, which has no children", "result": "Toggle text changes to minus, no empty-state message or child appears; generic accessible toggle name remains Unterordner laden.", "serverRequest": "GET audit-child/children 200"},
+  "limits": "No file selection/upload or Drive connection. One role/browser/viewport. Two successful populated sibling branches, delayed responses, deep and large trees remain untested. Tab closed and server stopped."
+}

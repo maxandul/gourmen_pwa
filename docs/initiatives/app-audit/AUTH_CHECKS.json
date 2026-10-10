@@ -1,0 +1,61 @@
+[
+  {
+    "case": "deactivated_account_sessions",
+    "result": {
+      "existing_session_http": 302,
+      "existing_location": "/auth/login?next=%2Fmember%2Fprofile",
+      "fresh_login_http": 200,
+      "fresh_logged_in": false
+    }
+  },
+  {
+    "case": "step_up_cross_account_after_logout",
+    "result": {
+      "step_http": 302,
+      "second_member_sensitive_http": 200,
+      "step_up_retained": true,
+      "second_member_logged_in": true
+    }
+  },
+  {
+    "case": "first_password_change_bypass",
+    "result": {
+      "normal_location": "/auth/change-password",
+      "profile_http": 200,
+      "with_next_location": "/member/profile",
+      "still_needs_change": true
+    }
+  },
+  {
+    "case": "login_protocol_relative_redirect",
+    "result": {
+      "http": 302,
+      "location": "//example.invalid/audit"
+    }
+  },
+  {
+    "case": "mfa_login_loses_return_target",
+    "result": {
+      "location": "/auth/2fa/verify",
+      "pending": true,
+      "return_target_in_session": false
+    }
+  },
+  {
+    "case": "reset_password_existing_session",
+    "result": {
+      "reset_http": 302,
+      "password_changed": true,
+      "old_session_http": 200,
+      "token_reuse": "used"
+    }
+  },
+  {
+    "case": "token_expiry_and_purpose_guards",
+    "result": {
+      "expired": "expired",
+      "unknown": "missing",
+      "wrong_purpose": "missing"
+    }
+  }
+]

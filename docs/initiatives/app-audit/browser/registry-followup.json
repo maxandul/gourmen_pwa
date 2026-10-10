@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-20",
+  "environment": "Local isolated SQLite fixture, synthetic admin and backup codes; original templates and served assets",
+  "source": "Manually transcribed browser tool observations",
+  "B-26": {"action": "Fixture-only button invokes original gourmenPWA.showUpdateStatus with info; details opened", "hidden": true, "inlineDisplay": "block", "computedDisplay": "none", "text": "Synthetischer Status", "detailsOpen": true, "rects": 0, "asset": "pwa.df1b3f63.js"},
+  "B-27": {"action": "Reload synthetic flash page and immediately click original Schliessen button", "afterClick": {"display": "flex", "opacity": "1", "messageStillPresent": true}, "asset": "app.6763c8b3.js"},
+  "B-28": {"action": "Click original QR-Code anzeigen with AUDIT-ONLY-0001 and AUDIT-ONLY-0002", "sectionVisible": true, "screenshotObserved": "White square with black border and text (In Produktion: Echter QR-Code)", "screenshotSaved": false},
+  "limits": "No real credentials, push send, SW update/reset or real-device scanner test. Status probe is isolated rendering, not end-to-end diagnosis. Earlier probe placed below navigation did not change DOM and is not counted as evidence."
+}

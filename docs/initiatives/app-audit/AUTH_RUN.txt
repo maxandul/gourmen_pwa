@@ -1,0 +1,89 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 12:54:37,596] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 12:54:39,022] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 12:54:39,022] INFO in app: App created successfully - skipping migrations
+[2026-09-20 12:54:39,022] INFO in app: Flask app created and configured successfully
+[2026-09-20 12:54:43,671] INFO in auth: Step-up called with next_page: None
+[2026-09-20 12:54:43,671] INFO in auth: Request args: {}
+[2026-09-20 12:54:43,671] INFO in auth: Request form: {'password': 'Audit-only-Secret-482!'}
+[2026-09-20 12:54:43,671] INFO in auth: Session step_up_next: None
+[2026-09-20 12:54:43,671] INFO in auth: Invalid or missing next_page: None
+[2026-09-20 12:54:44,330] INFO in security: Step-up access granted until 2026-09-20 12:59:44 (TTL: 300s)
+[2026-09-20 12:54:44,330] INFO in security: Session timestamp: 1789901984
+[2026-09-20 12:54:44,330] INFO in auth: Step-up successful for user 1
+[2026-09-20 12:54:44,330] INFO in auth: Next page from form: None
+[2026-09-20 12:54:44,330] INFO in auth: Next page from session: None
+[2026-09-20 12:54:44,330] INFO in auth: Final next page: None
+[2026-09-20 12:54:44,330] INFO in auth: No valid next page, redirecting to dashboard
+[2026-09-20 12:54:45,068] INFO in security: Step-up access check: True
+[2026-09-20 12:54:45,068] INFO in security: Current time: 2026-09-20 12:54:45 (timestamp: 1789901685)
+[2026-09-20 12:54:45,068] INFO in security: Access until: 2026-09-20 12:59:44 (timestamp: 1789901984)
+[2026-09-20 12:54:45,068] INFO in security: Time difference: 299s
+[2026-09-20 12:54:45,070] INFO in security: Step-up access check: True
+[2026-09-20 12:54:45,070] INFO in security: Current time: 2026-09-20 12:54:45 (timestamp: 1789901685)
+[2026-09-20 12:54:45,070] INFO in security: Access until: 2026-09-20 12:59:44 (timestamp: 1789901984)
+[2026-09-20 12:54:45,070] INFO in security: Time difference: 299s
+[
+  {
+    "case": "deactivated_account_sessions",
+    "result": {
+      "existing_session_http": 302,
+      "existing_location": "/auth/login?next=%2Fmember%2Fprofile",
+      "fresh_login_http": 200,
+      "fresh_logged_in": false
+    }
+  },
+  {
+    "case": "step_up_cross_account_after_logout",
+    "result": {
+      "step_http": 302,
+      "second_member_sensitive_http": 200,
+      "step_up_retained": true,
+      "second_member_logged_in": true
+    }
+  },
+  {
+    "case": "first_password_change_bypass",
+    "result": {
+      "normal_location": "/auth/change-password",
+      "profile_http": 200,
+      "with_next_location": "/member/profile",
+      "still_needs_change": true
+    }
+  },
+  {
+    "case": "login_protocol_relative_redirect",
+    "result": {
+      "http": 302,
+      "location": "//example.invalid/audit"
+    }
+  },
+  {
+    "case": "mfa_login_loses_return_target",
+    "result": {
+      "location": "/auth/2fa/verify",
+      "pending": true,
+      "return_target_in_session": false
+    }
+  },
+  {
+    "case": "reset_password_existing_session",
+    "result": {
+      "reset_http": 302,
+      "password_changed": true,
+      "old_session_http": 200,
+      "token_reuse": "used"
+    }
+  },
+  {
+    "case": "token_expiry_and_purpose_guards",
+    "result": {
+      "expired": "expired",
+      "unknown": "missing",
+      "wrong_purpose": "missing"
+    }
+  }
+]

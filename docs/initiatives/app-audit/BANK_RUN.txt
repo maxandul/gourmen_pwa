@@ -1,0 +1,243 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 12:34:33,166] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 12:34:34,769] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 12:34:34,769] INFO in app: App created successfully - skipping migrations
+[2026-09-20 12:34:34,769] INFO in app: Flask app created and configured successfully
+[
+  {
+    "case": "repeat_import_same_reference",
+    "result": {
+      "first_new": 1,
+      "second_new": 0,
+      "second_duplicates": 1,
+      "tx_count": 1
+    }
+  },
+  {
+    "case": "different_purpose_without_reference",
+    "result": {
+      "new": 1,
+      "duplicates": 1,
+      "purposes_retained": [
+        "Invoice A"
+      ]
+    }
+  },
+  {
+    "case": "collective_missing_detail",
+    "result": {
+      "new": 2,
+      "rows": [
+        {
+          "amount": 10000,
+          "original": null,
+          "status": "ignored"
+        },
+        {
+          "amount": 10000,
+          "original": "CHF 40.00",
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  {
+    "case": "collective_complete",
+    "result": {
+      "new": 3,
+      "rows": [
+        {
+          "amount": 10000,
+          "original": null,
+          "status": "ignored"
+        },
+        {
+          "amount": 4000,
+          "original": null,
+          "status": "pending"
+        },
+        {
+          "amount": 6000,
+          "original": null,
+          "status": "pending"
+        }
+      ]
+    }
+  },
+  {
+    "case": "missing_rounding_account_retry",
+    "result": [
+      {
+        "http": 302,
+        "tx_status": "pending",
+        "tx_amount": 2500,
+        "paid": 0,
+        "claim_status": "offen",
+        "bookings": [
+          {
+            "amount": 2000,
+            "member": 2,
+            "direction": "in"
+          }
+        ]
+      },
+      {
+        "http": 302,
+        "tx_status": "pending",
+        "tx_amount": 2500,
+        "paid": 0,
+        "claim_status": "offen",
+        "bookings": [
+          {
+            "amount": 2000,
+            "member": 2,
+            "direction": "in"
+          },
+          {
+            "amount": 2000,
+            "member": 2,
+            "direction": "in"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case": "overpayment_split_and_delete_guard",
+    "result": {
+      "http": 302,
+      "delete_error": "BankImportError",
+      "tx_status": "booked",
+      "tx_amount": 2500,
+      "paid": 2500,
+      "claim_status": "beglichen",
+      "bookings": [
+        {
+          "amount": 2000,
+          "member": 2,
+          "direction": "in"
+        },
+        {
+          "amount": 500,
+          "member": 2,
+          "direction": "in"
+        }
+      ]
+    }
+  },
+  {
+    "case": "outgoing_payment_settles_claim",
+    "result": {
+      "http": 302,
+      "claim_member": 2,
+      "tx_status": "booked",
+      "tx_amount": 2000,
+      "paid": 2000,
+      "claim_status": "beglichen",
+      "bookings": [
+        {
+          "amount": 2000,
+          "member": 2,
+          "direction": "out"
+        }
+      ]
+    }
+  },
+  {
+    "case": "booking_member_differs_from_claim",
+    "result": {
+      "http": 302,
+      "claim_member": 2,
+      "tx_status": "booked",
+      "tx_amount": 2000,
+      "paid": 2000,
+      "claim_status": "beglichen",
+      "bookings": [
+        {
+          "amount": 2000,
+          "member": 3,
+          "direction": "in"
+        }
+      ]
+    }
+  },
+  {
+    "case": "partial_full_and_repeat",
+    "result": {
+      "states": [
+        {
+          "tx_status": "booked",
+          "tx_amount": 800,
+          "paid": 800,
+          "claim_status": "teilweise",
+          "bookings": [
+            {
+              "amount": 800,
+              "member": 2,
+              "direction": "in"
+            }
+          ]
+        },
+        {
+          "tx_status": "booked",
+          "tx_amount": 1200,
+          "paid": 2000,
+          "claim_status": "beglichen",
+          "bookings": [
+            {
+              "amount": 800,
+              "member": 2,
+              "direction": "in"
+            },
+            {
+              "amount": 1200,
+              "member": 2,
+              "direction": "in"
+            }
+          ]
+        }
+      ],
+      "repeat_error": "BankImportError",
+      "count_after_repeat": 2
+    }
+  },
+  {
+    "case": "edit_imported_booking_amount",
+    "result": {
+      "http": 302,
+      "tx_status": "booked",
+      "tx_amount": 2000,
+      "paid": 2000,
+      "claim_status": "beglichen",
+      "bookings": [
+        {
+          "amount": 500,
+          "member": 2,
+          "direction": "in"
+        }
+      ]
+    }
+  },
+  {
+    "case": "closed_year_import_booking_blocked",
+    "result": {
+      "error": "BankImportError",
+      "tx_status": "pending",
+      "tx_amount": 2000,
+      "paid": 0,
+      "claim_status": "offen",
+      "bookings": []
+    }
+  },
+  {
+    "case": "invalid_amount_in_csv",
+    "result": {
+      "error": "ValueError",
+      "transactions": 0,
+      "bookings": 0
+    }
+  }
+]

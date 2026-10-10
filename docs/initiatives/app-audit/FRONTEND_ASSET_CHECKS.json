@@ -1,0 +1,1290 @@
+{
+  "rendered_pages": [
+    {
+      "page": "/",
+      "http": 200,
+      "assets": [
+        {
+          "kind": "css",
+          "url": "/static/css/main-v2.fa47ba3e.css"
+        },
+        {
+          "kind": "css",
+          "url": "/static/css/public.604da1b3.css"
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/pwa.df1b3f63.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/app.6763c8b3.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme.js?v=3.16.0",
+          "defer": false
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme-toggle.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/toast.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/scroll-to-top.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/accordion.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/search.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/focus-trap.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/tabs.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/topbar-scroll.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/public-drawer.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/restaurants-table-scroll.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "https://www.instagram.com/embed.js",
+          "defer": false
+        }
+      ],
+      "inline_scripts": 2,
+      "inline_styles": 0,
+      "local_uncompressed_bytes": 356011
+    },
+    {
+      "page": "/auth/login",
+      "http": 200,
+      "assets": [
+        {
+          "kind": "css",
+          "url": "/static/css/main-v2.fa47ba3e.css"
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/pwa.df1b3f63.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/app.6763c8b3.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme.js?v=3.16.0",
+          "defer": false
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme-toggle.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/toast.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/scroll-to-top.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/accordion.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/search.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/focus-trap.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/tabs.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/topbar-scroll.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/public-drawer.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/restaurants-table-scroll.js?v=3.16.0",
+          "defer": true
+        }
+      ],
+      "inline_scripts": 1,
+      "inline_styles": 0,
+      "local_uncompressed_bytes": 341519
+    },
+    {
+      "page": "/restaurants",
+      "http": 200,
+      "assets": [
+        {
+          "kind": "css",
+          "url": "/static/css/main-v2.fa47ba3e.css"
+        },
+        {
+          "kind": "css",
+          "url": "/static/css/public.604da1b3.css"
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/pwa.df1b3f63.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/app.6763c8b3.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme.js?v=3.16.0",
+          "defer": false
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme-toggle.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/toast.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/scroll-to-top.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/accordion.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/search.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/focus-trap.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/tabs.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/topbar-scroll.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/public-drawer.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/restaurants-table-scroll.js?v=3.16.0",
+          "defer": true
+        }
+      ],
+      "inline_scripts": 2,
+      "inline_styles": 0,
+      "local_uncompressed_bytes": 356011
+    },
+    {
+      "page": "/ueber-uns",
+      "http": 200,
+      "assets": [
+        {
+          "kind": "css",
+          "url": "/static/css/main-v2.fa47ba3e.css"
+        },
+        {
+          "kind": "css",
+          "url": "/static/css/public.604da1b3.css"
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/pwa.df1b3f63.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/app.6763c8b3.js",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme.js?v=3.16.0",
+          "defer": false
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/theme-toggle.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/toast.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/scroll-to-top.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/accordion.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/search.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/focus-trap.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/tabs.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/topbar-scroll.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/public-drawer.js?v=3.16.0",
+          "defer": true
+        },
+        {
+          "kind": "script",
+          "url": "/static/js/v2/restaurants-table-scroll.js?v=3.16.0",
+          "defer": true
+        }
+      ],
+      "inline_scripts": 1,
+      "inline_styles": 0,
+      "local_uncompressed_bytes": 356011
+    }
+  ],
+  "assets": [
+    {
+      "path": "static/css/animations.css",
+      "bytes": 4877,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/components.css",
+      "bytes": 19376,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css",
+        "static/css/public.604da1b3.css",
+        "static/css/public.css",
+        "static/css/public.f8aaa6fd.css"
+      ]
+    },
+    {
+      "path": "static/css/core.css",
+      "bytes": 4508,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/features.css",
+      "bytes": 33872,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/layout.css",
+      "bytes": 35133,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css"
+      ]
+    },
+    {
+      "path": "static/css/main-v2.2dfbab66.css",
+      "bytes": 3545,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.613db757.css",
+      "bytes": 3665,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.75798722.css",
+      "bytes": 3560,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.870b31f5.css",
+      "bytes": 3660,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.8e8ac1a4.css",
+      "bytes": 3567,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.c1e6a159.css",
+      "bytes": 3666,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.css",
+      "bytes": 192607,
+      "fingerprinted": false,
+      "manifest_source": true,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.e4af4022.css",
+      "bytes": 3663,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.f0771912.css",
+      "bytes": 3650,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.f2552e2d.css",
+      "bytes": 3650,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/main-v2.fa47ba3e.css",
+      "bytes": 192607,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": true,
+      "literal_runtime_references": [
+        "templates/offline.html",
+        "templates/partials/_head_stylesheets.html",
+        "static/sw.js"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/mobile-touch.css",
+      "bytes": 1306,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/notifications.css",
+      "bytes": 9087,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/animations.css",
+        "static/css/pwa.css"
+      ]
+    },
+    {
+      "path": "static/css/public.604da1b3.css",
+      "bytes": 14492,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": true,
+      "literal_runtime_references": [
+        "templates/public/about.html",
+        "templates/public/landing.html",
+        "templates/public/restaurants.html",
+        "static/sw.js"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/public.css",
+      "bytes": 14492,
+      "fingerprinted": false,
+      "manifest_source": true,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/public.f8aaa6fd.css",
+      "bytes": 13738,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/pwa.css",
+      "bytes": 6132,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/js/pwa.045311c6.js",
+        "static/js/pwa.1a82add3.js",
+        "static/js/pwa.1fdeac14.js",
+        "static/js/pwa.2d9f2d04.js",
+        "static/js/pwa.36ebaf3d.js",
+        "static/js/pwa.409a4e12.js",
+        "static/js/pwa.5fabe797.js",
+        "static/js/pwa.6af171c6.js",
+        "static/js/pwa.89442484.js",
+        "static/js/pwa.c792ae90.js",
+        "static/js/pwa.dd837669.js",
+        "static/js/pwa.df1b3f63.js",
+        "static/js/pwa.f42a903f.js",
+        "static/js/pwa.f8338416.js",
+        "static/js/pwa.fa8699c7.js",
+        "static/js/pwa.js"
+      ]
+    },
+    {
+      "path": "static/css/responsive.css",
+      "bytes": 15371,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/utilities.css",
+      "bytes": 2938,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/animations.css"
+      ]
+    },
+    {
+      "path": "static/css/v2/base.css",
+      "bytes": 10441,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/components.css",
+        "static/css/layout.css",
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css",
+        "static/css/responsive.css"
+      ]
+    },
+    {
+      "path": "static/css/v2/components.0af66197.css",
+      "bytes": 156642,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": true,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.0ca1ff77.css",
+      "bytes": 150843,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.135bbb45.css",
+      "bytes": 141646,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.21ab4265.css",
+      "bytes": 149758,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.25c7b062.css",
+      "bytes": 133510,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.37d85f73.css",
+      "bytes": 133374,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.588d608e.css",
+      "bytes": 133300,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.8b7b1922.css",
+      "bytes": 139256,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.9aeb97e3.css",
+      "bytes": 153631,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.c0364080.css",
+      "bytes": 141985,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/css/v2/components.css",
+      "bytes": 156642,
+      "fingerprinted": false,
+      "manifest_source": true,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css",
+        "static/css/public.604da1b3.css",
+        "static/css/public.css",
+        "static/css/public.f8aaa6fd.css"
+      ]
+    },
+    {
+      "path": "static/css/v2/layout.css",
+      "bytes": 13631,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css"
+      ]
+    },
+    {
+      "path": "static/css/v2/tokens.css",
+      "bytes": 11336,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/events/hamburg2026.html"
+      ],
+      "literal_asset_mentions": [
+        "static/css/main-v2.2dfbab66.css",
+        "static/css/main-v2.613db757.css",
+        "static/css/main-v2.75798722.css",
+        "static/css/main-v2.870b31f5.css",
+        "static/css/main-v2.8e8ac1a4.css",
+        "static/css/main-v2.c1e6a159.css",
+        "static/css/main-v2.css",
+        "static/css/main-v2.e4af4022.css",
+        "static/css/main-v2.f0771912.css",
+        "static/css/main-v2.f2552e2d.css",
+        "static/css/main-v2.fa47ba3e.css"
+      ]
+    },
+    {
+      "path": "static/js/app.6763c8b3.js",
+      "bytes": 22246,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": true,
+      "literal_runtime_references": [
+        "templates/partials/_head_deferred_scripts.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/app.js",
+      "bytes": 22246,
+      "fingerprinted": false,
+      "manifest_source": true,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/js/pwa.045311c6.js",
+        "static/js/pwa.1a82add3.js",
+        "static/js/pwa.1fdeac14.js",
+        "static/js/pwa.2d9f2d04.js",
+        "static/js/pwa.36ebaf3d.js",
+        "static/js/pwa.409a4e12.js",
+        "static/js/pwa.5fabe797.js",
+        "static/js/pwa.6af171c6.js",
+        "static/js/pwa.89442484.js",
+        "static/js/pwa.c792ae90.js",
+        "static/js/pwa.dd837669.js",
+        "static/js/pwa.df1b3f63.js",
+        "static/js/pwa.f42a903f.js",
+        "static/js/pwa.f8338416.js",
+        "static/js/pwa.fa8699c7.js",
+        "static/js/pwa.js"
+      ]
+    },
+    {
+      "path": "static/js/google-maps.js",
+      "bytes": 4347,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/places-autocomplete.js",
+      "bytes": 14767,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.045311c6.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.1a82add3.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.1fdeac14.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.2d9f2d04.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.36ebaf3d.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.409a4e12.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.5fabe797.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.6af171c6.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.89442484.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.c792ae90.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.dd837669.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.df1b3f63.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": true,
+      "literal_runtime_references": [
+        "templates/partials/_head_deferred_scripts.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.f42a903f.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.f8338416.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.fa8699c7.js",
+      "bytes": 85791,
+      "fingerprinted": true,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/pwa.js",
+      "bytes": 85791,
+      "fingerprinted": false,
+      "manifest_source": true,
+      "manifest_target": false,
+      "literal_runtime_references": [],
+      "literal_asset_mentions": [
+        "static/js/app.6763c8b3.js",
+        "static/js/app.js"
+      ]
+    },
+    {
+      "path": "static/js/v2/accordion.js",
+      "bytes": 3069,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/collapsible-card.js",
+      "bytes": 654,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/admin/merch/index.html",
+        "templates/member/merch/index.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/docs-folder-picker.js",
+      "bytes": 5581,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/docs/detail.html",
+        "templates/docs/folder.html",
+        "templates/docs/index.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/docs-quick-actions.js",
+      "bytes": 3395,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/docs/detail.html",
+        "templates/docs/folder.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/docs-upload-modal.js",
+      "bytes": 3384,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/docs/folder.html",
+        "templates/docs/index.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/events-monatsessen-stats.js",
+      "bytes": 21967,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/events/index.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/focus-trap.js",
+      "bytes": 3022,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/ggl-season.js",
+      "bytes": 16670,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/ggl/index.html"
+      ],
+      "literal_asset_mentions": [
+        "static/js/v2/events-monatsessen-stats.js"
+      ]
+    },
+    {
+      "path": "static/js/v2/merch-order-edit.js",
+      "bytes": 8331,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/member/merch/order_edit.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/merch-order.js",
+      "bytes": 9211,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/member/merch/index.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/public-drawer.js",
+      "bytes": 1659,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/restaurants-table-scroll.js",
+      "bytes": 4313,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": [
+        "static/css/main-v2.css",
+        "static/css/main-v2.fa47ba3e.css",
+        "static/css/v2/components.0af66197.css",
+        "static/css/v2/components.0ca1ff77.css",
+        "static/css/v2/components.135bbb45.css",
+        "static/css/v2/components.21ab4265.css",
+        "static/css/v2/components.25c7b062.css",
+        "static/css/v2/components.37d85f73.css",
+        "static/css/v2/components.588d608e.css",
+        "static/css/v2/components.8b7b1922.css",
+        "static/css/v2/components.9aeb97e3.css",
+        "static/css/v2/components.c0364080.css",
+        "static/css/v2/components.css"
+      ]
+    },
+    {
+      "path": "static/js/v2/scroll-to-top.js",
+      "bytes": 2068,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/search.js",
+      "bytes": 4383,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/tabs.js",
+      "bytes": 4135,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/theme-toggle.js",
+      "bytes": 3879,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/theme.js",
+      "bytes": 4384,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": []
+    },
+    {
+      "path": "static/js/v2/toast.js",
+      "bytes": 6700,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": [
+        "static/js/app.6763c8b3.js",
+        "static/js/app.js"
+      ]
+    },
+    {
+      "path": "static/js/v2/topbar-scroll.js",
+      "bytes": 3263,
+      "fingerprinted": false,
+      "manifest_source": false,
+      "manifest_target": false,
+      "literal_runtime_references": [
+        "templates/base.html"
+      ],
+      "literal_asset_mentions": [
+        "static/css/main-v2.css",
+        "static/css/main-v2.fa47ba3e.css",
+        "static/css/v2/layout.css"
+      ]
+    }
+  ],
+  "css_source_metrics": [
+    {
+      "path": "static/css/v2/tokens.css",
+      "lines": 325,
+      "bytes": 11336,
+      "important_occurrences": 0,
+      "media_occurrences": 0
+    },
+    {
+      "path": "static/css/v2/base.css",
+      "lines": 458,
+      "bytes": 10441,
+      "important_occurrences": 1,
+      "media_occurrences": 3
+    },
+    {
+      "path": "static/css/v2/layout.css",
+      "lines": 584,
+      "bytes": 13631,
+      "important_occurrences": 0,
+      "media_occurrences": 9
+    },
+    {
+      "path": "static/css/v2/components.css",
+      "lines": 6758,
+      "bytes": 156642,
+      "important_occurrences": 6,
+      "media_occurrences": 30
+    },
+    {
+      "path": "static/css/public.css",
+      "lines": 652,
+      "bytes": 14492,
+      "important_occurrences": 0,
+      "media_occurrences": 4
+    }
+  ],
+  "controller_hook_checks": {
+    "data-accordion": [],
+    "data-search": [],
+    "new Accordion": [],
+    "new InstantSearch": [],
+    "initAccordions": [],
+    "initSearchFields": []
+  },
+  "build_sources": [
+    "static/css/v2/tokens.css",
+    "static/css/v2/base.css",
+    "static/css/v2/layout.css",
+    "static/css/v2/components.css"
+  ],
+  "normalized_build_matches_bundle": true,
+  "normalized_build_matches_active_hash": true,
+  "limitations": [
+    "Literal references are not a complete dependency graph. No deletion clearance.",
+    "Uncompressed bytes on disk are not network transfer or load-time measurements.",
+    "Only four public/login pages rendered; no browser interactions executed."
+  ]
+}

@@ -1,0 +1,118 @@
+﻿family,template_count,classes,sample,status
+accounting-chart-modal,2,accounting-chart-modal__body; accounting-chart-modal__container,templates/accounting/_tab_statistik.html:185,candidate_only
+accounting-receipt-upload,1,accounting-receipt-upload; accounting-receipt-upload__picker-panel; accounting-receipt-upload__tagging,templates/accounting/receipt_upload.html:27,candidate_only
+app-shell-install-banner,1,app-shell-install-banner__steps,templates/member/technical.html:239,candidate_only
+backup-code,1,backup-code,templates/auth/backup_codes.html:30,candidate_only
+billbro-guess-ranking-table,1,billbro-guess-ranking-table; billbro-guess-ranking-table__col-name; billbro-guess-ranking-table__col-num; billbro-guess-ranking-table__col-rank; billbro-guess-ranking-table__row--current; billbro-guess-ranking-table__row--rank-1; billbro-guess-ranking-table__row--rank-2; billbro-guess-ranking-table__row--rank-3,templates/events/detail.html:546,candidate_only
+billbro-workflow-block,2,billbro-workflow-block,templates/accounting/index.html:733,candidate_only
+btn-remove,1,btn-remove,templates/member/merch/order.html:89,candidate_only
+btn-success,2,btn-success,templates/admin/create_event.html:190,candidate_only
+calendar-subscribe,1,calendar-subscribe__actions; calendar-subscribe__copy-btn; calendar-subscribe__hint; calendar-subscribe__howto; calendar-subscribe__platform; calendar-subscribe__platform-title; calendar-subscribe__steps; calendar-subscribe__url-input; calendar-subscribe__url-row,templates/member/technical.html:67,candidate_only
+card-description,2,card-description,templates/admin/edit_member_enhanced.html:143,candidate_only
+chip-select,3,chip-select; chip-select--; chip-select--neutral; chip-select--no; chip-select--yes,templates/admin/merch/index.html:130,candidate_only
+chip-select-wrap,3,chip-select-wrap,templates/admin/merch/index.html:129,candidate_only
+close-btn,2,close-btn,templates/admin/create_event.html:185,candidate_only
+cls,1,cls,templates/events/hamburg2026.html:1258,candidate_only
+color-select,3,color-select,templates/member/merch/index.html:75,candidate_only
+dashboard-explore-nav,1,dashboard-explore-nav,templates/dashboard/index.html:231,candidate_only
+docs-file-list,1,docs-file-list,templates/docs/folder.html:107,candidate_only
+event-detail-nav,1,event-detail-nav; event-detail-nav__next; event-detail-nav__prev,templates/events/detail.html:32,candidate_only
+events-archive-filter,1,events-archive-filter,templates/events/index.html:339,candidate_only
+events-archive-panel,1,events-archive-panel,templates/events/index.html:334,candidate_only
+events-archive-toolbar,1,events-archive-toolbar,templates/events/index.html:338,candidate_only
+events-cleanup-intro,1,events-cleanup-intro,templates/events/cleanup.html:30,candidate_only
+events-planning-strip,1,events-planning-strip,templates/events/detail.html:50,candidate_only
+events-stats-chart-expand-btn,1,events-stats-chart-expand-btn,templates/events/index.html:554,candidate_only
+events-stats-chart-modal,1,events-stats-chart-modal__body; events-stats-chart-modal__container,templates/events/index.html:738,candidate_only
+events-stats-summary-insights,1,events-stats-summary-insights,templates/events/index.html:497,candidate_only
+events-year-planning-list,1,events-year-planning-list,templates/events/year_planning.html:32,candidate_only
+eyebrow,1,eyebrow,templates/public/landing.html:53,candidate_only
+flash-,1,flash-,templates/partials/_flash_messages.html:23,candidate_only
+flash-close,1,flash-close,templates/partials/_flash_messages.html:28,candidate_only
+flash-messages,1,flash-messages,templates/partials/_flash_messages.html:4,candidate_only
+form-control,1,form-control,templates/member/merch/order.html:45,candidate_only
+form-group,1,form-group,templates/member/merch/order.html:42,candidate_only
+form-help,1,form-help,templates/admin/create_event.html:420,candidate_only
+form-row,23,form-row; form-row--inline-remove; form-row--inline-submit; form-row--stacked,templates/accounting/_tab_kontenplan.html:13,candidate_only
+ggl-chart,1,ggl-chart; ggl-chart__container; ggl-chart__intro; ggl-chart__labels; ggl-chart__note; ggl-chart__scroll,templates/ggl/index.html:183,candidate_only
+ggl-chart-expand-btn,1,ggl-chart-expand-btn,templates/ggl/index.html:174,candidate_only
+ggl-chart-modal,1,ggl-chart-modal__body; ggl-chart-modal__container,templates/ggl/index.html:236,candidate_only
+hamburg-app,1,hamburg-app,templates/events/hamburg2026.html:847,candidate_only
+hamburg-back,1,hamburg-back; hamburg-back__icon,templates/events/hamburg2026.html:831,candidate_only
+hamburg-checklist,1,hamburg-checklist; hamburg-checklist__checkbox; hamburg-checklist__group; hamburg-checklist__group-title; hamburg-checklist__label; hamburg-checklist__reset,templates/events/hamburg2026.html:915,candidate_only
+hamburg-contacts,1,hamburg-contacts__emergency; hamburg-contacts__emergency-item; hamburg-contacts__emergency-label; hamburg-contacts__emergency-number; hamburg-contacts__group; hamburg-contacts__group-title; hamburg-contacts__item; hamburg-contacts__link; hamburg-contacts__links; hamburg-contacts__list; hamburg-contacts__name; hamburg-contacts__role,templates/events/hamburg2026.html:968,candidate_only
+hamburg-cost-intro,1,hamburg-cost-intro,templates/events/hamburg2026.html:926,candidate_only
+hamburg-cost-table,1,hamburg-cost-table; hamburg-cost-table__dash; hamburg-cost-table__total,templates/events/hamburg2026.html:930,candidate_only
+hamburg-cost-table-wrap,1,hamburg-cost-table-wrap,templates/events/hamburg2026.html:929,candidate_only
+hamburg-disclosure,1,hamburg-disclosure; hamburg-disclosure__body; hamburg-disclosure__intro; hamburg-disclosure__summary,templates/events/hamburg2026.html:1264,candidate_only
+hamburg-footer,1,hamburg-footer,templates/events/hamburg2026.html:1023,candidate_only
+hamburg-hero,1,hamburg-hero; hamburg-hero__countdown; hamburg-hero__countdown-label; hamburg-hero__countdown-value; hamburg-hero__hint; hamburg-hero__hints; hamburg-hero__pills; hamburg-hero__subtitle; hamburg-hero__title,templates/events/hamburg2026.html:852,candidate_only
+hamburg-inspiration,1,hamburg-inspiration; hamburg-inspiration__body; hamburg-inspiration__title,templates/events/hamburg2026.html:1269,candidate_only
+hamburg-map,1,hamburg-map__attribution,templates/events/hamburg2026.html:903,candidate_only
+hamburg-pill,1,hamburg-pill,templates/events/hamburg2026.html:862,candidate_only
+hamburg-pin-list,1,hamburg-pin-list; hamburg-pin-list__address; hamburg-pin-list__content; hamburg-pin-list__icon; hamburg-pin-list__item; hamburg-pin-list__name; hamburg-pin-list__website,templates/events/hamburg2026.html:904,candidate_only
+hamburg-rules,1,hamburg-rules; hamburg-rules__icon; hamburg-rules__item; hamburg-rules__list; hamburg-rules__text,templates/events/hamburg2026.html:997,candidate_only
+hamburg-section,1,hamburg-section; hamburg-section--collapsible; hamburg-section__title,templates/events/hamburg2026.html:876,candidate_only
+hamburg-tabs,1,hamburg-tabs; hamburg-tabs__nav; hamburg-tabs__panel; hamburg-tabs__panel--active; hamburg-tabs__tab; hamburg-tabs__tab--active,templates/events/hamburg2026.html:879,candidate_only
+hamburg-theme-toggle,1,hamburg-theme-toggle; hamburg-theme-toggle__icon; hamburg-theme-toggle__icon--moon; hamburg-theme-toggle__icon--sun,templates/events/hamburg2026.html:838,candidate_only
+hamburg-timeline,1,hamburg-timeline,templates/events/hamburg2026.html:1279,candidate_only
+hamburg-timeline-item,1,hamburg-timeline-item__actions; hamburg-timeline-item__address; hamburg-timeline-item__content; hamburg-timeline-item__details; hamburg-timeline-item__icon; hamburg-timeline-item__inline-link; hamburg-timeline-item__note; hamburg-timeline-item__time; hamburg-timeline-item__time-secondary; hamburg-timeline-item__title; hamburg-timeline-item__website,templates/events/hamburg2026.html:1055,candidate_only
+is-collapsed,2,is-collapsed,templates/admin/merch/index.html:343,candidate_only
+js-add-variant,2,js-add-variant,templates/member/merch/index.html:118,candidate_only
+js-remove,1,js-remove,templates/admin/merch/article_form.html:101,candidate_only
+landing-footer,3,landing-footer; landing-footer__label,templates/public/about.html:90,candidate_only
+landing-hero,1,landing-hero; landing-hero__text; landing-hero__visual,templates/public/landing.html:51,candidate_only
+landing-hitlist-block,2,landing-hitlist-block,templates/public/landing.html:103,candidate_only
+landing-hitlist-filter,2,landing-hitlist-filter; landing-hitlist-filter__clear; landing-hitlist-filter__field; landing-hitlist-filter__field--grow; landing-hitlist-filter__field--row; landing-hitlist-filter__submit,templates/events/index.html:339,candidate_only
+landing-hitlist-toolbar,2,landing-hitlist-toolbar; landing-hitlist-toolbar--split,templates/events/index.html:338,candidate_only
+landing-lead-quote,1,landing-lead-quote,templates/public/landing.html:55,candidate_only
+landing-logo,1,landing-logo,templates/public/landing.html:58,candidate_only
+landing-next-essen,1,landing-next-essen__date; landing-next-essen__dot; landing-next-essen__restaurant,templates/public/landing.html:78,candidate_only
+landing-pagination,2,landing-pagination; landing-pagination__status,templates/events/index.html:432,candidate_only
+landing-restaurants,2,landing-restaurants; landing-restaurants--page,templates/public/landing.html:98,candidate_only
+landing-restaurants-table,2,landing-restaurants-table; landing-restaurants-table__col-home; landing-restaurants-table__col-kueche; landing-restaurants-table__col-ort; landing-restaurants-table__col-visited; landing-restaurants-table__home-link,templates/public/landing.html:111,candidate_only
+lead,1,lead,templates/public/landing.html:55,candidate_only
+logo-link,1,logo-link,templates/partials/_user_bar.html:12,candidate_only
+max-400,1,max-400,templates/events/year_planning.html:44,candidate_only
+member-name,1,member-name,templates/admin/temp_password.html:42,candidate_only
+mt-6,3,mt-6,templates/events/detail.html:214,candidate_only
+nav-icon,1,nav-icon,templates/partials/_bottom_nav.html:4,candidate_only
+nav-item,1,nav-item; nav-item--active,templates/partials/_bottom_nav.html:3,candidate_only
+nav-text,1,nav-text,templates/partials/_bottom_nav.html:7,candidate_only
+order-info,1,order-info,templates/member/merch/orders.html:45,candidate_only
+order-items,1,order-items,templates/member/merch/orders.html:70,candidate_only
+page-info,1,page-info,templates/member/profile.html:375,candidate_only
+page-subtitle,3,page-subtitle,templates/errors/403.html:17,candidate_only
+participation-status,1,participation-status; participation-status--confirmed; participation-status--declined; participation-status--pending,templates/events/detail.html:283,candidate_only
+places-details-body,2,places-details-body,templates/admin/create_event.html:187,candidate_only
+places-details-header,2,places-details-header,templates/admin/create_event.html:183,candidate_only
+places-error,2,places-error,templates/admin/create_event.html:228,candidate_only
+places-no-results,2,places-no-results,templates/admin/create_event.html:143,candidate_only
+places-result-main,2,places-result-main,templates/admin/create_event.html:153,candidate_only
+places-result-secondary,2,places-result-secondary,templates/admin/create_event.html:154,candidate_only
+price-display,1,price-display,templates/member/merch/order.html:81,candidate_only
+price-group,1,price-group,templates/member/merch/order.html:79,candidate_only
+price-value,3,price-value,templates/member/merch/index.html:111,candidate_only
+quantity-input,3,quantity-input,templates/member/merch/index.html:103,candidate_only
+rating-chip,3,rating-chip--dynamic,templates/events/index.html:412,candidate_only
+remove-group,1,remove-group,templates/member/merch/order.html:86,candidate_only
+save-details-btn,2,save-details-btn,templates/admin/create_event.html:190,candidate_only
+security-tips,1,security-tips,templates/member/security.html:148,candidate_only
+size-select,3,size-select,templates/member/merch/index.html:88,candidate_only
+social-link,3,social-link,templates/public/about.html:93,candidate_only
+socials,3,socials,templates/public/about.html:92,candidate_only
+status-form,3,status-form,templates/admin/merch/index.html:126,candidate_only
+status-text,1,status-text,templates/member/technical.html:314,candidate_only
+table,1,table,templates/admin/merch/article_detail.html:103,candidate_only
+text-muted,9,text-muted,templates/admin/create_event.html:420,candidate_only
+text-secondary,15,text-secondary,templates/accounting/_tab_statistik.html:49,candidate_only
+text-warning,1,text-warning,templates/admin/member_security_overview.html:68,candidate_only
+theme-switch,1,theme-switch; theme-switch__icon; theme-switch__icon--moon; theme-switch__icon--sun; theme-switch__thumb; theme-switch__track,templates/partials/_user_bar.html:84,candidate_only
+tool-strip,4,tool-strip__actions; tool-strip__actions--start,templates/accounting/index.html:74,candidate_only
+update-status,1,update-status,templates/member/technical.html:313,candidate_only
+user-actions,1,user-actions,templates/partials/_user_bar.html:83,candidate_only
+user-bar-logo,1,user-bar-logo,templates/partials/_user_bar.html:13,candidate_only
+user-section,1,user-section,templates/partials/_user_bar.html:82,candidate_only
+variant-row,3,variant-row,templates/member/merch/index.html:71,candidate_only
+variant-row-content,1,variant-row-content,templates/member/merch/order.html:41,candidate_only
+variants-container,1,variants-container,templates/member/merch/order.html:38,candidate_only

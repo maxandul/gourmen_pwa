@@ -1,0 +1,64 @@
+[
+  {
+    "case": "old_email_token_verifies_new_address",
+    "result": {
+      "http": 302,
+      "current_address": "new-audit@example.com",
+      "verified_by_old_address_link": true,
+      "invited_addresses": [
+        "new-audit@example.com"
+      ]
+    }
+  },
+  {
+    "case": "google_address_change_no_revoke",
+    "result": {
+      "http": 302,
+      "verified": false,
+      "drive_removal_calls": 0
+    }
+  },
+  {
+    "case": "inactive_google_verification_guard",
+    "result": {
+      "http": 302,
+      "verified": false,
+      "invites": 0
+    }
+  },
+  {
+    "case": "calendar_enable_regenerate_disable",
+    "result": {
+      "enable": 201,
+      "repeat_enable": 200,
+      "same_token_on_repeat": true,
+      "before": 200,
+      "old_after_regenerate": 404,
+      "new_after_regenerate": 200,
+      "disable": 204,
+      "new_after_disable": 404
+    }
+  },
+  {
+    "case": "inactive_calendar_guard",
+    "result": {
+      "inactive_feed_http": 404
+    }
+  },
+  {
+    "case": "last_admin_self_demotion",
+    "result": {
+      "http": 302,
+      "remaining_active_admins": 0,
+      "former_admin_edit_http": 403
+    }
+  },
+  {
+    "case": "member_deactivation_no_drive_revoke",
+    "result": {
+      "http": 302,
+      "active": false,
+      "drive_removal_calls": 0
+    }
+  }
+]

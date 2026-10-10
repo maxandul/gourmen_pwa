@@ -1,0 +1,50 @@
+{
+  "method": "6 isolated original-service probes, mocked transports/logs, no real configuration/network/DB",
+  "results": [
+    {
+      "id": "INT-01",
+      "scenario": "autocomplete",
+      "timeout_supplied": false,
+      "synthetic_key_in_info_log": true
+    },
+    {
+      "id": "INT-02",
+      "scenario": "details",
+      "timeout_supplied": false,
+      "synthetic_key_in_info_log": false
+    },
+    {
+      "id": "INT-03",
+      "scenario": "places_timeout",
+      "result": []
+    },
+    {
+      "id": "INT-04",
+      "scenario": "mail_missing_host",
+      "result": {
+        "success": true,
+        "message_id": null,
+        "error": "smtp_host_missing"
+      }
+    },
+    {
+      "id": "INT-05",
+      "scenario": "mail_missing_credentials",
+      "result": {
+        "success": true,
+        "message_id": null,
+        "error": null
+      }
+    },
+    {
+      "id": "INT-06",
+      "scenario": "resend_timeout",
+      "timeout": 15,
+      "result": {
+        "success": false,
+        "message_id": null,
+        "error": "synthetic timeout"
+      }
+    }
+  ]
+}

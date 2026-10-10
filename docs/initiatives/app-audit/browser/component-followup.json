@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-20",
+  "environment": "Codex in-app browser, original app via serve_ui_fixture.py, loopback, synthetic admin, no submit/upload",
+  "capture_method": "Transcribed from read-only DOM/computed-style observations and UI interactions via cua_repl; screenshot viewed in session, not saved as file.",
+  "booking_counter": {"text":"1 von 3","font_size":"16px","font_size_sm":"","text_sm":"0.875rem"},
+  "receipt_counter": {"text":"1 von 2","font_size":"16px","font_size_sm":"","viewport":320,"client_width":305,"scroll_width":305},
+  "empty_next": {"step":"1 von 3","focused_id":"amount_chf","invalid_fields":["amount_chf","description"]},
+  "valid_next": {"step":"2 von 3","focused_id":"step-next"},
+  "back_preserves_values": {"step":"1 von 3","amount":"100","description":"Synthetische Audit-Prüfung"},
+  "manual_dark_toggle": {"dom_theme":"dark","switch_state":"dark","aria_checked":"true","aria_label":"Zu Light Mode wechseln","counter_font_size":"16px"},
+  "booking_step_2_dark_viewports": [
+    {"width":320,"client":305,"scroll":305,"main_x":0,"main_right":305,"controls_outside":[]},
+    {"width":390,"client":375,"scroll":375,"main_x":0,"main_right":375,"controls_outside":[]},
+    {"width":640,"client":625,"scroll":625,"main_x":0,"main_right":625,"controls_outside":[]},
+    {"width":768,"client":768,"scroll":768,"main_x":0,"main_right":768,"controls_outside":[]},
+    {"width":820,"client":820,"scroll":820,"main_x":0,"main_right":820,"controls_outside":[]},
+    {"width":1024,"client":1024,"scroll":1224,"main_x":200,"main_right":1224,"controls_outside":[
+      {"id":"step-back","x":996,"right":1074.796875},
+      {"id":"step-next","x":1082.796875,"right":1159},
+      {"id":"account_id","x":273,"right":1151},
+      {"id":"member_id","x":720,"right":1151}
+    ]}
+  ],
+  "card_rules": {"plain_cards_field_counts":[4,3,0],"role":null,"tabindex":null,"loaded_rule":".btn:active:not(:disabled), .card:active, a.card-link:active { transform: scale(0.98); transition: transform 100ms; }","held_pointer_effect_measured":false},
+  "limitations":["No OS color-scheme emulation capability: A-098 remains isolated JS reproduction.","No held pointer or touch test for card transform.","No device, contrast, zoom or performance measurement.","Width checks cover visible input/select/button rectangles on booking step 2 only; not all content or steps."]
+}

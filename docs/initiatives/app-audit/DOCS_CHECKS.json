@@ -1,0 +1,58 @@
+[
+  {
+    "case": "csrf_and_feature_guards",
+    "result": {
+      "missing_csrf": 403,
+      "feature_off": 404,
+      "service_calls": 0
+    }
+  },
+  {
+    "case": "delete_role_archive_confirmation_guards",
+    "result": {
+      "member": 403,
+      "outside_archive": 302,
+      "wrong_name": 302,
+      "delete_calls": 0,
+      "documents": 1
+    }
+  },
+  {
+    "case": "rename_error_external_redirect",
+    "result": {
+      "http": 302,
+      "location": "https://example.invalid/audit"
+    }
+  },
+  {
+    "case": "remote_rename_http_error",
+    "result": {
+      "http": null,
+      "error": "HttpError",
+      "documents": 1
+    }
+  },
+  {
+    "case": "detail_metadata_error_after_sync",
+    "result": {
+      "http": null,
+      "error": "HttpError",
+      "documents": 1
+    }
+  },
+  {
+    "case": "move_failure_preserves_db_parent",
+    "result": {
+      "http": 302,
+      "parent_unchanged": true
+    }
+  },
+  {
+    "case": "docs_upload_event_choices_visibility",
+    "result": {
+      "http": 200,
+      "board_event_label_exposed": true,
+      "event_visible": false
+    }
+  }
+]

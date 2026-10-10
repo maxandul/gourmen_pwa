@@ -1,0 +1,8 @@
+{
+  "date":"2026-09-20",
+  "source":"Manually transcribed browser-tool observations",
+  "environment":"Local isolated fixture, synthetic admin, 390px, original upload route/templates/controllers. No selected file or external upload.",
+  "B-45":{"action":"Type Audit-Entwurf vor Fehler, submit upload without a file, reopen dialog","response":"Redirect to docs index with Bitte wähle eine Datei aus.","dialogAfterSubmit":"closed","titleAfterReopen":"","focusAfterReopen":"Schliessen"},
+  "B-46":{"action":"Fixture page with audit_root_error=1 injects 503 solely at /docs/api/root; click Ordner wählen","openDialogs":["docs-upload-modal"],"focus":"Ordner wählen","preservedTitle":"Audit-Entwurf bei Ladefehler","visibleError":false,"consoleError":"Netzwerkfehler at docs-folder-picker.js:44","wholeDialogTextInspected":true},
+  "limits":"One simulated width/browser and admin role. No actual Drive outage, file-selection recovery, large file or upload transport failure. CSRF/rate-limit disabled in testing."
+}

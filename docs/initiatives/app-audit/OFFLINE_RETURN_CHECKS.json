@@ -1,0 +1,47 @@
+{
+  "asset": "/static/offline.4ebb2a42.html",
+  "method": "5 original-script VM probes; synthetic timers/DOM; no actual browser reconnect",
+  "results": [
+    {
+      "id": "OFF-01",
+      "scenario": "offline_initial",
+      "redirect_timers": 0,
+      "status": "Offline"
+    },
+    {
+      "id": "OFF-02",
+      "scenario": "network_flag_online_without_app_probe",
+      "navigations": [
+        "/"
+      ],
+      "reachability_probes": 0,
+      "last_sync_set": true
+    },
+    {
+      "id": "OFF-03",
+      "scenario": "offline_again_before_timer",
+      "status": "Offline",
+      "navigations": [
+        "/"
+      ]
+    },
+    {
+      "id": "OFF-04",
+      "scenario": "three_simulated_fallback_document_loads",
+      "navigations": [
+        "/",
+        "/",
+        "/"
+      ],
+      "assumption": "Each navigation receives the offline document again; browser not simulated."
+    },
+    {
+      "id": "OFF-05",
+      "scenario": "online_event",
+      "navigations": [
+        "/"
+      ],
+      "reachability_probes": 0
+    }
+  ]
+}

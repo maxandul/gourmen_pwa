@@ -1,0 +1,48 @@
+{
+  "method": "6 isolated probes; original notifier and BillBro POST, in-memory SQLite, mocked push/mail, no real network; test CSRF disabled",
+  "results": [
+    {
+      "id": "LEG-01",
+      "scenario": "timeout",
+      "success": false,
+      "remaining_subscriptions": 0
+    },
+    {
+      "id": "LEG-02",
+      "scenario": "http_503",
+      "success": false,
+      "remaining_subscriptions": 0
+    },
+    {
+      "id": "LEG-03",
+      "scenario": "inactive_subscription",
+      "transport_calls": 1,
+      "timeout_supplied": false
+    },
+    {
+      "id": "LEG-04",
+      "scenario": "billbro_start_without_subscription",
+      "http": 302,
+      "flashes": [
+        [
+          "success",
+          "BillBro gestartet! Push-Nachrichten an 1 Teilnehmer gesendet."
+        ]
+      ],
+      "push_calls": 0,
+      "mail_calls": 0
+    },
+    {
+      "id": "LEG-05",
+      "scenario": "register_second_device",
+      "remaining_count": 1,
+      "old_device_preserved": false
+    },
+    {
+      "id": "LEG-06",
+      "scenario": "invalid_registration_rollback",
+      "success": false,
+      "previous_device_preserved": true
+    }
+  ]
+}

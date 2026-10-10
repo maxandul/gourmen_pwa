@@ -1,0 +1,19 @@
+{
+  "date":"2026-09-20",
+  "source":"Manually transcribed browser observations, actual Tab/arrow events",
+  "environment":"Original routes with one synthetic booking, receipt metadata, import metadata and partly paid claim in isolated SQLite fixture. No real files, uploads, deletions or settlement.",
+  "B-37":{"table":"Journal","role":"admin","width":390,"entry":"Tab from Buchung erfassen to dated booking link","clientWidth":300,"scrollWidth":476,"scrollLeft":[0,40],"firstCellX":[45,45]},
+  "B-38":{"table":"Belege","role":"admin","width":390,"entry":"Tab from Beleg einreichen to receipt link","clientWidth":300,"scrollWidth":777,"firstCellWidth":221.984375,"scrollLeft":[0,477],"maximum":477,"firstCellXAtEnd":45,"fadeAtEnd":false},
+  "B-39":{
+    "table":"Import-Historie","role":"admin","width":390,
+    "entry":"Tab from Importieren to import review link, no activation",
+    "filename":"Audit-Kontoauszug-September-2026.csv",
+    "clientWidth":285,"scrollWidth":731,"firstCellWidth":304.359375,
+    "scrollLeft":[0,446],"maximum":446,
+    "atEnd":{"wrapperX":44,"wrapperRight":331,"firstCellX":25.5625,"firstCellRight":329.921875,"firstCellPosition":"sticky","firstCellZIndex":"1","actionCellX":194.984375,"actionCellRight":329.921875,"hitTestNearRightCellIndex":0},
+    "screenshot":"Viewed in session: filename covers table body at right scroll end; not saved",
+    "tabletComparison":{"width":820,"clientWidth":675,"scrollWidth":731,"firstCellWidth":304.359375}
+  },
+  "B-40":{"table":"Offene Posten","role":"admin","width":390,"entry":"Tab from Kontenplan reaches Beglichen button, not activated","clientWidth":300,"scrollWidth":560,"entryScrollLeft":260,"afterLeft":220,"firstCellPosition":"static","firstCellXAfterLeft":-175},
+  "limits":"One desktop browser, simulated widths, one row per table. No screenreader, physical device, full role matrix or complete long-data combinations."
+}

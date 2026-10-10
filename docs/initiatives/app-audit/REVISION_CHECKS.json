@@ -1,0 +1,156 @@
+[
+  {
+    "case": "budget_during_review",
+    "result": {
+      "http": 302,
+      "year_status": "in_review",
+      "budget": 9000
+    }
+  },
+  {
+    "case": "budget_closed_blocked",
+    "result": {
+      "http": 302,
+      "year_status": "closed",
+      "budget": 2000
+    }
+  },
+  {
+    "case": "deactivated_account_closed_report",
+    "result": {
+      "year_status": "closed",
+      "detail_before": 2000,
+      "detail_after": 0,
+      "summary_expense": 2000
+    }
+  },
+  {
+    "case": "opposite_directions_same_account",
+    "result": {
+      "account_actual": 2500,
+      "year_result": -1500
+    }
+  },
+  {
+    "case": "closed_year_opening_changes",
+    "result": {
+      "closed_year": "closed",
+      "prior_year": "open",
+      "opening_before": -2000,
+      "opening_after": -5000
+    }
+  },
+  {
+    "case": "report_failure_then_retry",
+    "result": {
+      "http": [
+        302,
+        302
+      ],
+      "year_status": "closed",
+      "report_id": null,
+      "report_attempts": 1
+    }
+  },
+  {
+    "case": "revision_action_role_matrix",
+    "result": [
+      {
+        "action": "submit",
+        "role": "admin",
+        "http": 302,
+        "state": "in_review"
+      },
+      {
+        "action": "submit",
+        "role": "treasurer",
+        "http": 302,
+        "state": "in_review"
+      },
+      {
+        "action": "submit",
+        "role": "reviewer",
+        "http": 403,
+        "state": "open"
+      },
+      {
+        "action": "submit",
+        "role": "member",
+        "http": 403,
+        "state": "open"
+      },
+      {
+        "action": "approve",
+        "role": "admin",
+        "http": 302,
+        "state": "closed"
+      },
+      {
+        "action": "approve",
+        "role": "treasurer",
+        "http": 403,
+        "state": "in_review"
+      },
+      {
+        "action": "approve",
+        "role": "reviewer",
+        "http": 302,
+        "state": "closed"
+      },
+      {
+        "action": "approve",
+        "role": "member",
+        "http": 403,
+        "state": "in_review"
+      },
+      {
+        "action": "withdraw",
+        "role": "admin",
+        "http": 302,
+        "state": "open"
+      },
+      {
+        "action": "withdraw",
+        "role": "treasurer",
+        "http": 302,
+        "state": "open"
+      },
+      {
+        "action": "withdraw",
+        "role": "reviewer",
+        "http": 403,
+        "state": "in_review"
+      },
+      {
+        "action": "withdraw",
+        "role": "member",
+        "http": 403,
+        "state": "in_review"
+      },
+      {
+        "action": "revoke",
+        "role": "admin",
+        "http": 302,
+        "state": "in_review"
+      },
+      {
+        "action": "revoke",
+        "role": "treasurer",
+        "http": 403,
+        "state": "closed"
+      },
+      {
+        "action": "revoke",
+        "role": "reviewer",
+        "http": 302,
+        "state": "in_review"
+      },
+      {
+        "action": "revoke",
+        "role": "member",
+        "http": 403,
+        "state": "closed"
+      }
+    ]
+  }
+]

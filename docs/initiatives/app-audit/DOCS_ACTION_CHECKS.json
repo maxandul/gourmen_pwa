@@ -1,0 +1,147 @@
+{
+  "date": "2026-09-21",
+  "groups": 10,
+  "results": [
+    {
+      "action": "rename",
+      "outcome": "success",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "success",
+          "Datei wurde umbenannt."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "rename",
+      "outcome": "error",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "error",
+          "Umbenennen fehlgeschlagen. Bitte später erneut versuchen."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "move",
+      "outcome": "success",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "success",
+          "Datei wurde verschoben."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "move",
+      "outcome": "error",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "error",
+          "Verschieben fehlgeschlagen. Bitte später erneut versuchen."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "archive",
+      "outcome": "success",
+      "status": 302,
+      "redirect": "/docs/folder/audit-archive",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "success",
+          "Datei wurde ins Archiv verschoben."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "archive",
+      "outcome": "error",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "error",
+          "Archivieren fehlgeschlagen. Bitte später erneut versuchen."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "restore",
+      "outcome": "success",
+      "status": 302,
+      "redirect": "/docs/folder/audit-target",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "success",
+          "Datei wurde wiederhergestellt."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "restore",
+      "outcome": "error",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 1,
+      "flashes": [
+        [
+          "error",
+          "Synthetic action failure"
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "move",
+      "outcome": "missing_target",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 0,
+      "flashes": [
+        [
+          "error",
+          "Kein Zielordner gewählt."
+        ]
+      ],
+      "saved_draft_keys": []
+    },
+    {
+      "action": "restore",
+      "outcome": "missing_target",
+      "status": 302,
+      "redirect": "/docs/folder/audit-source",
+      "service_calls": 0,
+      "flashes": [
+        [
+          "error",
+          "Kein Zielordner gewählt."
+        ]
+      ],
+      "saved_draft_keys": []
+    }
+  ],
+  "limits": "Original routes with signed manual CSRF tokens; services mocked entirely. No real rename, move, archive, restore or DB mutation performed by action mocks. Success redirects are route contracts, not proof of successful storage operations. No browser or focus test."
+}

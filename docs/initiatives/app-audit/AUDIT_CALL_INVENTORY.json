@@ -1,0 +1,450 @@
+[
+  {
+    "file": "backend/routes/admin.py",
+    "line": 150,
+    "function": "mail_test",
+    "action": "AuditAction.EVENT_SEND_REMINDER",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 417,
+    "function": "create_member",
+    "action": "AuditAction.ADMIN_CREATE_MEMBER",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 420,
+    "function": "create_member",
+    "action": "AuditAction.SEND_ONBOARDING_MAIL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 538,
+    "function": "edit_member",
+    "action": "AuditAction.ADMIN_EDIT_MEMBER",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 587,
+    "function": "member_sensitive",
+    "action": "AuditAction.READ_SENSITIVE_OTHERS",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 618,
+    "function": "member_sensitive",
+    "action": "AuditAction.UPDATE_SENSITIVE_OTHERS",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 694,
+    "function": "create_event",
+    "action": "AuditAction.ADMIN_CREATE_EVENT",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 729,
+    "function": "reset_member_password",
+    "action": "AuditAction.ADMIN_RESET_PASSWORD",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/admin.py",
+    "line": 774,
+    "function": "reset_member_2fa",
+    "action": "AuditAction.ADMIN_RESET_2FA",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 123,
+    "function": "login",
+    "action": "AuditAction.LOGIN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 146,
+    "function": "login",
+    "action": "AuditAction.LOGIN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 223,
+    "function": "verify_2fa",
+    "action": "AuditAction.LOGIN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 254,
+    "function": "verify_2fa",
+    "action": "AuditAction.USE_BACKUP_CODE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 312,
+    "function": "enroll_2fa",
+    "action": "AuditAction.ENABLE_2FA",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 351,
+    "function": "disable_2fa",
+    "action": "AuditAction.DISABLE_MFA",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 407,
+    "function": "step_up",
+    "action": "AuditAction.LOGIN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 466,
+    "function": "change_password",
+    "action": "AuditAction.CHANGE_PASSWORD",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 520,
+    "function": "forgot_password",
+    "action": "AuditAction.REQUEST_PASSWORD_RESET",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 571,
+    "function": "reset_password",
+    "action": "AuditAction.RESET_PASSWORD",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 627,
+    "function": "request_2fa_reset",
+    "action": "AuditAction.REQUEST_2FA_RESET",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 679,
+    "function": "reset_2fa",
+    "action": "AuditAction.RESET_2FA",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/auth.py",
+    "line": 722,
+    "function": "activate",
+    "action": "AuditAction.USE_ONBOARDING_TOKEN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 222,
+    "function": "compute",
+    "action": "AuditAction.BILLBRO_COMPUTE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 299,
+    "function": "enter_bill",
+    "action": "AuditAction.BILLBRO_ENTER_BILL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 346,
+    "function": "set_payment",
+    "action": "AuditAction.BILLBRO_SET_TOTAL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 395,
+    "function": "start_session",
+    "action": "AuditAction.BILLBRO_START_SESSION",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 441,
+    "function": "send_reminder",
+    "action": "AuditAction.BILLBRO_SEND_REMINDER",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 499,
+    "function": "set_total",
+    "action": "AuditAction.BILLBRO_SET_TOTAL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 540,
+    "function": "undo_final",
+    "action": "AuditAction.BILLBRO_SET_TOTAL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 582,
+    "function": "accept_suggested_total",
+    "action": "AuditAction.BILLBRO_SET_TOTAL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 625,
+    "function": "reset_bill",
+    "action": "AuditAction.BILLBRO_ENTER_BILL",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 822,
+    "function": "record_guess",
+    "action": "AuditAction.BILLBRO_RECORD_GUESS",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 912,
+    "function": "mark_absent",
+    "action": "AuditAction.BILLBRO_MARK_ABSENT",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 957,
+    "function": "mark_present",
+    "action": "AuditAction.BILLBRO_MARK_PRESENT",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/billbro.py",
+    "line": 999,
+    "function": "toggle_billbro_status",
+    "action": "AuditAction.BILLBRO_TOGGLE_STATUS",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/events.py",
+    "line": 885,
+    "function": "edit",
+    "action": "AuditAction.EVENT_ORGANIZER_CHANGED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/events.py",
+    "line": 941,
+    "function": "delete",
+    "action": "AuditAction.EVENT_DELETE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/events.py",
+    "line": 985,
+    "function": "rsvp",
+    "action": "AuditAction.RSVP_UPDATE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/events.py",
+    "line": 1028,
+    "function": "send_rsvp_reminder",
+    "action": "AuditAction.EVENT_SEND_REMINDER",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 177,
+    "function": "profile",
+    "action": "AuditAction.READ_SENSITIVE_SELF",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 215,
+    "function": "profile",
+    "action": "AuditAction.UPDATE_SENSITIVE_SELF",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 651,
+    "function": "google_email_verify",
+    "action": "AuditAction.GOOGLE_EMAIL_VERIFIED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 722,
+    "function": "_send_google_email_verification",
+    "action": "AuditAction.GOOGLE_EMAIL_VERIFY_REQUESTED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 749,
+    "function": "calendar_feed_enable",
+    "action": "AuditAction.CALENDAR_FEED_ENABLED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 767,
+    "function": "calendar_feed_regenerate",
+    "action": "AuditAction.CALENDAR_FEED_REGENERATED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/member.py",
+    "line": 785,
+    "function": "calendar_feed_disable",
+    "action": "AuditAction.CALENDAR_FEED_DISABLED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/notifications.py",
+    "line": 46,
+    "function": "subscribe",
+    "action": "AuditAction.PUSH_SUBSCRIBE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/routes/notifications.py",
+    "line": 70,
+    "function": "unsubscribe",
+    "action": "AuditAction.PUSH_UNSUBSCRIBE",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 869,
+    "function": "upload_document",
+    "action": "AuditAction.DOCUMENT_UPLOADED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1162,
+    "function": "move_document",
+    "action": "AuditAction.DOCUMENT_MOVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1185,
+    "function": "archive_document",
+    "action": "AuditAction.DOCUMENT_ARCHIVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1215,
+    "function": "restore_document",
+    "action": "AuditAction.DOCUMENT_RESTORED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1260,
+    "function": "permanently_delete_document",
+    "action": "AuditAction.DOCUMENT_PERMANENTLY_DELETED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1301,
+    "function": "rename_document",
+    "action": "AuditAction.DOCUMENT_RENAMED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1344,
+    "function": "auto_sync_document",
+    "action": "AuditAction.DOCUMENT_AUTO_REMOVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1364,
+    "function": "auto_sync_document",
+    "action": "AuditAction.DOCUMENT_AUTO_REMOVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1387,
+    "function": "auto_sync_document",
+    "action": "AuditAction.DOCUMENT_AUTO_SYNCED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1444,
+    "function": "admin_full_resync",
+    "action": "AuditAction.DOCUMENT_AUTO_IMPORTED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1471,
+    "function": "admin_full_resync",
+    "action": "AuditAction.DOCUMENT_AUTO_REMOVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1484,
+    "function": "admin_full_resync",
+    "action": "AuditAction.DRIVE_RESYNC_RAN",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1517,
+    "function": "invite_member_to_drive",
+    "action": "AuditAction.DRIVE_MEMBERSHIP_FAILED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1526,
+    "function": "invite_member_to_drive",
+    "action": "AuditAction.DRIVE_MEMBERSHIP_ADDED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1577,
+    "function": "remove_member_from_drive",
+    "action": "AuditAction.DRIVE_MEMBERSHIP_REMOVED",
+    "status": "inventoried_not_individually_verified"
+  },
+  {
+    "file": "backend/services/drive_storage.py",
+    "line": 1603,
+    "function": "_handle_quota_error",
+    "action": "AuditAction.DRIVE_QUOTA_EXCEEDED",
+    "status": "inventoried_not_individually_verified"
+  }
+]

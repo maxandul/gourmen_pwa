@@ -1,0 +1,71 @@
+[
+  {
+    "case": "valid_backup_code_rejected",
+    "result": {
+      "stored_hash_verifies": true,
+      "http": 200,
+      "authenticated": false,
+      "used": false
+    }
+  },
+  {
+    "case": "totp_repeat_and_logging",
+    "result": {
+      "same_code_attempts": [
+        {
+          "http": 302,
+          "authenticated": true
+        },
+        {
+          "http": 302,
+          "authenticated": true
+        }
+      ],
+      "submitted_code_in_log": true
+    }
+  },
+  {
+    "case": "trust_created_before_mfa_enrollment",
+    "result": {
+      "remember_before_mfa_http": 302,
+      "enrollment_http": 302,
+      "subsequent_location": "/dashboard/",
+      "authenticated_without_new_totp": true,
+      "enrollment_secret_in_log": true
+    }
+  },
+  {
+    "case": "reenrollment_cannot_get_fresh_backup_codes",
+    "result": {
+      "reenabled": true,
+      "backup_page_http": 302,
+      "total_codes": 1,
+      "valid_codes": 0
+    }
+  },
+  {
+    "case": "enrollment_secret_survives_account_switch",
+    "result": {
+      "same_setup_secret_across_accounts": true
+    }
+  },
+  {
+    "case": "reset_get_and_old_device_after_reenroll",
+    "result": {
+      "reset_get_http": 302,
+      "disabled_by_get": true,
+      "token_after_get": "used",
+      "old_device_location": "/dashboard/",
+      "old_device_authenticated_without_new_totp": true
+    }
+  },
+  {
+    "case": "invalid_totp_and_anonymous_device_guards",
+    "result": {
+      "invalid_totp_http": 200,
+      "invalid_totp_authenticated": false,
+      "anonymous_remember_http": 302,
+      "anonymous_remember_location": "/auth/login?next=%2Fauth%2F2fa%2Fremember-device"
+    }
+  }
+]

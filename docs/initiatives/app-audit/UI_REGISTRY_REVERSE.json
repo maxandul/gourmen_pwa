@@ -1,0 +1,3349 @@
+{
+  "method": "Literal class attributes in tracked templates, Jinja masked. Missing block name in UI.md section 5 is a candidate, not proof of missing CSS or reachable runtime use. Macro strings, JS generation, assembled tokens and HTML comments need manual review.",
+  "families": {
+    "accounting-chart-modal": [
+      {
+        "class": "accounting-chart-modal__container",
+        "path": "templates/accounting/_tab_statistik.html",
+        "line": 185
+      },
+      {
+        "class": "accounting-chart-modal__body",
+        "path": "templates/accounting/_tab_statistik.html",
+        "line": 192
+      },
+      {
+        "class": "accounting-chart-modal__container",
+        "path": "templates/accounting/stats.html",
+        "line": 249
+      },
+      {
+        "class": "accounting-chart-modal__body",
+        "path": "templates/accounting/stats.html",
+        "line": 256
+      }
+    ],
+    "accounting-receipt-upload": [
+      {
+        "class": "accounting-receipt-upload",
+        "path": "templates/accounting/receipt_upload.html",
+        "line": 27
+      },
+      {
+        "class": "accounting-receipt-upload__tagging",
+        "path": "templates/accounting/receipt_upload.html",
+        "line": 75
+      },
+      {
+        "class": "accounting-receipt-upload__picker-panel",
+        "path": "templates/accounting/receipt_upload.html",
+        "line": 80
+      }
+    ],
+    "app-shell-install-banner": [
+      {
+        "class": "app-shell-install-banner__steps",
+        "path": "templates/member/technical.html",
+        "line": 239
+      }
+    ],
+    "backup-code": [
+      {
+        "class": "backup-code",
+        "path": "templates/auth/backup_codes.html",
+        "line": 30
+      }
+    ],
+    "billbro-guess-ranking-table": [
+      {
+        "class": "billbro-guess-ranking-table",
+        "path": "templates/events/detail.html",
+        "line": 546
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-rank",
+        "path": "templates/events/detail.html",
+        "line": 549
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-name",
+        "path": "templates/events/detail.html",
+        "line": 550
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-num",
+        "path": "templates/events/detail.html",
+        "line": 551
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-num",
+        "path": "templates/events/detail.html",
+        "line": 552
+      },
+      {
+        "class": "billbro-guess-ranking-table__row--current",
+        "path": "templates/events/detail.html",
+        "line": 557
+      },
+      {
+        "class": "billbro-guess-ranking-table__row--rank-1",
+        "path": "templates/events/detail.html",
+        "line": 557
+      },
+      {
+        "class": "billbro-guess-ranking-table__row--rank-2",
+        "path": "templates/events/detail.html",
+        "line": 557
+      },
+      {
+        "class": "billbro-guess-ranking-table__row--rank-3",
+        "path": "templates/events/detail.html",
+        "line": 557
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-rank",
+        "path": "templates/events/detail.html",
+        "line": 558
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-name",
+        "path": "templates/events/detail.html",
+        "line": 559
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-num",
+        "path": "templates/events/detail.html",
+        "line": 560
+      },
+      {
+        "class": "billbro-guess-ranking-table__col-num",
+        "path": "templates/events/detail.html",
+        "line": 561
+      }
+    ],
+    "billbro-workflow-block": [
+      {
+        "class": "billbro-workflow-block",
+        "path": "templates/accounting/index.html",
+        "line": 733
+      },
+      {
+        "class": "billbro-workflow-block",
+        "path": "templates/events/detail.html",
+        "line": 324
+      }
+    ],
+    "btn-remove": [
+      {
+        "class": "btn-remove",
+        "path": "templates/member/merch/order.html",
+        "line": 89
+      },
+      {
+        "class": "btn-remove",
+        "path": "templates/member/merch/order.html",
+        "line": 240
+      }
+    ],
+    "btn-success": [
+      {
+        "class": "btn-success",
+        "path": "templates/admin/create_event.html",
+        "line": 190
+      },
+      {
+        "class": "btn-success",
+        "path": "templates/events/edit.html",
+        "line": 190
+      }
+    ],
+    "calendar-subscribe": [
+      {
+        "class": "calendar-subscribe__url-row",
+        "path": "templates/member/technical.html",
+        "line": 67
+      },
+      {
+        "class": "calendar-subscribe__url-input",
+        "path": "templates/member/technical.html",
+        "line": 68
+      },
+      {
+        "class": "calendar-subscribe__copy-btn",
+        "path": "templates/member/technical.html",
+        "line": 69
+      },
+      {
+        "class": "calendar-subscribe__howto",
+        "path": "templates/member/technical.html",
+        "line": 78
+      },
+      {
+        "class": "calendar-subscribe__platform",
+        "path": "templates/member/technical.html",
+        "line": 84
+      },
+      {
+        "class": "calendar-subscribe__platform-title",
+        "path": "templates/member/technical.html",
+        "line": 85
+      },
+      {
+        "class": "calendar-subscribe__steps",
+        "path": "templates/member/technical.html",
+        "line": 86
+      },
+      {
+        "class": "calendar-subscribe__platform",
+        "path": "templates/member/technical.html",
+        "line": 92
+      },
+      {
+        "class": "calendar-subscribe__platform-title",
+        "path": "templates/member/technical.html",
+        "line": 93
+      },
+      {
+        "class": "calendar-subscribe__steps",
+        "path": "templates/member/technical.html",
+        "line": 94
+      },
+      {
+        "class": "calendar-subscribe__platform",
+        "path": "templates/member/technical.html",
+        "line": 101
+      },
+      {
+        "class": "calendar-subscribe__platform-title",
+        "path": "templates/member/technical.html",
+        "line": 102
+      },
+      {
+        "class": "calendar-subscribe__steps",
+        "path": "templates/member/technical.html",
+        "line": 103
+      },
+      {
+        "class": "calendar-subscribe__hint",
+        "path": "templates/member/technical.html",
+        "line": 111
+      },
+      {
+        "class": "calendar-subscribe__actions",
+        "path": "templates/member/technical.html",
+        "line": 114
+      }
+    ],
+    "card-description": [
+      {
+        "class": "card-description",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 143
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 23
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 54
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 57
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 66
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 131
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 141
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 158
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 230
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 253
+      },
+      {
+        "class": "card-description",
+        "path": "templates/member/technical.html",
+        "line": 269
+      }
+    ],
+    "chip-select": [
+      {
+        "class": "chip-select",
+        "path": "templates/admin/merch/index.html",
+        "line": 130
+      },
+      {
+        "class": "chip-select--",
+        "path": "templates/admin/merch/index.html",
+        "line": 130
+      },
+      {
+        "class": "chip-select",
+        "path": "templates/events/detail.html",
+        "line": 144
+      },
+      {
+        "class": "chip-select--yes",
+        "path": "templates/events/detail.html",
+        "line": 144
+      },
+      {
+        "class": "chip-select--no",
+        "path": "templates/events/detail.html",
+        "line": 144
+      },
+      {
+        "class": "chip-select--neutral",
+        "path": "templates/events/detail.html",
+        "line": 144
+      },
+      {
+        "class": "chip-select",
+        "path": "templates/events/index.html",
+        "line": 178
+      },
+      {
+        "class": "chip-select--yes",
+        "path": "templates/events/index.html",
+        "line": 178
+      },
+      {
+        "class": "chip-select--no",
+        "path": "templates/events/index.html",
+        "line": 178
+      },
+      {
+        "class": "chip-select--neutral",
+        "path": "templates/events/index.html",
+        "line": 178
+      },
+      {
+        "class": "chip-select",
+        "path": "templates/events/index.html",
+        "line": 287
+      },
+      {
+        "class": "chip-select--yes",
+        "path": "templates/events/index.html",
+        "line": 287
+      },
+      {
+        "class": "chip-select--no",
+        "path": "templates/events/index.html",
+        "line": 287
+      },
+      {
+        "class": "chip-select--neutral",
+        "path": "templates/events/index.html",
+        "line": 287
+      }
+    ],
+    "chip-select-wrap": [
+      {
+        "class": "chip-select-wrap",
+        "path": "templates/admin/merch/index.html",
+        "line": 129
+      },
+      {
+        "class": "chip-select-wrap",
+        "path": "templates/events/detail.html",
+        "line": 143
+      },
+      {
+        "class": "chip-select-wrap",
+        "path": "templates/events/index.html",
+        "line": 177
+      },
+      {
+        "class": "chip-select-wrap",
+        "path": "templates/events/index.html",
+        "line": 286
+      }
+    ],
+    "close-btn": [
+      {
+        "class": "close-btn",
+        "path": "templates/admin/create_event.html",
+        "line": 185
+      },
+      {
+        "class": "close-btn",
+        "path": "templates/events/edit.html",
+        "line": 185
+      }
+    ],
+    "cls": [
+      {
+        "class": "cls",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1258
+      }
+    ],
+    "color-select": [
+      {
+        "class": "color-select",
+        "path": "templates/member/merch/index.html",
+        "line": 75
+      },
+      {
+        "class": "color-select",
+        "path": "templates/member/merch/order.html",
+        "line": 45
+      },
+      {
+        "class": "color-select",
+        "path": "templates/member/merch/order.html",
+        "line": 198
+      },
+      {
+        "class": "color-select",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 47
+      },
+      {
+        "class": "color-select",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 93
+      }
+    ],
+    "dashboard-explore-nav": [
+      {
+        "class": "dashboard-explore-nav",
+        "path": "templates/dashboard/index.html",
+        "line": 231
+      }
+    ],
+    "docs-file-list": [
+      {
+        "class": "docs-file-list",
+        "path": "templates/docs/folder.html",
+        "line": 107
+      }
+    ],
+    "event-detail-nav": [
+      {
+        "class": "event-detail-nav",
+        "path": "templates/events/detail.html",
+        "line": 32
+      },
+      {
+        "class": "event-detail-nav__prev",
+        "path": "templates/events/detail.html",
+        "line": 34
+      },
+      {
+        "class": "event-detail-nav__next",
+        "path": "templates/events/detail.html",
+        "line": 40
+      }
+    ],
+    "events-archive-filter": [
+      {
+        "class": "events-archive-filter",
+        "path": "templates/events/index.html",
+        "line": 339
+      }
+    ],
+    "events-archive-panel": [
+      {
+        "class": "events-archive-panel",
+        "path": "templates/events/index.html",
+        "line": 334
+      }
+    ],
+    "events-archive-toolbar": [
+      {
+        "class": "events-archive-toolbar",
+        "path": "templates/events/index.html",
+        "line": 338
+      }
+    ],
+    "events-cleanup-intro": [
+      {
+        "class": "events-cleanup-intro",
+        "path": "templates/events/cleanup.html",
+        "line": 30
+      }
+    ],
+    "events-planning-strip": [
+      {
+        "class": "events-planning-strip",
+        "path": "templates/events/detail.html",
+        "line": 50
+      }
+    ],
+    "events-stats-chart-expand-btn": [
+      {
+        "class": "events-stats-chart-expand-btn",
+        "path": "templates/events/index.html",
+        "line": 554
+      },
+      {
+        "class": "events-stats-chart-expand-btn",
+        "path": "templates/events/index.html",
+        "line": 582
+      },
+      {
+        "class": "events-stats-chart-expand-btn",
+        "path": "templates/events/index.html",
+        "line": 611
+      },
+      {
+        "class": "events-stats-chart-expand-btn",
+        "path": "templates/events/index.html",
+        "line": 680
+      },
+      {
+        "class": "events-stats-chart-expand-btn",
+        "path": "templates/events/index.html",
+        "line": 709
+      }
+    ],
+    "events-stats-chart-modal": [
+      {
+        "class": "events-stats-chart-modal__container",
+        "path": "templates/events/index.html",
+        "line": 738
+      },
+      {
+        "class": "events-stats-chart-modal__body",
+        "path": "templates/events/index.html",
+        "line": 745
+      }
+    ],
+    "events-stats-summary-insights": [
+      {
+        "class": "events-stats-summary-insights",
+        "path": "templates/events/index.html",
+        "line": 497
+      }
+    ],
+    "events-year-planning-list": [
+      {
+        "class": "events-year-planning-list",
+        "path": "templates/events/year_planning.html",
+        "line": 32
+      }
+    ],
+    "eyebrow": [
+      {
+        "class": "eyebrow",
+        "path": "templates/public/landing.html",
+        "line": 53
+      }
+    ],
+    "flash-": [
+      {
+        "class": "flash-",
+        "path": "templates/partials/_flash_messages.html",
+        "line": 23
+      }
+    ],
+    "flash-close": [
+      {
+        "class": "flash-close",
+        "path": "templates/partials/_flash_messages.html",
+        "line": 28
+      }
+    ],
+    "flash-messages": [
+      {
+        "class": "flash-messages",
+        "path": "templates/partials/_flash_messages.html",
+        "line": 4
+      }
+    ],
+    "form-control": [
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 45
+      },
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 58
+      },
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 73
+      },
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 198
+      },
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 209
+      },
+      {
+        "class": "form-control",
+        "path": "templates/member/merch/order.html",
+        "line": 224
+      }
+    ],
+    "form-group": [
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 42
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 55
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 66
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 79
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 86
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 195
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 206
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 217
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 230
+      },
+      {
+        "class": "form-group",
+        "path": "templates/member/merch/order.html",
+        "line": 237
+      }
+    ],
+    "form-help": [
+      {
+        "class": "form-help",
+        "path": "templates/admin/create_event.html",
+        "line": 420
+      }
+    ],
+    "form-row": [
+      {
+        "class": "form-row",
+        "path": "templates/accounting/_tab_kontenplan.html",
+        "line": 13
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/_tab_kontenplan.html",
+        "line": 25
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/account_edit.html",
+        "line": 28
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/account_edit.html",
+        "line": 40
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/accounts.html",
+        "line": 34
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/accounts.html",
+        "line": 46
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 95
+      },
+      {
+        "class": "form-row--inline-submit",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 95
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 130
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 152
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/booking_new.html",
+        "line": 71
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/booking_new.html",
+        "line": 109
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/import_review.html",
+        "line": 96
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/index.html",
+        "line": 52
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/index.html",
+        "line": 221
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/index.html",
+        "line": 335
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/index.html",
+        "line": 689
+      },
+      {
+        "class": "form-row--inline-submit",
+        "path": "templates/accounting/index.html",
+        "line": 689
+      },
+      {
+        "class": "form-row",
+        "path": "templates/accounting/stats.html",
+        "line": 35
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_event.html",
+        "line": 372
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_event.html",
+        "line": 429
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 30
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 35
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 39
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 49
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 53
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 63
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 74
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 100
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 104
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 134
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/create_member.html",
+        "line": 148
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 30
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 35
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 45
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 49
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 53
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 63
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 67
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 80
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 91
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 102
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/edit_member_enhanced.html",
+        "line": 119
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/member_sensitive.html",
+        "line": 32
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/member_sensitive.html",
+        "line": 52
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 49
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 92
+      },
+      {
+        "class": "form-row--inline-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 92
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 113
+      },
+      {
+        "class": "form-row--inline-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 113
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 141
+      },
+      {
+        "class": "form-row--inline-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 141
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 162
+      },
+      {
+        "class": "form-row--inline-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 162
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/index.html",
+        "line": 75
+      },
+      {
+        "class": "form-row",
+        "path": "templates/admin/merch/order_detail.html",
+        "line": 38
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/cleanup.html",
+        "line": 156
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/detail.html",
+        "line": 418
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/detail.html",
+        "line": 1009
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/detail.html",
+        "line": 1050
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/edit.html",
+        "line": 383
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/edit.html",
+        "line": 435
+      },
+      {
+        "class": "form-row",
+        "path": "templates/events/index.html",
+        "line": 59
+      },
+      {
+        "class": "form-row",
+        "path": "templates/ggl/index.html",
+        "line": 35
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/merch/index.html",
+        "line": 70
+      },
+      {
+        "class": "form-row--stacked",
+        "path": "templates/member/merch/index.html",
+        "line": 70
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/merch/index.html",
+        "line": 71
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 40
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 43
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 89
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 61
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 79
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 97
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 134
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 152
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 181
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 218
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 403
+      },
+      {
+        "class": "form-row",
+        "path": "templates/member/profile.html",
+        "line": 440
+      }
+    ],
+    "ggl-chart": [
+      {
+        "class": "ggl-chart__intro",
+        "path": "templates/ggl/index.html",
+        "line": 183
+      },
+      {
+        "class": "ggl-chart",
+        "path": "templates/ggl/index.html",
+        "line": 184
+      },
+      {
+        "class": "ggl-chart__scroll",
+        "path": "templates/ggl/index.html",
+        "line": 185
+      },
+      {
+        "class": "ggl-chart__container",
+        "path": "templates/ggl/index.html",
+        "line": 186
+      },
+      {
+        "class": "ggl-chart__labels",
+        "path": "templates/ggl/index.html",
+        "line": 189
+      },
+      {
+        "class": "ggl-chart__note",
+        "path": "templates/ggl/index.html",
+        "line": 192
+      },
+      {
+        "class": "ggl-chart__intro",
+        "path": "templates/ggl/index.html",
+        "line": 214
+      },
+      {
+        "class": "ggl-chart",
+        "path": "templates/ggl/index.html",
+        "line": 215
+      },
+      {
+        "class": "ggl-chart__scroll",
+        "path": "templates/ggl/index.html",
+        "line": 216
+      },
+      {
+        "class": "ggl-chart__container",
+        "path": "templates/ggl/index.html",
+        "line": 217
+      },
+      {
+        "class": "ggl-chart__labels",
+        "path": "templates/ggl/index.html",
+        "line": 220
+      },
+      {
+        "class": "ggl-chart__note",
+        "path": "templates/ggl/index.html",
+        "line": 223
+      }
+    ],
+    "ggl-chart-expand-btn": [
+      {
+        "class": "ggl-chart-expand-btn",
+        "path": "templates/ggl/index.html",
+        "line": 174
+      },
+      {
+        "class": "ggl-chart-expand-btn",
+        "path": "templates/ggl/index.html",
+        "line": 205
+      }
+    ],
+    "ggl-chart-modal": [
+      {
+        "class": "ggl-chart-modal__container",
+        "path": "templates/ggl/index.html",
+        "line": 236
+      },
+      {
+        "class": "ggl-chart-modal__body",
+        "path": "templates/ggl/index.html",
+        "line": 243
+      }
+    ],
+    "hamburg-app": [
+      {
+        "class": "hamburg-app",
+        "path": "templates/events/hamburg2026.html",
+        "line": 847
+      }
+    ],
+    "hamburg-back": [
+      {
+        "class": "hamburg-back",
+        "path": "templates/events/hamburg2026.html",
+        "line": 831
+      },
+      {
+        "class": "hamburg-back__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 832
+      }
+    ],
+    "hamburg-checklist": [
+      {
+        "class": "hamburg-checklist",
+        "path": "templates/events/hamburg2026.html",
+        "line": 915
+      },
+      {
+        "class": "hamburg-checklist__reset",
+        "path": "templates/events/hamburg2026.html",
+        "line": 916
+      },
+      {
+        "class": "hamburg-checklist__group",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1409
+      },
+      {
+        "class": "hamburg-checklist__group-title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1410
+      },
+      {
+        "class": "hamburg-checklist__checkbox",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1415
+      },
+      {
+        "class": "hamburg-checklist__label",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1417
+      }
+    ],
+    "hamburg-contacts": [
+      {
+        "class": "hamburg-contacts__group",
+        "path": "templates/events/hamburg2026.html",
+        "line": 968
+      },
+      {
+        "class": "hamburg-contacts__group-title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 969
+      },
+      {
+        "class": "hamburg-contacts__list",
+        "path": "templates/events/hamburg2026.html",
+        "line": 970
+      },
+      {
+        "class": "hamburg-contacts__group",
+        "path": "templates/events/hamburg2026.html",
+        "line": 973
+      },
+      {
+        "class": "hamburg-contacts__group-title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 974
+      },
+      {
+        "class": "hamburg-contacts__emergency",
+        "path": "templates/events/hamburg2026.html",
+        "line": 975
+      },
+      {
+        "class": "hamburg-contacts__emergency-item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 976
+      },
+      {
+        "class": "hamburg-contacts__emergency-number",
+        "path": "templates/events/hamburg2026.html",
+        "line": 977
+      },
+      {
+        "class": "hamburg-contacts__emergency-label",
+        "path": "templates/events/hamburg2026.html",
+        "line": 978
+      },
+      {
+        "class": "hamburg-contacts__emergency-item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 980
+      },
+      {
+        "class": "hamburg-contacts__emergency-number",
+        "path": "templates/events/hamburg2026.html",
+        "line": 981
+      },
+      {
+        "class": "hamburg-contacts__emergency-label",
+        "path": "templates/events/hamburg2026.html",
+        "line": 982
+      },
+      {
+        "class": "hamburg-contacts__emergency-item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 984
+      },
+      {
+        "class": "hamburg-contacts__emergency-number",
+        "path": "templates/events/hamburg2026.html",
+        "line": 985
+      },
+      {
+        "class": "hamburg-contacts__emergency-label",
+        "path": "templates/events/hamburg2026.html",
+        "line": 986
+      },
+      {
+        "class": "hamburg-contacts__link",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1376
+      },
+      {
+        "class": "hamburg-contacts__link",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1377
+      },
+      {
+        "class": "hamburg-contacts__role",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1378
+      },
+      {
+        "class": "hamburg-contacts__item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1379
+      },
+      {
+        "class": "hamburg-contacts__name",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1380
+      },
+      {
+        "class": "hamburg-contacts__role",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1381
+      },
+      {
+        "class": "hamburg-contacts__links",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1382
+      }
+    ],
+    "hamburg-cost-intro": [
+      {
+        "class": "hamburg-cost-intro",
+        "path": "templates/events/hamburg2026.html",
+        "line": 926
+      }
+    ],
+    "hamburg-cost-table": [
+      {
+        "class": "hamburg-cost-table",
+        "path": "templates/events/hamburg2026.html",
+        "line": 930
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 940
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 941
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 942
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 943
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 944
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 945
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 946
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 947
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 948
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 949
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 950
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 951
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 952
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 953
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 954
+      },
+      {
+        "class": "hamburg-cost-table__dash",
+        "path": "templates/events/hamburg2026.html",
+        "line": 955
+      },
+      {
+        "class": "hamburg-cost-table__total",
+        "path": "templates/events/hamburg2026.html",
+        "line": 956
+      }
+    ],
+    "hamburg-cost-table-wrap": [
+      {
+        "class": "hamburg-cost-table-wrap",
+        "path": "templates/events/hamburg2026.html",
+        "line": 929
+      }
+    ],
+    "hamburg-disclosure": [
+      {
+        "class": "hamburg-disclosure",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1264
+      },
+      {
+        "class": "hamburg-disclosure__summary",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1265
+      },
+      {
+        "class": "hamburg-disclosure__body",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1266
+      },
+      {
+        "class": "hamburg-disclosure__intro",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1267
+      }
+    ],
+    "hamburg-footer": [
+      {
+        "class": "hamburg-footer",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1023
+      }
+    ],
+    "hamburg-hero": [
+      {
+        "class": "hamburg-hero",
+        "path": "templates/events/hamburg2026.html",
+        "line": 852
+      },
+      {
+        "class": "hamburg-hero__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 853
+      },
+      {
+        "class": "hamburg-hero__subtitle",
+        "path": "templates/events/hamburg2026.html",
+        "line": 854
+      },
+      {
+        "class": "hamburg-hero__countdown",
+        "path": "templates/events/hamburg2026.html",
+        "line": 856
+      },
+      {
+        "class": "hamburg-hero__countdown-label",
+        "path": "templates/events/hamburg2026.html",
+        "line": 857
+      },
+      {
+        "class": "hamburg-hero__countdown-value",
+        "path": "templates/events/hamburg2026.html",
+        "line": 858
+      },
+      {
+        "class": "hamburg-hero__pills",
+        "path": "templates/events/hamburg2026.html",
+        "line": 861
+      },
+      {
+        "class": "hamburg-hero__hints",
+        "path": "templates/events/hamburg2026.html",
+        "line": 867
+      },
+      {
+        "class": "hamburg-hero__hint",
+        "path": "templates/events/hamburg2026.html",
+        "line": 868
+      },
+      {
+        "class": "hamburg-hero__hint",
+        "path": "templates/events/hamburg2026.html",
+        "line": 869
+      }
+    ],
+    "hamburg-inspiration": [
+      {
+        "class": "hamburg-inspiration",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1269
+      },
+      {
+        "class": "hamburg-inspiration__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1270
+      },
+      {
+        "class": "hamburg-inspiration__body",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1271
+      }
+    ],
+    "hamburg-map": [
+      {
+        "class": "hamburg-map__attribution",
+        "path": "templates/events/hamburg2026.html",
+        "line": 903
+      }
+    ],
+    "hamburg-pill": [
+      {
+        "class": "hamburg-pill",
+        "path": "templates/events/hamburg2026.html",
+        "line": 862
+      },
+      {
+        "class": "hamburg-pill",
+        "path": "templates/events/hamburg2026.html",
+        "line": 863
+      },
+      {
+        "class": "hamburg-pill",
+        "path": "templates/events/hamburg2026.html",
+        "line": 864
+      }
+    ],
+    "hamburg-pin-list": [
+      {
+        "class": "hamburg-pin-list",
+        "path": "templates/events/hamburg2026.html",
+        "line": 904
+      },
+      {
+        "class": "hamburg-pin-list__website",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1307
+      },
+      {
+        "class": "hamburg-pin-list__item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1309
+      },
+      {
+        "class": "hamburg-pin-list__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1310
+      },
+      {
+        "class": "hamburg-pin-list__content",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1311
+      },
+      {
+        "class": "hamburg-pin-list__name",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1312
+      },
+      {
+        "class": "hamburg-pin-list__address",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1313
+      }
+    ],
+    "hamburg-rules": [
+      {
+        "class": "hamburg-rules",
+        "path": "templates/events/hamburg2026.html",
+        "line": 997
+      },
+      {
+        "class": "hamburg-rules__list",
+        "path": "templates/events/hamburg2026.html",
+        "line": 998
+      },
+      {
+        "class": "hamburg-rules__item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 999
+      },
+      {
+        "class": "hamburg-rules__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1000
+      },
+      {
+        "class": "hamburg-rules__text",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1001
+      },
+      {
+        "class": "hamburg-rules__item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1006
+      },
+      {
+        "class": "hamburg-rules__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1007
+      },
+      {
+        "class": "hamburg-rules__text",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1008
+      },
+      {
+        "class": "hamburg-rules__item",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1013
+      },
+      {
+        "class": "hamburg-rules__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1014
+      },
+      {
+        "class": "hamburg-rules__text",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1015
+      }
+    ],
+    "hamburg-section": [
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 876
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 877
+      },
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 900
+      },
+      {
+        "class": "hamburg-section--collapsible",
+        "path": "templates/events/hamburg2026.html",
+        "line": 900
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 901
+      },
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 910
+      },
+      {
+        "class": "hamburg-section--collapsible",
+        "path": "templates/events/hamburg2026.html",
+        "line": 910
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 911
+      },
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 924
+      },
+      {
+        "class": "hamburg-section--collapsible",
+        "path": "templates/events/hamburg2026.html",
+        "line": 924
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 925
+      },
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 965
+      },
+      {
+        "class": "hamburg-section--collapsible",
+        "path": "templates/events/hamburg2026.html",
+        "line": 965
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 966
+      },
+      {
+        "class": "hamburg-section",
+        "path": "templates/events/hamburg2026.html",
+        "line": 995
+      },
+      {
+        "class": "hamburg-section--collapsible",
+        "path": "templates/events/hamburg2026.html",
+        "line": 995
+      },
+      {
+        "class": "hamburg-section__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 996
+      }
+    ],
+    "hamburg-tabs": [
+      {
+        "class": "hamburg-tabs",
+        "path": "templates/events/hamburg2026.html",
+        "line": 879
+      },
+      {
+        "class": "hamburg-tabs__nav",
+        "path": "templates/events/hamburg2026.html",
+        "line": 880
+      },
+      {
+        "class": "hamburg-tabs__tab",
+        "path": "templates/events/hamburg2026.html",
+        "line": 881
+      },
+      {
+        "class": "hamburg-tabs__tab--active",
+        "path": "templates/events/hamburg2026.html",
+        "line": 881
+      },
+      {
+        "class": "hamburg-tabs__tab",
+        "path": "templates/events/hamburg2026.html",
+        "line": 883
+      },
+      {
+        "class": "hamburg-tabs__tab",
+        "path": "templates/events/hamburg2026.html",
+        "line": 885
+      },
+      {
+        "class": "hamburg-tabs__panel",
+        "path": "templates/events/hamburg2026.html",
+        "line": 890
+      },
+      {
+        "class": "hamburg-tabs__panel--active",
+        "path": "templates/events/hamburg2026.html",
+        "line": 890
+      },
+      {
+        "class": "hamburg-tabs__panel",
+        "path": "templates/events/hamburg2026.html",
+        "line": 892
+      },
+      {
+        "class": "hamburg-tabs__panel",
+        "path": "templates/events/hamburg2026.html",
+        "line": 893
+      }
+    ],
+    "hamburg-theme-toggle": [
+      {
+        "class": "hamburg-theme-toggle",
+        "path": "templates/events/hamburg2026.html",
+        "line": 838
+      },
+      {
+        "class": "hamburg-theme-toggle__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 839
+      },
+      {
+        "class": "hamburg-theme-toggle__icon--sun",
+        "path": "templates/events/hamburg2026.html",
+        "line": 839
+      },
+      {
+        "class": "hamburg-theme-toggle__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 842
+      },
+      {
+        "class": "hamburg-theme-toggle__icon--moon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 842
+      }
+    ],
+    "hamburg-timeline": [
+      {
+        "class": "hamburg-timeline",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1279
+      }
+    ],
+    "hamburg-timeline-item": [
+      {
+        "class": "hamburg-timeline-item__inline-link",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1055
+      },
+      {
+        "class": "hamburg-timeline-item__inline-link",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1055
+      },
+      {
+        "class": "hamburg-timeline-item__time",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1240
+      },
+      {
+        "class": "hamburg-timeline-item__time-secondary",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1241
+      },
+      {
+        "class": "hamburg-timeline-item__title",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1243
+      },
+      {
+        "class": "hamburg-timeline-item__icon",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1244
+      },
+      {
+        "class": "hamburg-timeline-item__details",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1246
+      },
+      {
+        "class": "hamburg-timeline-item__address",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1248
+      },
+      {
+        "class": "hamburg-timeline-item__note",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1251
+      },
+      {
+        "class": "hamburg-timeline-item__actions",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1253
+      },
+      {
+        "class": "hamburg-timeline-item__website",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1254
+      },
+      {
+        "class": "hamburg-timeline-item__content",
+        "path": "templates/events/hamburg2026.html",
+        "line": 1259
+      }
+    ],
+    "is-collapsed": [
+      {
+        "class": "is-collapsed",
+        "path": "templates/admin/merch/index.html",
+        "line": 343
+      },
+      {
+        "class": "is-collapsed",
+        "path": "templates/member/merch/index.html",
+        "line": 51
+      },
+      {
+        "class": "is-collapsed",
+        "path": "templates/member/merch/index.html",
+        "line": 274
+      }
+    ],
+    "js-add-variant": [
+      {
+        "class": "js-add-variant",
+        "path": "templates/member/merch/index.html",
+        "line": 118
+      },
+      {
+        "class": "js-add-variant",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 137
+      }
+    ],
+    "js-remove": [
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 101
+      },
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 121
+      },
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 150
+      },
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 170
+      },
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 222
+      },
+      {
+        "class": "js-remove",
+        "path": "templates/admin/merch/article_form.html",
+        "line": 237
+      }
+    ],
+    "landing-footer": [
+      {
+        "class": "landing-footer",
+        "path": "templates/public/about.html",
+        "line": 90
+      },
+      {
+        "class": "landing-footer__label",
+        "path": "templates/public/about.html",
+        "line": 91
+      },
+      {
+        "class": "landing-footer",
+        "path": "templates/public/landing.html",
+        "line": 167
+      },
+      {
+        "class": "landing-footer__label",
+        "path": "templates/public/landing.html",
+        "line": 168
+      },
+      {
+        "class": "landing-footer",
+        "path": "templates/public/restaurants.html",
+        "line": 155
+      },
+      {
+        "class": "landing-footer__label",
+        "path": "templates/public/restaurants.html",
+        "line": 156
+      }
+    ],
+    "landing-hero": [
+      {
+        "class": "landing-hero",
+        "path": "templates/public/landing.html",
+        "line": 51
+      },
+      {
+        "class": "landing-hero__text",
+        "path": "templates/public/landing.html",
+        "line": 52
+      },
+      {
+        "class": "landing-hero__visual",
+        "path": "templates/public/landing.html",
+        "line": 57
+      }
+    ],
+    "landing-hitlist-block": [
+      {
+        "class": "landing-hitlist-block",
+        "path": "templates/public/landing.html",
+        "line": 103
+      },
+      {
+        "class": "landing-hitlist-block",
+        "path": "templates/public/restaurants.html",
+        "line": 68
+      }
+    ],
+    "landing-hitlist-filter": [
+      {
+        "class": "landing-hitlist-filter",
+        "path": "templates/events/index.html",
+        "line": 339
+      },
+      {
+        "class": "landing-hitlist-filter__field",
+        "path": "templates/events/index.html",
+        "line": 347
+      },
+      {
+        "class": "landing-hitlist-filter",
+        "path": "templates/public/restaurants.html",
+        "line": 47
+      },
+      {
+        "class": "landing-hitlist-filter__field",
+        "path": "templates/public/restaurants.html",
+        "line": 50
+      },
+      {
+        "class": "landing-hitlist-filter__field--row",
+        "path": "templates/public/restaurants.html",
+        "line": 50
+      },
+      {
+        "class": "landing-hitlist-filter__field--grow",
+        "path": "templates/public/restaurants.html",
+        "line": 50
+      },
+      {
+        "class": "landing-hitlist-filter__submit",
+        "path": "templates/public/restaurants.html",
+        "line": 52
+      },
+      {
+        "class": "landing-hitlist-filter__clear",
+        "path": "templates/public/restaurants.html",
+        "line": 54
+      }
+    ],
+    "landing-hitlist-toolbar": [
+      {
+        "class": "landing-hitlist-toolbar",
+        "path": "templates/events/index.html",
+        "line": 338
+      },
+      {
+        "class": "landing-hitlist-toolbar",
+        "path": "templates/public/restaurants.html",
+        "line": 46
+      },
+      {
+        "class": "landing-hitlist-toolbar--split",
+        "path": "templates/public/restaurants.html",
+        "line": 46
+      }
+    ],
+    "landing-lead-quote": [
+      {
+        "class": "landing-lead-quote",
+        "path": "templates/public/landing.html",
+        "line": 55
+      }
+    ],
+    "landing-logo": [
+      {
+        "class": "landing-logo",
+        "path": "templates/public/landing.html",
+        "line": 58
+      }
+    ],
+    "landing-next-essen": [
+      {
+        "class": "landing-next-essen__date",
+        "path": "templates/public/landing.html",
+        "line": 78
+      },
+      {
+        "class": "landing-next-essen__dot",
+        "path": "templates/public/landing.html",
+        "line": 79
+      },
+      {
+        "class": "landing-next-essen__restaurant",
+        "path": "templates/public/landing.html",
+        "line": 80
+      },
+      {
+        "class": "landing-next-essen__date",
+        "path": "templates/public/landing.html",
+        "line": 82
+      },
+      {
+        "class": "landing-next-essen__dot",
+        "path": "templates/public/landing.html",
+        "line": 83
+      },
+      {
+        "class": "landing-next-essen__restaurant",
+        "path": "templates/public/landing.html",
+        "line": 84
+      },
+      {
+        "class": "landing-next-essen__restaurant",
+        "path": "templates/public/landing.html",
+        "line": 86
+      }
+    ],
+    "landing-pagination": [
+      {
+        "class": "landing-pagination",
+        "path": "templates/events/index.html",
+        "line": 432
+      },
+      {
+        "class": "landing-pagination__status",
+        "path": "templates/events/index.html",
+        "line": 439
+      },
+      {
+        "class": "landing-pagination",
+        "path": "templates/public/restaurants.html",
+        "line": 141
+      },
+      {
+        "class": "landing-pagination__status",
+        "path": "templates/public/restaurants.html",
+        "line": 145
+      }
+    ],
+    "landing-restaurants": [
+      {
+        "class": "landing-restaurants",
+        "path": "templates/public/landing.html",
+        "line": 98
+      },
+      {
+        "class": "landing-restaurants",
+        "path": "templates/public/restaurants.html",
+        "line": 33
+      },
+      {
+        "class": "landing-restaurants--page",
+        "path": "templates/public/restaurants.html",
+        "line": 33
+      }
+    ],
+    "landing-restaurants-table": [
+      {
+        "class": "landing-restaurants-table",
+        "path": "templates/public/landing.html",
+        "line": 111
+      },
+      {
+        "class": "landing-restaurants-table__col-ort",
+        "path": "templates/public/landing.html",
+        "line": 115
+      },
+      {
+        "class": "landing-restaurants-table__col-home",
+        "path": "templates/public/landing.html",
+        "line": 117
+      },
+      {
+        "class": "landing-restaurants-table__col-visited",
+        "path": "templates/public/landing.html",
+        "line": 118
+      },
+      {
+        "class": "landing-restaurants-table__col-ort",
+        "path": "templates/public/landing.html",
+        "line": 125
+      },
+      {
+        "class": "landing-restaurants-table__col-home",
+        "path": "templates/public/landing.html",
+        "line": 140
+      },
+      {
+        "class": "landing-restaurants-table__home-link",
+        "path": "templates/public/landing.html",
+        "line": 142
+      },
+      {
+        "class": "landing-restaurants-table__col-visited",
+        "path": "templates/public/landing.html",
+        "line": 150
+      },
+      {
+        "class": "landing-restaurants-table",
+        "path": "templates/public/restaurants.html",
+        "line": 92
+      },
+      {
+        "class": "landing-restaurants-table__col-kueche",
+        "path": "templates/public/restaurants.html",
+        "line": 96
+      },
+      {
+        "class": "landing-restaurants-table__col-ort",
+        "path": "templates/public/restaurants.html",
+        "line": 97
+      },
+      {
+        "class": "landing-restaurants-table__col-home",
+        "path": "templates/public/restaurants.html",
+        "line": 99
+      },
+      {
+        "class": "landing-restaurants-table__col-visited",
+        "path": "templates/public/restaurants.html",
+        "line": 100
+      },
+      {
+        "class": "landing-restaurants-table__col-kueche",
+        "path": "templates/public/restaurants.html",
+        "line": 107
+      },
+      {
+        "class": "landing-restaurants-table__col-ort",
+        "path": "templates/public/restaurants.html",
+        "line": 108
+      },
+      {
+        "class": "landing-restaurants-table__col-home",
+        "path": "templates/public/restaurants.html",
+        "line": 123
+      },
+      {
+        "class": "landing-restaurants-table__home-link",
+        "path": "templates/public/restaurants.html",
+        "line": 125
+      },
+      {
+        "class": "landing-restaurants-table__col-visited",
+        "path": "templates/public/restaurants.html",
+        "line": 133
+      }
+    ],
+    "lead": [
+      {
+        "class": "lead",
+        "path": "templates/public/landing.html",
+        "line": 55
+      }
+    ],
+    "logo-link": [
+      {
+        "class": "logo-link",
+        "path": "templates/partials/_user_bar.html",
+        "line": 12
+      },
+      {
+        "class": "logo-link",
+        "path": "templates/partials/_user_bar.html",
+        "line": 77
+      }
+    ],
+    "max-400": [
+      {
+        "class": "max-400",
+        "path": "templates/events/year_planning.html",
+        "line": 44
+      }
+    ],
+    "member-name": [
+      {
+        "class": "member-name",
+        "path": "templates/admin/temp_password.html",
+        "line": 42
+      }
+    ],
+    "mt-6": [
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 214
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 481
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 574
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 611
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 669
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 696
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 729
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 998
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/detail.html",
+        "line": 1092
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/index.html",
+        "line": 432
+      },
+      {
+        "class": "mt-6",
+        "path": "templates/events/year_planning.html",
+        "line": 44
+      }
+    ],
+    "nav-icon": [
+      {
+        "class": "nav-icon",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 4
+      },
+      {
+        "class": "nav-icon",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 10
+      },
+      {
+        "class": "nav-icon",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 19
+      },
+      {
+        "class": "nav-icon",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 30
+      }
+    ],
+    "nav-item": [
+      {
+        "class": "nav-item",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 3
+      },
+      {
+        "class": "nav-item--active",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 3
+      },
+      {
+        "class": "nav-item",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 9
+      },
+      {
+        "class": "nav-item--active",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 9
+      },
+      {
+        "class": "nav-item",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 18
+      },
+      {
+        "class": "nav-item--active",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 18
+      },
+      {
+        "class": "nav-item",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 29
+      },
+      {
+        "class": "nav-item--active",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 29
+      }
+    ],
+    "nav-text": [
+      {
+        "class": "nav-text",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 7
+      },
+      {
+        "class": "nav-text",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 16
+      },
+      {
+        "class": "nav-text",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 27
+      },
+      {
+        "class": "nav-text",
+        "path": "templates/partials/_bottom_nav.html",
+        "line": 33
+      }
+    ],
+    "order-info": [
+      {
+        "class": "order-info",
+        "path": "templates/member/merch/orders.html",
+        "line": 45
+      }
+    ],
+    "order-items": [
+      {
+        "class": "order-items",
+        "path": "templates/member/merch/orders.html",
+        "line": 70
+      }
+    ],
+    "page-info": [
+      {
+        "class": "page-info",
+        "path": "templates/member/profile.html",
+        "line": 375
+      }
+    ],
+    "page-subtitle": [
+      {
+        "class": "page-subtitle",
+        "path": "templates/errors/403.html",
+        "line": 17
+      },
+      {
+        "class": "page-subtitle",
+        "path": "templates/errors/404.html",
+        "line": 17
+      },
+      {
+        "class": "page-subtitle",
+        "path": "templates/errors/500.html",
+        "line": 17
+      }
+    ],
+    "participation-status": [
+      {
+        "class": "participation-status",
+        "path": "templates/events/detail.html",
+        "line": 283
+      },
+      {
+        "class": "participation-status--confirmed",
+        "path": "templates/events/detail.html",
+        "line": 283
+      },
+      {
+        "class": "participation-status",
+        "path": "templates/events/detail.html",
+        "line": 285
+      },
+      {
+        "class": "participation-status--declined",
+        "path": "templates/events/detail.html",
+        "line": 285
+      },
+      {
+        "class": "participation-status",
+        "path": "templates/events/detail.html",
+        "line": 288
+      },
+      {
+        "class": "participation-status--pending",
+        "path": "templates/events/detail.html",
+        "line": 288
+      }
+    ],
+    "places-details-body": [
+      {
+        "class": "places-details-body",
+        "path": "templates/admin/create_event.html",
+        "line": 187
+      },
+      {
+        "class": "places-details-body",
+        "path": "templates/events/edit.html",
+        "line": 187
+      }
+    ],
+    "places-details-header": [
+      {
+        "class": "places-details-header",
+        "path": "templates/admin/create_event.html",
+        "line": 183
+      },
+      {
+        "class": "places-details-header",
+        "path": "templates/events/edit.html",
+        "line": 183
+      }
+    ],
+    "places-error": [
+      {
+        "class": "places-error",
+        "path": "templates/admin/create_event.html",
+        "line": 228
+      },
+      {
+        "class": "places-error",
+        "path": "templates/events/edit.html",
+        "line": 228
+      }
+    ],
+    "places-no-results": [
+      {
+        "class": "places-no-results",
+        "path": "templates/admin/create_event.html",
+        "line": 143
+      },
+      {
+        "class": "places-no-results",
+        "path": "templates/events/edit.html",
+        "line": 143
+      }
+    ],
+    "places-result-main": [
+      {
+        "class": "places-result-main",
+        "path": "templates/admin/create_event.html",
+        "line": 153
+      },
+      {
+        "class": "places-result-main",
+        "path": "templates/events/edit.html",
+        "line": 153
+      }
+    ],
+    "places-result-secondary": [
+      {
+        "class": "places-result-secondary",
+        "path": "templates/admin/create_event.html",
+        "line": 154
+      },
+      {
+        "class": "places-result-secondary",
+        "path": "templates/events/edit.html",
+        "line": 154
+      }
+    ],
+    "price-display": [
+      {
+        "class": "price-display",
+        "path": "templates/member/merch/order.html",
+        "line": 81
+      },
+      {
+        "class": "price-display",
+        "path": "templates/member/merch/order.html",
+        "line": 232
+      }
+    ],
+    "price-group": [
+      {
+        "class": "price-group",
+        "path": "templates/member/merch/order.html",
+        "line": 79
+      },
+      {
+        "class": "price-group",
+        "path": "templates/member/merch/order.html",
+        "line": 230
+      }
+    ],
+    "price-value": [
+      {
+        "class": "price-value",
+        "path": "templates/member/merch/index.html",
+        "line": 111
+      },
+      {
+        "class": "price-value",
+        "path": "templates/member/merch/order.html",
+        "line": 82
+      },
+      {
+        "class": "price-value",
+        "path": "templates/member/merch/order.html",
+        "line": 233
+      },
+      {
+        "class": "price-value",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 84
+      },
+      {
+        "class": "price-value",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 129
+      }
+    ],
+    "quantity-input": [
+      {
+        "class": "quantity-input",
+        "path": "templates/member/merch/index.html",
+        "line": 103
+      },
+      {
+        "class": "quantity-input",
+        "path": "templates/member/merch/order.html",
+        "line": 73
+      },
+      {
+        "class": "quantity-input",
+        "path": "templates/member/merch/order.html",
+        "line": 224
+      },
+      {
+        "class": "quantity-input",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 77
+      },
+      {
+        "class": "quantity-input",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 121
+      }
+    ],
+    "rating-chip": [
+      {
+        "class": "rating-chip--dynamic",
+        "path": "templates/events/index.html",
+        "line": 412
+      },
+      {
+        "class": "rating-chip--dynamic",
+        "path": "templates/public/landing.html",
+        "line": 132
+      },
+      {
+        "class": "rating-chip--dynamic",
+        "path": "templates/public/restaurants.html",
+        "line": 115
+      }
+    ],
+    "remove-group": [
+      {
+        "class": "remove-group",
+        "path": "templates/member/merch/order.html",
+        "line": 86
+      },
+      {
+        "class": "remove-group",
+        "path": "templates/member/merch/order.html",
+        "line": 237
+      }
+    ],
+    "save-details-btn": [
+      {
+        "class": "save-details-btn",
+        "path": "templates/admin/create_event.html",
+        "line": 190
+      },
+      {
+        "class": "save-details-btn",
+        "path": "templates/events/edit.html",
+        "line": 190
+      }
+    ],
+    "security-tips": [
+      {
+        "class": "security-tips",
+        "path": "templates/member/security.html",
+        "line": 148
+      }
+    ],
+    "size-select": [
+      {
+        "class": "size-select",
+        "path": "templates/member/merch/index.html",
+        "line": 88
+      },
+      {
+        "class": "size-select",
+        "path": "templates/member/merch/order.html",
+        "line": 58
+      },
+      {
+        "class": "size-select",
+        "path": "templates/member/merch/order.html",
+        "line": 209
+      },
+      {
+        "class": "size-select",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 62
+      },
+      {
+        "class": "size-select",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 106
+      }
+    ],
+    "social-link": [
+      {
+        "class": "social-link",
+        "path": "templates/public/about.html",
+        "line": 93
+      },
+      {
+        "class": "social-link",
+        "path": "templates/public/about.html",
+        "line": 96
+      },
+      {
+        "class": "social-link",
+        "path": "templates/public/landing.html",
+        "line": 170
+      },
+      {
+        "class": "social-link",
+        "path": "templates/public/landing.html",
+        "line": 173
+      },
+      {
+        "class": "social-link",
+        "path": "templates/public/restaurants.html",
+        "line": 158
+      },
+      {
+        "class": "social-link",
+        "path": "templates/public/restaurants.html",
+        "line": 161
+      }
+    ],
+    "socials": [
+      {
+        "class": "socials",
+        "path": "templates/public/about.html",
+        "line": 92
+      },
+      {
+        "class": "socials",
+        "path": "templates/public/landing.html",
+        "line": 169
+      },
+      {
+        "class": "socials",
+        "path": "templates/public/restaurants.html",
+        "line": 157
+      }
+    ],
+    "status-form": [
+      {
+        "class": "status-form",
+        "path": "templates/admin/merch/index.html",
+        "line": 126
+      },
+      {
+        "class": "status-form",
+        "path": "templates/events/detail.html",
+        "line": 141
+      },
+      {
+        "class": "status-form",
+        "path": "templates/events/index.html",
+        "line": 175
+      },
+      {
+        "class": "status-form",
+        "path": "templates/events/index.html",
+        "line": 284
+      }
+    ],
+    "status-text": [
+      {
+        "class": "status-text",
+        "path": "templates/member/technical.html",
+        "line": 314
+      }
+    ],
+    "table": [
+      {
+        "class": "table",
+        "path": "templates/admin/merch/article_detail.html",
+        "line": 103
+      }
+    ],
+    "text-muted": [
+      {
+        "class": "text-muted",
+        "path": "templates/admin/create_event.html",
+        "line": 420
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 62
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 76
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 91
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 95
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 104
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/reset_member_2fa.html",
+        "line": 49
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/admin/reset_member_2fa.html",
+        "line": 52
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/_drive_quick_modals.html",
+        "line": 34
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/_drive_quick_modals.html",
+        "line": 81
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/_folder_picker_modal.html",
+        "line": 9
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/detail.html",
+        "line": 13
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/folder.html",
+        "line": 25
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/folder.html",
+        "line": 74
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/folder.html",
+        "line": 122
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/docs/index.html",
+        "line": 85
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 606
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 658
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 661
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 691
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 717
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 720
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 739
+      },
+      {
+        "class": "text-muted",
+        "path": "templates/events/detail.html",
+        "line": 813
+      }
+    ],
+    "text-secondary": [
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/_tab_statistik.html",
+        "line": 49
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/_tab_statistik.html",
+        "line": 103
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/_tab_statistik.html",
+        "line": 171
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 83
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 88
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 110
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 177
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 193
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_detail.html",
+        "line": 209
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/booking_new.html",
+        "line": 64
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/import_review.html",
+        "line": 22
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/import_review.html",
+        "line": 38
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 30
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 293
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 407
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 426
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 457
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 533
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 629
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 841
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/index.html",
+        "line": 860
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/stats.html",
+        "line": 108
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/stats.html",
+        "line": 164
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/accounting/stats.html",
+        "line": 234
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/admin/merch/index.html",
+        "line": 188
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/admin/merch/index.html",
+        "line": 252
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/admin/merch/index.html",
+        "line": 324
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/admin/merch/index.html",
+        "line": 413
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 176
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 177
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 185
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 187
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 204
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/dashboard/index.html",
+        "line": 211
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/cleanup.html",
+        "line": 30
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/detail.html",
+        "line": 407
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/detail.html",
+        "line": 410
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/detail.html",
+        "line": 1139
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 505
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 510
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 533
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 538
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 591
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 620
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 636
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 689
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/events/index.html",
+        "line": 718
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/ggl/index.html",
+        "line": 113
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/member/receipts.html",
+        "line": 55
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/landing.html",
+        "line": 125
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/landing.html",
+        "line": 137
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/landing.html",
+        "line": 147
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/restaurants.html",
+        "line": 107
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/restaurants.html",
+        "line": 108
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/restaurants.html",
+        "line": 120
+      },
+      {
+        "class": "text-secondary",
+        "path": "templates/public/restaurants.html",
+        "line": 130
+      }
+    ],
+    "text-warning": [
+      {
+        "class": "text-warning",
+        "path": "templates/admin/member_security_overview.html",
+        "line": 68
+      }
+    ],
+    "theme-switch": [
+      {
+        "class": "theme-switch",
+        "path": "templates/partials/_user_bar.html",
+        "line": 84
+      },
+      {
+        "class": "theme-switch__track",
+        "path": "templates/partials/_user_bar.html",
+        "line": 85
+      },
+      {
+        "class": "theme-switch__icon",
+        "path": "templates/partials/_user_bar.html",
+        "line": 86
+      },
+      {
+        "class": "theme-switch__icon--sun",
+        "path": "templates/partials/_user_bar.html",
+        "line": 86
+      },
+      {
+        "class": "theme-switch__icon",
+        "path": "templates/partials/_user_bar.html",
+        "line": 97
+      },
+      {
+        "class": "theme-switch__icon--moon",
+        "path": "templates/partials/_user_bar.html",
+        "line": 97
+      },
+      {
+        "class": "theme-switch__thumb",
+        "path": "templates/partials/_user_bar.html",
+        "line": 100
+      }
+    ],
+    "tool-strip": [
+      {
+        "class": "tool-strip__actions",
+        "path": "templates/accounting/index.html",
+        "line": 74
+      },
+      {
+        "class": "tool-strip__actions",
+        "path": "templates/events/detail.html",
+        "line": 58
+      },
+      {
+        "class": "tool-strip__actions",
+        "path": "templates/events/detail.html",
+        "line": 800
+      },
+      {
+        "class": "tool-strip__actions",
+        "path": "templates/events/index.html",
+        "line": 98
+      },
+      {
+        "class": "tool-strip__actions",
+        "path": "templates/member/technical.html",
+        "line": 303
+      },
+      {
+        "class": "tool-strip__actions--start",
+        "path": "templates/member/technical.html",
+        "line": 303
+      }
+    ],
+    "update-status": [
+      {
+        "class": "update-status",
+        "path": "templates/member/technical.html",
+        "line": 313
+      }
+    ],
+    "user-actions": [
+      {
+        "class": "user-actions",
+        "path": "templates/partials/_user_bar.html",
+        "line": 83
+      }
+    ],
+    "user-bar-logo": [
+      {
+        "class": "user-bar-logo",
+        "path": "templates/partials/_user_bar.html",
+        "line": 13
+      },
+      {
+        "class": "user-bar-logo",
+        "path": "templates/partials/_user_bar.html",
+        "line": 78
+      }
+    ],
+    "user-section": [
+      {
+        "class": "user-section",
+        "path": "templates/partials/_user_bar.html",
+        "line": 82
+      }
+    ],
+    "variant-row": [
+      {
+        "class": "variant-row",
+        "path": "templates/member/merch/index.html",
+        "line": 71
+      },
+      {
+        "class": "variant-row",
+        "path": "templates/member/merch/order.html",
+        "line": 40
+      },
+      {
+        "class": "variant-row",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 43
+      },
+      {
+        "class": "variant-row",
+        "path": "templates/member/merch/order_edit.html",
+        "line": 89
+      }
+    ],
+    "variant-row-content": [
+      {
+        "class": "variant-row-content",
+        "path": "templates/member/merch/order.html",
+        "line": 41
+      },
+      {
+        "class": "variant-row-content",
+        "path": "templates/member/merch/order.html",
+        "line": 194
+      }
+    ],
+    "variants-container": [
+      {
+        "class": "variants-container",
+        "path": "templates/member/merch/order.html",
+        "line": 38
+      }
+    ]
+  }
+}

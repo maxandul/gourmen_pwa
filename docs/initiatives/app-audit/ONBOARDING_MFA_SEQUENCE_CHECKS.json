@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-10",
+  "groups": 1,
+  "steps": {
+    "admin_create_status": 302,
+    "initial_password_login_status": 302,
+    "initial_password_login_authenticated": true,
+    "enroll_get_status": 200,
+    "enroll_post_status": 302,
+    "mfa_enabled_after_original_enrollment": true,
+    "onboarding_token_still_unused": true,
+    "normal_login_requires_mfa": true,
+    "activation_status": 302,
+    "activation_full_session": true,
+    "activation_no_mfa_challenge": true,
+    "dashboard_status": 200
+  },
+  "limits": "Complete original route chain, SQLite memory, synthetic account and local TOTP. Only mail transmission intercepted. Testing CSRF/rate limits disabled; memory-only crypto key. No real mail, credentials, production account or MFA secret output. Requires valid still-unused activation link within validity period; possession/frequency in production not measured."
+}

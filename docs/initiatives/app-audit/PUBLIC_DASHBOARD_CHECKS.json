@@ -1,0 +1,72 @@
+[
+  {
+    "case": "public_next_event_audience",
+    "result": {
+      "public_http": 200,
+      "public_restaurant": "AUDIT_BOARD_NEXT",
+      "dashboard_http": 200,
+      "dashboard_next": null,
+      "event_visible": false
+    }
+  },
+  {
+    "case": "dashboard_bill_link_after_audience_change",
+    "result": {
+      "http": 200,
+      "bill_selected": true,
+      "bill_link_rendered": true,
+      "target_http": 403,
+      "event_visible": false
+    }
+  },
+  {
+    "case": "today_event_public_date_boundary",
+    "result": {
+      "next_restaurant_at_noon": null,
+      "in_visited_table_at_noon": true
+    }
+  },
+  {
+    "case": "public_query_failure_becomes_empty_result",
+    "result": {
+      "http": 200,
+      "total": 0,
+      "query": "",
+      "sort": "rating",
+      "flashes": 0
+    }
+  },
+  {
+    "case": "search_pagination_and_invalid_parameters",
+    "result": {
+      "clamped_page": 2,
+      "pages": 2,
+      "total": 12,
+      "rows": 2,
+      "baseline": 12,
+      "search_total": 1,
+      "search_baseline": 12,
+      "invalid_input_http": 200,
+      "invalid_input_page": 1,
+      "invalid_input_sort": "rating"
+    }
+  },
+  {
+    "case": "same_name_different_restaurants_merged",
+    "result": {
+      "distinct_place_ids": 2,
+      "restaurant_rows": 1,
+      "cities": [
+        "City B"
+      ]
+    }
+  },
+  {
+    "case": "public_private_entry_guards",
+    "result": {
+      "anonymous_dashboard": 302,
+      "signed_landing_location": "/dashboard/",
+      "explicit_public_http": 200
+    }
+  }
+]

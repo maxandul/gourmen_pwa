@@ -1,0 +1,102 @@
+[
+  {
+    "case": "manual_booking_precision",
+    "result": {
+      "status": 302,
+      "location": "/accounting/booking/1",
+      "bookings": [
+        {
+          "date": "2026-06-01",
+          "fiscal_year": 2026,
+          "amount": 2000
+        }
+      ]
+    }
+  },
+  {
+    "case": "manual_booking_outside_year",
+    "result": {
+      "status": 302,
+      "location": "/accounting/booking/1",
+      "bookings": [
+        {
+          "date": "2025-06-01",
+          "fiscal_year": 2026,
+          "amount": 2000
+        }
+      ]
+    }
+  },
+  {
+    "case": "locked_in_review",
+    "result": {
+      "errors": [
+        "AccountingValidationError",
+        "AccountingValidationError"
+      ],
+      "booking_count": 1,
+      "amount": 1999
+    }
+  },
+  {
+    "case": "locked_closed",
+    "result": {
+      "errors": [
+        "AccountingValidationError",
+        "AccountingValidationError"
+      ],
+      "booking_count": 1,
+      "amount": 1999
+    }
+  },
+  {
+    "case": "move_receipt_out_of_closed_year",
+    "result": {
+      "status": 302,
+      "old_booking": 1,
+      "new_booking": 2,
+      "receipt_booking": 2,
+      "old_year_status": "closed"
+    }
+  },
+  {
+    "case": "read_create_role_matrix",
+    "result": [
+      {
+        "role": "admin",
+        "index": 200,
+        "new_booking": 200,
+        "detail": 200
+      },
+      {
+        "role": "treasurer",
+        "index": 200,
+        "new_booking": 200,
+        "detail": 200
+      },
+      {
+        "role": "reviewer",
+        "index": 200,
+        "new_booking": 403,
+        "detail": 200
+      },
+      {
+        "role": "member",
+        "index": 403,
+        "new_booking": 403,
+        "detail": 403
+      }
+    ]
+  },
+  {
+    "case": "private_payment_ownership_repeat",
+    "result": {
+      "errors_debtor_creditor_repeat": [
+        "AccountingValidationError",
+        null,
+        "AccountingValidationError"
+      ],
+      "paid": 2000
+    }
+  }
+]

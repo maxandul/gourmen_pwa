@@ -1,0 +1,189 @@
+{
+  "commit": "bf4d84aad2725070cf77f6d9fc5bc818a5e0a43f",
+  "branch": "master",
+  "scope": "git tracked + nonignored untracked, excluding audit outputs; no ignored runtime/user data",
+  "files": 442,
+  "tracked_files": 436,
+  "route_declarations": 172,
+  "templates": 83,
+  "source_css_files": 15,
+  "documents_and_rules": 47,
+  "template_pattern_counts": {
+    "tabs": 8,
+    "filter": 13,
+    "actions": 4,
+    "back": 37,
+    "workflow": 5,
+    "form": 45,
+    "card": 53,
+    "chart": 4,
+    "dialog": 6,
+    "custom_modal": 8,
+    "inline_style": 28,
+    "style_block": 2,
+    "inline_script": 26
+  },
+  "python_parse_errors": [],
+  "asset_check_failures": [
+    {
+      "source": "static/img/brand/logo-round-256.png",
+      "target": "static/img/brand/logo-round-256.341b1d65.png",
+      "source_exists": false,
+      "target_exists": false,
+      "same_content": false,
+      "filename_hash_valid": false,
+      "git_blob_hash_valid": false
+    },
+    {
+      "source": "static/img/brand/logo-round-512.png",
+      "target": "static/img/brand/logo-round-512.82218b1f.png",
+      "source_exists": false,
+      "target_exists": false,
+      "same_content": false,
+      "filename_hash_valid": false,
+      "git_blob_hash_valid": false
+    }
+  ],
+  "largest_source_files": [
+    {
+      "path": "static/css/v2/components.css",
+      "tracked": true,
+      "bytes": 156642,
+      "lines": 6758,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "docs/initiatives/_archive/2025_redesign/COMPONENT_LIBRARY.md",
+      "tracked": true,
+      "bytes": 57763,
+      "lines": 2221,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "static/js/pwa.js",
+      "tracked": true,
+      "bytes": 85791,
+      "lines": 1942,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/services/drive_storage.py",
+      "tracked": true,
+      "bytes": 56452,
+      "lines": 1611,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "static/css/features.css",
+      "tracked": true,
+      "bytes": 33872,
+      "lines": 1572,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "static/css/layout.css",
+      "tracked": true,
+      "bytes": 35133,
+      "lines": 1536,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "templates/events/hamburg2026.html",
+      "tracked": true,
+      "bytes": 64631,
+      "lines": 1443,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/routes/admin.py",
+      "tracked": true,
+      "bytes": 56842,
+      "lines": 1346,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "templates/events/detail.html",
+      "tracked": true,
+      "bytes": 86976,
+      "lines": 1295,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "docs/GDD_FOOD_POKEMON.md",
+      "tracked": false,
+      "bytes": 68219,
+      "lines": 1258,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/routes/accounting.py",
+      "tracked": true,
+      "bytes": 42260,
+      "lines": 1167,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/routes/events.py",
+      "tracked": true,
+      "bytes": 43301,
+      "lines": 1105,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "templates/accounting/index.html",
+      "tracked": true,
+      "bytes": 69275,
+      "lines": 1105,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/services/accounting.py",
+      "tracked": true,
+      "bytes": 43628,
+      "lines": 1069,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    },
+    {
+      "path": "backend/routes/billbro.py",
+      "tracked": true,
+      "bytes": 41592,
+      "lines": 1008,
+      "generated_candidate": false,
+      "review_status": "inventoried_only"
+    }
+  ],
+  "route_files": {
+    "backend/app.py": 6,
+    "backend/routes/accounting.py": 29,
+    "backend/routes/admin.py": 21,
+    "backend/routes/auth.py": 14,
+    "backend/routes/billbro.py": 18,
+    "backend/routes/calendar_feed.py": 1,
+    "backend/routes/cron.py": 5,
+    "backend/routes/dashboard.py": 1,
+    "backend/routes/demo.py": 1,
+    "backend/routes/docs.py": 13,
+    "backend/routes/events.py": 23,
+    "backend/routes/ggl.py": 2,
+    "backend/routes/member.py": 16,
+    "backend/routes/notifications.py": 4,
+    "backend/routes/public.py": 6,
+    "backend/routes/push_notifications.py": 6,
+    "backend/routes/ratings.py": 5,
+    "backend/routes/stats.py": 1
+  }
+}

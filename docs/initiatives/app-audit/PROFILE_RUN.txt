@@ -1,0 +1,95 @@
+C:\gourmen_pwa\backend\config.py:130: UserWarning: \u26a0\ufe0f  VAPID keys not configured! Push notifications will not work.
+   Set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.
+   Run: python scripts/generate_vapid_keys.py
+  warnings.warn(
+[2026-09-20 13:08:56,859] INFO in extensions: Flask-Limiter deaktiviert (RATELIMIT_ENABLED=False)
+[2026-09-20 13:08:58,221] INFO in app: Push notifications and cron jobs registered
+[2026-09-20 13:08:58,221] INFO in app: App created successfully - skipping migrations
+[2026-09-20 13:08:58,221] INFO in app: Flask app created and configured successfully
+[2026-09-20 13:08:58,674] INFO in security: Step-up access check: True
+[2026-09-20 13:08:58,674] INFO in security: Current time: 2026-09-20 13:08:58 (timestamp: 1789902538)
+[2026-09-20 13:08:58,674] INFO in security: Access until: 2026-09-20 13:18:58 (timestamp: 1789903138)
+[2026-09-20 13:08:58,674] INFO in security: Time difference: 600s
+[2026-09-20 13:08:58,680] INFO in security: Step-up access check: True
+[2026-09-20 13:08:58,680] INFO in security: Current time: 2026-09-20 13:08:58 (timestamp: 1789902538)
+[2026-09-20 13:08:58,680] INFO in security: Access until: 2026-09-20 13:18:58 (timestamp: 1789903138)
+[2026-09-20 13:08:58,680] INFO in security: Time difference: 600s
+[2026-09-20 13:08:58,911] INFO in security: Step-up access check: True
+[2026-09-20 13:08:58,911] INFO in security: Current time: 2026-09-20 13:08:58 (timestamp: 1789902538)
+[2026-09-20 13:08:58,911] INFO in security: Access until: 2026-09-20 13:18:58 (timestamp: 1789903138)
+[2026-09-20 13:08:58,911] INFO in security: Time difference: 600s
+[2026-09-20 13:08:58,911] INFO in security: require_step_up check for http://localhost/admin/members/2/sensitive: True
+[2026-09-20 13:08:58,976] INFO in security: Step-up access check: True
+[2026-09-20 13:08:58,976] INFO in security: Current time: 2026-09-20 13:08:58 (timestamp: 1789902538)
+[2026-09-20 13:08:58,976] INFO in security: Access until: 2026-09-20 13:18:58 (timestamp: 1789903138)
+[2026-09-20 13:08:58,976] INFO in security: Time difference: 600s
+[2026-09-20 13:08:58,976] INFO in security: require_step_up check for http://localhost/admin/members/2/sensitive: True
+[
+  {
+    "case": "profile_duplicate_email",
+    "result": {
+      "error": "IntegrityError",
+      "http": null,
+      "original_email_retained": true
+    }
+  },
+  {
+    "case": "negative_physical_values",
+    "result": {
+      "http": 302,
+      "height": -5,
+      "weight": -2,
+      "shoe": -1.0
+    }
+  },
+  {
+    "case": "clear_optional_and_ignore_privileged_fields",
+    "result": {
+      "http": 302,
+      "phone_cleared": true,
+      "role": "MEMBER",
+      "active": true
+    }
+  },
+  {
+    "case": "admin_invalid_numeric_field",
+    "result": {
+      "http": null,
+      "error": "ValueError",
+      "height": null
+    }
+  },
+  {
+    "case": "self_sensitive_get_deletes_on_error",
+    "result": {
+      "http": 200,
+      "error": null,
+      "sensitive_rows_after_get": 0
+    }
+  },
+  {
+    "case": "admin_sensitive_get_deletes_on_error",
+    "result": {
+      "http": null,
+      "error": "UndefinedError",
+      "sensitive_rows_after_get": 0
+    }
+  },
+  {
+    "case": "admin_sensitive_valid_data_render",
+    "result": {
+      "http": null,
+      "error": "UndefinedError",
+      "sensitive_rows": 1
+    }
+  },
+  {
+    "case": "member_admin_and_sensitive_guards",
+    "result": {
+      "admin_edit_http": 403,
+      "other_sensitive_http": 403,
+      "own_sensitive_without_step_http": 302,
+      "own_location": "/auth/step-up?next=/member/profile?tab%3Dsensitive"
+    }
+  }
+]

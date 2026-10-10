@@ -1,0 +1,101 @@
+{
+  "date": "2026-09-28",
+  "groups": 5,
+  "results": [
+    {
+      "case": "success",
+      "response": {
+        "status": 302,
+        "redirect": "/admin/members"
+      },
+      "member_exists": true,
+      "token_count": 1,
+      "audit_actions": [
+        "ADMIN_CREATE_MEMBER",
+        "SEND_ONBOARDING_MAIL"
+      ],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "flash_categories": [
+        "success"
+      ]
+    },
+    {
+      "case": "mail_failure",
+      "response": {
+        "status": 302,
+        "redirect": "/admin/members"
+      },
+      "member_exists": true,
+      "token_count": 1,
+      "audit_actions": [
+        "ADMIN_CREATE_MEMBER",
+        "SEND_ONBOARDING_MAIL"
+      ],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "flash_categories": [
+        "warning"
+      ]
+    },
+    {
+      "case": "first_audit_failure",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "member_exists": true,
+      "token_count": 0,
+      "audit_actions": [],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "flash_categories": []
+    },
+    {
+      "case": "second_audit_failure",
+      "response": {
+        "exception": "PendingRollbackError"
+      },
+      "member_exists": true,
+      "token_count": 1,
+      "audit_actions": [
+        "ADMIN_CREATE_MEMBER"
+      ],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "flash_categories": []
+    },
+    {
+      "case": "mail_exception",
+      "response": {
+        "exception": "RuntimeError"
+      },
+      "member_exists": true,
+      "token_count": 0,
+      "audit_actions": [],
+      "intercepted_mail_calls": 1,
+      "mail_observations": [
+        {
+          "pending_token_in_session": false
+        }
+      ],
+      "flash_categories": []
+    }
+  ],
+  "limits": "Original member form/route, hashing and audit helper. MailService.send fully replaced; no message transmitted and no activation URL/token output. SQLite memory, testing CSRF/rate limits disabled, no real member or credentials. Mail exception is injected contract boundary, not a verified normal MailService return."
+}

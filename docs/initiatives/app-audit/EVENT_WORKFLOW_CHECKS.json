@@ -1,0 +1,807 @@
+[
+  {
+    "case": "exact_guess_zero_diff",
+    "result": {
+      "bill": 10000,
+      "total": 12000,
+      "closed": true,
+      "paid_by": "vereinskonto",
+      "participations": [
+        {
+          "member": 1,
+          "attends": true,
+          "guess": 10000,
+          "diff": 0,
+          "points": 1,
+          "rank": 3,
+          "share": 4000
+        },
+        {
+          "member": 2,
+          "attends": true,
+          "guess": 10100,
+          "diff": 100,
+          "points": 3,
+          "rank": 1,
+          "share": 4000
+        },
+        {
+          "member": 3,
+          "attends": true,
+          "guess": 10200,
+          "diff": 200,
+          "points": 2,
+          "rank": 2,
+          "share": 4000
+        }
+      ],
+      "claims": [
+        {
+          "member": 1,
+          "expected": 4000,
+          "paid": 0,
+          "creditor": null
+        },
+        {
+          "member": 2,
+          "expected": 4000,
+          "paid": 0,
+          "creditor": null
+        },
+        {
+          "member": 3,
+          "expected": 4000,
+          "paid": 0,
+          "creditor": null
+        }
+      ]
+    }
+  },
+  {
+    "case": "reset_retains_points",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-attendance"
+      },
+      "after": {
+        "bill": null,
+        "total": null,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": null,
+            "points": 1,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": null,
+            "points": 3,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": null,
+            "points": 2,
+            "rank": null,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "closed_attendance_changes_claim_stays",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-attendance"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": false,
+            "guess": null,
+            "diff": null,
+            "points": 3,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 1,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "member_rsvp_after_final",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": false,
+            "guess": 10100,
+            "diff": 100,
+            "points": 3,
+            "rank": 1,
+            "share": 4000
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 1,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "cleanup_rsvp_after_final",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/cleanup"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": false,
+            "guess": 10100,
+            "diff": 100,
+            "points": 3,
+            "rank": 1,
+            "share": 4000
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 1,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "closed_guess_regular_rejected",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": 100,
+            "points": 3,
+            "rank": 1,
+            "share": 4000
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 1,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "closed_guess_organizer_accepted",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/billbro/1/calculator"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "vereinskonto",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10300,
+            "diff": 300,
+            "points": 3,
+            "rank": 1,
+            "share": 4000
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 1,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "payment_change_with_partial_claim",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-payment"
+      },
+      "after": {
+        "bill": 10000,
+        "total": 12000,
+        "closed": true,
+        "paid_by": "mitglied",
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 0,
+            "points": 1,
+            "rank": 3,
+            "share": 4000
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": 100,
+            "points": 3,
+            "rank": 1,
+            "share": 4000
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 200,
+            "points": 2,
+            "rank": 2,
+            "share": 4000
+          }
+        ],
+        "claims": [
+          {
+            "member": 2,
+            "expected": 4000,
+            "paid": 100,
+            "creditor": null
+          },
+          {
+            "member": 3,
+            "expected": 4000,
+            "paid": 0,
+            "creditor": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "bill_input_abc",
+    "result": {
+      "response": {
+        "exception": "InvalidOperation",
+        "message": "[<class 'decimal.ConversionSyntax'>]"
+      },
+      "after": {
+        "bill": null,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "bill_input_NaN",
+    "result": {
+      "response": {
+        "exception": "ValueError",
+        "message": "cannot convert NaN to integer"
+      },
+      "after": {
+        "bill": null,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "bill_input_-10",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-tip-suggestion"
+      },
+      "after": {
+        "bill": -1000,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 11000,
+            "points": 3,
+            "rank": 1,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": 11100,
+            "points": 2,
+            "rank": 2,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 11200,
+            "points": 1,
+            "rank": 3,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "bill_input_0",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-tip-suggestion"
+      },
+      "after": {
+        "bill": 0,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": 10000,
+            "points": 3,
+            "rank": 1,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10100,
+            "diff": 10100,
+            "points": 2,
+            "rank": 2,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": 10200,
+            "points": 1,
+            "rank": 3,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "edit_audience_and_clear_fields",
+    "result": {
+      "response": {
+        "status": 302,
+        "location": "/events/1"
+      },
+      "audience": "all",
+      "restaurant": "Audit Original",
+      "kueche": "Audit Cuisine",
+      "website": "https://example.test"
+    }
+  },
+  {
+    "case": "cleanup_nonfirst_yes_loses_focus",
+    "result": {
+      "target_event": 1,
+      "response": {
+        "status": 302,
+        "location": "/events/cleanup?focus=rating"
+      },
+      "open_ids": [
+        2,
+        1
+      ],
+      "default_next_event": 2
+    }
+  },
+  {
+    "case": "rounding_three_equal_shares",
+    "result": {
+      "total": 10000,
+      "shares": [
+        3335,
+        3335,
+        3335
+      ],
+      "sum": 10005,
+      "stored_rule": "ceil_10"
+    }
+  },
+  {
+    "case": "board_visibility_denies_nonboard",
+    "result": {
+      "detail": 403,
+      "compute": {
+        "status": 403,
+        "location": null
+      }
+    }
+  },
+  {
+    "case": "cleanup_undo_deletes_later_guess",
+    "result": {
+      "first": {
+        "status": 302,
+        "location": "/events/cleanup?focus=rating"
+      },
+      "second": {
+        "status": 302,
+        "location": "/events/1?tab=billbro#billbro-my-guess"
+      },
+      "before_undo": {
+        "bill": null,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 2,
+            "attends": true,
+            "guess": 10400,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          }
+        ],
+        "claims": []
+      },
+      "undo": {
+        "status": 302,
+        "location": "/events/cleanup?i=0"
+      },
+      "after": {
+        "bill": null,
+        "total": null,
+        "closed": false,
+        "paid_by": null,
+        "participations": [
+          {
+            "member": 1,
+            "attends": true,
+            "guess": 10000,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          },
+          {
+            "member": 3,
+            "attends": true,
+            "guess": 10200,
+            "diff": null,
+            "points": null,
+            "rank": null,
+            "share": null
+          }
+        ],
+        "claims": []
+      }
+    }
+  },
+  {
+    "case": "cleanup_query_scaling",
+    "result": [
+      {
+        "events": 1,
+        "select_queries": 7
+      },
+      {
+        "events": 21,
+        "select_queries": 87
+      }
+    ]
+  }
+]
