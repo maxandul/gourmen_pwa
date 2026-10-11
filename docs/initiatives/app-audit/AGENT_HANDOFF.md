@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1f-Nachtrag 11.10.2026:** Nächste lokale Fortsetzung A-079:
+MFA-Backup-Code mit vorhandenem Hash-Prüfer verifizieren und vor Anmeldung
+einmalig verbrauchen. Branch `codex/u1f-backup-code-login` über `627e697`;
+[Nachweis und Grenzen](U1F_BACKUP_CODES.md). A-076 wurde nur eingeordnet,
+Pflichtwechsel-/Zwischenzielablauf bleibt ein späteres Paket.
+
 **U1e-Nachtrag 11.10.2026:** Nächste beauftragte lokale Fortsetzung A-043:
 beide RSVP-Erinnerungseinstiege prüfen Organisator/Admin identisch vor Versand.
 Branch `codex/u1e-reminder-permissions` über `f8a40f9`;

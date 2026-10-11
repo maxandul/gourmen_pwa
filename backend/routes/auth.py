@@ -237,23 +237,15 @@ def verify_2fa():
     elif backup_form.validate_on_submit():
         # Verify backup code
         backup_code = backup_form.backup_code.data.upper()
-        valid_code = MFABackupCode.query.filter_by(
-            member_id=user.id,
-            code_hash=SecurityService.hash_backup_code(backup_code)
-        ).filter(
-            MFABackupCode.used_at.is_(None),
-            MFABackupCode.revoked_at.is_(None)
-        ).first()
+        backup_code_id = SecurityService.consume_backup_code(user.id, backup_code)
         
-        if valid_code:
+        if backup_code_id is not None:
             session.pop('pending_2fa_user_id', None)
             login_user(user, remember=True)  # Always remember when using backup code
-            valid_code.used_at = datetime.utcnow()
-            db.session.commit()
             
             SecurityService.log_audit_event(
                 AuditAction.USE_BACKUP_CODE, 'member', user.id,
-                extra_data={'backup_code_id': valid_code.id}
+                extra_data={'backup_code_id': backup_code_id}
             )
             
             # Check if user needs to change password

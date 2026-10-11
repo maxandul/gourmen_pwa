@@ -257,6 +257,16 @@ Sensible Aktionen werden geloggt via `SecurityService.log_audit_event(...)`. Pfl
 
 Aktionen sind in `AuditAction`-Enum definiert. Bei neuer Aktion: Enum erweitern.
 
+## MFA-Backup-Codes
+
+MFA-Backup-Codes behalten gesalzene Hashes. Zur Prüfung immer
+`SecurityService.check_backup_code()` verwenden, niemals einen neu erzeugten
+Hash auf Gleichheit suchen. `consume_backup_code()` prüft ausschliesslich aktive
+Codes des betreffenden Mitglieds und verbraucht den Treffer mit bedingtem UPDATE
+(`used_at` und `revoked_at` weiterhin NULL). Erst nach genau einer geänderten
+Zeile und erfolgreichem Commit darf die Route anmelden. Bei Schreibfehlern
+Rollback ohne Anmeldung; im Audit nur die Code-ID, nie Code oder Hash.
+
 ## Encryption (Fernet)
 
 Sensible Felder werden via `SecurityService.encrypt_json()` / `decrypt_json()` ver-/entschlüsselt. Verwendung:

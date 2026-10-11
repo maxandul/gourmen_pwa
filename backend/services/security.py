@@ -154,6 +154,33 @@ class SecurityService:
     def check_backup_code(code_hash, code):
         """Check a backup code"""
         return check_password_hash(code_hash, code)
+
+    @staticmethod
+    def consume_backup_code(member_id, code):
+        """Verify a salted hash and persist single use before granting a login."""
+        from backend.models.mfa_backup_code import MFABackupCode
+
+        candidates = MFABackupCode.query.filter_by(member_id=member_id).filter(
+            MFABackupCode.used_at.is_(None), MFABackupCode.revoked_at.is_(None)
+        ).all()
+        for candidate in candidates:
+            if not SecurityService.check_backup_code(candidate.code_hash, code.upper()):
+                continue
+            code_id = candidate.id
+            try:
+                # Recheck eligibility in the write itself: only one request can win.
+                changed = MFABackupCode.query.filter_by(id=code_id, member_id=member_id).filter(
+                    MFABackupCode.used_at.is_(None), MFABackupCode.revoked_at.is_(None)
+                ).update({MFABackupCode.used_at: datetime.utcnow()}, synchronize_session=False)
+                if changed != 1:
+                    db.session.rollback()
+                    return None
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise
+            return code_id
+        return None
     
     @staticmethod
     def mask_sensitive_data(data, fields_to_mask):

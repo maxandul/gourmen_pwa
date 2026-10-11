@@ -160,6 +160,11 @@ RESET / ONBOARDING TOKENS
   └─ Google-Login-Adresse-Verify via Mail (7 Tage gueltig, Phase 03)
 ```
 
+Der Backup-Code-Zweig verbraucht den verifizierten Code über
+`SecurityService.consume_backup_code()` vor `login_user()`. Ein bedingtes UPDATE
+verhindert die Anmeldung bei zwischenzeitlichem Verbrauch/Widerruf; ein
+fehlgeschlagener Commit wird zurückgerollt. Die Hashes bleiben unverändert.
+
 ## PWA-Aspekte
 
 - **Service Worker** wird vom Origin-Root unter `/sw.js` ausgeliefert (ausschliesslich Route in der App-Factory `create_app()` in `backend/app.py`, nicht im Public-Blueprint)

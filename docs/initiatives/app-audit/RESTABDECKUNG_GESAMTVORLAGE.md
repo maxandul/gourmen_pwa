@@ -98,6 +98,7 @@ Nachweise: [U1a](U1A_DATENERHALT.md), [U1b](U1B_LOGGING.md).
 Anschliessende lokale Fortsetzung: [U1c / A-075 – Step-Up-Sitzungsbindung](U1C_STEP_UP.md).
 Danach [U1d / A-113 – Cron-Testzugang](U1D_CRON_TEST.md), ebenfalls ausschliesslich lokal.
 Anschliessend [U1e / A-043 – RSVP-Versandberechtigung](U1E_REMINDER_RECHTE.md).
+Danach [U1f / A-079 – MFA-Backup-Codes](U1F_BACKUP_CODES.md), ohne produktive Code-Erneuerung.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene
