@@ -121,6 +121,14 @@ Aktuelle Services:
 
 ## Auth-Flow
 
+`init_extensions()` verbindet die Flask-Login-Signale `user_logged_in`,
+`user_logged_out` und `user_loaded_from_cookie` je App mit
+`SecurityService.clear_auth_transients()`. Dadurch entfernen alle erfolgreichen
+Anmeldewege und Logout kontogebundene Zwischenzustände, insbesondere sensible
+Freigaben und begonnene MFA-Einrichtungen. Step-Up prüft zusätzlich die
+Mitgliedsbindung. Dies ist keine serverseitige Sperre aller Sitzungen bei Reset;
+dieser weitergehende Widerruf bleibt ein eigenes Umsetzungspaket.
+
 ```
 LOGIN
   ├─ POST /auth/login  (Email + Passwort)

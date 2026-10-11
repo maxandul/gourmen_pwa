@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 import pyotp
 from flask import current_app, session, request
+from flask_login import current_user
 from backend.extensions import db
 from backend.models.audit_event import AuditEvent, AuditAction
 
@@ -175,7 +176,12 @@ class SecurityService:
     @staticmethod
     def check_step_up_access():
         """Check if user has step-up access"""
+        if (not current_user.is_authenticated
+                or session.get('sensitive_access_member_id') != current_user.get_id()):
+            SecurityService.revoke_step_up_access()
+            return False
         if not session.get('sensitive_access_until'):
+            SecurityService.revoke_step_up_access()
             return False
         
         try:
@@ -183,6 +189,8 @@ class SecurityService:
             current_timestamp = int(time.time())
             access_until_timestamp = session['sensitive_access_until']
             has_access = current_timestamp < access_until_timestamp
+            if not has_access:
+                SecurityService.revoke_step_up_access()
             
             # Debug logging
             try:
@@ -199,12 +207,15 @@ class SecurityService:
             return has_access
         except Exception as e:
             # If parsing fails, clear the corrupted session data
-            session.pop('sensitive_access_until', None)
+            SecurityService.revoke_step_up_access()
             return False
     
     @staticmethod
     def grant_step_up_access():
         """Grant step-up access for configured duration"""
+        if not current_user.is_authenticated:
+            SecurityService.revoke_step_up_access()
+            return False
         try:
             from flask import current_app
             ttl_seconds = current_app.config.get('SENSITIVE_ACCESS_TTL_SECONDS', 1800)  # 30 Minuten statt 5
@@ -216,6 +227,7 @@ class SecurityService:
         import time
         access_until_timestamp = int(time.time()) + ttl_seconds
         session['sensitive_access_until'] = access_until_timestamp
+        session['sensitive_access_member_id'] = current_user.get_id()
         
         # Debug logging
         try:
@@ -230,6 +242,14 @@ class SecurityService:
     def revoke_step_up_access():
         """Revoke step-up access"""
         session.pop('sensitive_access_until', None)
+        session.pop('sensitive_access_member_id', None)
+
+    @staticmethod
+    def clear_auth_transients(sender, user=None, **kwargs):
+        """Clear account-bound intermediate state at authentication boundaries."""
+        SecurityService.revoke_step_up_access()
+        for key in ('2fa_secret', 'pending_2fa_user_id', 'step_up_next'):
+            session.pop(key, None)
     
     @staticmethod
     def log_audit_event(action, entity, entity_id=None, field=None, extra_data=None, actor_id=None):

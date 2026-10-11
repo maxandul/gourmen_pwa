@@ -28,6 +28,7 @@ def sensitive_case(app, client, request):
         session['_user_id'] = str(actor_id)
         session['_fresh'] = True
         session['sensitive_access_until'] = int(time.time()) + 600
+        session['sensitive_access_member_id'] = str(actor_id)
     url = (f'/admin/members/{target_id}/sensitive' if route == 'admin'
            else '/member/profile?tab=sensitive')
     prefix = '' if route == 'admin' else 'sensitive-'

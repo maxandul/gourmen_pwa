@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1c-Nachtrag 11.10.2026:** Nach U1b setzt der beauftragte nächste Schritt
+A-075 um: sensible Freigaben und Auth-Zwischenzustände bei Kontowechsel/
+Neuanmeldung verwerfen. Branch `codex/u1c-step-up-session` über `d7317a0`;
+[Nachweis und Grenzen](U1C_STEP_UP.md). Kein globaler Sitzungswiderruf bei Reset,
+kein Deploy oder Merge auf master.
+
 **U1b-Nachtrag 11.10.2026:** Der Nutzer hat anschliessend «Geheimnisse aus Logs
 entfernen» (A-081/A-110) beauftragt. Umsetzung auf `codex/u1b-secret-safe-logging`
 über U1a-Commit `9cf5126`; [Nachweis und Grenzen](U1B_LOGGING.md).

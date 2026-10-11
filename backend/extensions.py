@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import LoginManager
+from flask_login import LoginManager, user_logged_in, user_logged_out, user_loaded_from_cookie
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -28,6 +28,10 @@ def init_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    # All login paths (password, MFA, activation, remembered login) share this boundary.
+    from backend.services.security import SecurityService
+    for signal in (user_logged_in, user_logged_out, user_loaded_from_cookie):
+        signal.connect(SecurityService.clear_auth_transients, sender=app)
     csrf.init_app(app)
     
     # Flask-Limiter: optional deaktivierbar (development/testing → RATELIMIT_ENABLED=False)
@@ -65,4 +69,4 @@ def init_extensions(app):
     @login_manager.user_loader
     def load_user(user_id):
         from backend.models.member import Member
-        return Member.query.get(int(user_id)) 
+        return Member.query.get(int(user_id))

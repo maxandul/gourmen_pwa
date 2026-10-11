@@ -95,6 +95,7 @@ durchgängig verbundene Datenbasis zwischen den Vorschauen voraussetzen.
 **Lokaler Umsetzungsstand 11.10.2026:** U1a abgeschlossen; danach U1b
 «Geheimnisse aus Logs entfernen» (A-081/A-110) separat beauftragt und umgesetzt.
 Nachweise: [U1a](U1A_DATENERHALT.md), [U1b](U1B_LOGGING.md).
+Anschliessende lokale Fortsetzung: [U1c / A-075 – Step-Up-Sitzungsbindung](U1C_STEP_UP.md).
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

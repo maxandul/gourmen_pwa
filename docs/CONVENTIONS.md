@@ -119,6 +119,13 @@ def webhook():
 - **Flash-Nachrichten** auf Deutsch
 - **Redirect nach POST** (PRG-Pattern)
 - **Step-Up bei sensiblen Aktionen**: `SecurityService.check_step_up_access()` + ggf. `require_step_up`-Decorator
+- **Step-Up-Sitzungsbindung**: Ablaufzeit und `sensitive_access_member_id` müssen
+  zum angemeldeten Mitglied passen. Legacy-Freigaben ohne Mitgliedsbindung,
+  fremde, abgelaufene oder fehlerhafte Freigaben werden verworfen. Erteilen nur
+  im authentifizierten Kontext; vorhandene konfigurierte TTL bleibt massgeblich.
+  Flask-Login-Signale für Login, Logout und Cookie-Wiederanmeldung entfernen
+  diese Freigabe sowie `2fa_secret`, `pending_2fa_user_id` und `step_up_next`.
+  Keine vollständige Session-Löschung: andere Einstellungen bleiben erhalten.
 
 ## Models
 

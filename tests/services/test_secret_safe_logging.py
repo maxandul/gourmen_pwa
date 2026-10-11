@@ -1,15 +1,15 @@
 """U1b: synthetic secrets must not reach application log records."""
 
 import logging
-import time
 from unittest.mock import Mock
 
 import pyotp
 import pytest
 import requests
-from flask import session
+from flask_login import login_user
 
 from backend.services.places import PlacesService
+from backend.models.member import Member
 from backend.services.security import SecurityService, require_step_up
 
 
@@ -72,7 +72,8 @@ def test_step_up_guard_does_not_log_url_token(app, caplog):
         return 'allowed'
 
     with app.test_request_context('/protected?token=synthetic-url-secret'), caplog.at_level(logging.INFO):
-        session['sensitive_access_until'] = int(time.time()) + 60
+        login_user(Member(id=123, is_active=True))
+        SecurityService.grant_step_up_access()
         assert protected() == 'allowed'
     assert_not_logged(caplog, 'synthetic-url-secret')
 
