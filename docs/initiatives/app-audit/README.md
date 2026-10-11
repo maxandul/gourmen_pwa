@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (11.10.2026)
 
-Der Nutzer hat U1a bis U1j schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1k schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -17,6 +17,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1h / A-035 anteilig: sichere Step-Up-Rückkehr | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1h-step-up-return-target`; [Umsetzung und Tests](U1H_STEP_UP_RUECKKEHR.md) |
 | U1i / A-035 anteilig: sichere Bewertungsrückkehr | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1i-rating-return-target`; [Umsetzung und Tests](U1I_BEWERTUNG_RUECKKEHR.md) |
 | U1j / A-035: Merch-/Dokument-Rückkehr absichern | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1j-merch-docs-return-target`; [Umsetzung und Tests](U1J_MERCH_DOKUMENT_RUECKKEHR.md) |
+| U1k / A-083: MFA-Reset ausdrücklich bestätigen | Lokal umgesetzt und funktional geprüft; visuelle Abnahme offen, 11.10.2026 | `codex/u1k-mfa-reset-confirmation`; [Umsetzung und Tests](U1K_MFA_RESET_BESTAETIGUNG.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;

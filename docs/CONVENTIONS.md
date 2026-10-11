@@ -281,6 +281,14 @@ Sensible Aktionen werden geloggt via `SecurityService.log_audit_event(...)`. Pfl
 
 Aktionen sind in `AuditAction`-Enum definiert. Bei neuer Aktion: Enum erweitern.
 
+## MFA-Reset-Bestätigung
+
+`auth.reset_2fa` verändert bei GET/HEAD weder MFA noch Backup-Codes oder Token.
+Erst ein gültiger POST mit CSRF und ausdrücklicher Formularbestätigung führt
+den bestehenden Reset aus. Tokenzweck, Ablauf, Verbrauch und aktives Konto
+werden bei jedem Aufruf erneut geprüft. Die Bestätigungsantwort verwendet
+`Cache-Control: no-store` und `Referrer-Policy: no-referrer`.
+
 ## MFA-Backup-Codes
 
 MFA-Backup-Codes behalten gesalzene Hashes. Zur Prüfung immer

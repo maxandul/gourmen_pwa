@@ -63,6 +63,14 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Passwort zurücksetzen')
 
 
+class ConfirmMFAResetForm(FlaskForm):
+    confirm = BooleanField(
+        'Ich möchte die Zwei-Faktor-Anmeldung zurücksetzen.',
+        validators=[DataRequired(message='Bitte bestätige das Zurücksetzen.')],
+    )
+    submit = SubmitField('2FA jetzt zurücksetzen')
+
+
 def _hash_auth_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
@@ -622,7 +630,14 @@ def reset_2fa(token):
         flash('Ungültiger 2FA Reset-Link', 'error')
         return redirect(url_for('auth.login'))
     
-    # Disable 2FA
+    form = ConfirmMFAResetForm()
+    if not form.validate_on_submit():
+        response = current_app.make_response(render_template('auth/reset_2fa.html', form=form))
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        return response
+
+    # Disable 2FA only after explicit, CSRF-protected confirmation.
     mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
     if mfa_data:
         mfa_data.is_totp_enabled = False

@@ -403,6 +403,13 @@ Folgende Klassen existieren historisch und sollen **nicht in neuen Komponenten**
 
 Komponenten ohne Verwendung in Templates können ohne Diskussion gelöscht werden – aber **erst** mit `grep` verifizieren.
 
+### Bestehende Komponenten: MFA-Reset-Bestätigung (U1k)
+
+`auth/reset_2fa.html` verwendet Container, Page-Header, Card, Form-Field,
+Form-Actions und vorhandene Danger-/Outline-Buttons. Native Checkbox mit
+zugeordnetem Label, explizite Folgenbeschreibung und Abbrechen-Link;
+keine neuen Klassen, Styles oder Icons. PWA-Version lokal auf 3.16.3 erhöht.
+
 ## 6. Verbote
 
 - ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit

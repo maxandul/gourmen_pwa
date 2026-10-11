@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1k-Nachtrag 11.10.2026:** Lokale Fortsetzung A-083: GET/HEAD des MFA-Resetlinks
+zeigen nur eine Bestätigung; Mutation erst nach bestätigtem POST mit CSRF.
+Branch `codex/u1k-mfa-reset-confirmation` über `170e4de`;
+[Nachweis und Grenzen](U1K_MFA_RESET_BESTAETIGUNG.md). PWA-Version lokal 3.16.3.
+Der umfassende Recovery-/Sitzungswiderruf bleibt separat.
+
 **U1j-Nachtrag 11.10.2026:** Lokale Fortsetzung A-035: Merch-Statuswechsel und
 vier Dokumentaktionen verwenden ebenfalls den gemeinsamen Rückkehrziel-Prüfer.
 Branch `codex/u1j-merch-docs-return-target` über `ff67223`;
