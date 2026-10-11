@@ -243,6 +243,15 @@ Sensible Felder werden via `SecurityService.encrypt_json()` / `decrypt_json()` v
 
 **Niemals** den `CRYPTO_KEY` rotieren in Production – würde alle Daten korrupten. Falls Rotation wirklich nötig: geplante Migration mit Re-Encryption pro Feld.
 
+`MemberSensitive` wird vor Anzeige **und vor dem Überschreiben** über
+`SecurityService.read_member_sensitive()` gelesen. Entschlüsselungs-/Formatfehler
+erzeugen `SensitiveDataReadError`, niemals leere Ersatzwerte oder eine Löschung.
+Routes zeigen die bestehende technische Fehlerseite (HTTP 500) mit sicherer
+Flash-Meldung, ohne sensibles Bearbeitungsformular. Nur ein tatsächlich fehlender
+Datensatz erlaubt die leere Ersterfassung. Logs enthalten weder Payload, Schlüssel,
+Klartext noch ursprüngliche Exception. Audit-Logging liegt ausserhalb der
+Lesefehlerbehandlung. Regression: `tests/routes/test_sensitive_data_preservation.py`.
+
 ## Templates
 
 - **Englische Klassennamen** (BEM, siehe `docs/UI.md`)

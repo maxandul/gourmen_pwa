@@ -16,7 +16,7 @@ from backend.models.member_mfa import MemberMFA
 from backend.models.mfa_backup_code import MFABackupCode
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.audit_event import AuditEvent
-from backend.services.security import SecurityService, AuditAction, require_step_up
+from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
 
 bp = Blueprint('admin', __name__)
@@ -570,25 +570,23 @@ def member_sensitive(member_id):
     
     from backend.models.member_sensitive import MemberSensitive
     sensitive_data = MemberSensitive.query.filter_by(member_id=member_id).first()
+
+    # Guard both reads and stale/direct form submissions before any mutation.
+    if sensitive_data:
+        try:
+            data = SecurityService.read_member_sensitive(sensitive_data.payload_encrypted)
+        except SensitiveDataReadError as error:
+            flash(str(error), 'error')
+            return render_template('errors/500.html'), 500
+    else:
+        data = {}
     
     if request.method == 'GET':
-        if sensitive_data:
-            try:
-                data = SecurityService.decrypt_json(sensitive_data.payload_encrypted)
-            except Exception as e:
-                # If decryption fails, clear the corrupted data
-                flash('Sensible Daten waren beschädigt und wurden zurückgesetzt.', 'warning')
-                db.session.delete(sensitive_data)
-                db.session.commit()
-                data = {}
-        else:
-            data = {}
-        
         SecurityService.log_audit_event(
             AuditAction.READ_SENSITIVE_OTHERS, 'member_sensitive', member_id
         )
         
-        return render_template('admin/member_sensitive.html', member=member, data=data)
+        return render_template('admin/member_sensitive.html', member=member, data=data, form=FlaskForm())
     
     elif request.method == 'POST':
         data = {

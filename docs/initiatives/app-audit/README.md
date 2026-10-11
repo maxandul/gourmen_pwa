@@ -1,5 +1,15 @@
 # App-Audit und Zielbild fuer Refactoring / Redesign
 
+## Begrenzte Umsetzung (11.10.2026)
+
+Der Nutzer hat U1a separat beauftragt. Die folgenden älteren Planungsstände
+bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
+
+| Paket | Status | Branch und Nachweis |
+|---|---|---|
+| U1a / A-086: Daten bei Lesefehlern bewahren | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1a-preserve-sensitive-data`; [Umsetzung und Tests](U1A_DATENERHALT.md) |
+
+
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
 danach User-Feedback zu den Empfehlungen, erst anschliessend Umsetzung.
 

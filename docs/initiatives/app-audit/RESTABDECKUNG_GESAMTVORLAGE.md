@@ -130,7 +130,10 @@ mitführen; U6 nach Ablösung. Kein grosser gleichzeitiger Umbau aller Bereiche.
 
 ## Erstes begrenztes Umsetzungspaket: U1a Daten bei Lesefehlern bewahren
 
-**Vorbereitet, nicht beauftragt.** Die Gestaltungs-/Fachplanung ist für diesen
+**Nachtrag 11.10.2026: separat beauftragt, lokal umgesetzt und geprüft.**
+[Umsetzung und Testnachweis](U1A_DATENERHALT.md); keine Freigabe weiterer Pakete
+oder eines Deployments. Der nachstehende Umfang bleibt die Abnahmegrundlage.
+Die Gestaltungs-/Fachplanung ist für diesen
 kleinen Einstieg keine Blockade mehr. Ausgangspunkt ist der vorhandene Befund
 A-086: Ein Lesefehler darf sensible Bestandsdaten nicht löschen. Kein neuer
 umfassender Audit und kein gleichzeitiger Umbau des gesamten Rollenmodells.

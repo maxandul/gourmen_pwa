@@ -9,7 +9,7 @@ from backend.extensions import db
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
-from backend.services.security import SecurityService, AuditAction, require_step_up
+from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
 
 bp = Blueprint('member', __name__, url_prefix='/member')
@@ -153,38 +153,34 @@ def profile():
         # User has step-up access, initialize sensitive form
         sensitive_form = SensitiveDataForm(prefix='sensitive')
         
-        # Get or create sensitive data record
+        # Read existing data before GET or POST; unreadable data must not be overwritten.
         sensitive_data = MemberSensitive.query.filter_by(member_id=current_user.id).first()
+        if sensitive_data:
+            try:
+                sensitive_data_decrypted = SecurityService.read_member_sensitive(sensitive_data.payload_encrypted)
+            except SensitiveDataReadError as error:
+                flash(str(error), 'error')
+                return render_template('errors/500.html'), 500
+        else:
+            sensitive_data_decrypted = {}
         
         if request.method == 'GET':
             # Set active_tab field based on query parameter
             sensitive_form.active_tab.data = request.args.get('tab', 'sensitive')
             
             if sensitive_data:
-                try:
-                    sensitive_data_decrypted = SecurityService.decrypt_json(sensitive_data.payload_encrypted)
-                    
-                    # Populate form
-                    sensitive_form.pass_nummer.data = sensitive_data_decrypted.get('pass_nummer', '')
-                    sensitive_form.pass_ausgestellt.data = sensitive_data_decrypted.get('pass_ausgestellt', '')
-                    sensitive_form.pass_ablauf.data = sensitive_data_decrypted.get('pass_ablauf', '')
-                    sensitive_form.id_nummer.data = sensitive_data_decrypted.get('id_nummer', '')
-                    sensitive_form.id_ausgestellt.data = sensitive_data_decrypted.get('id_ausgestellt', '')
-                    sensitive_form.id_ablauf.data = sensitive_data_decrypted.get('id_ablauf', '')
-                    sensitive_form.allergien.data = sensitive_data_decrypted.get('allergien', '')
-                    
-                    # Log access
-                    SecurityService.log_audit_event(
-                        AuditAction.READ_SENSITIVE_SELF, 'member_sensitive', current_user.id
-                    )
-                except Exception as e:
-                    # If decryption fails, clear the corrupted data
-                    flash('Sensible Daten waren beschädigt und wurden zurückgesetzt.', 'warning')
-                    db.session.delete(sensitive_data)
-                    db.session.commit()
-                    sensitive_data_decrypted = {}
-            else:
-                sensitive_data_decrypted = {}
+                # Populate form only after a successful read.
+                sensitive_form.pass_nummer.data = sensitive_data_decrypted.get('pass_nummer', '')
+                sensitive_form.pass_ausgestellt.data = sensitive_data_decrypted.get('pass_ausgestellt', '')
+                sensitive_form.pass_ablauf.data = sensitive_data_decrypted.get('pass_ablauf', '')
+                sensitive_form.id_nummer.data = sensitive_data_decrypted.get('id_nummer', '')
+                sensitive_form.id_ausgestellt.data = sensitive_data_decrypted.get('id_ausgestellt', '')
+                sensitive_form.id_ablauf.data = sensitive_data_decrypted.get('id_ablauf', '')
+                sensitive_form.allergien.data = sensitive_data_decrypted.get('allergien', '')
+
+                SecurityService.log_audit_event(
+                    AuditAction.READ_SENSITIVE_SELF, 'member_sensitive', current_user.id
+                )
         
         elif sensitive_form.validate_on_submit():
             # Update sensitive data

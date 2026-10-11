@@ -9,6 +9,18 @@ from flask import current_app, session, request
 from backend.extensions import db
 from backend.models.audit_event import AuditEvent, AuditAction
 
+
+class SensitiveDataReadError(Exception):
+    """Safe public error; unreadable stored data must never become empty form values."""
+
+    def __init__(self):
+        super().__init__(
+            'Sensible Daten konnten nicht gelesen werden. Die gespeicherten Daten bleiben '
+            'unverändert erhalten; es wurde nichts gespeichert. Bitte öffne die Seite erneut. '
+            'Falls der Fehler bleibt, kontaktiere den Administrator.'
+        )
+
+
 class SecurityService:
     """Security service for password hashing, encryption, 2FA, and step-up authentication"""
     
@@ -78,6 +90,19 @@ class SecurityService:
         fernet = SecurityService.get_fernet()
         decrypted = fernet.decrypt(encrypted_data.encode('utf-8'))
         return json.loads(decrypted.decode('utf-8'))
+
+    @staticmethod
+    def read_member_sensitive(encrypted_data):
+        """Read a member payload without mutation, including before an attempted update."""
+        try:
+            data = SecurityService.decrypt_json(encrypted_data)
+            if not isinstance(data, dict):
+                raise ValueError('Expected a member data object')
+            return data
+        except Exception:
+            # Exceptions can contain decrypted content or key material. Never log them.
+            current_app.logger.warning('Member sensitive data could not be read; data preserved')
+            raise SensitiveDataReadError() from None
     
     @staticmethod
     def generate_totp_secret():
@@ -261,4 +286,4 @@ def require_step_up(f):
             return redirect(url_for('auth.step_up', next=request.url))
         return f(*args, **kwargs)
     
-    return decorated_function 
+    return decorated_function

@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**Nachtrag 11.10.2026:** U1a wurde im anschliessenden Umsetzungschat ausdrücklich
+beauftragt und lokal auf `codex/u1a-preserve-sensitive-data` umgesetzt.
+[Nachweis und Grenzen](U1A_DATENERHALT.md). Kein Deploy, kein Merge auf master.
+Die Startanweisung unten ist für U1a damit erledigt; weitere Pakete benötigen
+einen eigenen Auftrag. Der historische Planungsstand bleibt erhalten.
+
 Stand: 11. Oktober 2026. Dieser Einstieg hat Vorrang vor dem historischen Verlauf
 weiter unten. Der Nutzer hat die Sicherung der Planung und Vorbereitung des
 neuen Umsetzungschats beauftragt. In diesem Vorbereitungschat keine App-Änderung.
