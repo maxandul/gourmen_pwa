@@ -104,6 +104,7 @@ Danach [U1h – sichere Step-Up-Rückkehr](U1H_STEP_UP_RUECKKEHR.md), A-035 weit
 Anschliessend [U1i – sichere Bewertungsrückkehr](U1I_BEWERTUNG_RUECKKEHR.md), A-035 anteilig.
 Danach [U1j – Merch-/Dokument-Rückkehr](U1J_MERCH_DOKUMENT_RUECKKEHR.md); dokumentierte A-035-Einstiege lokal bearbeitet.
 Anschliessend [U1k / A-083 – MFA-Reset bestätigen](U1K_MFA_RESET_BESTAETIGUNG.md).
+Danach [U1l / A-084 – Profil-Mailkonflikt](U1L_PROFIL_MAILKONFLIKT.md), anteilig.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

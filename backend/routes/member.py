@@ -4,7 +4,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
-from wtforms.validators import DataRequired, Email, Optional
+from wtforms.validators import DataRequired, Email, Optional, ValidationError
+from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
@@ -15,6 +16,11 @@ from backend.services.mail import MailService
 bp = Blueprint('member', __name__, url_prefix='/member')
 
 class ProfileForm(FlaskForm):
+    def validate_email(self, field):
+        # Match the existing database/login semantics; do not rewrite stored addresses.
+        if Member.query.filter(Member.email == field.data, Member.id != current_user.id).first():
+            raise ValidationError('Diese E-Mail-Adresse wird bereits verwendet.')
+
     # Personal data
     vorname = StringField(
         'Vorname/n (wie im Pass/ID)',
@@ -256,9 +262,20 @@ def profile():
             current_user.spirit_animal = form.spirit_animal.data
             current_user.fuehrerschein = form.fuehrerschein.data
             
-            db.session.commit()
-            flash('Profil erfolgreich aktualisiert', 'success')
-            return redirect(url_for('member.profile', tab='profile'))
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                if Member.query.filter(
+                    Member.email == form.email.data, Member.id != current_user.id
+                ).first():
+                    form.email.errors.append('Diese E-Mail-Adresse wird bereits verwendet.')
+                    flash('Bitte überprüfe die E-Mail-Adresse.', 'error')
+                else:
+                    flash('Profil konnte nicht gespeichert werden. Bitte versuche es erneut.', 'error')
+            else:
+                flash('Profil erfolgreich aktualisiert', 'success')
+                return redirect(url_for('member.profile', tab='profile'))
     
     return render_template('member/profile.html', 
                          form=form,

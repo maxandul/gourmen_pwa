@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1l-Nachtrag 11.10.2026:** Lokale Fortsetzung A-084, eigenes Profil:
+belegte Mailadresse vorprüfen und DB-Konflikt ohne Teiländerung zurückrollen;
+Formulareingaben erhalten. Branch `codex/u1l-profile-email-conflict` über
+`aeb074c`; [Nachweis und Grenzen](U1L_PROFIL_MAILKONFLIKT.md).
+Mitgliederanlage/Admin und neue Normalisierung bleiben separate Teile von A-084.
+
 **U1k-Nachtrag 11.10.2026:** Lokale Fortsetzung A-083: GET/HEAD des MFA-Resetlinks
 zeigen nur eine Bestätigung; Mutation erst nach bestätigtem POST mit CSRF.
 Branch `codex/u1k-mfa-reset-confirmation` über `170e4de`;

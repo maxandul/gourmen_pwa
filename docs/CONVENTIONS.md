@@ -254,6 +254,17 @@ class MyForm(FlaskForm):
 - **Mitgliedsdaten Admin/Profil**: `nationalitaet` und `zimmerwunsch` nutzen dieselben Listen `NATIONALITAET_CHOICES` und `ZIMMERWUNSCH_CHOICES` aus `backend.models.member`. In `admin.edit_member` werden von der Liste abweichende gespeicherte Werte (Legacy-Freitext) temporär als Zusatz-Choice ergänzt (`_select_choices_with_legacy`), damit Speichern ohne Datenverlust möglich ist.
 - **Komplexe Module**: alle Forms eines Moduls in einer eigenen Datei `backend/forms/<modul>.py` (Beispiel: `backend/forms/accounting.py`), kein Inline-Definieren im Route-File. Reine State-Mutations via POST-Button (z.B. Jahresfreigabe) laufen als einfache HTML-Forms mit manuellem `csrf_token()` (Validierung via `flask_wtf.csrf.validate_csrf`).
 
+### Profil-Mailadresse: Konflikte behandeln
+
+`ProfileForm.validate_email` prüft vor jeder Profiländerung die belegte Adresse
+anderer Konten (einschliesslich deaktivierter). Das eigene Konto ist ausgenommen.
+Der Vergleich folgt der bestehenden DB-/Login-Schreibweise, ohne neue
+Normalisierung. Der Profil-Commit behandelt zusätzlich `IntegrityError` mit
+vollständigem Rollback. Nur ein danach nachweisbarer Adresskonflikt wird am
+E-Mail-Feld gemeldet; andere Integritätsfehler erhalten eine neutrale Meldung.
+Formularwerte bleiben erhalten, DB-/SQL-Fehlertexte werden nicht ausgegeben.
+Dies gilt bislang für das eigene Profil, nicht für Administration/Anlage.
+
 ## Logging
 
 - **Modul-Logger**: `logger = logging.getLogger(__name__)` am Datei-Anfang
