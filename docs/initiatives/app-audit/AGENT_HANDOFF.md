@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1i-Nachtrag 11.10.2026:** Lokale Fortsetzung A-035: Bewertungsroute prüft
+Rückkehrziele für Erfolg und alle Fehlerpfade mit dem gemeinsamen Prüfer.
+Branch `codex/u1i-rating-return-target` über `1c162a8`;
+[Nachweis und Grenzen](U1I_BEWERTUNG_RUECKKEHR.md). Merch-/Dokument-Anteile
+von A-035 bleiben offen, Bewertungsfachregeln unverändert.
+
 **U1h-Nachtrag 11.10.2026:** Lokale Fortsetzung des Redirect-Vertrags aus U1g:
 Step-Up prüft alle Rückkehrquellen einschliesslich gespeicherter Altwerte.
 Branch `codex/u1h-step-up-return-target` über `6c5cf29`;

@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (11.10.2026)
 
-Der Nutzer hat U1a bis U1h schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1i schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -15,6 +15,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1f / A-079: MFA-Backup-Codes korrekt prüfen und einmalig verbrauchen | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1f-backup-code-login`; [Umsetzung und Tests](U1F_BACKUP_CODES.md) |
 | U1g / A-078, A-035 anteilig: sicheres Rückkehrziel bei Anmeldung | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1g-login-return-target`; [Umsetzung und Tests](U1G_LOGIN_RUECKKEHR.md) |
 | U1h / A-035 anteilig: sichere Step-Up-Rückkehr | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1h-step-up-return-target`; [Umsetzung und Tests](U1H_STEP_UP_RUECKKEHR.md) |
+| U1i / A-035 anteilig: sichere Bewertungsrückkehr | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1i-rating-return-target`; [Umsetzung und Tests](U1I_BEWERTUNG_RUECKKEHR.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;

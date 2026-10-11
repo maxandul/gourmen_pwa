@@ -152,8 +152,11 @@ Step-Up verwendet denselben Prüfer für Query-`next`, Formular-`next`,
 Formular-`next_url` und gespeichertes `step_up_next` in dieser Priorität. Der erste
 zulässige Wert gewinnt; ungültige gespeicherte Werte werden sofort entfernt.
 Bei Fehlern bleibt nur ein geprüftes Ziel erhalten, bei Erfolg wird es verbraucht.
-Das gilt auch bei noch gültiger Step-Up-Freigabe. Andere Redirect-Einstiege
-(Event, Merch, Dokumente) sind noch separat abzusichern.
+Das gilt auch bei noch gültiger Step-Up-Freigabe.
+`ratings.rate_event` prüft Query-/Formular-`next` vor sämtlichen Erfolgs- und
+Fehlerverzweigungen mit demselben Prüfer; das erste zulässige Ziel (Query vor
+Formular) gewinnt. Ohne gültiges Ziel bleiben die bisherigen Event-Tabs und
+Anker massgeblich. Merch- und Dokument-Einstiege sind noch separat abzusichern.
 
 ## Models
 

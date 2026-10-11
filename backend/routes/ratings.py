@@ -6,6 +6,7 @@ from backend.models.rating import EventRating
 from backend.models.participation import Participation
 from backend.forms.rating import EventRatingForm
 from backend.routes.events import CLEANUP_RSVP_UNDO_SESSION_KEY
+from backend.services.security import SecurityService
 
 bp = Blueprint('ratings', __name__)
 
@@ -23,7 +24,8 @@ def rate_event(event_id):
     """Rate an event (handled inline im Event-Tab)"""
     event = _get_visible_event_or_404(event_id)
     is_organizer = event.organisator_id == current_user.id
-    next_url = request.args.get('next') or request.form.get('next')
+    next_url = (SecurityService.local_return_target(request.args.get('next'))
+                or SecurityService.local_return_target(request.form.get('next')))
 
     if not event.allow_ratings:
         flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
