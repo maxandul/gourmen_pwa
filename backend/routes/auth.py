@@ -361,63 +361,37 @@ def disable_2fa():
 @login_required
 def step_up():
     """Step-up authentication"""
-    # Get next page from multiple sources for robustness
-    # Use a list comprehension to filter out empty strings
-    next_candidates = [
+    # Validate every source, including values saved by older app versions.
+    next_candidates = (
         request.args.get('next'),
         request.form.get('next'),
         request.form.get('next_url'),
-        session.get('step_up_next')
-    ]
-    next_page = next((page for page in next_candidates if page and page.strip()), None)
-    
+        session.pop('step_up_next', None),
+    )
+    next_page = next((target for candidate in next_candidates
+                      if (target := SecurityService.local_return_target(candidate))), None)
+    if next_page:
+        session['step_up_next'] = next_page
+
     # Form data and return URLs can contain passwords or tokens.
     current_app.logger.info('Step-up authentication requested')
-    
-    # Store next page in session for reliability (only on GET or if not already set)
-    if next_page and next_page.startswith('/'):
-        session['step_up_next'] = next_page
-    
-    # If user already has step-up access, redirect to the requested page
+
     if SecurityService.check_step_up_access():
-        # Use session-stored next page if available
-        stored_next = session.get('step_up_next')
-        if stored_next:
-            session.pop('step_up_next', None)  # Clear after use
-            return redirect(stored_next)
-        elif next_page and next_page.startswith('/'):
-            return redirect(next_page)
-        else:
-            current_app.logger.info("Already authenticated, no next page, redirecting to dashboard")
-            return redirect(url_for('dashboard.index'))
-    
+        session.pop('step_up_next', None)
+        return redirect(next_page or url_for('dashboard.index'))
+
     form = StepUpForm()
     if form.validate_on_submit():
         if current_user.check_password(form.password.data):
-            # Grant step-up access BEFORE redirect
             SecurityService.grant_step_up_access()
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', current_user.id)
-            
-            # Get the final next page to redirect to
-            final_next = session.get('step_up_next') or next_page
-            
             current_app.logger.info('Step-up authentication succeeded')
-            
-            # Clear session after reading
             session.pop('step_up_next', None)
-            
-            # Redirect to the final next page
-            if final_next and final_next.startswith('/'):
-                return redirect(final_next)
-            else:
-                current_app.logger.info("No valid next page, redirecting to dashboard")
-                return redirect(url_for('dashboard.index'))
+            return redirect(next_page or url_for('dashboard.index'))
         else:
             flash('Ungültiges Passwort', 'error')
-    
-    # Always pass the next page to the template (prefer session value)
-    template_next = session.get('step_up_next') or next_page
-    return render_template('auth/step_up.html', form=form, next=template_next)
+
+    return render_template('auth/step_up.html', form=form, next=next_page)
 
 @bp.route('/change-password', methods=['GET', 'POST'])
 @login_required

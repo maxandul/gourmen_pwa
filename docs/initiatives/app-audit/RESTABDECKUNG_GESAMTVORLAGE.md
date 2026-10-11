@@ -100,6 +100,7 @@ Danach [U1d / A-113 – Cron-Testzugang](U1D_CRON_TEST.md), ebenfalls ausschlies
 Anschliessend [U1e / A-043 – RSVP-Versandberechtigung](U1E_REMINDER_RECHTE.md).
 Danach [U1f / A-079 – MFA-Backup-Codes](U1F_BACKUP_CODES.md), ohne produktive Code-Erneuerung.
 Anschliessend [U1g / A-078 – sicheres Login-Rückkehrziel](U1G_LOGIN_RUECKKEHR.md), A-035 anteilig.
+Danach [U1h – sichere Step-Up-Rückkehr](U1H_STEP_UP_RUECKKEHR.md), A-035 weiter anteilig.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

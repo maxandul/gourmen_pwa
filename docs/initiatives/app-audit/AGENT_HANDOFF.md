@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1h-Nachtrag 11.10.2026:** Lokale Fortsetzung des Redirect-Vertrags aus U1g:
+Step-Up prüft alle Rückkehrquellen einschliesslich gespeicherter Altwerte.
+Branch `codex/u1h-step-up-return-target` über `6c5cf29`;
+[Nachweis und Grenzen](U1H_STEP_UP_RUECKKEHR.md). A-035 bleibt ausserhalb
+von Login/MFA/Step-Up offen.
+
 **U1g-Nachtrag 11.10.2026:** Lokale Fortsetzung A-078 und Auth-Login-Anteil A-035:
 internes Rückkehrziel über MFA erhalten und prüfen; bei neuem Loginversuch oder
 abgeschlossener Anmeldung verwerfen. Branch `codex/u1g-login-return-target` über

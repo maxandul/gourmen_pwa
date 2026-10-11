@@ -148,7 +148,12 @@ Passwortschritt zusammen mit `pending_2fa_user_id` als `pending_2fa_next` gespei
 MFA liest nur dieses Ziel, keine neue `next`-Angabe. Ein neuer Login-Aufruf verwirft
 den bisherigen MFA-Vorgang; Login/Logout/Cookie-Wiederanmeldung entfernen auch
 das Rückkehrziel. Fehlgeschlagene MFA-Eingaben erhalten es für die Wiederholung.
-Andere Redirect-Einstiege (insbesondere Step-Up) sind noch separat abzusichern.
+Step-Up verwendet denselben Prüfer für Query-`next`, Formular-`next`,
+Formular-`next_url` und gespeichertes `step_up_next` in dieser Priorität. Der erste
+zulässige Wert gewinnt; ungültige gespeicherte Werte werden sofort entfernt.
+Bei Fehlern bleibt nur ein geprüftes Ziel erhalten, bei Erfolg wird es verbraucht.
+Das gilt auch bei noch gültiger Step-Up-Freigabe. Andere Redirect-Einstiege
+(Event, Merch, Dokumente) sind noch separat abzusichern.
 
 ## Models
 
