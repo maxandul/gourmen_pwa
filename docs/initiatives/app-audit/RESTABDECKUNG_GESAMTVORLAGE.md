@@ -92,6 +92,11 @@ durchgängig verbundene Datenbasis zwischen den Vorschauen voraussetzen.
 
 ## Umsetzungspakete, Abhängigkeiten und Abnahme
 
+**Lokaler Umsetzungsstand 11.10.2026:** U1a abgeschlossen; danach U1b
+«Geheimnisse aus Logs entfernen» (A-081/A-110) separat beauftragt und umgesetzt.
+Nachweise: [U1a](U1A_DATENERHALT.md), [U1b](U1B_LOGGING.md).
+Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
+
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene
 141 Befunde und Paketregister bleiben die technische Basis; kein neuer Gesamtaudit.
 

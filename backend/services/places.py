@@ -23,9 +23,7 @@ class PlacesService:
         # Use GOOGLE_MAPS_API_KEY for backend API calls
         api_key = current_app.config.get('GOOGLE_MAPS_API_KEY')
         
-        # Debug logging
-        current_app.logger.info(f"Places autocomplete called with query: '{query}'")
-        current_app.logger.info(f"API key present: {bool(api_key)}")
+        current_app.logger.info('Places autocomplete requested')
         
         if not api_key:
             current_app.logger.warning("No Google Maps API key configured, using mock data")
@@ -47,9 +45,6 @@ class PlacesService:
         if session_token:
             params['sessiontoken'] = session_token
         
-        # Debug logging
-        current_app.logger.info(f"Making Places API request to: {cls.BASE_URL}/autocomplete/json")
-        current_app.logger.info(f"Request params: {params}")
         
         try:
             response = requests.get(f"{cls.BASE_URL}/autocomplete/json", params=params)
@@ -58,18 +53,18 @@ class PlacesService:
             response.raise_for_status()
             data = response.json()
             
-            current_app.logger.info(f"Places API response: {data}")
             
             if data.get('status') == 'OK':
                 predictions = data.get('predictions', [])
                 current_app.logger.info(f"Found {len(predictions)} predictions")
                 return predictions
             else:
-                current_app.logger.warning(f"Places API error: {data.get('status')} - {data.get('error_message', 'No error message')}")
+                current_app.logger.warning('Places autocomplete API returned a non-success result')
                 return []
                 
-        except Exception as e:
-            current_app.logger.error(f"Places API request failed: {e}")
+        except Exception:
+            # HTTP exceptions and response bodies can echo the URL, key or session token.
+            current_app.logger.error('Places autocomplete request or response processing failed')
             return []
     
     @classmethod
@@ -87,9 +82,7 @@ class PlacesService:
         # Use GOOGLE_MAPS_API_KEY for backend API calls
         api_key = current_app.config.get('GOOGLE_MAPS_API_KEY')
         
-        # Debug logging
-        current_app.logger.info(f"Places details called with place_id: '{place_id}'")
-        current_app.logger.info(f"API key present: {bool(api_key)}")
+        current_app.logger.info('Places details requested')
         
         if not api_key:
             current_app.logger.warning("No Google Maps API key configured, using mock data")
@@ -106,8 +99,6 @@ class PlacesService:
         if session_token:
             params['sessiontoken'] = session_token
         
-        # Debug logging
-        current_app.logger.info(f"Making Places Details API request to: {cls.BASE_URL}/details/json")
         
         try:
             response = requests.get(f"{cls.BASE_URL}/details/json", params=params)
@@ -116,16 +107,15 @@ class PlacesService:
             response.raise_for_status()
             data = response.json()
             
-            current_app.logger.info(f"Places Details API response: {data}")
             
             if data.get('status') == 'OK':
                 return data.get('result')
             else:
-                current_app.logger.warning(f"Places Details API error: {data.get('status')} - {data.get('error_message', 'No error message')}")
+                current_app.logger.warning('Places details API returned a non-success result')
                 return None
                 
-        except Exception as e:
-            current_app.logger.error(f"Places Details API request failed: {e}")
+        except Exception:
+            current_app.logger.error('Places details request or response processing failed')
             return None
     
     @classmethod

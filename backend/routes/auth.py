@@ -288,10 +288,10 @@ def enroll_2fa():
     if '2fa_secret' not in session:
         secret = SecurityService.generate_totp_secret()
         session['2fa_secret'] = secret
-        current_app.logger.info(f"2FA Debug: Generated NEW secret for {current_user.email}: {secret}")
+        current_app.logger.info('MFA enrollment started')
     else:
         secret = session['2fa_secret']
-        current_app.logger.info(f"2FA Debug: Using EXISTING secret for {current_user.email}: {secret}")
+        current_app.logger.info('MFA enrollment resumed')
     
     totp_form = TOTPForm()
     
@@ -371,18 +371,12 @@ def step_up():
     ]
     next_page = next((page for page in next_candidates if page and page.strip()), None)
     
-    # Debug logging
-    current_app.logger.info(f"Step-up called with next_page: {next_page}")
-    current_app.logger.info(f"Request args: {dict(request.args)}")
-    current_app.logger.info(f"Request form: {dict(request.form)}")
-    current_app.logger.info(f"Session step_up_next: {session.get('step_up_next')}")
+    # Form data and return URLs can contain passwords or tokens.
+    current_app.logger.info('Step-up authentication requested')
     
     # Store next page in session for reliability (only on GET or if not already set)
     if next_page and next_page.startswith('/'):
         session['step_up_next'] = next_page
-        current_app.logger.info(f"Stored next_page in session: {next_page}")
-    elif not session.get('step_up_next'):
-        current_app.logger.info(f"Invalid or missing next_page: {next_page}")
     
     # If user already has step-up access, redirect to the requested page
     if SecurityService.check_step_up_access():
@@ -390,10 +384,8 @@ def step_up():
         stored_next = session.get('step_up_next')
         if stored_next:
             session.pop('step_up_next', None)  # Clear after use
-            current_app.logger.info(f"Already authenticated, redirecting to stored next: {stored_next}")
             return redirect(stored_next)
         elif next_page and next_page.startswith('/'):
-            current_app.logger.info(f"Already authenticated, redirecting to next: {next_page}")
             return redirect(next_page)
         else:
             current_app.logger.info("Already authenticated, no next page, redirecting to dashboard")
@@ -409,18 +401,13 @@ def step_up():
             # Get the final next page to redirect to
             final_next = session.get('step_up_next') or next_page
             
-            # Debug logging
-            current_app.logger.info(f"Step-up successful for user {current_user.id}")
-            current_app.logger.info(f"Next page from form: {next_page}")
-            current_app.logger.info(f"Next page from session: {session.get('step_up_next')}")
-            current_app.logger.info(f"Final next page: {final_next}")
+            current_app.logger.info('Step-up authentication succeeded')
             
             # Clear session after reading
             session.pop('step_up_next', None)
             
             # Redirect to the final next page
             if final_next and final_next.startswith('/'):
-                current_app.logger.info(f"Redirecting to: {final_next}")
                 return redirect(final_next)
             else:
                 current_app.logger.info("No valid next page, redirecting to dashboard")
@@ -774,4 +761,4 @@ def backup_codes():
     
     # If backup codes already exist, show a message
     flash('Backup-Codes wurden bereits generiert. Falls du sie verloren hast, kannst du 2FA deaktivieren und neu einrichten.', 'info')
-    return redirect(url_for('member.profile')) 
+    return redirect(url_for('member.profile'))

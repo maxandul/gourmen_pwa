@@ -218,7 +218,13 @@ class MyForm(FlaskForm):
 - **Niemals `print()`** in Backend-Code; nutze `logger.info/warning/error/debug`
 - **Sensitive Daten nicht loggen**: keine Passwörter, kein verschlüsselter Inhalt, keine API-Keys
 - **In Routes**: `current_app.logger.info(...)` ist auch ok für Request-Kontext
-- **Exception-Logging**: `logger.error(f"...: {e}", exc_info=True)` wenn Stack-Trace nützlich
+- **Exception-Logging**: Exception-Text/Traceback nur, wenn keine vertraulichen Werte
+  enthalten sein können. HTTP-Fehler können URLs mit API-Schlüsseln enthalten.
+- **Auth-/Places-Logs**: nur feste Vorgangsnamen, Ergebnisse und sichere numerische
+  Metadaten (HTTP-Status, Anzahl). Keine MFA-Geheimnisse oder Codes, Passwortformulare,
+  Request-Dictionaries, Rückkehr-URLs, Places-Parameter, vollständigen API-Antworten
+  oder ungefilterten Fehlertexte. Auch Logger-Argumente müssen geheimnisfrei sein;
+  blosses Verschieben auf DEBUG genügt nicht. Tests prüfen Erfolgs- und Fehlerpfade.
 
 ## Audit-Log
 

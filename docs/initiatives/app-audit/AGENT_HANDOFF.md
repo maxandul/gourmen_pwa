@@ -1,5 +1,10 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1b-Nachtrag 11.10.2026:** Der Nutzer hat anschliessend «Geheimnisse aus Logs
+entfernen» (A-081/A-110) beauftragt. Umsetzung auf `codex/u1b-secret-safe-logging`
+über U1a-Commit `9cf5126`; [Nachweis und Grenzen](U1B_LOGGING.md).
+Weitere Zugangskorrekturen sind dadurch noch nicht umgesetzt oder veröffentlicht.
+
 **Nachtrag 11.10.2026:** U1a wurde im anschliessenden Umsetzungschat ausdrücklich
 beauftragt und lokal auf `codex/u1a-preserve-sensitive-data` umgesetzt.
 [Nachweis und Grenzen](U1A_DATENERHALT.md). Kein Deploy, kein Merge auf master.

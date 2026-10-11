@@ -125,16 +125,10 @@ class SecurityService:
         totp = pyotp.TOTP(secret)
         result = totp.verify(token, valid_window=window)
         
-        # Debug-Logging für 2FA-Problem
+        # Only the outcome is safe to log, never entered or generated codes.
         try:
-            from flask import current_app
-            current_app.logger.info(f"TOTP Debug: token={token}, secret_length={len(secret)}, window={window}, result={result}")
-            
-            # Zeige aktuellen TOTP-Code für Debugging
-            current_code = totp.now()
-            current_app.logger.info(f"TOTP Debug: current_code={current_code}, input_token={token}")
-            
-        except Exception as e:
+            current_app.logger.info('TOTP verification completed: accepted=%s', result)
+        except Exception:
             # Ignoriere Logging-Fehler
             pass
             
@@ -277,7 +271,7 @@ def require_step_up(f):
         # Debug logging
         try:
             from flask import current_app
-            current_app.logger.info(f"require_step_up check for {request.url}: {has_access}")
+            current_app.logger.info('Step-up access check: allowed=%s', has_access)
         except:
             pass
         
