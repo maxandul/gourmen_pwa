@@ -156,7 +156,11 @@ Das gilt auch bei noch gültiger Step-Up-Freigabe.
 `ratings.rate_event` prüft Query-/Formular-`next` vor sämtlichen Erfolgs- und
 Fehlerverzweigungen mit demselben Prüfer; das erste zulässige Ziel (Query vor
 Formular) gewinnt. Ohne gültiges Ziel bleiben die bisherigen Event-Tabs und
-Anker massgeblich. Merch- und Dokument-Einstiege sind noch separat abzusichern.
+Anker massgeblich. `admin.update_order_status` sowie Dokument-Umbenennen,
+Verschieben, Archivieren und Wiederherstellen prüfen freies Formular-`next`
+ebenfalls mit `local_return_target()`. Ungültige Ziele nutzen den bestehenden
+internen Fallback. Feste Erfolgsziele nach Archivieren/Wiederherstellen bleiben
+unverändert; der Prüfer ersetzt keine Zugriffsprüfung der Zielroute.
 
 ## Models
 

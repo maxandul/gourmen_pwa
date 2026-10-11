@@ -32,6 +32,7 @@ from backend.extensions import db
 from backend.models.audit_event import AuditEvent
 from backend.models.document import Document
 from backend.models.event import Event
+from backend.services.security import SecurityService
 from backend.services.drive_storage import (
     ALLOWED_MIME_TYPES,
     DriveError,
@@ -327,7 +328,7 @@ def rename(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
-    next_url = request.form.get("next") or url_for(
+    next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
     new_title = (request.form.get("title") or "").strip()
@@ -351,7 +352,7 @@ def move(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
-    next_url = request.form.get("next") or url_for(
+    next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
     parent_raw = (request.form.get("new_parent_id") or "").strip()
@@ -378,7 +379,7 @@ def archive(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
-    next_url = request.form.get("next") or url_for(
+    next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
     try:
@@ -404,7 +405,7 @@ def restore(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
-    next_url = request.form.get("next") or url_for("docs.detail", doc_id=doc_id)
+    next_url = SecurityService.local_return_target(request.form.get("next")) or url_for("docs.detail", doc_id=doc_id)
     target = (request.form.get("target_folder_id") or "").strip()
     if not target:
         flash("Kein Zielordner gewählt.", "error")

@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1j-Nachtrag 11.10.2026:** Lokale Fortsetzung A-035: Merch-Statuswechsel und
+vier Dokumentaktionen verwenden ebenfalls den gemeinsamen Rückkehrziel-Prüfer.
+Branch `codex/u1j-merch-docs-return-target` über `ff67223`;
+[Nachweis und Grenzen](U1J_MERCH_DOKUMENT_RUECKKEHR.md). Damit sind die in A-035
+konkret dokumentierten Einstiege lokal bearbeitet, kein neuer appweiter Audit.
+
 **U1i-Nachtrag 11.10.2026:** Lokale Fortsetzung A-035: Bewertungsroute prüft
 Rückkehrziele für Erfolg und alle Fehlerpfade mit dem gemeinsamen Prüfer.
 Branch `codex/u1i-rating-return-target` über `1c162a8`;

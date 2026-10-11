@@ -1103,7 +1103,7 @@ def update_order_status(order_id):
     from backend.models.merch_order import MerchOrder, OrderStatus
     
     print(f"DEBUG: Route reached - Order ID: {order_id}, Method: {request.method}")
-    next_url = request.form.get('next')
+    next_url = SecurityService.local_return_target(request.form.get('next'))
     
     if request.method == 'POST':
         try:
@@ -1136,7 +1136,7 @@ def update_order_status(order_id):
             print(f"DEBUG: Error in update_order_status: {str(e)}")
             flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
         
-        if next_url and next_url.startswith('/'):
+        if next_url:
             return redirect(next_url)
         return redirect(url_for('admin.merch_order_detail', order_id=order_id))
     
