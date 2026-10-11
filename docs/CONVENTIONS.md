@@ -114,6 +114,11 @@ def webhook():
 - **BillBro / GGL**: `event.supports_ggl` (nur `MONATSESSEN`) steuert Schätzung, Rangliste und `GGLService.calculate_event_points`. Ohne GGL (z.B. Vorstandssitzung): nur Ess-Typ + Rechnungssplit.
 - **CSRF**: standardmässig an. `@csrf.exempt` nur für externe Webhooks **mit** Signature-Check
 - **Rate-Limit**: für Login, Reset, Upload, sensitive Endpoints, **öffentlicher iCal-Feed** (`60/min` pro Feed-Token via `key_func` auf den URL-Token)
+- **Cron-Testzugang**: `/cron/test` nur bei `CRON_TEST_ENABLED is True` und gültigem
+  `CRON_AUTH_TOKEN` ausführen; auch lokal keine Ausnahme für fehlendes Token.
+  Die Verfügbarkeit wird nicht aus `ENV`, `DEBUG` oder `TESTING` abgeleitet.
+  Basis-/Produktions-/Testkonfiguration sperren, `DevelopmentConfig` schaltet
+  explizit frei. Reguläre Cron-Endpunkte behalten ihre bestehende Auth-Regel.
 - **Form-Handling**: WTForms (`FlaskForm`), `validate_on_submit()`-Pattern
 - **Öffentliche Hitlist** (`GET /restaurants`): Query `page`, `q` (Textsuche), `sort` mit `rating` (Standard), `recent` oder `name`; Verarbeitung über `get_landing_restaurant_table`.
 - **Flash-Nachrichten** auf Deutsch

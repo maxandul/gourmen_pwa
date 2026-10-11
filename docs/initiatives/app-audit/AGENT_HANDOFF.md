@@ -1,5 +1,10 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1d-Nachtrag 11.10.2026:** Nächste beauftragte lokale Fortsetzung: A-113,
+Cron-Testendpunkt standardmässig sperren und bei Freischaltung authentifizieren.
+Branch `codex/u1d-cron-test-access` über `f31c688`;
+[Nachweis und Grenzen](U1D_CRON_TEST.md). Kein Versand, Deploy oder Merge auf master.
+
 **U1c-Nachtrag 11.10.2026:** Nach U1b setzt der beauftragte nächste Schritt
 A-075 um: sensible Freigaben und Auth-Zwischenzustände bei Kontowechsel/
 Neuanmeldung verwerfen. Branch `codex/u1c-step-up-session` über `d7317a0`;

@@ -96,6 +96,7 @@ durchgängig verbundene Datenbasis zwischen den Vorschauen voraussetzen.
 «Geheimnisse aus Logs entfernen» (A-081/A-110) separat beauftragt und umgesetzt.
 Nachweise: [U1a](U1A_DATENERHALT.md), [U1b](U1B_LOGGING.md).
 Anschliessende lokale Fortsetzung: [U1c / A-075 – Step-Up-Sitzungsbindung](U1C_STEP_UP.md).
+Danach [U1d / A-113 – Cron-Testzugang](U1D_CRON_TEST.md), ebenfalls ausschliesslich lokal.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

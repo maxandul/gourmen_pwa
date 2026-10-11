@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('cron', __name__)
 
 
-def _is_authorized_cron_request():
+def _is_authorized_cron_request(allow_development_without_token=True):
     """
     Prüft Cron-Auth robust über:
     - X-Cron-Auth
@@ -24,10 +24,12 @@ def _is_authorized_cron_request():
 
     # Lokale Entwicklung ohne Token erlauben, aber klar loggen.
     if not expected_auth:
-        if current_app.debug or current_app.config.get('ENV') == 'development':
+        if allow_development_without_token and (
+            current_app.debug or current_app.config.get('ENV') == 'development'
+        ):
             logger.warning("CRON_AUTH_TOKEN not set; allowing cron request in development mode")
             return True
-        logger.error("CRON_AUTH_TOKEN missing in non-development environment")
+        logger.error("CRON_AUTH_TOKEN missing; cron request denied")
         return False
 
     header_token = request.headers.get('X-Cron-Auth')
@@ -136,8 +138,10 @@ def cron_test():
     Test Endpoint für Cron-Jobs (nur für Development)
     """
     try:
-        if current_app.config.get('ENV') == 'production':
-            return jsonify({'error': 'Test endpoint not available in production'}), 403
+        if current_app.config.get('CRON_TEST_ENABLED') is not True:
+            return jsonify({'error': 'Test endpoint not enabled'}), 403
+        if not _is_authorized_cron_request(allow_development_without_token=False):
+            return jsonify({'error': 'Unauthorized'}), 401
         
         # Teste 3-Wochen-Erinnerungen
         result = CronService.run_3_week_reminders()

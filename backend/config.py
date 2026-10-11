@@ -89,6 +89,8 @@ class Config:
     # Cron endpoint authentication
     # In production this must be set; development may run without token.
     CRON_AUTH_TOKEN = os.environ.get('CRON_AUTH_TOKEN')
+    # Test dispatch is opt-in by configuration class, never inferred from ENV/DEBUG.
+    CRON_TEST_ENABLED = False
 
     # Mail: optional Resend (HTTPS, empfohlen auf Railway Hobby) oder SMTP
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
@@ -135,6 +137,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     """Development configuration"""
+    CRON_TEST_ENABLED = True
     DEBUG = True
     TESTING = False
     # Lokal kein Rate-Limit (vermeidet „429 Too Many Requests“ bei vielen Reloads / Hot-Reload)
@@ -173,4 +176,4 @@ config = {
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig
-} 
+}

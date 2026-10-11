@@ -201,6 +201,12 @@ Praktische Konsequenz: Ein neuer Deploy braucht keinen manuellen Cache-Clear meh
 
 ## Cron-Jobs
 
+Der HTTP-Testpfad `/cron/test` ist standardmässig gesperrt
+(`CRON_TEST_ENABLED=False` in `Config`). Nur `DevelopmentConfig` aktiviert ihn
+explizit; auch dort ist ein konfiguriertes und gültiges `CRON_AUTH_TOKEN` nötig.
+Der Schalter ist eine Python-Konfiguration, keine neue ENV-Variable.
+Die regulären Scheduler-Endpunkte und der One-Shot-Prozess bleiben unverändert.
+
 `run_cron_reminders.py` ist ein **One-Shot-Script** (kein Daemon), wird vom Hosting-Scheduler aufgerufen. Steuerung via `SERVICE_TYPE=cron` in `start.sh`.
 
 Drei Reminder-Typen:

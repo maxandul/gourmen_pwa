@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (11.10.2026)
 
-Der Nutzer hat U1a, U1b und anschliessend die Fortsetzung mit U1c beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1d schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -10,6 +10,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1a / A-086: Daten bei Lesefehlern bewahren | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1a-preserve-sensitive-data`; [Umsetzung und Tests](U1A_DATENERHALT.md) |
 | U1b / A-081, A-110: Geheimnisse aus Logs entfernen | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1b-secret-safe-logging`; [Umsetzung und Tests](U1B_LOGGING.md) |
 | U1c / A-075: sensible Freigaben an die Anmeldung binden | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1c-step-up-session`; [Umsetzung und Tests](U1C_STEP_UP.md) |
+| U1d / A-113: Cron-Testzugang absichern | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1d-cron-test-access`; [Umsetzung und Tests](U1D_CRON_TEST.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
