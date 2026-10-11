@@ -1,0 +1,2 @@
+# Preserve archived visualization bytes so manifest hashes survive checkout.
+*.html -text -whitespace

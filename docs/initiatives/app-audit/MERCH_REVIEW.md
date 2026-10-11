@@ -1,5 +1,11 @@
 # Merch – erster vertiefter Durchlauf
 
+**Versionsklärung 11.10.2026:** Dieser Bericht betrifft das alte Merch-System.
+Die gewünschte jüngere Überarbeitung mit Bestellrunden liegt auf dem separaten
+Branch `phase/10-merch-wip` (`c90082e`). Sie wird als Gestaltungsziel verwendet.
+Belege und Grenzen: [Merch-Zielversion](MERCH_ZIELVERSION.md). Die untenstehenden
+Befunde bleiben baselinebezogen und sind keine Prüfung der v2-Version.
+
 Stand 2026-09-20. App unveraendert, Baseline `bf4d84a` erneut verifiziert. **Teilpruefung, kein
 abgeschlossenes Modulreview.** Schwerpunkt: Bestellen, Aendern, Varianten,
 Status und Forderungsschnittstelle. Nun 18 isolierte Szenarien, Befunde

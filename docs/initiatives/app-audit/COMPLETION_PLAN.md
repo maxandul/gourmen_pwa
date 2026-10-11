@@ -1,7 +1,8 @@
 # Konsolidierter Pruefstand und Weg zum Auditabschluss
 
 Stand: 2026-10-10. Baseline unveraendert bf4d84a. **Gesamtaudit offen.**
-Der inhaltliche Einstieg ist die [Gesamtbeurteilung mit vorlaeufigem Zielbild](GESAMTBEURTEILUNG.md).
+Der aktuelle inhaltliche Einstieg ist die [konsolidierte Gesamtvorlage](RESTABDECKUNG_GESAMTVORLAGE.md).
+Die [erste Gesamtbeurteilung](GESAMTBEURTEILUNG.md) bleibt technische Ausgangsbasis.
 Dieser Plan bewahrt den Pruefumfang und die Abschlusskriterien der Restarbeit.
 Die Teilberichte behalten ihre Belege und historischen Grenzen. Eine alte
 Formulierung «offen» ist nicht automatisch der heutige Stand; neuere Nachweise
@@ -33,6 +34,15 @@ FINDINGS.md und den drei CSV-Registern gegengeprueft. FILE_INVENTORY.csv bleibt
 ein Rohinventar; seine Startstatus bilden die spaeteren Reviews nicht ab.
 
 ## Aktuelle Abdeckung und verbleibende Arbeit
+
+Die [Gestaltungsabdeckung](ABDECKUNG_GESTALTUNG.md) und GESTALTUNGSZUORDNUNG.csv
+ordnen inzwischen alle 83 Inventar-Templates 16 primären Musterfamilien zu.
+App-Rahmen und drei Beispielansichten sowie BillBro/F3 bis F6 sind abgestimmt.
+Weitere Grundentwürfe, F1/F2-Grundregeln, F7-Kernabläufe und F8 sind inzwischen
+bestätigt. B01-Kernabläufe sowie Buchhaltungspraxis- und Merch-Ausnahmeansichten
+liegen ebenfalls bestätigt vor. Der aktuelle begrenzte Rest steht in
+RESTABDECKUNG_GESAMTVORLAGE.md. Diese Inventarzuordnung ersetzt keine technischen
+Nachweise und schliesst K1/K5/K6 nicht ab. Keine neue umfassende Befundsuche.
 
 Alle Zeilen sind Teilabdeckung. «Entscheidungsreif» gilt unten nur fuer konkret
 belegte Ursachen, nicht fuer ein vollstaendiges Modul. K bezeichnet die folgenden Pakete.
@@ -73,9 +83,11 @@ Detailquellen: [Public](PUBLIC_DASHBOARD_REVIEW.md), [Events](EVENT_WORKFLOW_REV
 
 **Refokus nach Nutzerzustimmung am 2026-10-10:** K6 wird frueh als vorlaeufige
 Vorlage bearbeitet und mit den Erkenntnissen aus K1 bis K5 fortgeschrieben.
-Die erste Gesamtbeurteilung ist erstellt. Naechster Meilenstein sind repraesentative
-grafische Entwuerfe fuer Dashboard, Eventdetail und Buchhaltung sowie die Vorbereitung
-der Fachentscheidungen fuer Zugang und Geldfluesse. Die folgenden K-Pakete sind
+Die erste Gesamtbeurteilung und die [Oberflaechenentwuerfe samt Fachentscheidungen](OBERFLAECHENENTWUERFE.md)
+sind erstellt. Die interaktive Work-Vorschau zeigt Dashboard, Eventdetail und
+Buchhaltung fuer Mobile/Desktop mit Tablet-Regeln. Naechster Meilenstein ist
+die Rueckmeldung zu Gestaltung und Fachregeln; die Vorschau schliesst keine
+Abdeckungsluecken der laufenden App. Die folgenden K-Pakete sind
 Pruefbereiche, keine starre serielle Reihenfolge. Die U-Pakete in der Gesamtbeurteilung
 bezeichnen dagegen die vorgeschlagene spaetere Umsetzung.
 
@@ -87,11 +99,11 @@ bezeichnen dagegen die vorgeschlagene spaetere Umsetzung.
 | K3 Technische Querschnitte | Verbleibende Rechte-/Sicherheitsgrenzen und Transaktionsklassen; bekannte Ursachen zu gemeinsamen Reparaturpaketen gebuendelt | offen |
 | K4 Performance und Betriebsverhalten | Lokale Messungen getrennt von Hypothesen und externen Nachweisen; PWA-/Integrationsrestmatrix | offen |
 | K5 Dokumentation und Inventarabschluss | Jede relevante Datei/Route/Komponentenvariante einem Nachweis, Ausschluss oder konkreten Restgrund zugeordnet; 44 Doku-Eintraege nachvollziehbar bewertet | offen |
-| K6 Zielbild und Entscheidungsvorlage | Konsolidierte Ursachen, empfohlene Reihenfolge, Nutzen/Aufwand/Risiko und Abnahmekriterien; Optionen fuer Refactoring/Redesign; Entscheidungen fuer Nutzerfeedback | erste Vorlage erstellt am 2026-10-10; grafische Entwuerfe, Feedback und abschliessende Absicherung offen |
+| K6 Zielbild und Entscheidungsvorlage | Konsolidierte Ursachen, empfohlene Reihenfolge, Nutzen/Aufwand/Risiko und Abnahmekriterien; Optionen fuer Refactoring/Redesign; Entscheidungen fuer Nutzerfeedback | erste Vorlage und grafische Entwuerfe mit Tablet-Regeln/F1 bis F8 am 2026-10-10 erstellt; Feedback und abschliessende Absicherung offen |
 
 Pakete koennen mehrere Durchlaeufe benoetigen. Kein Zeit- oder Prozentversprechen
-ohne belastbare Restmengenerfassung. K1 beginnt mit dem Abgleich der 83 Templates
-zu aktiven Seitenfamilien und vorhandenen Browserbelegen. Gemeinsame Komponenten
+ohne belastbare Restmengenerfassung. Die gestalterische Zuordnung der 83 Templates
+liegt vor; aktive Varianten und Browsernachweise bleiben abzugleichen. Gemeinsame Komponenten
 werden einmal gruendlich geprueft; abweichende Verbraucher erhalten eigene Proben.
 Die urspruengliche Breiten-/Zustandsmatrix im README bleibt der Pruefmassstab.
 

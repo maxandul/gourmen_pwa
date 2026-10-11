@@ -138,6 +138,6 @@ Ein weiterer Test braucht eine offene Frage, eine Folge für Entscheidung oder A
 
 ## Nächster Meilenstein
 
-Als Nächstes wird das vorläufige Zielbild anhand der vorhandenen Seitenfamilien konkretisiert: Dashboard, Eventdetail und Buchhaltung erhalten repräsentative grafische Entwürfe für Mobile und Desktop, ergänzt um Tablet-Regeln. Gleichzeitig werden die noch offenen Fachentscheidungen für Zugang und Geldflüsse in wenigen klaren Fragen vorbereitet. Dabei entstehen noch keine Änderungen an der laufenden App.
+Die [Oberflächenentwürfe und Fachentscheidungen](OBERFLAECHENENTWUERFE.md) konkretisieren jetzt das vorläufige Zielbild: Dashboard, Eventdetail und Buchhaltung liegen als interaktive Vorschläge für Mobile und Desktop mit Tablet-Regeln vor. Acht offene Fachentscheidungen enthalten Empfehlungen und Alternativen. Als Nächstes folgt die Rückmeldung dazu; die laufende App bleibt unverändert.
 
 Danach kann die Rückmeldung zu Umfang, Bedienung und Fachregeln in die endgültige Entscheidungsvorlage einfliessen. Die Restprüfung läuft gegen die oben genannten Abschlusskriterien weiter; sie wird nicht mehr zur Voraussetzung dafür, überhaupt ein Gesamtbild zu zeigen.

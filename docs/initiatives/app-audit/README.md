@@ -3,14 +3,145 @@
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
 danach User-Feedback zu den Empfehlungen, erst anschliessend Umsetzung.
 
-**Aktueller Einstieg ab 2026-10-10:** [Gesamtbeurteilung und vorlaeufiges Zielbild](GESAMTBEURTEILUNG.md).
+**Übergabe vorbereitet (11.10.2026):** Bestätigte Planung samt 19 Vorschaufragmenten unter `mockups/` gesichert. Aktuelle Startanweisung in [AGENT_HANDOFF.md](AGENT_HANDOFF.md); U1a lokal implementieren erst nach Absenden des Startauftrags im neuen Chat. Keine App-Änderung, kein Push oder Deploy in dieser Vorbereitung.
+
+**Aktueller Einstieg:** [Konsolidierte Gesamtvorlage und Restabdeckung](RESTABDECKUNG_GESAMTVORLAGE.md).
+**B01 läuft:** [Buchhaltungspraxis](BUCHHALTUNG_PRAXISABGLEICH.md) konkretisiert
+Budget und Buchungen mit denselben 18 Posten, unverändert bestätigt, sowie
+ein Vereinskonto ohne Kasse, Reise-Rechnungen/Kartenzahlungen, Kontoabgleich und
+Budget/Ist/GV. Private Essen nur Betragserinnerung; frühere Zahlungskontrolle
+im Mockup entsprechend vereinfachen. Keine fachliche Gesamtabnahme.
+Reise-Mehrkosten bleiben privat ausserhalb der App. Belege sind grundsätzlich
+optional; Buchungen und Zuordnungen ohne Rechnungsbeleg müssen möglich sein.
+Jahreswechsel: Zahlungsprinzip als delegierte Standardwahl; Bankbuchungsdatum
+bestimmt Jahres-Ist, offene Rechnungen/Forderungen separat ausweisen.
+Weitere Zahlungsregeln bestätigt: Vereinsauslagen bei Erstattung im Ist,
+Sammelzahlungen auf mehrere Forderungen/Mitglieder verteilen, Merch-Zuschuss
+nicht als zusätzliche Ausgabe zählen. Budgetvorschlag/GV-Beschluss mit
+Versionshistorie ohne zusätzliche App-Freigaberunde bestätigt. Mitgliederbeiträge
+ebenfalls bestätigt; zusammengeführter Arbeitsablauf in B01 dokumentiert.
+Neue Buchhaltungsübersicht `buchhaltung-praxis-entwurf.html` mit «sieht gut aus» gestalterisch bestätigt; Prüfumfang/Grenzen in B01. Merch-Darstellung bestätigt, Aufteilung auf 6650/6660 in B01 ausgearbeitet. Ergänzende
+Prozessentwürfe: private Betragserinnerung, Buchung ohne Belegdatei und Revision
+mit direkter Wiederöffnung/Admin-Stellvertretung jetzt nachgeführt und lokal
+geprüft. Merch-Lieferausnahmen in `merch-lieferausnahmen.html` mit «ok» gestalterisch
+bestätigt: Teilübergabe, Einzelstorno, Ersatz-Zustimmung und Lieferantenausfall.
+Nächstes: gezielte Restabdeckung und Zusammenführung zur Gesamtvorlage.
+Ältere Entwürfe inzwischen nachgeführt: Merch-Bestätigungen bei Wiederöffnung
+erhalten, Abschluss bei Zahlung UND Übergabe, aktuelle Sitzung nach normaler
+Passwortänderung erhalten, Getränke/Service optional und gleichgewichtet.
+Merch-Preisregel je Ausführung bestätigt: Einkaufspreis minus Zuschuss, keine Marge; Ersatz mit geändertem Preis/Mitgliederanteil vor Zustimmung. Ausführungspreise und Ersatz mit Nachzahlung sind jetzt dargestellt und lokal geprüft. Öffentliche Aggregate sind ebenfalls dargestellt und mit fehlenden Kategorien sowie ohne Bewertungen lokal geprüft. Geldflussregeln G1–G3 bestätigt. K1-Rückzahlungsposten und ergänzende Nettoübersicht bestätigt. Beitragsausnahmen/Budgethistorie konkretisiert; B02 zum persönlichen Ausblenden privater Erinnerungen bestätigt. Gesamtvorlage mit Entwurfsverzeichnis, Fachstand, U1–U6-Abhängigkeiten und Abnahmekriterien zusammengeführt. Gemeinsame Merch-Beispielrunde, Ausführungspreise im Shop, Beitragsausnahmen, Budgethistorie und B02 jetzt lokal ergänzt und geprüft; Ergänzungen mit «passt» gestalterisch bestätigt. R13 zu sensiblen Angaben/Dokumenten/laufender Revision bestätigt. Erstes begrenztes Umsetzungspaket U1a (Daten bei Lesefehlern bewahren) samt Abnahmekriterien vorbereitet, nicht beauftragt; technische Verträge und Inhaltsfreigaben bleiben.
+**F8-Teilentscheid:** Bewertungen nach dem Anlass ohne Frist abgeben/ändern;
+Getränke und Service optional. Essen bleibt bestehendes Pflichtfeld.
+Ausgefüllte Kategorien sind im Einzelgesamtwert gleich gewichtet.
+Restaurantgesamtwert als gleichgewichtetes Mittel der Einzelbewertungen über
+alle Besuche bestätigt; nur tatsächlich Anwesende dürfen bewerten.
+GGL-Regeln ebenfalls bestätigt. Öffentliche Restaurantaggregate erlaubt,
+Einzelbewertungen/Namen/Kommentare intern; künftige Events geschützt,
+Instagram nur verlinkt. Siehe [Bewertung/GGL](BEWERTUNG_GGL_ENTSCHEIDUNGEN.md)
+und PUBLIC_HOMEPAGE_ENTWURF.md. Nächster Fachblock: Buchhaltungspraxis B01.
+**F7-Teilentscheide:** verbindliche Bestellung trotz vorläufigem Preis, keine
+zweite Bestätigung des definitiven Preises; Bestätigungen bei Wiederöffnung
+erhalten, unveränderte Bestellungen nicht erneut einreichen. Abschluss erst bei
+Zahlung UND Übergabe und erledigten Liefer-/Erstattungsfällen. Lieferausnahmen
+einschliesslich Ersatz mit Zustimmung und Rückzahlung bestätigt. Zuschuss je
+Mitglied/Runde, gedeckelt auf Warenwert und nach Storno neu berechnet, bestätigt.
+Änderungs-/Stornowege ebenfalls bestätigt: offen durch Mitglied, geschlossen
+über Verwaltung/Admin, nach Lieferantenauftrag erst Möglichkeit klären;
+bezahlte Änderungen mit Folgenvorschau. Massgeblich: Merch-Entwurfsdokumente.
+**F1-Teilentscheid:** Mitglieder-Wiederherstellung und Sitzungsverhalten sind
+in KONTO_ZUGANG_ENTWURF.md bestätigt; eigener Systemadmin-Notfallzugang ebenfalls:
+separate Wiederherstellungscodes, technischer Hosting-Wiederherstellungsweg,
+kein zusätzlicher Ersatzadmin. Auch das ergänzende F1-Regelpaket ist bestätigt:
+erneute Bestätigung sensibler Änderungen, einmalige ersetzbare Links,
+externe Zugangsentzüge und erneute Anmeldung anderer Geräte inklusive 2FA.
+**F2-Entscheid:** Systemadmin mit bereichsübergreifendem Bearbeitungsrecht,
+einschliesslich Finanzen; differenzierte Vorstand-/Funktionsrechte und gezielte
+Zusatzrechte sind bestätigt, siehe [Rollenentscheidungen](ROLLEN_ENTSCHEIDUNGEN.md).
+Revisionsbestätigung regulär durch Revisor, bei Bedarf stellvertretend durch
+Systemadmin mit sichtbarem Vermerk; keine Selbstbestätigung des Schatzmeisters.
+F6 geändert:
+Systemadmin und Schatzmeister dürfen abgeschlossene Jahre jeweils allein mit
+Grund wiederöffnen, ohne Revisorzustimmung. Erneute Revision/Berichtshistorie bleiben.
+Die [Gestaltungsabdeckung](ABDECKUNG_GESTALTUNG.md) bleibt die Musterübersicht.
+**Abstimmungsgrenze:** Zustimmung zu Mockups gilt fuer Gestaltung und gezeigte
+Benutzerfuehrung. Der fachliche Gesamtabgleich der Buchhaltung mit der
+Vereinspraxis bleibt ausdruecklich offen. F3–F6 sind separat besprochene Einzelregeln.
+[Revision und Korrektur](REVISION_KORREKTUR_ENTWURF.md) sind am 11. Oktober 2026
+hinsichtlich Darstellung und gezeigter Benutzerfuehrung bestaetigt.
+[Direktes Bearbeiten und Warteschlangen](INLINE_WARTESCHLANGE_ENTWURF.md) sind
+am 11. Oktober hinsichtlich Darstellung und gezeigter Benutzerfuehrung bestaetigt.
+[Merch-Mitgliedersicht](MERCH_MITGLIEDER_ENTWURF.md) gestalterisch bestaetigt.
+[Verwaltung der Bestellrunde](MERCH_VERWALTUNG_ENTWURF.md) ebenfalls gestalterisch
+bestaetigt. [Dokumente und Uploads](DOKUMENTE_UPLOAD_ENTWURF.md), Block 4,
+gestalterisch bestaetigt. [Konto und Zugang](KONTO_ZUGANG_ENTWURF.md), Block 5,
+ebenfalls gestalterisch bestaetigt. [Oeffentliche Homepage/Restaurantliste](PUBLIC_HOMEPAGE_ENTWURF.md)
+mit eigenstaendigem Design ebenfalls bestaetigt. [Systemzustaende/E-Mails](SYSTEM_EMAIL_ENTWURF.md)
+sind jetzt ebenfalls gestalterisch bestaetigt. Restabdeckung R01–R12 ist konsolidiert;
+[Chart-/Sonderseitenzuordnung](CHARTS_SONDERSEITEN_ZUORDNUNG.md) liegt vor:
+zehn aktive Chartpositionen zugeordnet; GGL-Mehrpersonenvergleich und Ausgabenbalken
+mit «ok» bestaetigt. [Finanzergänzung R07/R08](FINANZ_ERGAENZUNG_ENTWURF.md)
+ist gestalterisch bestaetigt. [Verwaltungszugänge R10](VERWALTUNGSZUGAENGE_ENTWURF.md)
+sind gestalterisch bestaetigt. [Seitengeltung R01–R05](SEITENGELTUNG_GESAMTVORLAGE.md)
+ist konkretisiert, CSV mit 83 Baseline-Einträgen aktualisiert. Als Naechstes
+Fachrunde F1/F2, F7, F8 und eigener Buchhaltungs-Praxisabgleich B01.
+Prozessrestvarianten und Fachregeln bleiben offen; F1/F2 konkret vorbereitet.
+Die vom Nutzer gewuenschte juengere
+Ueberarbeitung wurde auf `phase/10-merch-wip` (`c90082e`) identifiziert.
+[Zielversion und Altbestand](MERCH_ZIELVERSION.md): altes System spaeter operativ
+stilllegen, Daten fuer moegliche Uebernahme erhalten. Jetzt keine App-Aenderung.
+Alle 83 Inventar-Templates sind in [GESTALTUNGSZUORDNUNG.csv](GESTALTUNGSZUORDNUNG.csv)
+16 primaeren Musterfamilien zugeordnet. Drei bestaetigte Beispielansichten decken
+noch nicht alle Muster ab. Das gemeinsame Formularmuster ist bestaetigt; als Naechstes folgen
+Tabellen/Charts und weitere Prozesse gemaess Abdeckungsuebersicht.
+Keine neue umfassende Befundsuche; keine App-Umsetzung.
+[Formulare und Bearbeitung](FORMULARE_ENTWURF.md) liegen jetzt als interaktiver
+Event-/Profilentwurf vor und sind als gemeinsames Muster bestaetigt.
+[Listen, Tabellen und Charts](LISTEN_CHARTS_ENTWURF.md) sind als Grundmuster
+bestaetigt. Zuordnung aller bestehenden Charttypen und Mobile-Pruefung mit elf
+Mitgliedern bleiben offen. [Buchhaltungsprozesse](BUCHHALTUNG_PROZESSE_ENTWURF.md)
+zeigen Buchung, Belegeinreichung und Zahlungszuordnung; diese drei Entwuerfe
+sind bestaetigt. Als Naechstes folgen Revision und finanzielle Korrekturen.
+
+**Bisheriger Verlauf:** [Gesamtbeurteilung und vorlaeufiges Zielbild](GESAMTBEURTEILUNG.md).
 **App-Wechsel:** [Uebergabe fuer ChatGPT Work](AGENT_HANDOFF.md). Fortsetzung in der
 neuen ChatGPT-App ausdruecklich in **Work**, nicht in Codex; Sicherung auf eigenem Branch.
 Die erste Entscheidungsvorlage buendelt alle 141 Befunde in sechs vorgeschlagene
 Umsetzungspakete; die Einzelzuordnung steht im [Paketregister](PAKETREGISTER.csv).
 Der Nutzer hat die Zusammenfuehrung und fruehe Zielbildarbeit beauftragt, keine
-App-Umsetzung. Als Naechstes das Zielbild an repraesentativen Ansichten konkretisieren
-und entscheidungsrelevante Fachfragen vorbereiten. Restpruefungen bleiben im
+App-Umsetzung. [Oberflaechenentwuerfe und Fachentscheidungen](OBERFLAECHENENTWUERFE.md)
+konkretisieren jetzt Dashboard, Eventdetail und Buchhaltung fuer Mobile/Desktop
+mit Tablet-Regeln; interaktive Vorschau in der Work-Unterhaltung. Rueckmeldung zu
+Gestaltung der Fachseiten und F1 bis F8 steht aus. Dashboard-Inhaltsreihenfolge,
+Kopfzeile, Navigation und Abstaende inklusive Logo, Lucide-Icons, Theme-Schalter
+und Kontomenue sind vom Nutzer bestaetigt. Das Eventdetail ist in diesem Rahmen
+mit Teilnahme, BillBro und Bewertungen als interaktiver Entwurf ausgearbeitet.
+Auch das Eventdetail-Layout wurde bestaetigt. Der Buchhaltungsentwurf liegt jetzt
+im selben Rahmen vor und wurde ebenfalls bestaetigt. Jetzt liegt der Vorschlag
+[BillBro-Schritte und Bedienverhalten](BILLBRO_INTERAKTION.md) mit durchspielbarer
+Work-Vorschau vor. Interaktionsdetails (Schritte, Scroll/Fokus, Bearbeiten/Loeschen,
+mobile Klickzustaende, Fehler/Ruecknahme) und Fachentscheidungen werden vor
+einer Umsetzung abgestimmt; die Layoutzustimmung ersetzt diese nicht.
+BillBro wurde anschliessend grundsaetzlich bestaetigt, mit Korrekturen zur
+Anwesenheit, automatischem Abwesend-Label bei fehlender Antwort nach Rundenschluss,
+Rueckkehr von Rechnung zu Angaben und Trinkgeld in Prozent statt Anteil pro Person
+im Pruefschritt. Details in BILLBRO_INTERAKTION.md; weiterhin keine App-Umsetzung.
+F3 wurde danach bestaetigt: bezahlte Betraege erhalten, Differenzen als offene
+Betraege bzw. Rueckzahlungsbedarf, Schatzmeisterbestaetigung bei betroffenen
+Vereinszahlungen und Bestaetigung privater Eingaenge/Rueckzahlungen durch den
+Auslegenden. F4 Zahlwegwechsel wurde ebenfalls bestaetigt: vor Abschluss durch
+Organisation aenderbar, danach ohne Zahlungen mit Vorschau und nachvollziehbarem
+Forderungsersatz; mit Zahlungen nur ueber Korrekturablauf mit Schatzmeister und
+privater Eingangsbestaetigung durch den Auslegenden. F5 Teil-/Ueberzahlungen wurde
+bestaetigt: Restbetrag bei Teilzahlung, ausdrueckliche Zuordnung der Ueberzahlung
+durch den Schatzmeister (Aufrundung, andere offene Forderung oder Rueckzahlung),
+doppelte Zahlung zur Klaerung statt automatischer Einnahme. F6 wurde ebenfalls
+bestaetigt: Buchungssperre ab Revisionsfreigabe, Hinweise vs. blockierende
+Beanstandungen, begruendete Rueckgabe durch Revisor und erneute Pruefung.
+Wiederoeffnung abgeschlossener Jahre nach spaeterer Nutzerkorrektur durch
+Systemadmin oder Schatzmeister allein, ohne Revisorzustimmung, mit Grund;
+bisherigen Bericht erhalten, neue Version nach Revision.
+F1/F2 Zugang/Rollen, F7 Merch und F8 Bewertungen/GGL bleiben offen.
+Restpruefungen bleiben im
 [Pruefstand und Abschlussplan](COMPLETION_PLAN.md); K1 bis K5 sind keine Voraussetzung
 mehr fuer eine erste Gesamtbeurteilung. Aeltere Fortsetzungsnotizen sind Verlauf.
 
@@ -72,8 +203,8 @@ betroffenen Stellen, statt einer Vielzahl redundanter Einzelprobleme.
 | 05 | Backend, Datenintegritaet und Sicherheit | in_progress | Isolierte Rechte-/Integritaetspruefungen in Modulberichten und AUTH_REVIEW.md; A-141 ueber normale Reset-Anfragen, administrativen Passwortreset und alte MFA-Reset-Links nach Neueinrichtung bestaetigt. Keine vollstaendige Sicherheitsabdeckung; CSRF, Rate-Limits, reale Konfiguration und weitere Grenzen offen. |
 | 06 | Performance, PWA, Integrationen und Betrieb | in_progress | 10 SW-/Update-, 5 Offline-, 6 Service-Vertrags- und 9 Versand-/Cron-Grenzproben, 5 Zeitfenster-/Transport- und 6 Legacy-Notifier-Proben sowie 120 Render-Messungen zur SQL-Skalierung in 3 Durchlaeufen, einschliesslich historischer Saisons/Geschaeftsjahre. PWA_PERFORMANCE_REVIEW.md / QUERY_SCALING_REVIEW.md; echte Ladezeiten, weitere Grenzen und Betrieb offen. |
 | 07 | Dokumentationsabgleich | in_progress | 47 Inventareintraege, davon 3 Game-Dokumente ausgeschlossen; 44 im Pruefumfang: 30 teilweise abgeglichen, 14 nur am Einstieg eingeordnet; 5 lokale Dokumentationsproben. DOCUMENTATION_REVIEW.md; Betriebsnachweise separat erfasst. |
-| 08 | Gegenpruefung, Lueckenschluss und Zielbild | in_progress | K0 konsolidiert; am 2026-10-10 erste Gesamtbeurteilung mit vorlaeufigem Zielbild und sechs Paketen erstellt. Alle 141 Befunde zugeordnet. Grafische Entwuerfe, Einzelobjektabschluss und gezielter Lueckenschluss offen. |
-| 09 | User-Feedback und Umsetzungspakete | in_progress | Erste Vorlage mit Nutzen, relativem Aufwand, Risiko, Abhaengigkeiten und Abnahmekriterien vorhanden. Fach-/Gestaltungsfeedback und endgueltige Paketentscheidungen offen; keine Umsetzungsfreigabe. |
+| 08 | Gegenpruefung, Lueckenschluss und Zielbild | in_progress | K0 konsolidiert; Gesamtbeurteilung und Zuordnung aller 141 Befunde vorhanden. Am 2026-10-10 grafische Entwuerfe fuer drei Ansichten, Mobile/Desktop und Tablet-Regeln ergaenzt. Abstimmung, Einzelobjektabschluss und gezielter Lueckenschluss offen. |
+| 09 | User-Feedback und Umsetzungspakete | in_progress | B01: ein Bankkonto, Reise/Bankabgleich/Budget/GV, private Essen nur Erinnerung, Reise-Mehrkosten ausserhalb App, Belege optional; alle 18 Posten fuer Buchungen/Budget bestaetigt. Zahlungsprinzip als delegierte Standardwahl dokumentiert. Erstattungen/Sammelzahlungen/Merch ohne Doppelzaehlung bestaetigt. Budgetvorschlag/GV-Beschluss mit Historie und Beitragsablauf bestaetigt; Gesamtprozess zusammengefuehrt. Neue Buchhaltungsuebersicht gestalterisch bestaetigt; Merch-Darstellung bestaetigt, Postenaufteilung ausgearbeitet; private Erinnerung/Belegoptionalitaet/Revision nachgefuehrt. Vier Merch-Lieferausnahmen gestalterisch bestaetigt; Merch-Hauptregeln/Sitzungserhalt/optionale Bewertung nachgefuehrt; Merch-Preisregel je Ausfuehrung ohne Marge bestaetigt und visuell nachgefuehrt; oeffentliche Aggregate inklusive fehlender Angaben nachgefuehrt und lokal geprueft; Geldflussregeln G1-G3 bestaetigt; K1-Rueckzahlungsposten/Nettoansicht bestaetigt; Beitragsausnahmen/Budgethistorie konkretisiert, B02 privates Ausblenden bestaetigt; Gesamtvorlage zusammengefuehrt, gezielte Merch-/B01-Entwurfsharmonisierung lokal ergaenzt und geprueft; Ergaenzungen gestalterisch bestaetigt; R13-Rechtepaket bestaetigt; U1a als begrenzter Umsetzungseinstieg vorbereitet, nicht beauftragt; technische Vertraege/Inhaltsfreigaben bleiben. Planung samt 19 Mockups und Startanweisung fuer neuen Umsetzungschat gesichert. Keine Umsetzungsfreigabe in diesem Chat. |
 
 ## Abdeckungsmatrix fuer vertiefte Durchlaeufe
 
