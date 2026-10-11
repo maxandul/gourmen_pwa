@@ -111,6 +111,12 @@ def webhook():
 
 - **Permissions explizit**: `@login_required`, `current_user.is_admin()`, `@admin_required` (nur `Role.ADMIN`), oder `@verein_member_required` für **Lesenden** Zugriff ausgewählter Admin-Oberflächen durch alle aktiven Mitglieder (siehe `backend/routes/admin.py`; schreibende/sensitive Routen bleiben `@admin_required`)
 - **Event-Sichtbarkeit**: Listen/Queries über `Event.apply_audience_filter(query, member)`; Einzelzugriff über `event.is_visible_to(member)` (sonst 403). iCal-Feeds mit `for_calendar=True` (nur `vorstandsmitglied`, kein Admin-Shortcut). `VORSTANDSSITZUNG` erzwingt `audience=board` via `Event.resolve_audience_for_type`.
+- **Manuelle RSVP-Erinnerungen**: beide Einstiege in `events.py` nutzen nach
+  der Sichtbarkeitsprüfung `_can_send_participation_reminders(event)`:
+  Organisator dieses Events oder `is_admin()`. Vorstandsstatus oder eine andere
+  Vereinsfunktion allein gewähren kein Versandrecht. Ablehnung erreicht den
+  Versandservice nicht; API antwortet 403, Formularroute leitet mit Fehlermeldung
+  zum Event zurück. Login und CSRF bleiben erforderlich.
 - **BillBro / GGL**: `event.supports_ggl` (nur `MONATSESSEN`) steuert Schätzung, Rangliste und `GGLService.calculate_event_points`. Ohne GGL (z.B. Vorstandssitzung): nur Ess-Typ + Rechnungssplit.
 - **CSRF**: standardmässig an. `@csrf.exempt` nur für externe Webhooks **mit** Signature-Check
 - **Rate-Limit**: für Login, Reset, Upload, sensitive Endpoints, **öffentlicher iCal-Feed** (`60/min` pro Feed-Token via `key_func` auf den URL-Token)

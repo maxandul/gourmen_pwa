@@ -64,6 +64,11 @@ def _get_visible_event_or_404(event_id: int) -> Event:
     return event
 
 
+def _can_send_participation_reminders(event: Event) -> bool:
+    """Shared sender permission after the event visibility check."""
+    return current_user.is_admin() or event.organisator_id == current_user.id
+
+
 # Push Notification API Routes
 @bp.route('/api/events/<int:event_id>/participation-stats', methods=['GET'])
 @login_required
@@ -92,7 +97,7 @@ def send_participation_reminders(event_id):
         event = _get_visible_event_or_404(event_id)
         
         # Nur Organisator oder Admin kann Erinnerungen senden
-        if current_user.id != event.organisator_id and not current_user.is_admin():
+        if not _can_send_participation_reminders(event):
             return jsonify({'error': 'Keine Berechtigung'}), 403
         
         result = PushNotificationService.send_participation_reminder_to_members(event_id)
@@ -1015,8 +1020,8 @@ def send_rsvp_reminder(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (current_user.is_admin or event.organisator_id == current_user.id):
-        flash('Nur der Organisator kann Erinnerungen senden', 'error')
+    if not _can_send_participation_reminders(event):
+        flash('Nur der Organisator oder ein Admin kann Erinnerungen senden', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
     # Use PushNotificationService to send reminders
@@ -1102,4 +1107,4 @@ def stats():
     return redirect(url_for('events.index', tab='stats'))
 
 # Import here to avoid circular imports
-from datetime import datetime 
+from datetime import datetime

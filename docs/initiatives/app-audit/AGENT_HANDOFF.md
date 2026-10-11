@@ -1,5 +1,10 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1e-Nachtrag 11.10.2026:** Nächste beauftragte lokale Fortsetzung A-043:
+beide RSVP-Erinnerungseinstiege prüfen Organisator/Admin identisch vor Versand.
+Branch `codex/u1e-reminder-permissions` über `f8a40f9`;
+[Nachweis und Grenzen](U1E_REMINDER_RECHTE.md). Kein echter Versand oder Deploy.
+
 **U1d-Nachtrag 11.10.2026:** Nächste beauftragte lokale Fortsetzung: A-113,
 Cron-Testendpunkt standardmässig sperren und bei Freischaltung authentifizieren.
 Branch `codex/u1d-cron-test-access` über `f31c688`;
