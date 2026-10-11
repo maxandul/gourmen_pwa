@@ -96,6 +96,9 @@ def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose):
 @limiter.limit("5 per minute", methods=['POST'])
 def login():
     """Login page"""
+    # Visiting/retrying login abandons any previous password/MFA attempt.
+    session.pop('pending_2fa_user_id', None)
+    session.pop('pending_2fa_next', None)
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
     
@@ -125,8 +128,8 @@ def login():
                             extra_data={'ip': request.remote_addr, 'remembered_device': True}
                         )
                         
-                        next_page = request.args.get('next')
-                        if not next_page or not next_page.startswith('/'):
+                        next_page = SecurityService.local_return_target(request.args.get('next'))
+                        if not next_page:
                             # Check if user needs to change password
                             if user.needs_password_change:
                                 flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
@@ -137,6 +140,7 @@ def login():
                 
                 # Device not remembered, require 2FA
                 session['pending_2fa_user_id'] = user.id
+                session['pending_2fa_next'] = SecurityService.local_return_target(request.args.get('next'))
                 return redirect(url_for('auth.verify_2fa'))
             
             # No 2FA enabled, login normally
@@ -148,8 +152,8 @@ def login():
                 extra_data={'ip': request.remote_addr}
             )
             
-            next_page = request.args.get('next')
-            if not next_page or not next_page.startswith('/'):
+            next_page = SecurityService.local_return_target(request.args.get('next'))
+            if not next_page:
                 # Check if user needs to change password
                 if user.needs_password_change:
                     flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
@@ -173,13 +177,17 @@ def logout():
 @bp.route('/2fa/verify', methods=['GET', 'POST'])
 def verify_2fa():
     """2FA verification"""
+    # Capture before login_user clears authentication intermediates.
+    return_target = SecurityService.local_return_target(session.get('pending_2fa_next'))
     user_id = session.get('pending_2fa_user_id')
     if not user_id:
+        session.pop('pending_2fa_next', None)
         return redirect(url_for('auth.login'))
     
     user = Member.query.get(user_id)
     if not user:
         session.pop('pending_2fa_user_id', None)
+        session.pop('pending_2fa_next', None)
         return redirect(url_for('auth.login'))
     
     mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
@@ -190,7 +198,7 @@ def verify_2fa():
         if user.needs_password_change:
             flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
             return redirect(url_for('auth.change_password'))
-        return redirect(url_for('dashboard.index'))
+        return redirect(return_target or url_for('dashboard.index'))
     
     totp_form = TOTPForm()
     backup_form = BackupCodeForm()
@@ -222,8 +230,8 @@ def verify_2fa():
             
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', user.id)
             
-            next_page = request.args.get('next')
-            if not next_page or not next_page.startswith('/'):
+            next_page = return_target
+            if not next_page:
                 # Check if user needs to change password
                 if user.needs_password_change:
                     flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
@@ -253,8 +261,8 @@ def verify_2fa():
                 flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
                 return redirect(url_for('auth.change_password'))
             
-            next_page = request.args.get('next')
-            if not next_page or not next_page.startswith('/'):
+            next_page = return_target
+            if not next_page:
                 next_page = url_for('dashboard.index')
             return redirect(next_page)
         else:

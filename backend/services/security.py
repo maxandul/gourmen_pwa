@@ -2,6 +2,7 @@ import json
 import secrets
 import string
 from datetime import datetime, timedelta
+from urllib.parse import unquote, urlsplit
 from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 import pyotp
@@ -24,6 +25,24 @@ class SensitiveDataReadError(Exception):
 
 class SecurityService:
     """Security service for password hashing, encryption, 2FA, and step-up authentication"""
+
+    @staticmethod
+    def local_return_target(value):
+        """Accept only root-relative URLs, rejecting browser-ambiguous paths."""
+        if not isinstance(value, str) or not value.startswith('/'):
+            return None
+        if any(ord(char) < 32 or ord(char) == 127 for char in value):
+            return None
+        try:
+            parsed = urlsplit(value)
+        except ValueError:
+            return None
+        path = unquote(parsed.path)
+        if (parsed.scheme or parsed.netloc or value.startswith('//')
+                or path.startswith('//') or '\\' in path
+                or any(ord(char) < 32 or ord(char) == 127 for char in path)):
+            return None
+        return value
     
     @staticmethod
     def hash_password(password):
@@ -275,7 +294,7 @@ class SecurityService:
     def clear_auth_transients(sender, user=None, **kwargs):
         """Clear account-bound intermediate state at authentication boundaries."""
         SecurityService.revoke_step_up_access()
-        for key in ('2fa_secret', 'pending_2fa_user_id', 'step_up_next'):
+        for key in ('2fa_secret', 'pending_2fa_user_id', 'pending_2fa_next', 'step_up_next'):
             session.pop(key, None)
     
     @staticmethod

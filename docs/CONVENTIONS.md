@@ -138,6 +138,18 @@ def webhook():
   diese Freigabe sowie `2fa_secret`, `pending_2fa_user_id` und `step_up_next`.
   Keine vollständige Session-Löschung: andere Einstellungen bleiben erhalten.
 
+### Rückkehrziel bei der Anmeldung
+
+Passwort- und MFA-Login prüfen Rückkehrziele mit
+`SecurityService.local_return_target()`: nur root-relative Pfade, keine externen
+oder protokollrelativen Adressen, Backslashes oder Steuerzeichen im Pfad.
+Erlaubte Query/Fragment-Anteile bleiben erhalten. Das Ziel wird beim erfolgreichen
+Passwortschritt zusammen mit `pending_2fa_user_id` als `pending_2fa_next` gespeichert.
+MFA liest nur dieses Ziel, keine neue `next`-Angabe. Ein neuer Login-Aufruf verwirft
+den bisherigen MFA-Vorgang; Login/Logout/Cookie-Wiederanmeldung entfernen auch
+das Rückkehrziel. Fehlgeschlagene MFA-Eingaben erhalten es für die Wiederholung.
+Andere Redirect-Einstiege (insbesondere Step-Up) sind noch separat abzusichern.
+
 ## Models
 
 ### Vorlage

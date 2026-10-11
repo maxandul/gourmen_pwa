@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1g-Nachtrag 11.10.2026:** Lokale Fortsetzung A-078 und Auth-Login-Anteil A-035:
+internes Rückkehrziel über MFA erhalten und prüfen; bei neuem Loginversuch oder
+abgeschlossener Anmeldung verwerfen. Branch `codex/u1g-login-return-target` über
+`66595fb`; [Nachweis und Grenzen](U1G_LOGIN_RUECKKEHR.md). A-035 ausserhalb des
+Anmeldeablaufs und A-076 bleiben offen.
+
 **U1f-Nachtrag 11.10.2026:** Nächste lokale Fortsetzung A-079:
 MFA-Backup-Code mit vorhandenem Hash-Prüfer verifizieren und vor Anmeldung
 einmalig verbrauchen. Branch `codex/u1f-backup-code-login` über `627e697`;

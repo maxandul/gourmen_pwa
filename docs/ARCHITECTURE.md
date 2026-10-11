@@ -165,6 +165,11 @@ Der Backup-Code-Zweig verbraucht den verifizierten Code über
 verhindert die Anmeldung bei zwischenzeitlichem Verbrauch/Widerruf; ein
 fehlgeschlagener Commit wird zurückgerollt. Die Hashes bleiben unverändert.
 
+Das interne Rückkehrziel des Passwort-Logins wird über den MFA-Zwischenschritt
+in der signierten Session mitgeführt (`pending_2fa_next`). Es wird vor und nach
+dem Zwischenschritt geprüft und bei erfolgreichem Login oder neuem Loginversuch
+entfernt. Die MFA-Anfrage kann es nicht mit einem eigenen Query-Parameter ersetzen.
+
 ## PWA-Aspekte
 
 - **Service Worker** wird vom Origin-Root unter `/sw.js` ausgeliefert (ausschliesslich Route in der App-Factory `create_app()` in `backend/app.py`, nicht im Public-Blueprint)

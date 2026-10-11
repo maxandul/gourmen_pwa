@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (11.10.2026)
 
-Der Nutzer hat U1a bis U1f schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1g schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -13,6 +13,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1d / A-113: Cron-Testzugang absichern | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1d-cron-test-access`; [Umsetzung und Tests](U1D_CRON_TEST.md) |
 | U1e / A-043: RSVP-Versandberechtigung vereinheitlichen | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1e-reminder-permissions`; [Umsetzung und Tests](U1E_REMINDER_RECHTE.md) |
 | U1f / A-079: MFA-Backup-Codes korrekt prüfen und einmalig verbrauchen | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1f-backup-code-login`; [Umsetzung und Tests](U1F_BACKUP_CODES.md) |
+| U1g / A-078, A-035 anteilig: sicheres Rückkehrziel bei Anmeldung | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1g-login-return-target`; [Umsetzung und Tests](U1G_LOGIN_RUECKKEHR.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
