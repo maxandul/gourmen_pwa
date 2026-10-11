@@ -8,7 +8,8 @@ from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
 
 from wtforms import StringField, SelectField, BooleanField, DateField, SubmitField, PasswordField, FieldList
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms.validators import DataRequired, Email, Length, Optional, ValidationError
+from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
 from backend.models.member import Member, Role, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.event import Event, EventType, EventAudience
@@ -170,6 +171,15 @@ def mail_test():
     return redirect(url_for('admin.index'))
 
 class MemberForm(FlaskForm):
+    editing_member_id = None  # Set only by the edit route, never from submitted fields.
+
+    def validate_email(self, field):
+        query = Member.query.filter_by(email=field.data)
+        if self.editing_member_id is not None:
+            query = query.filter(Member.id != self.editing_member_id)
+        if query.first():
+            raise ValidationError('Diese E-Mail-Adresse wird bereits verwendet.')
+
     # Basic info
     vorname = StringField(
         'Vorname',
@@ -254,6 +264,24 @@ class MemberCreateForm(MemberForm):
         validators=[DataRequired(), Length(min=12)],
         render_kw={'aria-required': 'true', 'autocomplete': 'new-password'},
     )
+
+
+def _commit_member_form(form):
+    """Keep member conflicts recoverable before any onboarding or audit follow-up."""
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        query = Member.query.filter_by(email=form.email.data)
+        if form.editing_member_id is not None:
+            query = query.filter(Member.id != form.editing_member_id)
+        if query.first():
+            form.email.errors.append('Diese E-Mail-Adresse wird bereits verwendet.')
+            flash('Bitte überprüfe die E-Mail-Adresse.', 'error')
+        else:
+            flash('Mitglied konnte nicht gespeichert werden. Bitte versuche es erneut.', 'error')
+        return False
+    return True
 
 class EventForm(FlaskForm):
     datum = DateField('Datum', validators=[DataRequired()])
@@ -359,7 +387,8 @@ def create_member():
         member.set_password(initial_password)
         
         db.session.add(member)
-        db.session.commit()
+        if not _commit_member_form(form):
+            return render_template('admin/create_member.html', form=form)
 
         # Save sensitive data from request (encrypted)
         try:
@@ -445,6 +474,7 @@ def edit_member(member_id):
     """Edit member"""
     member = Member.query.get_or_404(member_id)
     form = MemberForm()
+    form.editing_member_id = member.id
 
     if request.method == 'POST':
         zw_for_choices = request.form.get('zimmerwunsch')
@@ -533,14 +563,12 @@ def edit_member(member_id):
         member.role = Role(form.role.data)
         member.is_active = form.is_active.data
         
-        db.session.commit()
-        
-        SecurityService.log_audit_event(
-            AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
-        )
-        
-        flash('Mitglied erfolgreich bearbeitet', 'success')
-        return redirect(url_for('admin.members'))
+        if _commit_member_form(form):
+            SecurityService.log_audit_event(
+                AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
+            )
+            flash('Mitglied erfolgreich bearbeitet', 'success')
+            return redirect(url_for('admin.members'))
 
     cal_audit = (
         AuditEvent.query.filter_by(

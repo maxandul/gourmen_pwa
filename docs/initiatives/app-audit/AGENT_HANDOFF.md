@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1m-Nachtrag 11.10.2026:** Lokale Fortsetzung A-084 für Mitgliederanlage und
+Admin-Bearbeitung: Feldfehler vor Mutation, DB-Rollback bei Konflikt, keine
+Folgeaktionen aus abgelehnten Versuchen. Branch `codex/u1m-admin-email-conflict`
+über `d18d565`; [Nachweis und Grenzen](U1M_ADMIN_MAILKONFLIKT.md).
+Systemweite Adressnormalisierung und vollständige Onboarding-Wiederaufnahme bleiben offen.
+
 **U1l-Nachtrag 11.10.2026:** Lokale Fortsetzung A-084, eigenes Profil:
 belegte Mailadresse vorprüfen und DB-Konflikt ohne Teiländerung zurückrollen;
 Formulareingaben erhalten. Branch `codex/u1l-profile-email-conflict` über

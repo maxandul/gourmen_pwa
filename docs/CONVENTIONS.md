@@ -263,7 +263,11 @@ Normalisierung. Der Profil-Commit behandelt zusätzlich `IntegrityError` mit
 vollständigem Rollback. Nur ein danach nachweisbarer Adresskonflikt wird am
 E-Mail-Feld gemeldet; andere Integritätsfehler erhalten eine neutrale Meldung.
 Formularwerte bleiben erhalten, DB-/SQL-Fehlertexte werden nicht ausgegeben.
-Dies gilt bislang für das eigene Profil, nicht für Administration/Anlage.
+Dies gilt auch für Administration/Anlage: `MemberForm.validate_email` verwendet
+nur die von der Edit-Route gesetzte `editing_member_id` als Ausnahme; bei Anlage
+keine Ausnahme. `_commit_member_form()` schützt den ersten Mitglieds-Commit.
+Bei Konflikten keine Folgeaktionen (sensible Daten, Onboarding-Token, Mail, Audit).
+Fehler nach erfolgreichem ersten Commit bleiben ein separater Onboarding-Vertrag.
 
 ## Logging
 

@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (11.10.2026)
 
-Der Nutzer hat U1a bis U1l schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1m schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -19,6 +19,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1j / A-035: Merch-/Dokument-Rückkehr absichern | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1j-merch-docs-return-target`; [Umsetzung und Tests](U1J_MERCH_DOKUMENT_RUECKKEHR.md) |
 | U1k / A-083: MFA-Reset ausdrücklich bestätigen | Lokal umgesetzt und funktional geprüft; visuelle Abnahme offen, 11.10.2026 | `codex/u1k-mfa-reset-confirmation`; [Umsetzung und Tests](U1K_MFA_RESET_BESTAETIGUNG.md) |
 | U1l / A-084 anteilig: Profil-Mailkonflikt kontrolliert behandeln | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1l-profile-email-conflict`; [Umsetzung und Tests](U1L_PROFIL_MAILKONFLIKT.md) |
+| U1m / A-084 anteilig: Mailkonflikte in Mitgliederverwaltung | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1m-admin-email-conflict`; [Umsetzung und Tests](U1M_ADMIN_MAILKONFLIKT.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
