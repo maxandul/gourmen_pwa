@@ -26,13 +26,19 @@ STATIC = ROOT / "static"
 MANIFEST_OUT = STATIC / "asset-manifest.json"
 
 # Liste der zu hashenden Dateien (relativ zu /static)
+#
+# NICHT aufnehmen: Assets, die ein eigenes Build-Script erzeugt - css/main-v2.css
+# (build_css.py) und icons/lucide-sprite.svg (build_icon_sprite.py). Diese
+# Scripts schreiben Artefakt, Hash-Kopie und Manifest-Eintrag in einem Zug.
+# Wuerde dieses Script sie noch einmal hashen, kaeme unter Windows ein anderer
+# Hash heraus: die Build-Scripts schreiben mit LF (und git speichert LF), im
+# Arbeitsverzeichnis liegt die Datei mit core.autocrlf aber als CRLF. Das
+# Manifest zeigte dann auf eine Hash-Kopie, die kein Template referenziert.
 FILES = [
-    "css/main-v2.css",
     "css/public.css",
     "css/v2/components.css",
     "js/app.js",
     "js/pwa.js",
-    "icons/lucide-sprite.svg",
     "favicon.ico",
     "favicon.svg",
     "img/pwa/icon-16.png",
@@ -84,7 +90,18 @@ def add_hash_to_name(path: Path, hash_part: str) -> Path:
 
 
 def main() -> None:
-    mapping: dict[str, str] = {}
+    # Bestehendes Manifest einlesen und nur die FILES-Eintraege aktualisieren.
+    # Frueher wurde die Datei komplett neu geschrieben - damit verschwanden bei
+    # jedem Lauf die Eintraege der anderen Build-Scripts (build_web_logo.py,
+    # build_icon_sprite.py), die hier bewusst nicht in FILES stehen. Das ist
+    # gefaehrlich, weil prune_orphan_fingerprints.py das Manifest als
+    # Keep-Liste liest: ein verlorener Eintrag heisst geloeschte Live-Datei.
+    mapping: dict[str, str] = (
+        json.loads(MANIFEST_OUT.read_text(encoding="utf-8"))
+        if MANIFEST_OUT.exists()
+        else {}
+    )
+
     for rel in FILES:
         src = STATIC / rel
         if not src.exists():
@@ -97,8 +114,16 @@ def main() -> None:
         mapping[str(src.relative_to(ROOT)).replace("\\", "/")] = str(dst.relative_to(ROOT)).replace("\\", "/")
         print(f"[ok] {rel} -> {dst.name}")
 
+    # Eintraege, deren Ziel es nicht mehr gibt, sind Karteileichen: sie liefern
+    # 404 aus, sobald jemand sie referenziert, und verstecken sich sonst still
+    # im Manifest. Nur melden, nicht entfernen - fremde Build-Scripts laufen
+    # womoeglich erst spaeter.
+    verwaist = sorted(dst for dst in mapping.values() if not (ROOT / dst).exists())
+    for dst in verwaist:
+        print(f"⚠️  Manifest zeigt auf eine fehlende Datei: {dst}")
+
     MANIFEST_OUT.write_text(json.dumps(mapping, indent=2), encoding="utf-8")
-    print(f"\nManifest geschrieben: {MANIFEST_OUT}")
+    print(f"\nManifest geschrieben: {MANIFEST_OUT} ({len(mapping)} Einträge)")
 
 
 if __name__ == "__main__":
