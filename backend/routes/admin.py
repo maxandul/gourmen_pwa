@@ -811,8 +811,10 @@ def reset_member_2fa(member_id):
             flash('Bitte gib "RESET" ein, um zu bestätigen.', 'error')
             return render_template('admin/reset_member_2fa.html', member=member)
         
+        SecurityService.lock_credential_member(member.id)
+        SecurityService.invalidate_mfa_reset_links(member.id)
         # Get MFA data
-        mfa_data = MemberMFA.query.filter_by(member_id=member.id).first()
+        mfa_data = MemberMFA.query.filter_by(member_id=member.id).populate_existing().first()
         
         if mfa_data and mfa_data.is_totp_enabled:
             # Disable 2FA
@@ -834,6 +836,7 @@ def reset_member_2fa(member_id):
             
             flash(f'2FA für {member.display_name} wurde zurückgesetzt.', 'success')
         else:
+            db.session.commit()
             flash(f'2FA für {member.display_name} war nicht aktiviert.', 'info')
         
         return redirect(url_for('admin.member_security_overview', member_id=member.id))

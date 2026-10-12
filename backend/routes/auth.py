@@ -79,6 +79,9 @@ def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: tim
     if purpose in (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.ONBOARDING):
         SecurityService.lock_credential_member(member_id)
         SecurityService.invalidate_password_links(member_id, purpose=purpose)
+    elif purpose == AuthTokenPurpose.MFA_RESET:
+        SecurityService.lock_credential_member(member_id)
+        SecurityService.invalidate_mfa_reset_links(member_id)
     token = secrets.token_urlsafe(32)
     token_hash = _hash_auth_token(token)
     token_row = AuthToken(
@@ -313,6 +316,16 @@ def enroll_2fa():
     
     if totp_form.validate_on_submit():
         if SecurityService.verify_totp(secret, totp_form.token.data):
+            user = SecurityService.lock_credential_member(current_user.id)
+            if not user or not user.is_active:
+                abort(403)
+            mfa_data = MemberMFA.query.filter_by(member_id=user.id).populate_existing().first()
+            if mfa_data and mfa_data.is_totp_enabled:
+                flash('2FA ist bereits aktiviert', 'info')
+                return redirect(url_for('member.profile'))
+            if not mfa_data:
+                mfa_data = MemberMFA(member_id=user.id)
+                db.session.add(mfa_data)
             # Enable 2FA
             mfa_data.totp_secret_encrypted = SecurityService.encrypt_json(secret)
             mfa_data.is_totp_enabled = True
@@ -322,6 +335,7 @@ def enroll_2fa():
             # Clear the secret from session
             session.pop('2fa_secret', None)
             
+            SecurityService.invalidate_mfa_reset_links(current_user.id)
             db.session.commit()
             
             # Log audit event
@@ -351,6 +365,12 @@ def disable_2fa():
     
     step_up_form = StepUpForm()
     if step_up_form.validate_on_submit():
+        user = SecurityService.lock_credential_member(current_user.id)
+        if not user or not user.is_active:
+            abort(403)
+        mfa_data = MemberMFA.query.filter_by(member_id=user.id).populate_existing().first()
+        if not mfa_data or not mfa_data.is_totp_enabled:
+            return redirect(url_for('member.profile'))
         if current_user.check_password(step_up_form.password.data):
             # Disable 2FA
             mfa_data.is_totp_enabled = False
@@ -362,6 +382,7 @@ def disable_2fa():
             for code in backup_codes:
                 code.revoked_at = datetime.utcnow()
             
+            SecurityService.invalidate_mfa_reset_links(current_user.id)
             db.session.commit()
             
             SecurityService.log_audit_event(AuditAction.DISABLE_MFA, 'member_mfa', current_user.id)
@@ -653,6 +674,11 @@ def reset_2fa(token):
         response.headers['Referrer-Policy'] = 'no-referrer'
         return response
 
+    auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.MFA_RESET, lock=True)
+    if token_error:
+        flash('Dieser Link ist nicht mehr gültig. Bitte fordere einen neuen an.', 'error')
+        return redirect(url_for('auth.login'))
+
     # Disable 2FA only after explicit, CSRF-protected confirmation.
     mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
     if mfa_data:
@@ -664,7 +690,7 @@ def reset_2fa(token):
         # Delete backup codes
         MFABackupCode.query.filter_by(member_id=user.id).delete()
         
-    auth_token.used_at = datetime.utcnow()
+    SecurityService.invalidate_mfa_reset_links(user.id)
     db.session.commit()
     
     # Log audit event

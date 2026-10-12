@@ -317,7 +317,23 @@ dieselbe Mitgliedszeile und ersetzt nur ältere Links desselben Zwecks. Neue
 Anforderung nach erfolgreichem Wechsel bleibt möglich. Ausgabe und Verbrauch
 verwenden unveränderte Tokenformate/Fristen. PostgreSQL-Sperren müssen vor
 Veröffentlichung parallel getestet werden; lokale SQLite-Tests genügen dafür
-nicht. Allgemeiner Sitzungswiderruf und MFA-Resetlinks bleiben separate Verträge.
+nicht. Allgemeiner Sitzungswiderruf bleibt separat; MFA-Resetlinks siehe unten.
+
+## MFA-Resetlinks bei Faktoränderungen
+
+`SecurityService.invalidate_mfa_reset_links()` entwertet ausschliesslich offene
+`MFA_RESET`-Links des Mitglieds in der aktuellen Transaktion. Erfolgreiche
+Einrichtung, Selbstdeaktivierung, Mail-Reset und bestätigter Admin-Reset
+verwenden diesen Helfer vor ihrem Commit. Admin-Reset entwertet auch bei bereits
+deaktivierter 2FA. Andere Tokenzwecke und andere Mitglieder bleiben erhalten.
+
+Diese Wege und die MFA-Linkausgabe verwenden dieselbe Mitgliedssperre wie die
+Passwortwege. Einrichtung/Deaktivierung lesen danach den MFA-Stand neu; eine
+zwischenzeitlich erfolgte Aktivierung wird nicht überschrieben. Mail-Reset
+prüft den Link nach Bestätigung unter der Sperre erneut. Neue MFA-Linkausgabe
+ersetzt ältere desselben Zwecks. Frist und bestehender GET-/CSRF-Vertrag aus U1k
+bleiben erhalten. Kein Geräte-/Sitzungswiderruf oder vollständiges Recovery-
+Verfahren dadurch abgedeckt. Echte PostgreSQL-Parallelabnahme bleibt nötig.
 
 ## Google-Adressverifikation
 

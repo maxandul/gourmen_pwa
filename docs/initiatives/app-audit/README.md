@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (12.10.2026)
 
-Der Nutzer hat U1a bis U1q schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1r schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -24,6 +24,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1o / A-088: Google-Bestätigungslinks an Adresse binden | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1o-google-verification-binding`; [Umsetzung und Tests](U1O_GOOGLE_VERIFIKATION.md) |
 | U1p / A-090: letzten aktiven Admin bewahren | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1p-last-active-admin`; [Umsetzung und Tests](U1P_LETZTER_ADMIN.md) |
 | U1q / A-141 anteilig: alte Passwortlinks entwerten | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1q-password-link-revocation`; [Umsetzung und Tests](U1Q_PASSWORTLINK_WIDERRUF.md) |
+| U1r / A-141 MFA-Anteil: alte MFA-Resetlinks entwerten | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1r-mfa-link-revocation`; [Umsetzung und Tests](U1R_MFA_LINK_WIDERRUF.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;

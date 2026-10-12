@@ -1,5 +1,14 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1r-Nachtrag 12.10.2026:** Lokale Fortsetzung A-141, MFA-Anteil:
+Einrichtung, Deaktivierung sowie Mail-/Admin-Reset entwerten alte MFA-Resetlinks;
+neue Ausgabe ersetzt frühere desselben Zwecks. Branch
+`codex/u1r-mfa-link-revocation` über `0c9543a`;
+[Nachweis und Grenzen](U1R_MFA_LINK_WIDERRUF.md).
+Nach diesem Paket ist ein Agentwechsel vor dem grösseren A-089-Paket empfohlen;
+[aktueller Fortsetzungsauftrag und offene Grenzen](FORTSETZUNG_NACH_U1R.md).
+Kein neuer Chat oder Agent automatisch gestartet. U1 insgesamt bleibt offen.
+
 **U1q-Nachtrag 12.10.2026:** Lokale Fortsetzung A-141, Passwortanteil:
 Normalwechsel, Reset, Aktivierung und Admin-Reset entwerten alte Passwort-/
 Aktivierungslinks atomar; neue Ausgabe ersetzt frühere desselben Zwecks.

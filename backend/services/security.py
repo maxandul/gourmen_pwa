@@ -46,7 +46,7 @@ class SecurityService:
     
     @staticmethod
     def lock_credential_member(member_id):
-        """Serialize password issuance/change and refresh the credential state."""
+        """Serialize credential issuance/change and refresh the member state."""
         from backend.models.member import Member
         return Member.query.filter_by(id=member_id).populate_existing().with_for_update().first()
 
@@ -62,6 +62,14 @@ class SecurityService:
         return AuthToken.query.filter(
             AuthToken.member_id == member_id, AuthToken.purpose.in_(purposes),
             AuthToken.used_at.is_(None),
+        ).update({'used_at': datetime.utcnow()}, synchronize_session='fetch')
+
+    @staticmethod
+    def invalidate_mfa_reset_links(member_id):
+        """Revoke only this member's MFA reset links in the caller's transaction."""
+        from backend.models.auth_token import AuthToken, AuthTokenPurpose
+        return AuthToken.query.filter_by(
+            member_id=member_id, purpose=AuthTokenPurpose.MFA_RESET, used_at=None,
         ).update({'used_at': datetime.utcnow()}, synchronize_session='fetch')
 
     @staticmethod
