@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
@@ -7,10 +7,10 @@ from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateFi
 from wtforms.validators import DataRequired, Email, Optional, ValidationError
 from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
+from backend.services.google_email_verification import GoogleEmailVerificationService
 from backend.forms.member_fields import optional_member_integer, optional_member_float
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
-from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
 
@@ -599,18 +599,15 @@ def google_email_save():
         flash('Bitte gib eine gueltige E-Mail-Adresse ein.', 'error')
         return redirect(url_for('member.profile', tab='profile'))
 
-    changed = (current_user.google_email or '').lower() != new_email
-    current_user.google_email = new_email
-    if changed:
-        current_user.google_email_verified = False
-        current_user.google_email_verified_at = None
-    db.session.commit()
-
-    if not changed and current_user.google_email_verified:
-        flash('Die Google-Login-Adresse ist bereits verifiziert.', 'info')
+    delivery, error = GoogleEmailVerificationService.issue(
+        current_user.id, email=new_email, request_ip=request.remote_addr,
+    )
+    if error:
+        flash('Die Google-Login-Adresse ist bereits verifiziert.' if error == 'verified'
+              else 'Die Verifikation konnte nicht gestartet werden.', 'info')
         return redirect(url_for('member.profile', tab='profile'))
 
-    _send_google_email_verification(current_user)
+    _send_google_email_verification(delivery)
     flash(
         'Wir haben eine Verifikationsmail an «' + new_email + '» geschickt. '
         'Klicke den Link in der Mail, um die Adresse zu bestaetigen.',
@@ -622,14 +619,14 @@ def google_email_save():
 @bp.route('/google-email/resend', methods=['POST'])
 @login_required
 def google_email_resend():
-    if not current_user.google_email:
-        flash('Bitte trage zuerst eine Google-Login-Adresse ein.', 'error')
+    delivery, error = GoogleEmailVerificationService.issue(
+        current_user.id, request_ip=request.remote_addr,
+    )
+    if error:
+        flash('Die Adresse ist bereits verifiziert.' if error == 'verified'
+              else 'Bitte trage zuerst eine Google-Login-Adresse ein.', 'info')
         return redirect(url_for('member.profile', tab='profile'))
-    if current_user.google_email_verified:
-        flash('Die Adresse ist bereits verifiziert.', 'info')
-        return redirect(url_for('member.profile', tab='profile'))
-
-    _send_google_email_verification(current_user)
+    _send_google_email_verification(delivery)
     flash('Verifikationsmail wurde erneut gesendet.', 'success')
     return redirect(url_for('member.profile', tab='profile'))
 
@@ -637,11 +634,7 @@ def google_email_resend():
 @bp.route('/google-email/verify/<token>')
 def google_email_verify(token):
     """Bestaetige die Google-Login-Adresse und richte Drive-Mitgliedschaft ein."""
-    from backend.routes.auth import _resolve_auth_token
-
-    auth_token, error = _resolve_auth_token(
-        token, AuthTokenPurpose.GOOGLE_EMAIL_VERIFY
-    )
+    user, error = GoogleEmailVerificationService.consume(token)
     if error == 'missing':
         flash('Ungueltiger oder abgelaufener Verifikations-Link.', 'error')
         return redirect(url_for('auth.login'))
@@ -651,16 +644,6 @@ def google_email_verify(token):
     if error == 'expired':
         flash('Verifikations-Link ist abgelaufen.', 'error')
         return redirect(url_for('auth.login'))
-
-    user = Member.query.get(auth_token.member_id)
-    if not user or not user.is_active or not user.google_email:
-        flash('Ungueltiger Verifikations-Link.', 'error')
-        return redirect(url_for('auth.login'))
-
-    user.google_email_verified = True
-    user.google_email_verified_at = datetime.utcnow()
-    auth_token.used_at = datetime.utcnow()
-    db.session.commit()
 
     SecurityService.log_audit_event(
         AuditAction.GOOGLE_EMAIL_VERIFIED,
@@ -697,17 +680,9 @@ def google_email_verify(token):
     return redirect(url_for('member.profile', tab='profile'))
 
 
-def _send_google_email_verification(user: Member) -> None:
-    """Erzeuge Token und versende Verifikations-Mail an `user.google_email`."""
-    from backend.routes.auth import _issue_auth_token
-
-    token = _issue_auth_token(
-        member_id=user.id,
-        purpose=AuthTokenPurpose.GOOGLE_EMAIL_VERIFY,
-        expires_in=timedelta(days=7),
-        request_ip=request.remote_addr,
-    )
-    db.session.commit()
+def _send_google_email_verification(user) -> None:
+    """Send only to the immutable address snapshot used for token issuance."""
+    token = user.token
     verify_url = url_for(
         'member.google_email_verify', token=token, _external=True
     )

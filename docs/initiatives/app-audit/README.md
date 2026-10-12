@@ -2,7 +2,7 @@
 
 ## Begrenzte Umsetzung (12.10.2026)
 
-Der Nutzer hat U1a bis U1n schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1o schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
@@ -21,6 +21,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1l / A-084 anteilig: Profil-Mailkonflikt kontrolliert behandeln | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1l-profile-email-conflict`; [Umsetzung und Tests](U1L_PROFIL_MAILKONFLIKT.md) |
 | U1m / A-084 anteilig: Mailkonflikte in Mitgliederverwaltung | Lokal umgesetzt und geprüft, 11.10.2026 | `codex/u1m-admin-email-conflict`; [Umsetzung und Tests](U1M_ADMIN_MAILKONFLIKT.md) |
 | U1n / A-085: gemeinsame Zahlenvalidierung für Mitgliedsdaten | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1n-member-numeric-validation`; [Umsetzung und Tests](U1N_ZAHLENFELDER.md) |
+| U1o / A-088: Google-Bestätigungslinks an Adresse binden | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1o-google-verification-binding`; [Umsetzung und Tests](U1O_GOOGLE_VERIFIKATION.md) |
 
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;

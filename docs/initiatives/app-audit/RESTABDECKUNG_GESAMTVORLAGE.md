@@ -107,6 +107,7 @@ Anschliessend [U1k / A-083 – MFA-Reset bestätigen](U1K_MFA_RESET_BESTAETIGUNG
 Danach [U1l / A-084 – Profil-Mailkonflikt](U1L_PROFIL_MAILKONFLIKT.md), anteilig.
 Anschliessend [U1m / A-084 – Mitgliederverwaltung](U1M_ADMIN_MAILKONFLIKT.md), anteilig.
 Danach [U1n / A-085 – gemeinsame Zahlenvalidierung](U1N_ZAHLENFELDER.md), 12.10.2026.
+Anschliessend [U1o / A-088 – Google-Adressverifikation](U1O_GOOGLE_VERIFIKATION.md), 12.10.2026.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

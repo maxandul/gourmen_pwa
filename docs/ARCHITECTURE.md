@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
 | `MoneyService` | Beträge in Rappen rechnen, Rundung, Trinkgeld-Regeln |

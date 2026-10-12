@@ -122,6 +122,14 @@ Beim Backfill (siehe Sektion 16) wird `google_email = email` gesetzt mit `google
 
 Falls das Mitglied eine andere Adresse einträgt: Verifikations-Mail an die neue Adresse, danach Drive-Einladung.
 
+Lokaler U1o-Stand (12.10.2026, A-088): Bestätigungslinks sind an die konkrete
+Adresse gebunden, einmalig und sieben Tage gültig. Speichern einer neuen Adresse
+oder erneutes Senden ersetzt alte Links desselben Kontos/Zwecks. Alte Links ohne
+Adressbindung funktionieren nicht mehr; erneut senden. Mail und Einladung
+verwenden genau den beim Ausstellen bzw. Bestätigen geprüften Adressstand.
+[Prüfungen und Grenzen](../initiatives/app-audit/U1O_GOOGLE_VERIFIKATION.md).
+Der Entzug alter Freigaben (A-089) bleibt noch umzusetzen.
+
 ### 4.7 Reminder bei nicht verifizierten Mitgliedern
 
 Default ist **Geduld**. Nicht verifizierte Mitglieder verbleiben im «App-Reader-only»-Modus – sie sehen Vorschauen via Service-Account-Vermittlung, können aber nicht öffnen oder editieren.

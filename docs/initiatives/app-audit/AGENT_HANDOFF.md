@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1o-Nachtrag 12.10.2026:** Lokale Fortsetzung A-088: Google-Bestätigungslinks
+an konkrete Adresse binden, ältere Links ersetzen und einmalig verbrauchen.
+Branch `codex/u1o-google-verification-binding` über `4a0d569`;
+[Nachweis und Grenzen](U1O_GOOGLE_VERIFIKATION.md). Alte ungebundene Google-Links
+werden abgelehnt; neuer Versand nötig. Drive-Widerruf A-089 bleibt separat.
+
 **U1n-Nachtrag 12.10.2026:** Lokale Fortsetzung A-085: gemeinsame typisierte
 Zahlenfelder für Profil, Mitgliederanlage und Admin-Bearbeitung. Ungültige,
 negative oder nicht endliche Werte als Formularfehler vor Mutation abfangen.

@@ -281,6 +281,28 @@ keine Ausnahme. `_commit_member_form()` schützt den ersten Mitglieds-Commit.
 Bei Konflikten keine Folgeaktionen (sensible Daten, Onboarding-Token, Mail, Audit).
 Fehler nach erfolgreichem ersten Commit bleiben ein separater Onboarding-Vertrag.
 
+## Google-Adressverifikation
+
+Ausgabe und Verbrauch von `GOOGLE_EMAIL_VERIFY` ausschliesslich über
+`GoogleEmailVerificationService`. Die bestehende `AuthToken.token_hash`-Spalte
+(128 Zeichen) enthält zwei SHA-256-Hexwerte: Lookup-Hash des zufälligen Tokens
+und Bindungshash über Token, Null-Trennzeichen und konkrete Google-Adresse.
+Keine Adresse im Link, kein rohes Token in der DB. Andere Tokenzwecke verwenden
+weiter ihr bisheriges Format. Ungebundene alte Google-Links werden abgelehnt;
+das Mitglied muss einen neuen Link anfordern. Gültigkeit bleibt sieben Tage.
+
+Ausgabe sperrt die Mitgliedszeile, ersetzt unbenutzte Links desselben Zwecks
+und speichert Adressänderung samt neuem Token in einer Transaktion. Verbrauch
+liest Mitglied und Token nach der Mitgliedssperre neu, prüft Adresse/Zweck,
+Aktivstatus/Ablauf/Verbrauch und setzt `used_at` zusätzlich bedingt. Erst nach
+erfolgreichem Commit wird eine Einladung möglich. PostgreSQL verwendet dafür
+`FOR UPDATE`; SQLite-Tests ersetzen keinen echten Paralleltest.
+
+Externe Mail-/Drive-Aufrufe bekommen einen unveränderlichen Adress-Snapshot,
+keinen nach Commit erneut geladenen Member mit möglicherweise neuer Adresse.
+Widerruf alter Drive-Rechte und Wiederaufnahme fehlgeschlagener Zustellungen/
+Einladungen sind separate Verträge (A-089), keine atomare DB-/Drive-Transaktion.
+
 ## Logging
 
 - **Modul-Logger**: `logger = logging.getLogger(__name__)` am Datei-Anfang
