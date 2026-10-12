@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired, Email, Optional, ValidationError
 from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
 from backend.services.google_email_verification import GoogleEmailVerificationService
+from backend.services.drive_access import DriveAccessService
 from backend.forms.member_fields import optional_member_integer, optional_member_float
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
@@ -607,6 +608,7 @@ def google_email_save():
               else 'Die Verifikation konnte nicht gestartet werden.', 'info')
         return redirect(url_for('member.profile', tab='profile'))
 
+    DriveAccessService.process_member(delivery.id)
     _send_google_email_verification(delivery)
     flash(
         'Wir haben eine Verifikationsmail an «' + new_email + '» geschickt. '
@@ -653,25 +655,13 @@ def google_email_verify(token):
         extra_data={'google_email': user.google_email},
     )
 
-    # Drive-Invite ausloesen, sofern Feature-Flag aktiv ist und der Service
-    # konfiguriert ist. Bei nicht-konfiguriertem Feature-Flag ist der Klick
-    # weiterhin nuetzlich (die Verifikation merkt sich, der Invite passiert
-    # spaeter beim Cutover).
-    invited_message = ''
-    if current_app.config.get('DRIVE_FEATURE_ENABLED'):
-        try:
-            from backend.services.drive_storage import (
-                DriveStorageService,
-                DriveError,
-            )
-            DriveStorageService.invite_member_to_drive(user)
-            invited_message = ' Du hast jetzt Zugriff auf das Vereins-Drive.'
-        except DriveError as exc:  # pragma: no cover – Live-API
-            current_app.logger.warning(
-                'Drive-Invite nach Verify fehlgeschlagen fuer member %s: %s',
-                user.id, exc,
-            )
-            invited_message = ' Drive-Mitgliedschaft konnte gerade nicht angelegt werden – wir holen das nach.'
+    completed = DriveAccessService.process_member(user.id)
+    fresh = db.session.get(Member, user.id)
+    if (completed and fresh.is_active and fresh.google_email_verified
+            and fresh.google_email == user.google_email):
+        invited_message = ' Du hast jetzt Zugriff auf das Vereins-Drive.'
+    else:
+        invited_message = ' Der Drive-Zugang ist noch nicht bestätigt. Offene Aufgaben sieht die Administration.'
 
     flash(
         'Deine Google-Login-Adresse wurde verifiziert.' + invited_message,

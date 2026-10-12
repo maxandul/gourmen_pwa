@@ -352,10 +352,41 @@ Aktivstatus/Ablauf/Verbrauch und setzt `used_at` zusätzlich bedingt. Erst nach
 erfolgreichem Commit wird eine Einladung möglich. PostgreSQL verwendet dafür
 `FOR UPDATE`; SQLite-Tests ersetzen keinen echten Paralleltest.
 
-Externe Mail-/Drive-Aufrufe bekommen einen unveränderlichen Adress-Snapshot,
-keinen nach Commit erneut geladenen Member mit möglicherweise neuer Adresse.
-Widerruf alter Drive-Rechte und Wiederaufnahme fehlgeschlagener Zustellungen/
-Einladungen sind separate Verträge (A-089), keine atomare DB-/Drive-Transaktion.
+Externe Mails bekommen einen unveränderlichen Adress-Snapshot, keinen nach
+Commit erneut geladenen Member mit möglicherweise neuer Adresse. Mail-Wiederaufnahme
+bleibt separat. Drive-Einladungen und Widerrufe folgen dem folgenden Outbox-Vertrag.
+
+## Dauerhafte Drive-Zugangsaufgaben (U1s / A-089)
+
+`DriveAccessService.queue_revocation()` erfasst alte Adresse/Drive zusammen mit
+Adresswechsel oder Deaktivierung, ohne eigenen Commit. Verifikation erfasst den
+Invite in derselben Transaktion wie den Tokenverbrauch. `DriveAccessTask` speichert
+`pending/failed/done/cancelled`, Versuche, Zeitpunkte und feste Fehlercodes.
+Ausstehende Invites werden bei Wechsel/Deaktivierung verworfen; bekannte frühere
+Invite-Ziele werden zusätzlich zum aktuellen Adressziel widerrufen. Deaktivierung
+entwertet Google-Links und Verifikationsstatus, Reaktivierung braucht neue Verifikation.
+
+Alle beteiligten App-Wege sperren dieselbe Mitgliedszeile. Admin-Bearbeitung sperrt
+wie bisher zuerst Admins in ID-Reihenfolge, danach das Zielmitglied. Abarbeitung
+liest unter der Mitgliedssperre neu und hält diese bis nach API und Commit eines
+einzelnen Schritts. Widerrufe vor Invites; Fehler stoppen die Abarbeitung. Keine
+selbst committenden Audit-Helfer innerhalb dieser Transaktion. Auditzeilen werden
+gemeinsam mit dem Auftragsstatus gespeichert; bei Adminaktionen ist der Admin Akteur.
+
+`DriveStorageService.apply_membership()` arbeitet nur auf dem gespeicherten Drive
+und der gespeicherten Adresse, paginiert vollständig und hat keine DB-Seiteneffekte.
+Fehlende Permission ist nach erfolgreicher Liste erledigt; Delete-404 erfordert
+erneute Prüfung. Fehlendes Drive/API-Recht ist kein erfolgreicher Entzug. Invite-
+Wiederholung prüft zuerst vorhandene Freigaben, kein blindes Create-Retry. Rohe
+Fehlerantworten weder anzeigen noch speichern/loggen. Bei API-Erfolg/DB-Fehler
+bleibt die Aufgabe offen und wird idempotent wiederholt.
+
+Offene Aufgaben bleiben in `admin.index` auch ohne Drive-Feature sichtbar, nur für
+Admins. Wiederholung per CSRF-geschütztem POST für aktive Admins. Fehlende Drive-ID
+wird ausschliesslich mit ausdrücklicher Checkbox-Zuordnung auf das konfigurierte
+Vereins-Drive gesetzt; vorhandene IDs bleiben unverändert. Kein automatischer Cron
+oder neuer externer Dienst. PostgreSQL-Nebenläufigkeit und echte Drive-Fehler müssen
+vor Veröffentlichung zusätzlich abgenommen werden.
 
 ## Logging
 

@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `DriveAccessService` | Dauerhafte Shared-Drive-Aufgaben (`DriveAccessTask`): atomare Erfassung bei Google-Adresswechsel, Verifikation und Deaktivierung; Widerruf vor Einladung, Admin-Wiederholung. Transport ohne DB-Commit über `DriveStorageService.apply_membership`. |
 | `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |

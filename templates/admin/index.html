@@ -112,6 +112,37 @@
       </a>
     </div>
 
+    {% if current_user.is_admin() and drive_tasks %}
+    <section aria-labelledby="drive-tasks-title">
+      <h2 id="drive-tasks-title">Offene Drive-Aufgaben</h2>
+      <p>Ein Entzug ist erst nach Bestätigung durch Drive abgeschlossen. Alte Zugänge werden vor neuen Einladungen bearbeitet.</p>
+      {% for task in drive_tasks %}
+      <article class="card">
+        <div class="card__body">
+          <h3>{{ 'Zugang entziehen' if task.action == 'revoke' else 'Zugang einrichten' }}: {{ task.member.display_name }}</h3>
+          <p>Google-Adresse: {% for part in task.email|batch(20) %}{{ part|join }}<wbr>{% endfor %}</p>
+          <p>Drive: {% for part in (task.drive_id or 'Noch nicht zugeordnet')|batch(20) %}{{ part|join }}<wbr>{% endfor %}</p>
+          <p>{{ 'Fehlgeschlagen – weiterhin offen' if task.status == 'failed' else 'Ausstehend' }} · Versuche: {{ task.attempts }}</p>
+          {% if task.last_attempt_at %}<p>Letzter Versuch: {{ task.last_attempt_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>{% endif %}
+          {% if task.error_code == 'feature_disabled' %}<p>Drive ist in der App deaktiviert. Die Aufgabe bleibt gespeichert.</p>
+          {% elif task.error_code == 'missing_drive' %}<p>Das Ziel-Drive fehlt. Bitte prüfe die Zuordnung vor der Wiederholung.</p>
+          {% elif task.error_code %}<p>Drive konnte die Aktion nicht bestätigen. Bitte prüfe Dienstzugang und Berechtigungen.</p>{% endif %}
+          <form method="POST" action="{{ url_for('admin.retry_drive_access', member_id=task.member_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if not task.drive_id and config.get('GOOGLE_DRIVE_ID') %}
+            <div class="form-field">
+              <label><input type="checkbox" name="bind_missing_drive" value="yes" required>
+                Fehlende Drive-Zuordnungen dieses Mitglieds mit dem konfigurierten Vereins-Drive {{ config.get('GOOGLE_DRIVE_ID') }} ergänzen.</label>
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn--outline">Offene Aufgaben dieses Mitglieds erneut ausführen</button>
+          </form>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     {% if config.get('DRIVE_FEATURE_ENABLED') and current_user.is_admin() %}
     <section class="admin-hub__drive-resync" aria-labelledby="drive-resync-title">
       <div class="admin-hub__drive-resync-head">

@@ -410,6 +410,16 @@ Form-Actions und vorhandene Danger-/Outline-Buttons. Native Checkbox mit
 zugeordnetem Label, explizite Folgenbeschreibung und Abbrechen-Link;
 keine neuen Klassen, Styles oder Icons. PWA-Version lokal auf 3.16.3 erhöht.
 
+### Bestehende Komponenten: offene Drive-Aufgaben (U1s)
+
+Auf dem lokalen Auditbranch ist `admin/index.html` weiterhin die aktive
+Adminübersicht (abweichende Aussagen zur späteren Hub-Zielversion oben sind hier
+historische Zielangaben). Sie zeigt Admins offene Entzüge/Invites als `card` mit
+`card__body`, Formular und `btn--outline`. Keine neuen Klassen oder Styles;
+lange Adressen/Drive-IDs erhalten native `wbr`-Umbruchstellen. Status, Versuche,
+Fehlerhinweis und Wiederholung pro Mitglied; fehlende Drive-Zuordnung muss mit
+einer beschrifteten Checkbox bestätigt werden. PWA-Version lokal 3.16.4.
+
 ## 6. Verbote
 
 - ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit

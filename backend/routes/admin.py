@@ -20,6 +20,8 @@ from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
+from backend.models.drive_access_task import DriveAccessTask
+from backend.services.drive_access import DriveAccessService, OPEN_STATUSES
 
 bp = Blueprint('admin', __name__)
 
@@ -122,8 +124,29 @@ def index():
         audit_events_count=audit_events_count,
         active_articles_count=active_articles_count,
         pending_orders_count=pending_orders_count,
+        drive_tasks=(DriveAccessTask.query.filter(DriveAccessTask.status.in_(OPEN_STATUSES))
+                     .order_by(DriveAccessTask.created_at, DriveAccessTask.id).all()
+                     if current_user.is_admin() else []),
         total_revenue_chf=total_revenue_chf
     )
+
+
+@bp.route('/drive-access/<int:member_id>/retry', methods=['POST'])
+@login_required
+@admin_required
+def retry_drive_access(member_id):
+    """Retry stored work only; the browser cannot supply an address or operation."""
+    if not current_user.is_active:
+        abort(403)
+    Member.query.get_or_404(member_id)
+    success = DriveAccessService.process_member(
+        member_id, bind_missing_drive=request.form.get('bind_missing_drive') == 'yes',
+        actor_id=current_user.id,
+    )
+    flash('Drive-Aufgaben abgeschlossen.' if success else
+          'Drive-Aufgaben bleiben offen. Bitte prüfe die Konfiguration und versuche es erneut.',
+          'success' if success else 'warning')
+    return redirect(url_for('admin.index'))
 
 
 @bp.route('/mail/test')
@@ -272,6 +295,7 @@ def _validate_admin_continuity(member, form):
     # Lock admins in a stable order, then use a new READ COMMITTED snapshot.
     # Counting alone would allow two admins to remove each other concurrently.
     Member.query.filter_by(role=Role.ADMIN).order_by(Member.id).with_for_update().all()
+    Member.query.filter_by(id=member.id).with_for_update().first()
     actor = current_user._get_current_object()
     db.session.refresh(actor)
     if member is not actor:
@@ -550,6 +574,9 @@ def edit_member(member_id):
         form.is_active.data = member.is_active
     
     if form.validate_on_submit() and _validate_admin_continuity(member, form):
+        deactivating = member.is_active and not form.is_active.data
+        if deactivating:
+            DriveAccessService.deactivate(member)
         # Update all fields
         member.vorname = form.vorname.data
         member.nachname = form.nachname.data
@@ -592,6 +619,8 @@ def edit_member(member_id):
         member.is_active = form.is_active.data
         
         if _commit_member_form(form):
+            if deactivating and not DriveAccessService.process_member(member.id, actor_id=current_user.id):
+                flash('Mitglied deaktiviert; der Drive-Entzug bleibt als Adminaufgabe offen.', 'warning')
             SecurityService.log_audit_event(
                 AuditAction.ADMIN_EDIT_MEMBER, 'member', member.id
             )

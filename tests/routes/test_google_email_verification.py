@@ -16,9 +16,11 @@ from backend.services.drive_storage import DriveStorageService
 def google_case(app, client, monkeypatch):
     mail = Mock()
     invited = []
+    app.config['GOOGLE_DRIVE_ID'] = 'synthetic-drive'
     monkeypatch.setattr(MailService, 'send_async', mail)
-    monkeypatch.setattr(DriveStorageService, 'invite_member_to_drive',
-                        lambda member: invited.append((member.id, member.google_email)))
+    monkeypatch.setattr(DriveStorageService, 'apply_membership',
+                        lambda drive_id, email, action: invited.append((uid, email))
+                        if action == 'invite' else None)
     with app.app_context():
         member = Member(vorname='Google', nachname='Test', email='account@example.com',
                         passwort_hash='unused')
@@ -113,7 +115,7 @@ def test_csrf_blocks_save_and_resend(app, client, google_case):
     assert_unverified(app, uid, invited)
 
 
-def test_invite_uses_verified_snapshot_after_intervening_change(app, client, google_case, monkeypatch):
+def test_stale_invite_is_cancelled_after_intervening_change(app, client, google_case, monkeypatch):
     from backend.services.security import SecurityService
     from backend.models.audit_event import AuditAction
     uid, mail, invited = google_case
@@ -126,7 +128,7 @@ def test_invite_uses_verified_snapshot_after_intervening_change(app, client, goo
             db.session.commit()
     monkeypatch.setattr(SecurityService, 'log_audit_event', change_after_verification)
     client.get('/member/google-email/verify/' + token)
-    assert invited == [(uid, 'first@example.com')]
+    assert invited == []
     with app.app_context():
         assert not db.session.get(Member, uid).google_email_verified
 

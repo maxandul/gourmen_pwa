@@ -1,5 +1,10 @@
 # Fortsetzung nach U1r – vorbereiteter Agentwechsel
 
+**Nachtrag:** Der Nutzer hat diese Fortsetzung am 12.10.2026 beauftragt.
+A-089 wird auf `codex/u1s-drive-access-revocation` über `7a2e93d` umgesetzt;
+aktueller Nachweis und Grenzen in [U1s](U1S_DRIVE_WIDERRUF.md).
+Der folgende Einstieg beschreibt den vorherigen Übergabestand.
+
 Stand: 12. Oktober 2026. Diese Datei ergänzt den aktuellen Einstieg in
 `AGENT_HANDOFF.md`; ältere Planungsstände bleiben als Verlauf erhalten.
 Der Nutzer hat um eine Mitteilung gebeten, sobald ein Agentwechsel sinnvoll ist.

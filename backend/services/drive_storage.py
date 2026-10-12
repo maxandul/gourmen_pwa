@@ -1496,6 +1496,55 @@ class DriveStorageService:
 
     # -- Member-Lifecycle ---------------------------------------------------
 
+    @staticmethod
+    def _membership_permissions(drive, drive_id, email):
+        """Read every page; listing failures must never mean permission absent."""
+        matches = []
+        page_token = None
+        while True:
+            page = drive.permissions().list(
+                fileId=drive_id, supportsAllDrives=True,
+                fields='nextPageToken,permissions(id,emailAddress,type,role)',
+                pageToken=page_token,
+            ).execute()
+            matches.extend(permission for permission in page.get('permissions', [])
+                           if permission.get('type') == 'user'
+                           and (permission.get('emailAddress') or '').lower() == email.lower())
+            page_token = page.get('nextPageToken')
+            if not page_token:
+                return matches
+
+    @classmethod
+    def apply_membership(cls, drive_id, email, action):
+        """Idempotent outbox transport. No DB writes, audit helper or commits."""
+        from googleapiclient.errors import HttpError
+
+        if action not in ('invite', 'revoke'):
+            raise DriveValidationError('Unbekannte Drive-Aktion.')
+        drive = cls._build_drive()
+        permissions = cls._membership_permissions(drive, drive_id, email)
+        if action == 'invite':
+            if not permissions:
+                # Do not blindly retry a timed-out create: the next outbox
+                # attempt must list first in case Google already applied it.
+                drive.permissions().create(
+                    fileId=drive_id, supportsAllDrives=True, sendNotificationEmail=False,
+                    body={'type': 'user', 'role': 'fileOrganizer', 'emailAddress': email},
+                ).execute()
+            return
+        for permission in permissions:
+            try:
+                drive.permissions().delete(fileId=drive_id, permissionId=permission['id'],
+                                           supportsAllDrives=True).execute()
+            except HttpError as exc:
+                if exc.resp.status != 404:
+                    raise
+                # A missing drive or lost API access can also yield 404.
+                if cls._membership_permissions(drive, drive_id, email):
+                    raise
+        if cls._membership_permissions(drive, drive_id, email):
+            raise DriveError('Drive-Widerruf noch nicht bestaetigt.')
+
     @classmethod
     def invite_member_to_drive(cls, member: Member) -> None:
         """Drive-Permission anlegen fuer verifizierte google_email."""

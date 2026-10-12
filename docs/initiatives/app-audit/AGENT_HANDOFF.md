@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1s-Nachtrag 12.10.2026:** A-089 lokal weitergeführt auf
+`codex/u1s-drive-access-revocation` über `7a2e93d`: dauerhafte Drive-Aufgaben,
+atomare Erfassung bei Adresswechsel/Deaktivierung, gespeicherte Invites und
+Admin-Wiederholung. [Vertrag, Nachweise und Grenzen](U1S_DRIVE_WIDERRUF.md).
+Migration separat; keine Produktion und kein gesamter U1-Abschluss.
+
 **U1r-Nachtrag 12.10.2026:** Lokale Fortsetzung A-141, MFA-Anteil:
 Einrichtung, Deaktivierung sowie Mail-/Admin-Reset entwerten alte MFA-Resetlinks;
 neue Ausgabe ersetzt frühere desselben Zwecks. Branch

@@ -112,7 +112,8 @@ Danach [U1p / A-090 – letzten aktiven Admin bewahren](U1P_LETZTER_ADMIN.md), 1
 Anschliessend [U1q / A-141 – Passwortlink-Widerruf](U1Q_PASSWORTLINK_WIDERRUF.md), anteilig, 12.10.2026.
 Danach [U1r / A-141 – MFA-Linkwiderruf](U1R_MFA_LINK_WIDERRUF.md), 12.10.2026.
 [Vorbereitete Fortsetzung nach Agentwechsel](FORTSETZUNG_NACH_U1R.md).
-A-089 bleibt als zusammenhängendes Widerrufs-/Wiederholungspaket offen.
+A-089 wird anschliessend als [U1s / Drive-Widerruf und Admin-Wiederholung](U1S_DRIVE_WIDERRUF.md)
+lokal umgesetzt; PostgreSQL- und echte Drive-Abnahme bleiben separat.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

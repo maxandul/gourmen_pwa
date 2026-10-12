@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from backend.extensions import db
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.member import Member
+from backend.services.drive_access import DriveAccessService
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,7 @@ class GoogleEmailVerificationService:
             return None, 'missing'
         if email is not None:
             if (member.google_email or '').lower() != email:
+                DriveAccessService.queue_revocation(member)
                 member.google_email_verified = False
                 member.google_email_verified_at = None
             member.google_email = email
@@ -100,6 +102,7 @@ class GoogleEmailVerificationService:
             return None, 'used'
         member.google_email_verified = True
         member.google_email_verified_at = now
+        DriveAccessService.queue_invite(member)
         verified = GoogleAddressSnapshot(member.id, member.google_email, member.display_name, True)
         db.session.commit()
         return verified, None

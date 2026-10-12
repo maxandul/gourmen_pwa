@@ -249,6 +249,17 @@ class Document(db.Model):
 
 Bleibt wie in Phase 3 implementiert (siehe `backend/models/member.py`): `google_email`, `google_email_verified`, `google_email_verified_at`. Kein neuer Migration-Schritt durch den Refactor.
 
+**Audit-Nachtrag U1s (12.10.2026):** Separate additive Tabelle
+`drive_access_tasks`, Revision `a08920261012`, für Entzug/Invite mit festem
+Mitglieds-/Adress-/Drive-Bezug. Adresswechsel und Deaktivierung speichern den
+Entzug atomar lokal; Verifikation speichert den Invite. Externe Ausführung erfolgt
+danach mit wiederholbarer Adminaufgabe, keine verteilte DB-/Drive-Transaktion.
+Dieser Lifecycle-Vertrag ist eine gezielte Ausnahme vom unten beschriebenen
+«Drive zuerst, DB danach»-Dateiworkflow. Details in `docs/CONVENTIONS.md` und
+`docs/initiatives/app-audit/U1S_DRIVE_WIDERRUF.md`. Migration ohne Backfill;
+Downgrade entfernt die Aufgabenhistorie und darf nicht mit offenen Aufgaben
+als betrieblich verlustfrei behandelt werden.
+
 ### 6.3 Indexes
 
 ```sql

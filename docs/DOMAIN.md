@@ -186,6 +186,7 @@ Der Verein nutzt ein **Google Shared Drive** als zentralen Dokumentenspeicher fu
 - **Archiv-Ordner** – dedizierter Folder im Shared Drive; seine Drive-File-ID steht in `DRIVE_ARCHIVE_FOLDER_ID`. *Archivieren* verschiebt die Datei dorthin (kein separates DB-Status-Feld).
 - **Auto-Sync** – pro Detail-Aufruf (und verwandte Pfade): prueft Existenz der Datei und Obsoleszenz von `drive_parent_id`; Import/Removal bei Resync.
 - **Admin-Re-Sync** – rekursiver Walk ab Root: neue Drive-Dateien mit DB-Zeilen verknuepfen, verschwundene Eintraege bereinigen.
+- **Offene Drive-Aufgabe** – dauerhaft gespeicherter Entzug oder Invite einer konkreten Google-Adresse. Bei externem Fehler in der Adminübersicht wiederholbar; ein Entzug ist erst nach Drive-Bestätigung abgeschlossen. Alte Entzüge haben Vorrang vor neuen Einladungen.
 
 ### Audit-Aktionen (zusaetzlich zu Sektion «Audit-Aktionen»)
 
