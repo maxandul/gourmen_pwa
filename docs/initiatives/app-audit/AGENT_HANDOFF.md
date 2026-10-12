@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1n-Nachtrag 12.10.2026:** Lokale Fortsetzung A-085: gemeinsame typisierte
+Zahlenfelder für Profil, Mitgliederanlage und Admin-Bearbeitung. Ungültige,
+negative oder nicht endliche Werte als Formularfehler vor Mutation abfangen.
+Branch `codex/u1n-member-numeric-validation` über `7e6c066`;
+[Nachweis und Grenzen](U1N_ZAHLENFELDER.md). Keine neuen fachlichen Grenzwerte.
+
 **U1m-Nachtrag 11.10.2026:** Lokale Fortsetzung A-084 für Mitgliederanlage und
 Admin-Bearbeitung: Feldfehler vor Mutation, DB-Rollback bei Konflikt, keine
 Folgeaktionen aus abgelehnten Versuchen. Branch `codex/u1m-admin-email-conflict`

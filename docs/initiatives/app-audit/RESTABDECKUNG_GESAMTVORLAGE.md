@@ -106,6 +106,7 @@ Danach [U1j – Merch-/Dokument-Rückkehr](U1J_MERCH_DOKUMENT_RUECKKEHR.md); dok
 Anschliessend [U1k / A-083 – MFA-Reset bestätigen](U1K_MFA_RESET_BESTAETIGUNG.md).
 Danach [U1l / A-084 – Profil-Mailkonflikt](U1L_PROFIL_MAILKONFLIKT.md), anteilig.
 Anschliessend [U1m / A-084 – Mitgliederverwaltung](U1M_ADMIN_MAILKONFLIKT.md), anteilig.
+Danach [U1n / A-085 – gemeinsame Zahlenvalidierung](U1N_ZAHLENFELDER.md), 12.10.2026.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

@@ -48,6 +48,10 @@ scripts/                # Einmal-Skripte und Tools (Seed, Migration, Asset-Gen)
 docs/                   # Diese Dokumentation
 ```
 
+Gemeinsame Zahlenfelder für Profil und Mitgliederverwaltung liegen als
+WTForms-Feldfabriken in `backend/forms/member_fields.py`; Validierungsregeln
+und Speichergrenzen stehen in `CONVENTIONS.md`.
+
 ## Blueprints
 
 Registrierung in `backend/app.py`:

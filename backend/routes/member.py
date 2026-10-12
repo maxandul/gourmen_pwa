@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, IntegerField, FloatField, BooleanField, HiddenField
+from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, BooleanField, HiddenField
 from wtforms.validators import DataRequired, Email, Optional, ValidationError
 from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
+from backend.forms.member_fields import optional_member_integer, optional_member_float
 from backend.models.member import Member, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.member_sensitive import MemberSensitive
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
@@ -50,9 +51,9 @@ class ProfileForm(FlaskForm):
     ort = StringField('Ort')
     
     # Physical data
-    koerpergroesse = IntegerField('Körpergröße (cm)', validators=[Optional()])
-    koerpergewicht = IntegerField('Körpergewicht (kg)', validators=[Optional()])
-    schuhgroesse = FloatField('Schuhgröße (EU)', validators=[Optional()])
+    koerpergroesse = optional_member_integer('Körpergrösse (cm)')
+    koerpergewicht = optional_member_integer('Körpergewicht (kg)')
+    schuhgroesse = optional_member_float('Schuhgrösse (EU)')
     
     # Clothing data
     kleider_oberteil = StringField('Kleidergröße Oberteil')

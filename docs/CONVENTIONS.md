@@ -254,6 +254,18 @@ class MyForm(FlaskForm):
 - **Mitgliedsdaten Admin/Profil**: `nationalitaet` und `zimmerwunsch` nutzen dieselben Listen `NATIONALITAET_CHOICES` und `ZIMMERWUNSCH_CHOICES` aus `backend.models.member`. In `admin.edit_member` werden von der Liste abweichende gespeicherte Werte (Legacy-Freitext) temporär als Zusatz-Choice ergänzt (`_select_choices_with_legacy`), damit Speichern ohne Datenverlust möglich ist.
 - **Komplexe Module**: alle Forms eines Moduls in einer eigenen Datei `backend/forms/<modul>.py` (Beispiel: `backend/forms/accounting.py`), kein Inline-Definieren im Route-File. Reine State-Mutations via POST-Button (z.B. Jahresfreigabe) laufen als einfache HTML-Forms mit manuellem `csrf_token()` (Validierung via `flask_wtf.csrf.validate_csrf`).
 
+### Optionale Zahlen in Mitgliedsdaten
+
+Profil, Mitgliederanlage und Admin-Bearbeitung verwenden die Feldfabriken in
+`backend/forms/member_fields.py`. Grösse/Gewicht sind ganze Zahlen von 0 bis
+2147483647 (technische PostgreSQL-INTEGER-Grenze); Schuhgrösse ist eine endliche,
+nicht negative Gleitkommazahl. Leere Eingaben inklusive reiner Leerzeichen
+werden `None`; Null bleibt eine Zahl. Keine zusätzlichen fachlichen Grenzwerte.
+Konvertierung und Prüfung erfolgen in WTForms vor jeder Mutation. Routes
+übernehmen die typisierten `.data`-Werte ohne nachträgliches `int()`/`float()`.
+Bei Fehlern bleibt das Formular mit seinen Eingaben stehen. Admin verwendet
+weiterhin TextInput, das Profil seine bisherigen Zahlenfelder.
+
 ### Profil-Mailadresse: Konflikte behandeln
 
 `ProfileForm.validate_email` prüft vor jeder Profiländerung die belegte Adresse

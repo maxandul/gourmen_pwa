@@ -11,6 +11,7 @@ from wtforms import StringField, SelectField, BooleanField, DateField, SubmitFie
 from wtforms.validators import DataRequired, Email, Length, Optional, ValidationError
 from sqlalchemy.exc import IntegrityError
 from backend.extensions import db
+from backend.forms.member_fields import optional_member_integer, optional_member_float
 from backend.models.member import Member, Role, Funktion, NATIONALITAET_CHOICES, ZIMMERWUNSCH_CHOICES
 from backend.models.event import Event, EventType, EventAudience
 from backend.models.member_mfa import MemberMFA
@@ -227,9 +228,9 @@ class MemberForm(FlaskForm):
     vorstandsmitglied = BooleanField('Vorstandsmitglied')
     
     # Physical data
-    koerpergroesse = StringField('Körpergrösse (cm)')
-    koerpergewicht = StringField('Körpergewicht (kg)')
-    schuhgroesse = StringField('Schuhgrösse')
+    koerpergroesse = optional_member_integer('Körpergrösse (cm)', text_input=True)
+    koerpergewicht = optional_member_integer('Körpergewicht (kg)', text_input=True)
+    schuhgroesse = optional_member_float('Schuhgrösse', text_input=True)
     
     # Clothing
     kleider_oberteil = StringField('Kleider Oberteil')
@@ -364,9 +365,9 @@ def create_member():
             vorstandsmitglied=form.vorstandsmitglied.data,
             
             # Physical data
-            koerpergroesse=int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() and form.koerpergroesse.data.strip() != '' else None,
-            koerpergewicht=int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() and form.koerpergewicht.data.strip() != '' else None,
-            schuhgroesse=float(form.schuhgroesse.data) if form.schuhgroesse.data and form.schuhgroesse.data.strip() and form.schuhgroesse.data.strip() != '' else None,
+            koerpergroesse=form.koerpergroesse.data,
+            koerpergewicht=form.koerpergewicht.data,
+            schuhgroesse=form.schuhgroesse.data,
             
             # Clothing
             kleider_oberteil=form.kleider_oberteil.data or None,
@@ -505,9 +506,9 @@ def edit_member(member_id):
         form.funktion.data = member.funktion if member.funktion else Funktion.MEMBER.value
         form.beitritt.data = member.beitritt
         form.vorstandsmitglied.data = member.vorstandsmitglied
-        form.koerpergroesse.data = str(member.koerpergroesse) if member.koerpergroesse else ''
-        form.koerpergewicht.data = str(member.koerpergewicht) if member.koerpergewicht else ''
-        form.schuhgroesse.data = str(member.schuhgroesse) if member.schuhgroesse else ''
+        form.koerpergroesse.data = member.koerpergroesse
+        form.koerpergewicht.data = member.koerpergewicht
+        form.schuhgroesse.data = member.schuhgroesse
         form.kleider_oberteil.data = member.kleider_oberteil
         form.kleider_hosen.data = member.kleider_hosen
         form.kleider_cap.data = member.kleider_cap
@@ -545,9 +546,9 @@ def edit_member(member_id):
         member.vorstandsmitglied = form.vorstandsmitglied.data
         
         # Physical data
-        member.koerpergroesse = int(form.koerpergroesse.data) if form.koerpergroesse.data and form.koerpergroesse.data.strip() and form.koerpergroesse.data.strip() != '' else None
-        member.koerpergewicht = int(form.koerpergewicht.data) if form.koerpergewicht.data and form.koerpergewicht.data.strip() and form.koerpergewicht.data.strip() != '' else None
-        member.schuhgroesse = float(form.schuhgroesse.data) if form.schuhgroesse.data and form.schuhgroesse.data.strip() and form.schuhgroesse.data.strip() != '' else None
+        member.koerpergroesse = form.koerpergroesse.data
+        member.koerpergewicht = form.koerpergewicht.data
+        member.schuhgroesse = form.schuhgroesse.data
         
         # Clothing
         member.kleider_oberteil = form.kleider_oberteil.data or None
