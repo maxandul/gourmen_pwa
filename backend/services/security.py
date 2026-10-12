@@ -45,6 +45,26 @@ class SecurityService:
         return value
     
     @staticmethod
+    def lock_credential_member(member_id):
+        """Serialize password issuance/change and refresh the credential state."""
+        from backend.models.member import Member
+        return Member.query.filter_by(id=member_id).populate_existing().with_for_update().first()
+
+    @staticmethod
+    def invalidate_password_links(member_id, *, purpose=None):
+        """Revoke password links in the caller's transaction, never commit here."""
+        from backend.models.auth_token import AuthToken, AuthTokenPurpose
+        purposes = (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.ONBOARDING)
+        if purpose is not None:
+            if purpose not in purposes:
+                raise ValueError('Not a password token purpose')
+            purposes = (purpose,)
+        return AuthToken.query.filter(
+            AuthToken.member_id == member_id, AuthToken.purpose.in_(purposes),
+            AuthToken.used_at.is_(None),
+        ).update({'used_at': datetime.utcnow()}, synchronize_session='fetch')
+
+    @staticmethod
     def hash_password(password):
         """Hash a password"""
         return generate_password_hash(password)

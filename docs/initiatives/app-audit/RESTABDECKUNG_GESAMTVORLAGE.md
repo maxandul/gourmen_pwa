@@ -109,6 +109,7 @@ Anschliessend [U1m / A-084 – Mitgliederverwaltung](U1M_ADMIN_MAILKONFLIKT.md),
 Danach [U1n / A-085 – gemeinsame Zahlenvalidierung](U1N_ZAHLENFELDER.md), 12.10.2026.
 Anschliessend [U1o / A-088 – Google-Adressverifikation](U1O_GOOGLE_VERIFIKATION.md), 12.10.2026.
 Danach [U1p / A-090 – letzten aktiven Admin bewahren](U1P_LETZTER_ADMIN.md), 12.10.2026.
+Anschliessend [U1q / A-141 – Passwortlink-Widerruf](U1Q_PASSWORTLINK_WIDERRUF.md), anteilig, 12.10.2026.
 A-089 bleibt als zusammenhängendes Widerrufs-/Wiederholungspaket offen.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 

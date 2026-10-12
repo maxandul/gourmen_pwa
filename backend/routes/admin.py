@@ -776,7 +776,9 @@ def reset_member_password(member_id):
         new_password = SecurityService.generate_secure_password()
         
         # Update member password
+        SecurityService.lock_credential_member(member.id)
         member.set_password(new_password)
+        SecurityService.invalidate_password_links(member.id)
         db.session.commit()
         
         # Log audit event

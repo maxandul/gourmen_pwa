@@ -2,7 +2,7 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
@@ -76,6 +76,9 @@ def _hash_auth_token(token: str) -> str:
 
 
 def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: timedelta, request_ip: str | None):
+    if purpose in (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.ONBOARDING):
+        SecurityService.lock_credential_member(member_id)
+        SecurityService.invalidate_password_links(member_id, purpose=purpose)
     token = secrets.token_urlsafe(32)
     token_hash = _hash_auth_token(token)
     token_row = AuthToken(
@@ -89,9 +92,14 @@ def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: tim
     return token
 
 
-def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose):
+def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose, *, lock=False):
     token_hash = _hash_auth_token(raw_token)
     auth_token = AuthToken.query.filter_by(token_hash=token_hash, purpose=purpose).first()
+    if auth_token and lock:
+        user = SecurityService.lock_credential_member(auth_token.member_id)
+        if not user or not user.is_active:
+            return None, "missing"
+        auth_token = AuthToken.query.filter_by(token_hash=token_hash, purpose=purpose).populate_existing().first()
     if not auth_token:
         return None, "missing"
     if auth_token.used_at is not None:
@@ -408,6 +416,9 @@ def change_password():
     form = ChangePasswordForm()
     
     if form.validate_on_submit():
+        user = SecurityService.lock_credential_member(current_user.id)
+        if not user or not user.is_active:
+            abort(403)
         # Verify current password
         if not current_user.check_password(form.current_password.data):
             flash('Aktuelles Passwort ist falsch', 'error')
@@ -429,6 +440,7 @@ def change_password():
         
         # Update password
         current_user.set_password(form.new_password.data)
+        SecurityService.invalidate_password_links(current_user.id)
         db.session.commit()
         
         # Log audit event
@@ -532,8 +544,12 @@ def reset_password(token):
             return render_template('auth/reset_password.html', form=form, token=token)
         
         # Update password
+        auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.PASSWORD_RESET, lock=True)
+        if token_error:
+            flash('Dieser Link ist nicht mehr gültig. Bitte fordere einen neuen an.', 'error')
+            return redirect(url_for('auth.login'))
         user.set_password(form.new_password.data)
-        auth_token.used_at = datetime.utcnow()
+        SecurityService.invalidate_password_links(user.id)
         db.session.commit()
 
         # Log audit event
@@ -691,8 +707,12 @@ def activate(token):
             flash(message, 'error')
             return render_template('auth/reset_password.html', form=form, token=token)
 
+        auth_token, token_error = _resolve_auth_token(token, AuthTokenPurpose.ONBOARDING, lock=True)
+        if token_error:
+            flash('Dieser Link ist nicht mehr gültig. Bitte fordere einen neuen an.', 'error')
+            return redirect(url_for('auth.login'))
         user.set_password(form.new_password.data)
-        auth_token.used_at = datetime.utcnow()
+        SecurityService.invalidate_password_links(user.id)
         db.session.commit()
 
         SecurityService.log_audit_event(

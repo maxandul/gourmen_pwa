@@ -1,5 +1,12 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1q-Nachtrag 12.10.2026:** Lokale Fortsetzung A-141, Passwortanteil:
+Normalwechsel, Reset, Aktivierung und Admin-Reset entwerten alte Passwort-/
+Aktivierungslinks atomar; neue Ausgabe ersetzt frühere desselben Zwecks.
+Branch `codex/u1q-password-link-revocation` über `ef384b1`;
+[Nachweis und Grenzen](U1Q_PASSWORTLINK_WIDERRUF.md). MFA-Linkwiderruf, allgemeiner
+Sitzungswiderruf und Pflichtwechsel-Durchsetzung A-076 bleiben separat.
+
 **U1p-Nachtrag 12.10.2026:** Lokale Fortsetzung A-090: letzten aktiven Admin
 bei Herabstufung/Deaktivierung im Mitgliederformular bewahren; Feldfehler vor
 allen Änderungen. Branch `codex/u1p-last-active-admin` über `9d88a0d`;

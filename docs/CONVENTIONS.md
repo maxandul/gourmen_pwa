@@ -297,6 +297,28 @@ des Handelnden führen vor Mutation zu 403. Sperren bleiben bis zum vorhandenen
 Commit/Rollback bestehen. SQLite prüft die Abläufe, nicht parallele PostgreSQL-
 Sperren. Direkte DB-/Skriptänderungen werden dadurch nicht abgesichert.
 
+## Passwortlinks bei Zugangsaenderungen
+
+Normaler Passwortwechsel, Passwort-Reset per Link, Aktivierung und Admin-
+Passwortreset sperren die Mitgliedszeile mit
+`SecurityService.lock_credential_member()` vor der Aenderung. Beim normalen
+Wechsel wird das aktuelle Passwort erst anhand dieses frischen Stands geprüft.
+Reset/Aktivierung verwenden vor Mutation erneut `_resolve_auth_token(...,
+lock=True)`: frischer Tokenzweck, Ablauf, Verwendung und aktives Mitglied.
+
+`SecurityService.invalidate_password_links()` entwertet offene `PASSWORD_RESET`-
+und `ONBOARDING`-Links desselben Mitglieds in derselben Transaktion wie das neue
+Passwort. Der Helfer committet nicht selbst. `used_at` kennzeichnet sowohl
+Verbrauch als auch Widerruf; bestehende Links werden dadurch vom Resolver
+abgelehnt. Kein globales Löschen von Tokens oder Aendern anderer Tokenzwecke.
+
+Bei Ausgabe eines neuen Passwort-/Aktivierungslinks sperrt `_issue_auth_token`
+dieselbe Mitgliedszeile und ersetzt nur ältere Links desselben Zwecks. Neue
+Anforderung nach erfolgreichem Wechsel bleibt möglich. Ausgabe und Verbrauch
+verwenden unveränderte Tokenformate/Fristen. PostgreSQL-Sperren müssen vor
+Veröffentlichung parallel getestet werden; lokale SQLite-Tests genügen dafür
+nicht. Allgemeiner Sitzungswiderruf und MFA-Resetlinks bleiben separate Verträge.
+
 ## Google-Adressverifikation
 
 Ausgabe und Verbrauch von `GOOGLE_EMAIL_VERIFY` ausschliesslich über
