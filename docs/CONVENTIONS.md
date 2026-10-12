@@ -281,6 +281,22 @@ keine Ausnahme. `_commit_member_form()` schützt den ersten Mitglieds-Commit.
 Bei Konflikten keine Folgeaktionen (sensible Daten, Onboarding-Token, Mail, Audit).
 Fehler nach erfolgreichem ersten Commit bleiben ein separater Onboarding-Vertrag.
 
+### Letzten aktiven Admin bewahren
+
+`admin.edit_member` prüft nach WTForms und vor jeder Mutation über
+`_validate_admin_continuity`, dass eine Herabstufung oder Deaktivierung keinen
+Bestand von null aktiven Admins erzeugt. Ein inaktiver Admin oder aktives
+gewöhnliches Mitglied zählt nicht als Ersatz. Ablehnung ist ein Feldfehler an
+Rolle/Aktivstatus; das gesamte Formular bleibt ungespeichert und ohne Erfolgs-Audit.
+Eine Übergabe funktioniert durch vorherige Vergabe an ein anderes aktives Mitglied.
+
+Alle Adminzeilen werden in ID-Reihenfolge mit `FOR UPDATE` gesperrt. Danach
+werden handelndes und bearbeitetes Mitglied neu gelesen und aktive Admins neu
+gezählt (PostgreSQL READ COMMITTED). Verlorene Adminrechte oder Deaktivierung
+des Handelnden führen vor Mutation zu 403. Sperren bleiben bis zum vorhandenen
+Commit/Rollback bestehen. SQLite prüft die Abläufe, nicht parallele PostgreSQL-
+Sperren. Direkte DB-/Skriptänderungen werden dadurch nicht abgesichert.
+
 ## Google-Adressverifikation
 
 Ausgabe und Verbrauch von `GOOGLE_EMAIL_VERIFY` ausschliesslich über

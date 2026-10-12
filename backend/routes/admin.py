@@ -2,7 +2,7 @@ import json
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
@@ -267,6 +267,33 @@ class MemberCreateForm(MemberForm):
     )
 
 
+def _validate_admin_continuity(member, form):
+    """Keep an active admin; serialize member edits before checking the fresh count."""
+    # Lock admins in a stable order, then use a new READ COMMITTED snapshot.
+    # Counting alone would allow two admins to remove each other concurrently.
+    Member.query.filter_by(role=Role.ADMIN).order_by(Member.id).with_for_update().all()
+    actor = current_user._get_current_object()
+    db.session.refresh(actor)
+    if member is not actor:
+        db.session.refresh(member)
+    if not actor.is_active or not actor.is_admin():
+        db.session.rollback()
+        abort(403)
+    removes_admin = form.role.data != Role.ADMIN.value or not form.is_active.data
+    if member.is_active and member.is_admin() and removes_admin:
+        active_count = Member.query.filter_by(role=Role.ADMIN, is_active=True).count()
+        if active_count <= 1:
+            message = 'Mindestens ein aktiver Admin muss erhalten bleiben.'
+            if form.role.data != Role.ADMIN.value:
+                form.role.errors.append(message)
+            if not form.is_active.data:
+                form.is_active.errors.append(message)
+            db.session.rollback()
+            flash(message + ' Bitte übertrage die Adminrolle zuerst an ein anderes aktives Mitglied.', 'error')
+            return False
+    return True
+
+
 def _commit_member_form(form):
     """Keep member conflicts recoverable before any onboarding or audit follow-up."""
     try:
@@ -522,7 +549,7 @@ def edit_member(member_id):
             form.role.data = str(member.role)
         form.is_active.data = member.is_active
     
-    if form.validate_on_submit():
+    if form.validate_on_submit() and _validate_admin_continuity(member, form):
         # Update all fields
         member.vorname = form.vorname.data
         member.nachname = form.nachname.data

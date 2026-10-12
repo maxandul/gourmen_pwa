@@ -1,5 +1,12 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1p-Nachtrag 12.10.2026:** Lokale Fortsetzung A-090: letzten aktiven Admin
+bei Herabstufung/Deaktivierung im Mitgliederformular bewahren; Feldfehler vor
+allen Änderungen. Branch `codex/u1p-last-active-admin` über `9d88a0d`;
+[Nachweis und Grenzen](U1P_LETZTER_ADMIN.md). A-089 benötigt ein zusammenhängendes
+Paket mit dauerhaftem Widerrufsauftrag, sichtbarer Adminaufgabe und Wiederholung;
+kein bloss zusätzlicher externer Aufruf. Weiter offen, nicht teilweise als erledigt werten.
+
 **U1o-Nachtrag 12.10.2026:** Lokale Fortsetzung A-088: Google-Bestätigungslinks
 an konkrete Adresse binden, ältere Links ersetzen und einmalig verbrauchen.
 Branch `codex/u1o-google-verification-binding` über `4a0d569`;
