@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `AuthenticationService` | Versionierte Flask-Login-Identitäten, Widerrufsprüfung bei Session/Remember-me, begrenztes TOTP-Gerätevertrauen und Erhalt der aktuellen Sitzung nach eigenem Passwortwechsel. |
 | `PasswordChangeService` | Zentrale Request-Sperre für Konten mit Initialpasswort; priorisiert Pflichtwechsel nach Login/MFA und erhält ein kontogebundenes Rückkehrziel. |
 | `DriveAccessService` | Dauerhafte Shared-Drive-Aufgaben (`DriveAccessTask`): atomare Erfassung bei Google-Adresswechsel, Verifikation und Deaktivierung; Widerruf vor Einladung, Admin-Wiederholung. Transport ohne DB-Commit über `DriveStorageService.apply_membership`. |
 | `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
@@ -140,15 +141,23 @@ und Ausnahmen stehen in `CONVENTIONS.md`; kein neues DB-Feld nötig.
 `SecurityService.clear_auth_transients()`. Dadurch entfernen alle erfolgreichen
 Anmeldewege und Logout kontogebundene Zwischenzustände, insbesondere sensible
 Freigaben und begonnene MFA-Einrichtungen. Step-Up prüft zusätzlich die
-Mitgliedsbindung. Dies ist keine serverseitige Sperre aller Sitzungen bei Reset;
-dieser weitergehende Widerruf bleibt ein eigenes Umsetzungspaket.
+Bindung an die versionierte Login-Identität.
+
+`Member.auth_generation` ist die serverseitige Zugangsversion. Flask-Login
+verwendet `id:generation` für Sitzung und signiertes Remember-me-Cookie. Der
+Loader akzeptiert nur aktive Mitglieder mit aktueller Version. Passwortwechsel,
+MFA-Lifecycle und Änderungen an Rolle/Funktion/Vorstandsstatus/Aktivität rotieren
+die Version in der jeweiligen Transaktion. Normale eigene Passwortänderung
+erhält nur die aktuelle Sitzung samt gültigem Gerätevertrauen; Selbst-Einrichtung
+und Selbst-Deaktivierung von MFA erhalten die aktuelle Sitzung ohne Gerätevertrauen.
+Resetwege widerrufen sämtliche alten Versionen. Details in `CONVENTIONS.md`.
 
 ```
 LOGIN
   ├─ POST /auth/login  (Email + Passwort)
   ├─ Member.check_password() (werkzeug)
   ├─ wenn 2FA aktiv:
-  │     ├─ Remembered Device? → eingeloggt
+  │     ├─ Gültiges versioniertes Gerätevertrauen (30 Tage)? → eingeloggt
   │     └─ sonst: Redirect /auth/2fa/verify
   └─ Login-Audit-Event
 

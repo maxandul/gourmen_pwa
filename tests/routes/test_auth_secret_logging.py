@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from tests.conftest import auth_id
 import logging
 
 import pyotp
@@ -25,7 +26,7 @@ def auth_actor(app, client):
         db.session.commit()
         member_id = member.id
     with client.session_transaction() as session:
-        session['_user_id'] = str(member_id)
+        session['_user_id'] = auth_id(client, member_id)
         session['_fresh'] = True
     return member_id
 
@@ -66,6 +67,7 @@ def test_mfa_login_does_not_log_codes(app, client, auth_actor, caplog, valid):
     with client.session_transaction() as session:
         session.clear()
         session['pending_2fa_user_id'] = auth_actor
+        session['pending_2fa_generation'] = auth_id(client, auth_actor).split(':', 1)[1]
     current_code = pyotp.TOTP(secret).now()
     token = current_code if valid else 'abcdef'
     with caplog.at_level(logging.INFO):

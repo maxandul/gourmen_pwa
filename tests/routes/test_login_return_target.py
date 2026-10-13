@@ -1,5 +1,6 @@
 """A-078: keep a safe return target through the password/MFA boundary."""
 from datetime import datetime
+from tests.conftest import auth_id, device_grant
 import base64
 from urllib.parse import urlencode
 
@@ -47,7 +48,7 @@ def test_login_returns_to_original_target(app, client, account, method):
             db.session.commit()
     if method == 'remembered':
         with client.session_transaction() as state:
-            state['remembered_device'] = {'user_id': account, 'expires_at': 9999999999}
+            state['remembered_device'] = device_grant(client, account)
     response = start(client)
     if method in ('totp', 'backup'):
         assert response.location.endswith('/auth/2fa/verify')
@@ -57,7 +58,7 @@ def test_login_returns_to_original_target(app, client, account, method):
         response = client.post('/auth/2fa/verify', data=data)
     assert response.location == TARGET
     with client.session_transaction() as state:
-        assert state['_user_id'] == str(account)
+        assert state['_user_id'] == auth_id(client, account)
         assert 'pending_2fa_next' not in state
 
 

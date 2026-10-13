@@ -326,6 +326,47 @@ des Handelnden führen vor Mutation zu 403. Sperren bleiben bis zum vorhandenen
 Commit/Rollback bestehen. SQLite prüft die Abläufe, nicht parallele PostgreSQL-
 Sperren. Direkte DB-/Skriptänderungen werden dadurch nicht abgesichert.
 
+## Sitzungs- und Gerätewiderruf (U1v / A-077, A-082)
+
+`Member.auth_generation` ist eine zufällige 32-stellige Hex-Version, die
+`set_password()` sowie MFA- und administrative Berechtigungsänderungen rotieren.
+Alle Credential-Schreibwege halten die bestehende Mitgliedssperre bis zum Commit.
+`Member.get_id()` liefert `id:generation`; Flask-Login speichert genau diesen
+Wert in Session und signiertem Remember-me-Cookie. Der Loader prüft aktive
+Mitgliedschaft und Version bei jedem Laden. Legacy-IDs ohne Version werden
+abgelehnt; beim Rollout ist eine erneute Anmeldung erforderlich. Migrationsdefault
+`0` dient nur bestehenden DB-Zeilen, nicht als Ausnahme für alte Cookies.
+
+Passwort-/MFA-Mailreset und administrative Resets entwerten alle alten Sitzungen,
+Gerätefreigaben und begonnenen MFA-Logins. Normale Passwortänderung erhält nach
+Commit nur die aktuelle Sitzung plus deren gültiges Gerätevertrauen, ohne dessen
+Frist zu verlängern. Selbst-Einrichtung/-Deaktivierung von MFA erhält die aktuelle
+Sitzung, entwertet aber sämtliches bisheriges Gerätevertrauen. Step-Up verfällt.
+Rollen-, Funktions-, Vorstands- und Aktivitätsänderungen im Adminformular rotieren
+ebenfalls; gewöhnliche Profilfelder nicht. Deaktivierung entwertet zudem alte
+Passwort-/Aktivierungs-/MFA-Resetlinks; Drive-Verifikation folgt ihrem eigenen Vertrag.
+
+Passwortlogin speichert `pending_2fa_generation`. Der MFA-Schritt prüft diese
+unter der Mitgliedssperre erneut; fehlende Version, Inaktivität oder inzwischen
+entfernte MFA führen zurück zur Anmeldung. Nach einem Commit darf nur dieselbe
+Generation angemeldet/erhalten werden, nie eine zwischenzeitlich neu geladene
+Resetgeneration. Aktivierung mit bestehender MFA verlangt eine neue Anmeldung.
+
+Gerätevertrauen entsteht ausschliesslich nach erfolgreichem TOTP im Login und
+expliziter Checkbox. Es enthält Mitglied, Zugangsversion, Ausstellungs- und
+Ablaufzeit, maximal **30 Tage**, ohne automatische Verlängerung. Fehlende,
+abgelaufene, überlange, zukünftige oder fehlerhafte Angaben werden verworfen.
+Der bisherige POST `/auth/2fa/remember-device` ohne Faktorbeweis liefert 403.
+Logout lässt gültiges Gerätevertrauen für einen späteren Passwortlogin bestehen;
+es ist keine aktive Sitzung. Remember-me-Cookie und laufende Sitzung behalten
+ihre bestehenden separaten Fristen. Kein neuer Geräteverwaltungsbildschirm.
+
+Step-Up bindet `sensitive_access_member_id` nun an die vollständige versionierte
+Login-Identität. Testfixtures verwenden `auth_id()` für reguläre Anmeldungen;
+kein Testing-Bypass im Loader. Transaktionsrollback erhält die bisherige Version.
+Widerruf wirkt auf die nächste Authentifizierungsprüfung; bereits laufende
+Requests werden nicht abgebrochen. Echte PostgreSQL-Paralleltests bleiben nötig.
+
 ## Passwortlinks bei Zugangsaenderungen
 
 Normaler Passwortwechsel, Passwort-Reset per Link, Aktivierung und Admin-

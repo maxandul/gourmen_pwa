@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from tests.conftest import auth_id
 import time
 
 import pytest
@@ -66,7 +67,7 @@ def test_logout_requires_new_confirmation(client, accounts, next_account):
     assert_needs_step_up(client)
     grant(client)
     with client.session_transaction() as session:
-        assert session['sensitive_access_member_id'] == str(accounts[next_account])
+        assert session['sensitive_access_member_id'] == auth_id(client, accounts[next_account])
 
 
 @pytest.mark.parametrize('state', ['legacy', 'other_account', 'expired', 'malformed'])
@@ -75,7 +76,7 @@ def test_stale_or_invalid_grant_is_rejected(client, accounts, state):
     with client.session_transaction() as session:
         session['sensitive_access_until'] = int(time.time()) + 600
         if state != 'legacy':
-            session['sensitive_access_member_id'] = str(accounts[1] if state == 'other_account' else accounts[0])
+            session['sensitive_access_member_id'] = auth_id(client, accounts[1] if state == 'other_account' else accounts[0])
         if state == 'expired':
             session['sensitive_access_until'] = int(time.time()) - 1
         if state == 'malformed':
@@ -89,7 +90,7 @@ def test_stale_or_invalid_grant_is_rejected(client, accounts, state):
 def test_login_clears_old_grant_without_prior_logout(client, accounts):
     with client.session_transaction() as session:
         session['sensitive_access_until'] = int(time.time()) + 600
-        session['sensitive_access_member_id'] = str(accounts[0])
+        session['sensitive_access_member_id'] = auth_id(client, accounts[0])
         session['2fa_secret'] = 'SYNTHETIC-OLD-ENROLLMENT'
     login(client, 0)
     assert_needs_step_up(client)
@@ -102,7 +103,7 @@ def test_account_switch_cannot_reuse_grant(client, accounts):
     grant(client)
     # Simulate a changed account identity without the normal login/logout hooks.
     with client.session_transaction() as session:
-        session['_user_id'] = str(accounts[1])
+        session['_user_id'] = auth_id(client, accounts[1])
     assert_needs_step_up(client)
 
 
@@ -119,7 +120,7 @@ def test_grant_uses_configured_ttl(app, client, accounts, monkeypatch):
     grant(client)
     with client.session_transaction() as session:
         assert session['sensitive_access_until'] == 1800000045
-        assert session['sensitive_access_member_id'] == str(accounts[0])
+        assert session['sensitive_access_member_id'] == auth_id(client, accounts[0])
 
 
 @pytest.mark.parametrize('event', ['login', 'logout', 'cookie_restore'])
@@ -149,7 +150,7 @@ def test_remember_cookie_restores_login_without_sensitive_access(app, client, ac
     client.delete_cookie(app.config['SESSION_COOKIE_NAME'])
     assert_needs_step_up(client)
     with client.session_transaction() as session:
-        assert session['_user_id'] == str(accounts[0])
+        assert session['_user_id'] == auth_id(client, accounts[0])
         assert 'sensitive_access_until' not in session
     grant(client)
 

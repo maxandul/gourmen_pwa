@@ -1,4 +1,5 @@
 """A-141 MFA scope: stale recovery links cannot disable a newly configured factor."""
+from tests.conftest import auth_id
 import base64
 import hashlib
 import time
@@ -50,9 +51,9 @@ def mfa_case(app, monkeypatch):
 
 def login(client, uid):
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
-        state['sensitive_access_member_id'] = str(uid)
+        state['sensitive_access_member_id'] = auth_id(client, uid)
         state['sensitive_access_until'] = time.time() + 600
 
 

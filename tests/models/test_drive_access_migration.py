@@ -13,7 +13,9 @@ def test_migration_upgrade_downgrade_upgrade_preserves_members():
     root = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option('script_location', str(root / 'migrations'))
-    assert ScriptDirectory.from_config(config).get_heads() == ['a08920261012']
+    scripts = ScriptDirectory.from_config(config)
+    assert len(scripts.get_heads()) == 1
+    assert scripts.get_revision('a08920261012') is not None
     migration = runpy.run_path(str(root / 'migrations/versions/a08920261012_drive_access_tasks.py'))
     engine = sa.create_engine('sqlite:///:memory:')
     with engine.begin() as connection:

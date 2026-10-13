@@ -574,9 +574,17 @@ def edit_member(member_id):
         form.is_active.data = member.is_active
     
     if form.validate_on_submit() and _validate_admin_continuity(member, form):
+        old_access = (member.role.value, getattr(member.funktion, 'value', member.funktion),
+                      bool(member.vorstandsmitglied), member.is_active)
+        new_access = (form.role.data, form.funktion.data or None,
+                      bool(form.vorstandsmitglied.data), form.is_active.data)
+        if old_access != new_access:
+            member.rotate_auth_generation()
         deactivating = member.is_active and not form.is_active.data
         if deactivating:
             DriveAccessService.deactivate(member)
+            SecurityService.invalidate_password_links(member.id)
+            SecurityService.invalidate_mfa_reset_links(member.id)
         # Update all fields
         member.vorname = form.vorname.data
         member.nachname = form.nachname.data
@@ -842,6 +850,7 @@ def reset_member_2fa(member_id):
         
         SecurityService.lock_credential_member(member.id)
         SecurityService.invalidate_mfa_reset_links(member.id)
+        member.rotate_auth_generation()
         # Get MFA data
         mfa_data = MemberMFA.query.filter_by(member_id=member.id).populate_existing().first()
         

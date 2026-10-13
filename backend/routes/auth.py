@@ -15,6 +15,7 @@ from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, AuditAction
 from backend.services.mail import MailService
 from backend.services.password_change import PasswordChangeService
+from backend.services.authentication import AuthenticationService
 
 bp = Blueprint('auth', __name__)
 
@@ -119,40 +120,33 @@ def login():
     # Visiting/retrying login abandons any previous password/MFA attempt.
     session.pop('pending_2fa_user_id', None)
     session.pop('pending_2fa_next', None)
+    session.pop('pending_2fa_generation', None)
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
     
     form = LoginForm()
     if form.validate_on_submit():
         user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+        if user:
+            user = SecurityService.lock_credential_member(user.id)
         
-        if user and user.check_password(form.password.data):
+        if user and user.is_active and user.check_password(form.password.data):
             # Check if 2FA is enabled
             mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
             if mfa_data and mfa_data.is_totp_enabled:
                 # Check if device is remembered
-                remembered_device = session.get('remembered_device')
-                if remembered_device and remembered_device.get('user_id') == user.id:
-                    # Check if device token is still valid
-                    import time
-                    current_timestamp = int(time.time())
-                    expires_at_timestamp = remembered_device['expires_at']
-                    
-                    if current_timestamp < expires_at_timestamp:
-                        # Device is remembered, skip 2FA
-                        login_user(user, remember=True)  # Always remember when device is remembered
-                        
-                        # Log audit event
-                        SecurityService.log_audit_event(
-                            AuditAction.LOGIN, 'member', user.id,
-                            extra_data={'ip': request.remote_addr, 'remembered_device': True}
-                        )
-                        
-                        next_page = SecurityService.local_return_target(request.args.get('next'))
-                        return redirect(PasswordChangeService.after_login_target(user, next_page))
+                if AuthenticationService.trusted_device(user):
+                    login_user(user, remember=True)
+                    SecurityService.log_audit_event(
+                        AuditAction.LOGIN, 'member', user.id,
+                        extra_data={'ip': request.remote_addr, 'remembered_device': True}
+                    )
+                    next_page = SecurityService.local_return_target(request.args.get('next'))
+                    return redirect(PasswordChangeService.after_login_target(user, next_page))
                 
                 # Device not remembered, require 2FA
                 session['pending_2fa_user_id'] = user.id
+                session['pending_2fa_generation'] = user.auth_generation
                 session['pending_2fa_next'] = SecurityService.local_return_target(request.args.get('next'))
                 return redirect(url_for('auth.verify_2fa'))
             
@@ -190,17 +184,16 @@ def verify_2fa():
         session.pop('pending_2fa_next', None)
         return redirect(url_for('auth.login'))
     
-    user = Member.query.get(user_id)
-    if not user:
-        session.pop('pending_2fa_user_id', None)
-        session.pop('pending_2fa_next', None)
+    user = SecurityService.lock_credential_member(user_id)
+    generation = session.get('pending_2fa_generation')
+    if not user or not user.is_active or generation != user.auth_generation:
+        SecurityService.clear_auth_transients(current_app)
         return redirect(url_for('auth.login'))
     
     mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
     if not mfa_data or not mfa_data.is_totp_enabled:
-        session.pop('pending_2fa_user_id', None)
-        login_user(user)
-        return redirect(PasswordChangeService.after_login_target(user, return_target))
+        SecurityService.clear_auth_transients(current_app)
+        return redirect(url_for('auth.login'))
     
     totp_form = TOTPForm()
     backup_form = BackupCodeForm()
@@ -209,26 +202,13 @@ def verify_2fa():
         # Verify TOTP
         secret = SecurityService.decrypt_json(mfa_data.totp_secret_encrypted)
         if SecurityService.verify_totp(secret, totp_form.token.data):
-            session.pop('pending_2fa_user_id', None)
-            
-            # Check if user wants to remember this device
-            remember_device = request.form.get('remember_device')
-            if remember_device:
-                device_token = secrets.token_urlsafe(32)
-                import time
-                # ~100 Jahre (effectively unlimited) - Unix Timestamp für Zeitzonenunabhängigkeit
-                expires_at_timestamp = int(time.time()) + (36500 * 24 * 3600)
-                session['remembered_device'] = {
-                    'user_id': user.id,
-                    'device_token': device_token,
-                    'expires_at': expires_at_timestamp
-                }
-                login_user(user, remember=True)  # Always remember when device is remembered
-            else:
-                login_user(user, remember=False)
-            
+            remember_device = bool(request.form.get('remember_device'))
             mfa_data.last_verified_at = datetime.utcnow()
             db.session.commit()
+            if not AuthenticationService.complete_login(user, generation, remember=remember_device):
+                return redirect(url_for('auth.login'))
+            if remember_device:
+                AuthenticationService.issue_device_trust(user)
             
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', user.id)
             
@@ -243,7 +223,8 @@ def verify_2fa():
         
         if backup_code_id is not None:
             session.pop('pending_2fa_user_id', None)
-            login_user(user, remember=True)  # Always remember when using backup code
+            if not AuthenticationService.complete_login(user, generation, remember=True):
+                return redirect(url_for('auth.login'))
             
             SecurityService.log_audit_event(
                 AuditAction.USE_BACKUP_CODE, 'member', user.id,
@@ -293,6 +274,8 @@ def enroll_2fa():
             mfa_data.is_totp_enabled = True
             mfa_data.activated_at = datetime.utcnow()
             mfa_data.last_verified_at = datetime.utcnow()
+            user.rotate_auth_generation()
+            generation = user.auth_generation
             
             try:
                 codes = SecurityService.replace_backup_codes(user.id)
@@ -307,6 +290,8 @@ def enroll_2fa():
                 raise
 
             session.pop('2fa_secret', None)
+            if not AuthenticationService.retain_current(user, generation):
+                return redirect(url_for('auth.login'))
             
             # Log audit event
             SecurityService.log_audit_event(
@@ -353,7 +338,11 @@ def disable_2fa():
                 code.revoked_at = datetime.utcnow()
             
             SecurityService.invalidate_mfa_reset_links(current_user.id)
+            user.rotate_auth_generation()
+            generation = user.auth_generation
             db.session.commit()
+            if not AuthenticationService.retain_current(user, generation):
+                return redirect(url_for('auth.login'))
             
             SecurityService.log_audit_event(AuditAction.DISABLE_MFA, 'member_mfa', current_user.id)
             
@@ -430,9 +419,13 @@ def change_password():
         was_first_login = current_user.password_changed_at is None
         
         # Update password
+        trust = AuthenticationService.trusted_device(user)
         current_user.set_password(form.new_password.data)
+        generation = user.auth_generation
         SecurityService.invalidate_password_links(current_user.id)
         db.session.commit()
+        if not AuthenticationService.retain_current(user, generation, trust=trust):
+            return redirect(url_for('auth.login'))
         
         # Log audit event
         SecurityService.log_audit_event(
@@ -663,6 +656,7 @@ def reset_2fa(token):
         MFABackupCode.query.filter_by(member_id=user.id).delete()
         
     SecurityService.invalidate_mfa_reset_links(user.id)
+    user.rotate_auth_generation()
     db.session.commit()
     
     # Log audit event
@@ -710,6 +704,7 @@ def activate(token):
             flash('Dieser Link ist nicht mehr gültig. Bitte fordere einen neuen an.', 'error')
             return redirect(url_for('auth.login'))
         user.set_password(form.new_password.data)
+        generation = user.auth_generation
         SecurityService.invalidate_password_links(user.id)
         db.session.commit()
 
@@ -720,7 +715,12 @@ def activate(token):
             extra_data={'ip': request.remote_addr},
             actor_id=user.id,
         )
-        login_user(user, remember=False)
+        # Activation must not bypass an existing second factor.
+        mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
+        if mfa_data and mfa_data.is_totp_enabled:
+            return redirect(url_for('auth.login'))
+        if not AuthenticationService.complete_login(user, generation, remember=False):
+            return redirect(url_for('auth.login'))
         flash('Account aktiviert. Willkommen bei Gourmen!', 'success')
         return redirect(url_for('dashboard.index'))
 
@@ -730,21 +730,8 @@ def activate(token):
 @bp.route('/2fa/remember-device', methods=['POST'])
 @login_required
 def remember_device():
-    """Remember this device for 2FA"""
-    # Generate device token
-    device_token = secrets.token_urlsafe(32)
-    import time
-    expires_at_timestamp = int(time.time()) + (36500 * 24 * 3600)  # ~100 years (effectively unlimited)
-    
-    # Store in session
-    session['remembered_device'] = {
-        'user_id': current_user.id,
-        'device_token': device_token,
-        'expires_at': expires_at_timestamp
-    }
-    
-    flash('Dieses Gerät wird dauerhaft gemerkt. 2FA wird nur bei neuen Geräten erforderlich.', 'success')
-    return redirect(url_for('dashboard.index')) 
+    """Legacy entry cannot mint trust from a login session alone."""
+    abort(403)
 
 @bp.route('/2fa/backup-codes')
 @login_required

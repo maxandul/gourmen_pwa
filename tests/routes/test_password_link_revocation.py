@@ -1,6 +1,7 @@
 """A-141 password scope: stale password/activation links cannot replace credentials."""
 from datetime import datetime, timedelta
 from unittest.mock import Mock
+from tests.conftest import auth_id
 import time
 
 import pytest
@@ -45,9 +46,9 @@ def credentials(app, monkeypatch):
 
 def login(client, uid):
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
-        state['sensitive_access_member_id'] = str(uid)
+        state['sensitive_access_member_id'] = auth_id(client, uid)
         state['sensitive_access_until'] = time.time() + 600
 
 
@@ -203,7 +204,7 @@ def test_other_account_links_remain_valid(app, client, credentials):
     with app.app_context():
         assert _resolve_auth_token(other_token, AuthTokenPurpose.PASSWORD_RESET)[1] is None
     with client.session_transaction() as state:
-        assert state['_user_id'] == str(uid)
+        assert state['_user_id'] == auth_id(client, uid)
 
 
 def test_two_forgot_password_requests_only_latest_works(app, client, credentials):

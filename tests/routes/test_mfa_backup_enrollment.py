@@ -1,4 +1,5 @@
 """A-080: fresh backup codes belong to the confirmed enrollment transaction."""
+from tests.conftest import auth_id
 import base64
 import logging
 from datetime import datetime
@@ -28,7 +29,7 @@ def case(app, client, monkeypatch):
         db.session.commit()
         uid = member.id
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
         state['2fa_secret'] = SECRET
     from backend.routes import auth
@@ -102,7 +103,7 @@ def test_disable_and_reenroll_provides_new_usable_codes(app, client, case):
     assert client.post('/auth/2fa/verify', data={'backup_code': old_codes[0]}).status_code == 200
     assert client.post('/auth/2fa/verify', data={'backup_code': shown[1][0]}).status_code == 302
     with client.session_transaction() as state:
-        assert state['_user_id'] == str(uid)
+        assert state['_user_id'] == auth_id(client, uid)
 
 
 @pytest.mark.parametrize('method', ['get', 'head'])

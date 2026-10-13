@@ -2,11 +2,12 @@
 
 ## Begrenzte Umsetzung (13.10.2026)
 
-Der Nutzer hat U1a bis U1u schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1v schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1v / A-077, A-082: Sitzungs- und Gerätewiderruf | Lokal umgesetzt und geprüft, 13.10.2026 | `codex/u1v-auth-revocation`; 669 im Gesamtlauf bestanden, einzige veraltete Migrationsannahme korrigiert/nachgeprüft; Migration separat; [Vertrag und Nachweise](U1V_SITZUNGS_GERAETEWIDERRUF.md) |
 | U1u / A-080: Backup-Codes bei MFA-Neueinrichtung | Lokal umgesetzt und getestet, 13.10.2026 | `codex/u1u-mfa-backup-reenrollment`; 48 gezielte und 77 angrenzende Tests, fünf erweiterte Fälle separat; [Vertrag und Nachweise](U1U_MFA_BACKUP_NEUEINRICHTUNG.md) |
 | U1t / A-076: ersten Passwortwechsel durchsetzen | Lokal umgesetzt und getestet, 13.10.2026 | `codex/u1t-required-password-change`; 628 Tests plus abschliessende Query-Regression; [Vertrag und Nachweise](U1T_PFLICHTWECHSEL.md) |
 | U1s / A-089: dauerhafter Drive-Widerruf und Admin-Wiederholung | Lokal umgesetzt und geprüft, 12.10.2026; PostgreSQL/Drive separat | `codex/u1s-drive-access-revocation`; [Vertrag und Nachweise](U1S_DRIVE_WIDERRUF.md) |

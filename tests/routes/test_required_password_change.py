@@ -1,4 +1,5 @@
 """A-076: initial passwords cannot open protected views or execute mutations."""
+from tests.conftest import auth_id, device_grant
 import base64
 from datetime import datetime
 from unittest.mock import Mock
@@ -44,7 +45,7 @@ def change(client, **overrides):
 
 def session_login(client, uid):
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
 
 
@@ -59,7 +60,7 @@ def test_every_login_path_requires_change_and_retains_target(app, client, pendin
             db.session.commit()
     if method == 'remembered':
         with client.session_transaction() as state:
-            state['remembered_device'] = {'user_id': pending, 'expires_at': 9999999999}
+            state['remembered_device'] = device_grant(client, pending)
     response = login(client)
     if method in ('totp', 'backup', 'removed_mfa'):
         assert response.location.endswith('/auth/2fa/verify')
@@ -70,6 +71,10 @@ def test_every_login_path_requires_change_and_retains_target(app, client, pendin
                 MemberMFA.query.one().is_totp_enabled = False
                 db.session.commit()
             response = client.get('/auth/2fa/verify')
+            assert response.location.endswith('/auth/login')
+            with client.session_transaction() as state:
+                assert '_user_id' not in state
+            response = login(client)
         else:
             data = {'token': pyotp.TOTP(SECRET).now()} if method == 'totp' else {'backup_code': 'AB12CD34'}
             response = client.post('/auth/2fa/verify', data=data)
@@ -80,7 +85,7 @@ def test_every_login_path_requires_change_and_retains_target(app, client, pendin
     with app.app_context():
         assert not db.session.get(Member, pending).needs_password_change
     with client.session_transaction() as state:
-        assert state['_user_id'] == str(pending)
+        assert state['_user_id'] == auth_id(client, pending)
         assert 'password_change_return' not in state
     assert client.get('/member/profile').status_code == 200
 

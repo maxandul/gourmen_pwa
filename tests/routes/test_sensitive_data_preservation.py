@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from tests.conftest import auth_id
 import time
 
 import pytest
@@ -29,10 +30,10 @@ def sensitive_case(app, client, request):
         actor_id = actor.id
         target_id = target.id if route == 'admin' else actor.id
     with client.session_transaction() as session:
-        session['_user_id'] = str(actor_id)
+        session['_user_id'] = auth_id(client, actor_id)
         session['_fresh'] = True
         session['sensitive_access_until'] = int(time.time()) + 600
-        session['sensitive_access_member_id'] = str(actor_id)
+        session['sensitive_access_member_id'] = auth_id(client, actor_id)
     url = (f'/admin/members/{target_id}/sensitive' if route == 'admin'
            else '/member/profile?tab=sensitive')
     prefix = '' if route == 'admin' else 'sensitive-'

@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import Mock
 
+from tests.conftest import auth_id
 import pytest
 
 from backend.extensions import db
@@ -39,7 +40,7 @@ def reminder_case(app, client, monkeypatch):
             actor_id = organizer.id if actor_kind == 'organizer' else actor.id
         if actor_kind != 'anonymous':
             with client.session_transaction() as session:
-                session['_user_id'] = str(actor_id)
+                session['_user_id'] = auth_id(client, actor_id)
                 session['_fresh'] = True
         path = (f'/events/{event_id}/send_rsvp_reminder' if entry == 'legacy'
                 else f'/events/api/events/{event_id}/send-reminders')

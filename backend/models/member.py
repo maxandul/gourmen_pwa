@@ -1,4 +1,5 @@
 from datetime import datetime
+import secrets
 from enum import Enum
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -56,6 +57,8 @@ class Member(db.Model, UserMixin):
     telefon = db.Column(db.String(50))
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     passwort_hash = db.Column(db.String(255), nullable=False)
+    auth_generation = db.Column(db.String(32), nullable=False,
+                                default=lambda: secrets.token_hex(16), server_default='0')
 
     # Google-Login-Adresse fuer Drive-Mitgliedschaft (Capability: drive.md, Sektion 4)
     # Kein UNIQUE: derselbe Google-Account darf theoretisch mehrfach hinterlegt sein.
@@ -135,6 +138,11 @@ class Member(db.Model, UserMixin):
         """Set password hash"""
         self.passwort_hash = generate_password_hash(password)
         self.password_changed_at = datetime.utcnow()
+        self.rotate_auth_generation()
+
+    def rotate_auth_generation(self):
+        """Invalidate previously issued authentication in the caller's transaction."""
+        self.auth_generation = secrets.token_hex(16)
     
     def check_password(self, password):
         """Check password"""
@@ -155,7 +163,7 @@ class Member(db.Model, UserMixin):
     
     def get_id(self):
         """Get user ID for Flask-Login"""
-        return str(self.id)
+        return f'{self.id}:{self.auth_generation}'
     
     @property
     def nationalitaet_display(self):
@@ -183,4 +191,4 @@ class Member(db.Model, UserMixin):
             'Zweierzimmer': 'Zweierzimmer',
             'Egal': 'Egal'
         }
-        return display_names.get(self.zimmerwunsch, self.zimmerwunsch) 
+        return display_names.get(self.zimmerwunsch, self.zimmerwunsch)

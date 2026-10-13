@@ -118,6 +118,9 @@ Danach [U1t / A-076 – verpflichtender erster Passwortwechsel](U1T_PFLICHTWECHS
 13.10.2026: zentrale Durchsetzung und Rückkehrziel; Sitzungs-/Gerätewiderruf separat.
 Danach [U1u / A-080 – Backup-Codes bei MFA-Neueinrichtung](U1U_MFA_BACKUP_NEUEINRICHTUNG.md),
 13.10.2026: atomare Ersetzung und direkte einmalige Anzeige im bestätigten POST.
+Danach [U1v / A-077, A-082 – Sitzungs-/Gerätewiderruf](U1V_SITZUNGS_GERAETEWIDERRUF.md),
+13.10.2026: versionierte Anmeldungen, erhaltene eigene Sitzung beim Passwortwechsel,
+begrenztes Gerätevertrauen. PostgreSQL-/Rolloutabnahme und weitere U1-Verträge offen.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

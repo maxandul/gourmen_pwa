@@ -1,5 +1,14 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1v-Nachtrag 13.10.2026:** A-077/A-082 lokal auf
+`codex/u1v-auth-revocation` über `f756240`: serverseitige Zugangsversion für
+Session, Remember-me, MFA-Zwischenschritt und Gerätevertrauen. Migration separat
+`24e68fc`; [Vertrag, Rolloutgrenzen und Nachweise](U1V_SITZUNGS_GERAETEWIDERRUF.md).
+Aktionsgebundene Bestätigung, Rollen-/Feldmatrix und Admin-Notfallweg bleiben offen.
+Nach diesem grösseren Paket ist ein Agentwechsel ein sinnvoller Schnitt;
+[vorbereitete Fortsetzung](FORTSETZUNG_NACH_U1V.md). Keinen neuen Chat/Agent
+automatisch starten. Keine Produktionsfreigabe.
+
 **U1u-Nachtrag 13.10.2026:** A-080 lokal auf
 `codex/u1u-mfa-backup-reenrollment` über `27f8b04`: neue Backup-Codes atomar mit
 bestätigter MFA-Einrichtung, alte widerrufen, einmalige direkte POST-Anzeige.

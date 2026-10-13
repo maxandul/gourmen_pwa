@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import Mock
 
+from tests.conftest import auth_id
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -29,7 +30,7 @@ def admin_case(app, client, monkeypatch):
         db.session.commit()
         ids = [user.id for user in users]
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[0])
+        state['_user_id'] = auth_id(client, ids[0])
         state['_fresh'] = True
     return ids, mail, audit
 
@@ -105,7 +106,7 @@ def test_create_retry_does_not_send_again(app, client, admin_case, first_result)
 def test_nonadmin_cannot_write(app, client, admin_case, entry):
     ids, mail, audit = admin_case
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[1])
+        state['_user_id'] = auth_id(client, ids[1])
     path = '/admin/members/new' if entry == 'create' else f'/admin/members/{ids[2]}/edit'
     assert client.post(path, data=data('free@example.com')).status_code == 403
     mail.assert_not_called()

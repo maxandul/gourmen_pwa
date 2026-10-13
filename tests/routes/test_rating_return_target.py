@@ -2,6 +2,7 @@
 from datetime import datetime
 from urllib.parse import urlencode
 
+from tests.conftest import auth_id
 import pytest
 
 from backend.extensions import db
@@ -36,7 +37,7 @@ def rating_case(app, client):
             db.session.commit()
             event_id, member_id = event.id, member.id
         with client.session_transaction() as state:
-            state['_user_id'] = str(member_id)
+            state['_user_id'] = auth_id(client, member_id)
             state['_fresh'] = True
         return event_id
     return prepare

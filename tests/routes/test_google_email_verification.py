@@ -1,4 +1,5 @@
 """A-088: address-bound, replaceable Google verification links."""
+from tests.conftest import auth_id
 import re
 from datetime import datetime, timedelta
 from unittest.mock import Mock
@@ -29,7 +30,7 @@ def google_case(app, client, monkeypatch):
         db.session.commit()
         uid = member.id
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
     return uid, mail, invited
 

@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import Mock
 
+from tests.conftest import auth_id
 import pytest
 from flask import session
 from flask_wtf.csrf import generate_csrf
@@ -34,7 +35,7 @@ def records(app, client):
         token = generate_csrf()
         raw_token = session['csrf_token']
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[0])
+        state['_user_id'] = auth_id(client, ids[0])
         state['_fresh'] = True
         state['csrf_token'] = raw_token
     return (*ids, token)

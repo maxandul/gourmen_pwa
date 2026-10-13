@@ -1,6 +1,7 @@
 """A-084: profile conflicts retain input and never partially save the member."""
 
 from datetime import datetime
+from tests.conftest import auth_id
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -21,7 +22,7 @@ def members(app, client):
         db.session.commit()
         ids = owner.id, other.id
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[0])
+        state['_user_id'] = auth_id(client, ids[0])
         state['_fresh'] = True
     return ids
 

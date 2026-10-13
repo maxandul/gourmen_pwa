@@ -12,6 +12,22 @@ from backend.app import create_app
 from backend.extensions import db
 
 
+def auth_id(client, member_id):
+    """Use the production identifier when a test seeds an authenticated client."""
+    from backend.models.member import Member
+    with client.application.app_context():
+        return db.session.get(Member, member_id).get_id()
+
+
+def device_grant(client, member_id):
+    """Synthetic already-issued trust; issuance is exercised in auth lifecycle tests."""
+    import time
+    from backend.services.authentication import AuthenticationService
+    now = int(time.time())
+    return {'user_id': member_id, 'generation': auth_id(client, member_id).split(':', 1)[1],
+            'issued_at': now, 'expires_at': now + AuthenticationService.DEVICE_TRUST_SECONDS}
+
+
 @pytest.fixture
 def app(monkeypatch):
     monkeypatch.setenv("FLASK_ENV", "testing")
@@ -60,6 +76,6 @@ def logged_in_client(app, client):
     with app.app_context():
         uid = _seed_member_with_event()
     with client.session_transaction() as sess:
-        sess["_user_id"] = str(uid)
+        sess["_user_id"] = auth_id(client, uid)
         sess["_fresh"] = True
     return client

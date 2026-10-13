@@ -70,5 +70,5 @@ def init_extensions(app):
     # Configure login manager
     @login_manager.user_loader
     def load_user(user_id):
-        from backend.models.member import Member
-        return Member.query.get(int(user_id))
+        from backend.services.authentication import AuthenticationService
+        return AuthenticationService.load_user(user_id)

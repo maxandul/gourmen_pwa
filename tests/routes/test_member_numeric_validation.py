@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import Mock
 
+from tests.conftest import auth_id
 import pytest
 
 from backend.extensions import db
@@ -23,7 +24,7 @@ def numeric_case(app, client, monkeypatch):
         db.session.commit()
         uid = user.id
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
     return uid, mail
 

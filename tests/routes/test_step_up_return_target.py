@@ -1,6 +1,7 @@
 """A-035: step-up never redirects to an external or ambiguous target."""
 
 from datetime import datetime
+from tests.conftest import auth_id
 import time
 from urllib.parse import urlencode
 
@@ -24,7 +25,7 @@ def actor(app, client):
         db.session.commit()
         uid = user.id
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
     return uid
 
@@ -44,7 +45,7 @@ def test_unsafe_target_never_redirects(client, actor, source, granted, target):
             state['step_up_next'] = target
         if granted:
             state['sensitive_access_until'] = int(time.time()) + 300
-            state['sensitive_access_member_id'] = str(actor)
+            state['sensitive_access_member_id'] = auth_id(client, actor)
     response = client.post(url, data=data)
     assert response.status_code == 302
     assert response.location.rstrip('/') == '/dashboard'
@@ -62,7 +63,7 @@ def test_valid_target_survives_wrong_password_and_retry(client, actor):
     assert response.location == TARGET
     with client.session_transaction() as state:
         assert 'step_up_next' not in state
-        assert state['sensitive_access_member_id'] == str(actor)
+        assert state['sensitive_access_member_id'] == auth_id(client, actor)
 
 
 def test_invalid_new_target_does_not_mask_valid_stored_target(client, actor):
@@ -86,7 +87,7 @@ def test_invalid_stored_target_removed_even_after_wrong_password(client, actor):
 def test_valid_target_with_existing_grant(client, actor):
     with client.session_transaction() as state:
         state['sensitive_access_until'] = int(time.time()) + 300
-        state['sensitive_access_member_id'] = str(actor)
+        state['sensitive_access_member_id'] = auth_id(client, actor)
     response = client.get('/auth/step-up?' + urlencode({'next': TARGET}))
     assert response.location == TARGET
     with client.session_transaction() as state:

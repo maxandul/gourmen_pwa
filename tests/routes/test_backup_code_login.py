@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from tests.conftest import auth_id
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -54,7 +55,7 @@ def test_valid_code_logs_in_once(app, client, recovery, submitted, caplog):
     before = read_code(app, code_id)
     assert client.post('/auth/2fa/verify', data={'backup_code': submitted}).status_code == 302
     with client.session_transaction() as session:
-        assert session['_user_id'] == str(user_id)
+        assert session['_user_id'] == auth_id(client, user_id)
         assert 'pending_2fa_user_id' not in session
     after = read_code(app, code_id)
     assert after[0] == before[0]

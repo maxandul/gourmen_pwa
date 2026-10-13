@@ -1,6 +1,7 @@
 """A-089: durable work, rollback, stale invites and idempotent external effects."""
 
 from datetime import datetime
+from tests.conftest import auth_id
 import re
 from unittest.mock import Mock
 
@@ -153,7 +154,7 @@ def test_stale_invite_never_calls_drive(app, case, invalid):
 
 def login(client, uid):
     with client.session_transaction() as state:
-        state['_user_id'] = str(uid)
+        state['_user_id'] = auth_id(client, uid)
         state['_fresh'] = True
 
 

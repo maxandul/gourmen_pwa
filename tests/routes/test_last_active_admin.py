@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import Mock
 
+from tests.conftest import auth_id
 import pytest
 
 from backend.extensions import db
@@ -23,7 +24,7 @@ def admin_case(app, client, monkeypatch):
         db.session.commit()
         ids = [row.id for row in rows]
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[0])
+        state['_user_id'] = auth_id(client, ids[0])
         state['_fresh'] = True
     return ids, audit
 
@@ -133,7 +134,7 @@ def test_csrf_rejects_member_edit(app, client, admin_case):
 def test_non_admin_cannot_edit(app, client, admin_case):
     ids, audit = admin_case
     with client.session_transaction() as state:
-        state['_user_id'] = str(ids[1])
+        state['_user_id'] = auth_id(client, ids[1])
     assert client.post(f'/admin/members/{ids[0]}/edit', data=payload('MEMBER')).status_code == 403
     with app.app_context():
         assert db.session.get(Member, ids[0]).is_admin()
