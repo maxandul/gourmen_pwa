@@ -116,6 +116,8 @@ A-089 wird anschliessend als [U1s / Drive-Widerruf und Admin-Wiederholung](U1S_D
 lokal umgesetzt; PostgreSQL- und echte Drive-Abnahme bleiben separat.
 Danach [U1t / A-076 – verpflichtender erster Passwortwechsel](U1T_PFLICHTWECHSEL.md),
 13.10.2026: zentrale Durchsetzung und Rückkehrziel; Sitzungs-/Gerätewiderruf separat.
+Danach [U1u / A-080 – Backup-Codes bei MFA-Neueinrichtung](U1U_MFA_BACKUP_NEUEINRICHTUNG.md),
+13.10.2026: atomare Ersetzung und direkte einmalige Anzeige im bestätigten POST.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

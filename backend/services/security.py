@@ -193,6 +193,20 @@ class SecurityService:
         return codes
     
     @staticmethod
+    def replace_backup_codes(member_id):
+        """Replace codes within the caller's locked credential transaction."""
+        from backend.models.mfa_backup_code import MFABackupCode
+
+        codes = SecurityService.generate_backup_codes()
+        MFABackupCode.query.filter_by(member_id=member_id).filter(
+            MFABackupCode.revoked_at.is_(None)
+        ).update({'revoked_at': datetime.utcnow()}, synchronize_session='fetch')
+        for code in codes:
+            db.session.add(MFABackupCode(
+                member_id=member_id, code_hash=SecurityService.hash_backup_code(code)))
+        return codes
+
+    @staticmethod
     def hash_backup_code(code):
         """Hash a backup code"""
         return generate_password_hash(code)

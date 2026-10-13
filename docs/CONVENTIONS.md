@@ -454,6 +454,22 @@ werden bei jedem Aufruf erneut geprüft. Die Bestätigungsantwort verwendet
 
 ## MFA-Backup-Codes
 
+Bei erfolgreicher MFA-Einrichtung ersetzt `replace_backup_codes()` die Codes
+unter der bestehenden Mitgliedssperre: alte Codes widerrufen, zehn neue gesalzene
+Hashes speichern. Der Helfer committet nicht; Faktoraktivierung, Codeersetzung
+und MFA-Linkwiderruf gehören in dieselbe Transaktion. GET/HEAD erzeugen weder
+MFA-Zeilen noch Backup-Codes. Andere Mitglieder bleiben unberührt.
+
+Bewusste PRG-Ausnahme: Die bestätigte Einrichtung liefert die bestehende
+Backup-Code-Ansicht direkt als POST-Antwort (`no-store`, `no-referrer`). Klartext
+lebt nur im Request und in dieser Antwort, niemals in Session/Cookie oder DB.
+Rendern vor Commit, Ausgabe erst danach; Fehler rollen zurück und erhalten den
+Einrichtungsschlüssel für einen erneuten Versuch. Wiederholte POSTs bei aktivem
+Faktor ersetzen/zeigen keine Codes. Der alte GET-Einstieg verweist nur auf den
+bestehenden Weg Deaktivierung plus Neueinrichtung; keine automatische Erneuerung
+bei verbrauchten Codes. Bei verlorener Antwort ist dieser Weg ebenfalls nötig.
+Browser-Zurück/gespeicherte Kopien können nicht nachträglich gelöscht werden.
+
 MFA-Backup-Codes behalten gesalzene Hashes. Zur Prüfung immer
 `SecurityService.check_backup_code()` verwenden, niemals einen neu erzeugten
 Hash auf Gleichheit suchen. `consume_backup_code()` prüft ausschliesslich aktive

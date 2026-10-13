@@ -78,13 +78,13 @@ def test_factor_change_revokes_old_links_and_preserves_new_factor(app, client, m
                 MemberMFA.query.one().is_totp_enabled = False
                 db.session.commit()
             response = enroll(client)
-    assert response.status_code == 302
+    assert response.status_code == (200 if entry == 'enroll' else 302)
     with app.app_context():
         assert all(row.used_at is not None for row in AuthToken.query.filter_by(purpose=AuthTokenPurpose.MFA_RESET))
         assert all(row.used_at is None for row in AuthToken.query.filter(AuthToken.purpose != AuthTokenPurpose.MFA_RESET))
     if entry != 'enroll':
         login(client, uid)
-        assert enroll(client).status_code == 302
+        assert enroll(client).status_code == 200
     with app.app_context():
         db.session.add(MFABackupCode(member_id=uid, code_hash='synthetic-new-backup'))
         db.session.commit()

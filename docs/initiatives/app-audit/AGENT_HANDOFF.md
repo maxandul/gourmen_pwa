@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1u-Nachtrag 13.10.2026:** A-080 lokal auf
+`codex/u1u-mfa-backup-reenrollment` über `27f8b04`: neue Backup-Codes atomar mit
+bestätigter MFA-Einrichtung, alte widerrufen, einmalige direkte POST-Anzeige.
+[Vertrag und Nachweise](U1U_MFA_BACKUP_NEUEINRICHTUNG.md).
+A-077/A-082 und umfassende Recovery-/Berechtigungsverträge bleiben separat.
+
 **U1t-Nachtrag 13.10.2026:** Lokale Fortsetzung A-076 auf
 `codex/u1t-required-password-change` über `de095b0`: Pflichtwechsel zentral vor
 Fachzugriffen durchsetzen, geprüftes Rückkehrziel über Passwort/MFA erhalten.

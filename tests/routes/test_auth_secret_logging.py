@@ -48,7 +48,7 @@ def test_enrollment_preserves_flow_without_logging_secret(app, client, auth_acto
             secret = session['2fa_secret']
         assert client.post('/auth/2fa/enroll', data={'token': 'abcdef'}).status_code == 200
         code = pyotp.TOTP(secret).now()
-        assert client.post('/auth/2fa/enroll', data={'token': code}).status_code == 302
+        assert client.post('/auth/2fa/enroll', data={'token': code}).status_code == 200
     with app.app_context():
         row = MemberMFA.query.filter_by(member_id=auth_actor).one()
         assert row.is_totp_enabled

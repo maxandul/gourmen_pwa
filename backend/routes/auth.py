@@ -2,7 +2,7 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
@@ -261,12 +261,7 @@ def verify_2fa():
 def enroll_2fa():
     """Enroll 2FA - Simplified version"""
     mfa_data = MemberMFA.query.filter_by(member_id=current_user.id).first()
-    if not mfa_data:
-        mfa_data = MemberMFA(member_id=current_user.id)
-        db.session.add(mfa_data)
-        db.session.commit()
-    
-    if mfa_data.is_totp_enabled:
+    if mfa_data and mfa_data.is_totp_enabled:
         flash('2FA ist bereits aktiviert', 'info')
         return redirect(url_for('member.profile'))
     
@@ -299,11 +294,19 @@ def enroll_2fa():
             mfa_data.activated_at = datetime.utcnow()
             mfa_data.last_verified_at = datetime.utcnow()
             
-            # Clear the secret from session
+            try:
+                codes = SecurityService.replace_backup_codes(user.id)
+                SecurityService.invalidate_mfa_reset_links(user.id)
+                # Render before commit so rendering failures cannot strand activation.
+                response = make_response(render_template('auth/backup_codes.html', backup_codes=codes))
+                response.headers['Cache-Control'] = 'no-store'
+                response.headers['Referrer-Policy'] = 'no-referrer'
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise
+
             session.pop('2fa_secret', None)
-            
-            SecurityService.invalidate_mfa_reset_links(current_user.id)
-            db.session.commit()
             
             # Log audit event
             SecurityService.log_audit_event(
@@ -312,7 +315,7 @@ def enroll_2fa():
             )
             
             flash('2FA erfolgreich aktiviert!', 'success')
-            return redirect(url_for('auth.backup_codes'))
+            return response
         else:
             flash('Ungültiger Code. Bitte versuche es erneut.', 'error')
     
@@ -746,23 +749,6 @@ def remember_device():
 @bp.route('/2fa/backup-codes')
 @login_required
 def backup_codes():
-    """Show backup codes after 2FA enrollment"""
-    # Generate new backup codes if they don't exist
-    backup_codes = MFABackupCode.query.filter_by(member_id=current_user.id).all()
-    if not backup_codes:
-        # Generate new backup codes
-        codes = SecurityService.generate_backup_codes()
-        for code in codes:
-            backup_code = MFABackupCode(
-                member_id=current_user.id,
-                code_hash=SecurityService.hash_backup_code(code)
-            )
-            db.session.add(backup_code)
-        db.session.commit()
-        
-        # Return the plain codes for display
-        return render_template('auth/backup_codes.html', backup_codes=codes)
-    
-    # If backup codes already exist, show a message
-    flash('Backup-Codes wurden bereits generiert. Falls du sie verloren hast, kannst du 2FA deaktivieren und neu einrichten.', 'info')
+    """Legacy entry: codes are only issued in the confirmed enrollment POST."""
+    flash('Backup-Codes werden nur nach der 2FA-Einrichtung angezeigt. Falls du sie verloren hast, kannst du 2FA deaktivieren und neu einrichten.', 'info')
     return redirect(url_for('member.profile'))

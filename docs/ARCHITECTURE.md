@@ -179,6 +179,11 @@ Der Backup-Code-Zweig verbraucht den verifizierten Code über
 verhindert die Anmeldung bei zwischenzeitlichem Verbrauch/Widerruf; ein
 fehlgeschlagener Commit wird zurückgerollt. Die Hashes bleiben unverändert.
 
+Die bestätigte MFA-Einrichtung ersetzt Backup-Codes atomar mit dem Faktor und
+zeigt den Klartext direkt in der erfolgreichen POST-Antwort. GET erzeugt keine
+Codes; keine Klartext-Zwischenspeicherung für einen Redirect. Der bestehende
+Deaktivierungs-/Neueinrichtungsweg ermöglicht die erneute Ausgabe bei Verlust.
+
 Das interne Rückkehrziel des Passwort-Logins wird über den MFA-Zwischenschritt
 in der signierten Session mitgeführt (`pending_2fa_next`). Es wird vor und nach
 dem Zwischenschritt geprüft und bei erfolgreichem Login oder neuem Loginversuch
