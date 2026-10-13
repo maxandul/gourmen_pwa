@@ -14,6 +14,7 @@ from backend.models.mfa_backup_code import MFABackupCode
 from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.services.security import SecurityService, AuditAction
 from backend.services.mail import MailService
+from backend.services.password_change import PasswordChangeService
 
 bp = Blueprint('auth', __name__)
 
@@ -148,14 +149,7 @@ def login():
                         )
                         
                         next_page = SecurityService.local_return_target(request.args.get('next'))
-                        if not next_page:
-                            # Check if user needs to change password
-                            if user.needs_password_change:
-                                flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
-                                next_page = url_for('auth.change_password')
-                            else:
-                                next_page = url_for('dashboard.index')
-                        return redirect(next_page)
+                        return redirect(PasswordChangeService.after_login_target(user, next_page))
                 
                 # Device not remembered, require 2FA
                 session['pending_2fa_user_id'] = user.id
@@ -172,14 +166,7 @@ def login():
             )
             
             next_page = SecurityService.local_return_target(request.args.get('next'))
-            if not next_page:
-                # Check if user needs to change password
-                if user.needs_password_change:
-                    flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
-                    next_page = url_for('auth.change_password')
-                else:
-                    next_page = url_for('dashboard.index')
-            return redirect(next_page)
+            return redirect(PasswordChangeService.after_login_target(user, next_page))
         else:
             flash('Ungültige E-Mail oder Passwort', 'error')
     
@@ -213,11 +200,7 @@ def verify_2fa():
     if not mfa_data or not mfa_data.is_totp_enabled:
         session.pop('pending_2fa_user_id', None)
         login_user(user)
-        # Check if user needs to change password
-        if user.needs_password_change:
-            flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
-            return redirect(url_for('auth.change_password'))
-        return redirect(return_target or url_for('dashboard.index'))
+        return redirect(PasswordChangeService.after_login_target(user, return_target))
     
     totp_form = TOTPForm()
     backup_form = BackupCodeForm()
@@ -249,15 +232,7 @@ def verify_2fa():
             
             SecurityService.log_audit_event(AuditAction.LOGIN, 'member', user.id)
             
-            next_page = return_target
-            if not next_page:
-                # Check if user needs to change password
-                if user.needs_password_change:
-                    flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
-                    next_page = url_for('auth.change_password')
-                else:
-                    next_page = url_for('dashboard.index')
-            return redirect(next_page)
+            return redirect(PasswordChangeService.after_login_target(user, return_target))
         else:
             flash('Ungültiger Code', 'error')
     
@@ -275,15 +250,7 @@ def verify_2fa():
                 extra_data={'backup_code_id': backup_code_id}
             )
             
-            # Check if user needs to change password
-            if user.needs_password_change:
-                flash('Bitte ändere dein Passwort bei der ersten Anmeldung.', 'info')
-                return redirect(url_for('auth.change_password'))
-            
-            next_page = return_target
-            if not next_page:
-                next_page = url_for('dashboard.index')
-            return redirect(next_page)
+            return redirect(PasswordChangeService.after_login_target(user, return_target))
         else:
             flash('Ungültiger Backup-Code', 'error')
     
@@ -474,8 +441,10 @@ def change_password():
         
         # Redirect based on whether this was first login or normal password change
         if was_first_login:
-            return redirect(url_for('dashboard.index'))
+            return redirect(PasswordChangeService.consume_target(current_user.id)
+                            or url_for('dashboard.index'))
         else:
+            session.pop('password_change_return', None)
             return redirect(url_for('member.profile'))
     
     return render_template('auth/change_password.html', form=form)

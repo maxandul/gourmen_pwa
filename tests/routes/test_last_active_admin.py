@@ -1,4 +1,6 @@
 """A-090: member edits must preserve an active administrator."""
+
+from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
@@ -13,7 +15,8 @@ def admin_case(app, client, monkeypatch):
     audit = Mock()
     monkeypatch.setattr(SecurityService, 'log_audit_event', audit)
     with app.app_context():
-        rows = [Member(vorname='Original', nachname='Test', email=f'admin{i}@example.com',
+        rows = [Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Original', nachname='Test', email=f'admin{i}@example.com',
                        passwort_hash='unused', role=Role.ADMIN if i == 0 else Role.MEMBER)
                 for i in range(2)]
         db.session.add_all(rows)

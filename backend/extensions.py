@@ -33,6 +33,8 @@ def init_extensions(app):
     for signal in (user_logged_in, user_logged_out, user_loaded_from_cookie):
         signal.connect(SecurityService.clear_auth_transients, sender=app)
     csrf.init_app(app)
+    from backend.services.password_change import PasswordChangeService
+    app.before_request(PasswordChangeService.enforce)
     
     # Flask-Limiter: optional deaktivierbar (development/testing → RATELIMIT_ENABLED=False)
     limit_enabled = app.config.get('RATELIMIT_ENABLED', True)

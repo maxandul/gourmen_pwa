@@ -19,7 +19,8 @@ PATH = '/auth/2fa/reset/' + TOKEN
 def reset_case(app):
     app.config['WTF_CSRF_ENABLED'] = True
     with app.app_context():
-        user = Member(vorname='Reset', nachname='Test', email='reset@example.test', passwort_hash='unused')
+        user = Member(password_changed_at=datetime(2026, 1, 1),
+                      vorname='Reset', nachname='Test', email='reset@example.test', passwort_hash='unused')
         db.session.add(user)
         db.session.flush()
         db.session.add(MemberMFA(member_id=user.id, is_totp_enabled=True,

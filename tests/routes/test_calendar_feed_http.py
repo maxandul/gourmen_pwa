@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import pytest
 from werkzeug.security import generate_password_hash
 
@@ -31,7 +33,7 @@ def client_rl(app_rl):
 
 def _seed_member_token(app) -> tuple[str, str]:
     with app.app_context():
-        m = Member(
+        m = Member(password_changed_at=datetime(2026, 1, 1),
             vorname="R",
             nachname="L",
             email="ratelimit-cal@example.test",
@@ -46,7 +48,7 @@ def _seed_member_token(app) -> tuple[str, str]:
 
 def test_calendar_feed_304_when_etag_matches(app, client):
     with app.app_context():
-        m = Member(
+        m = Member(password_changed_at=datetime(2026, 1, 1),
             vorname="E",
             nachname="Tag",
             email="etag-cal@example.test",
@@ -68,7 +70,7 @@ def test_calendar_feed_304_when_etag_matches(app, client):
 
 def test_calendar_feed_200_has_cache_headers(app, client):
     with app.app_context():
-        m = Member(
+        m = Member(password_changed_at=datetime(2026, 1, 1),
             vorname="C",
             nachname="H",
             email="cache-cal@example.test",
@@ -104,7 +106,7 @@ def test_calendar_feed_unknown_token_404_no_body(client, app):
 def test_calendar_feed_apex_host_redirect_preserves_path(client, app):
     """Ohne Pfad wuerde apex->www Kalender-Clients kaputt machen (siehe gourmen.ch/calendar/)."""
     with app.app_context():
-        m = Member(
+        m = Member(password_changed_at=datetime(2026, 1, 1),
             vorname="A",
             nachname="P",
             email="apex-cal@example.test",

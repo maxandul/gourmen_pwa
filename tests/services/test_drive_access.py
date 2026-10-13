@@ -1,4 +1,6 @@
 """A-089: durable work, rollback, stale invites and idempotent external effects."""
+
+from datetime import datetime
 import re
 from unittest.mock import Mock
 
@@ -19,10 +21,12 @@ def case(app, monkeypatch):
     external = Mock()
     monkeypatch.setattr(DriveStorageService, 'apply_membership', external)
     with app.app_context():
-        member = Member(vorname='Drive', nachname='Test', email='member@example.com',
+        member = Member(password_changed_at=datetime(2026, 1, 1),
+                        vorname='Drive', nachname='Test', email='member@example.com',
                         passwort_hash='unused', google_email='old@example.com',
                         google_email_verified=True)
-        admin = Member(vorname='Admin', nachname='Test', email='admin@example.com',
+        admin = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Admin', nachname='Test', email='admin@example.com',
                        passwort_hash='unused', role=Role.ADMIN)
         db.session.add_all([member, admin])
         db.session.commit()

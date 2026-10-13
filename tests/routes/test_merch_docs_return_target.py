@@ -1,4 +1,6 @@
 """A-035: remaining documented Merch/Drive return paths; no live services."""
+
+from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
@@ -15,7 +17,8 @@ from backend.services.drive_storage import DriveStorageService, DriveError, Driv
 @pytest.fixture
 def records(app, client):
     with app.app_context():
-        member = Member(vorname='Redirect', nachname='Test', email='redirect@example.test',
+        member = Member(password_changed_at=datetime(2026, 1, 1),
+                        vorname='Redirect', nachname='Test', email='redirect@example.test',
                         passwort_hash='unused', role=Role.ADMIN)
         db.session.add(member)
         db.session.flush()

@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `PasswordChangeService` | Zentrale Request-Sperre für Konten mit Initialpasswort; priorisiert Pflichtwechsel nach Login/MFA und erhält ein kontogebundenes Rückkehrziel. |
 | `DriveAccessService` | Dauerhafte Shared-Drive-Aufgaben (`DriveAccessTask`): atomare Erfassung bei Google-Adresswechsel, Verifikation und Deaktivierung; Widerruf vor Einladung, Admin-Wiederholung. Transport ohne DB-Commit über `DriveStorageService.apply_membership`. |
 | `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
@@ -126,6 +127,13 @@ Aktuelle Services:
 | `BankImportService` | **Phase 04b:** ZKB-CSV-Import – Parsing (UTF-8/CP1252, Sammelbuchungs-Splitting, EUR→CHF-Verteilung), Dedup (ZKB-Referenz/Content-Hash), Auto-Vorschläge (Konto/Mitglied/Posten/Event), Verbuchen inkl. Claim-Abgleich und Aufrundungs-Split, Alias-Lernen. Code: `backend/services/bank_import.py`. Spec: `docs/capabilities/accounting.md` Sektion 11. |
 
 ## Auth-Flow
+
+`init_extensions()` registriert zusätzlich `PasswordChangeService.enforce` als
+globale Request-Prüfung nach CSRF. Angemeldete Konten mit
+`Member.needs_password_change` erreichen bis zum erfolgreichen Passwortwechsel
+keine Fachseiten oder kontobasierten Schreibaktionen. Passwortwechsel/Logout
+und explizite öffentliche bzw. tokengebundene Wege bleiben erreichbar. Details
+und Ausnahmen stehen in `CONVENTIONS.md`; kein neues DB-Feld nötig.
 
 `init_extensions()` verbindet die Flask-Login-Signale `user_logged_in`,
 `user_logged_out` und `user_loaded_from_cookie` je App mit

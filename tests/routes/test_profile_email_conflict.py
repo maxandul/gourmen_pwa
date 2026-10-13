@@ -1,4 +1,6 @@
 """A-084: profile conflicts retain input and never partially save the member."""
+
+from datetime import datetime
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -10,9 +12,11 @@ from backend.routes.member import ProfileForm
 @pytest.fixture
 def members(app, client):
     with app.app_context():
-        owner = Member(vorname='Original', nachname='Owner', email='owner@example.com',
+        owner = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Original', nachname='Owner', email='owner@example.com',
                        passwort_hash='unused', telefon='original-phone')
-        other = Member(vorname='Other', nachname='Member', email='taken@example.com', passwort_hash='unused')
+        other = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Other', nachname='Member', email='taken@example.com', passwort_hash='unused')
         db.session.add_all([owner, other])
         db.session.commit()
         ids = owner.id, other.id

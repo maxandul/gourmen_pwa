@@ -1,5 +1,7 @@
 """Original auth routes: logging must not disclose synthetic credentials."""
 
+from datetime import datetime
+
 import logging
 
 import pyotp
@@ -16,7 +18,8 @@ from backend.services.security import SecurityService
 def auth_actor(app, client):
     app.config['CRYPTO_KEY'] = Fernet.generate_key().decode()
     with app.app_context():
-        member = Member(vorname='Log', nachname='Test', email='synthetic-log@example.test',
+        member = Member(password_changed_at=datetime(2026, 1, 1),
+                        vorname='Log', nachname='Test', email='synthetic-log@example.test',
                         passwort_hash=SecurityService.hash_password('Synthetic-password-private'))
         db.session.add(member)
         db.session.commit()

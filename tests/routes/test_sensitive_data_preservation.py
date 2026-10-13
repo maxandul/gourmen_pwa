@@ -1,5 +1,7 @@
 """U1a: unreadable synthetic member data must survive reads and writes."""
 
+from datetime import datetime
+
 import time
 
 import pytest
@@ -16,9 +18,11 @@ def sensitive_case(app, client, request):
     route = request.param
     app.config['CRYPTO_KEY'] = Fernet.generate_key().decode()
     with app.app_context():
-        actor = Member(vorname='Test', nachname='Actor', email='actor@example.test',
+        actor = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Test', nachname='Actor', email='actor@example.test',
                        passwort_hash='unused', role=Role.ADMIN if route == 'admin' else Role.MEMBER)
-        target = Member(vorname='Test', nachname='Target', email='target@example.test',
+        target = Member(password_changed_at=datetime(2026, 1, 1),
+                        vorname='Test', nachname='Target', email='target@example.test',
                         passwort_hash='unused')
         db.session.add_all([actor, target])
         db.session.commit()

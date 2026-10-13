@@ -114,6 +114,8 @@ Danach [U1r / A-141 – MFA-Linkwiderruf](U1R_MFA_LINK_WIDERRUF.md), 12.10.2026.
 [Vorbereitete Fortsetzung nach Agentwechsel](FORTSETZUNG_NACH_U1R.md).
 A-089 wird anschliessend als [U1s / Drive-Widerruf und Admin-Wiederholung](U1S_DRIVE_WIDERRUF.md)
 lokal umgesetzt; PostgreSQL- und echte Drive-Abnahme bleiben separat.
+Danach [U1t / A-076 – verpflichtender erster Passwortwechsel](U1T_PFLICHTWECHSEL.md),
+13.10.2026: zentrale Durchsetzung und Rückkehrziel; Sitzungs-/Gerätewiderruf separat.
 Die folgenden Pakete bleiben die Reihenfolge; keine Veröffentlichung erfolgt.
 
 Planung der späteren Umsetzung, jetzt kein Ausführungsauftrag. Vorhandene

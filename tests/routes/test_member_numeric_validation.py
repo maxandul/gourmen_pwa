@@ -1,4 +1,6 @@
 """A-085: identical numeric meanings in profile, admin edit and member creation."""
+
+from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
@@ -13,7 +15,8 @@ def numeric_case(app, client, monkeypatch):
     mail = Mock(return_value={'success': True})
     monkeypatch.setattr(MailService, 'send', mail)
     with app.app_context():
-        user = Member(vorname='Original', nachname='Test', email='numeric@example.com',
+        user = Member(password_changed_at=datetime(2026, 1, 1),
+                      vorname='Original', nachname='Test', email='numeric@example.com',
                       passwort_hash='unused', role=Role.ADMIN,
                       koerpergroesse=180, koerpergewicht=80, schuhgroesse=42.5)
         db.session.add(user)

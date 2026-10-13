@@ -22,7 +22,8 @@ def google_case(app, client, monkeypatch):
                         lambda drive_id, email, action: invited.append((uid, email))
                         if action == 'invite' else None)
     with app.app_context():
-        member = Member(vorname='Google', nachname='Test', email='account@example.com',
+        member = Member(password_changed_at=datetime(2026, 1, 1),
+                        vorname='Google', nachname='Test', email='account@example.com',
                         passwort_hash='unused')
         db.session.add(member)
         db.session.commit()

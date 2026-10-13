@@ -191,7 +191,8 @@ def test_issue_rollback_preserves_previous_link(app, credentials):
 def test_other_account_links_remain_valid(app, client, credentials):
     uid, tokens = credentials
     with app.app_context():
-        other = Member(vorname='Other', nachname='Account', email='other@example.com', passwort_hash='unused')
+        other = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Other', nachname='Account', email='other@example.com', passwort_hash='unused')
         db.session.add(other)
         db.session.flush()
         other_token = _issue_auth_token(other.id, AuthTokenPurpose.PASSWORD_RESET, timedelta(days=1), None)

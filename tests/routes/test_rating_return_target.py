@@ -15,9 +15,11 @@ from backend.models.rating import EventRating
 def rating_case(app, client):
     def prepare(case):
         with app.app_context():
-            organizer = Member(vorname='Organizer', nachname='Test', email='org@example.test',
+            organizer = Member(password_changed_at=datetime(2026, 1, 1),
+                               vorname='Organizer', nachname='Test', email='org@example.test',
                                passwort_hash='unused')
-            member = Member(vorname='Rating', nachname='Test', email='rating@example.test',
+            member = Member(password_changed_at=datetime(2026, 1, 1),
+                            vorname='Rating', nachname='Test', email='rating@example.test',
                             passwort_hash='unused')
             db.session.add_all([organizer, member])
             db.session.flush()

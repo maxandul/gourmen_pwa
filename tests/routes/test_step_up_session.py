@@ -1,5 +1,7 @@
 """A-075: sensitive access belongs to one authenticated account/session."""
 
+from datetime import datetime
+
 import time
 
 import pytest
@@ -19,7 +21,8 @@ TRANSIENTS = ('sensitive_access_until', 'sensitive_access_member_id',
 def accounts(app):
     with app.app_context():
         password_hash = SecurityService.hash_password(PASSWORD)
-        members = [Member(vorname='Session', nachname=str(i), email=f'session{i}@example.com',
+        members = [Member(password_changed_at=datetime(2026, 1, 1),
+                          vorname='Session', nachname=str(i), email=f'session{i}@example.com',
                           passwort_hash=password_hash) for i in range(2)]
         db.session.add_all(members)
         db.session.commit()

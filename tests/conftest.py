@@ -34,7 +34,7 @@ def _seed_member_with_event() -> int:
     from backend.models.event import Event, EventType
     from backend.models.member import Member
 
-    m = Member(
+    m = Member(password_changed_at=datetime(2026, 1, 1),
         vorname="Docs",
         nachname="Smoke",
         email="docs-smoke@example.test",

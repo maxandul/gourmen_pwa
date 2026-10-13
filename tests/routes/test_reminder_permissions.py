@@ -19,9 +19,11 @@ def reminder_case(app, client, monkeypatch):
 
     def prepare(actor_kind, audience, entry):
         with app.app_context():
-            organizer = Member(vorname='Test', nachname='Organizer', email='organizer@example.test',
+            organizer = Member(password_changed_at=datetime(2026, 1, 1),
+                               vorname='Test', nachname='Organizer', email='organizer@example.test',
                                passwort_hash='unused')
-            actor = Member(vorname='Test', nachname='Actor', email='actor@example.test',
+            actor = Member(password_changed_at=datetime(2026, 1, 1),
+                           vorname='Test', nachname='Actor', email='actor@example.test',
                            passwort_hash='unused', role=Role.ADMIN if actor_kind == 'admin' else Role.MEMBER,
                            vorstandsmitglied=actor_kind == 'board')
             if actor_kind == 'treasurer':

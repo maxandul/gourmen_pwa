@@ -1,5 +1,11 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1t-Nachtrag 13.10.2026:** Lokale Fortsetzung A-076 auf
+`codex/u1t-required-password-change` über `de095b0`: Pflichtwechsel zentral vor
+Fachzugriffen durchsetzen, geprüftes Rückkehrziel über Passwort/MFA erhalten.
+[Vertrag und Nachweise](U1T_PFLICHTWECHSEL.md). Allgemeiner Sitzungs-/Gerätewiderruf
+bleibt separat. Keine Migration oder Veröffentlichung.
+
 **U1s-Nachtrag 12.10.2026:** A-089 lokal weitergeführt auf
 `codex/u1s-drive-access-revocation` über `7a2e93d`: dauerhafte Drive-Aufgaben,
 atomare Erfassung bei Adresswechsel/Deaktivierung, gespeicherte Invites und

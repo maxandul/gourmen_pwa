@@ -1,4 +1,6 @@
 """A-035: step-up never redirects to an external or ambiguous target."""
+
+from datetime import datetime
 import time
 from urllib.parse import urlencode
 
@@ -15,7 +17,8 @@ TARGET = '/member/profile?tab=sensitive#details'
 @pytest.fixture
 def actor(app, client):
     with app.app_context():
-        user = Member(vorname='Return', nachname='StepUp', email='step-return@example.com',
+        user = Member(password_changed_at=datetime(2026, 1, 1),
+                      vorname='Return', nachname='StepUp', email='step-return@example.com',
                       passwort_hash=SecurityService.hash_password(PASSWORD))
         db.session.add(user)
         db.session.commit()

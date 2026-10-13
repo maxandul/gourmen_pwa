@@ -22,7 +22,8 @@ def recovery(app, client):
         user = Member(vorname='Recovery', nachname='Test', email='recovery@example.com',
                       passwort_hash=SecurityService.hash_password(PASSWORD),
                       password_changed_at=datetime.utcnow())
-        other = Member(vorname='Other', nachname='Test', email='other@example.com', passwort_hash='unused')
+        other = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Other', nachname='Test', email='other@example.com', passwort_hash='unused')
         db.session.add_all([user, other])
         db.session.flush()
         db.session.add(MemberMFA(member_id=user.id, is_totp_enabled=True))

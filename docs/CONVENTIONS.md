@@ -138,7 +138,36 @@ def webhook():
   diese Freigabe sowie `2fa_secret`, `pending_2fa_user_id` und `step_up_next`.
   Keine vollständige Session-Löschung: andere Einstellungen bleiben erhalten.
 
-### Rückkehrziel bei der Anmeldung
+### Verpflichtender erster Passwortwechsel (U1t / A-076)
+
+`PasswordChangeService.enforce` prüft global vor Views den bestehenden
+DB-Zustand `password_changed_at IS NULL`. Auch Admins, direkte URL-Aufrufe,
+API-/POST-Aufrufe und Cookie-Wiederanmeldung sind betroffen. Kein Testing-Bypass.
+Alle erfolgreichen Passwort-/MFA-Loginzweige verwenden `after_login_target`:
+Pflichtwechsel hat Vorrang vor `next`, MFA bleibt dem Pflichtwechsel vorgeschaltet.
+
+Explizite Ausnahmen: `auth.change_password`, `auth.logout`, tokengebundene
+`auth.reset_password`, `auth.activate`, `auth.reset_2fa`; `static`, `service_worker`,
+`health` sowie Blueprints `public`, `cron`, `calendar_feed` mit ihren eigenen
+Zugriffsregeln. Unbekannte Endpoints behalten 404/405. Anonyme Anfragen sind nicht
+Gegenstand dieser Sperre, ihre bisherigen Login-/Tokenprüfungen bleiben bestehen.
+
+`password_change_return` enthält Mitglieds-ID und ein mit `local_return_target`
+geprüftes Ziel. Auth-Pfade werden als Zwischenziele ausgeschlossen. Das erste
+gültige Ziel bleibt bestehen, spätere Seitenaufrufe überschreiben es nicht.
+Nur HTML-GET/HEAD darf bei einer direkten Sperre ein Ziel setzen, keine API-
+Abfragen oder Mutationen. Login/Logout/Cookie-Login löschen diesen Zustand.
+Nach erfolgreichem Pflichtwechsel wird er erneut geprüft und einmalig verbraucht;
+Fallback Dashboard. Freiwilliger Passwortwechsel führt weiterhin zum Profil.
+
+HTML-GET/HEAD: 302 zum Wechsel; HTML-Mutation: 303, keine spätere Wiederholung.
+JSON (`request.is_json` oder bester Accept-Typ JSON) und `/api/`: 403 mit
+`error=password_change_required` und festem `next`. Sperrantworten `no-store`.
+CSRF bleibt davor wirksam. Fehler beim Passwort/Commit lassen die Pflicht bestehen.
+Andere Fachtests markieren ihre regulären Konten ausdrücklich mit einem
+abgeschlossenen Passwortwechsel; spezielle Initialpassworttests setzen NULL.
+
+### Sichere Rückkehrziele über Login und Step-Up
 
 Passwort- und MFA-Login prüfen Rückkehrziele mit
 `SecurityService.local_return_target()`: nur root-relative Pfade, keine externen

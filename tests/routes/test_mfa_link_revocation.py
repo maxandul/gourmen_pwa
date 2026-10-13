@@ -207,7 +207,8 @@ def test_enrollment_does_not_replace_intervening_activation(app, client, mfa_cas
 
 def test_other_member_reset_link_is_untouched(app, client, mfa_case):
     with app.app_context():
-        other = Member(vorname='Other', nachname='MFA', email='other-mfa@example.com', passwort_hash='unused')
+        other = Member(password_changed_at=datetime(2026, 1, 1),
+                       vorname='Other', nachname='MFA', email='other-mfa@example.com', passwort_hash='unused')
         db.session.add(other)
         db.session.flush()
         row = AuthToken(member_id=other.id, purpose=AuthTokenPurpose.MFA_RESET,
