@@ -16,8 +16,23 @@ from backend.services.security import SecurityService, AuditAction
 from backend.services.mail import MailService
 from backend.services.password_change import PasswordChangeService
 from backend.services.authentication import AuthenticationService
+from backend.services.action_confirmation import ActionConfirmationService
 
 bp = Blueprint('auth', __name__)
+
+
+@bp.app_context_processor
+def action_confirmation_context():
+    return {'action_confirmation_token': ActionConfirmationService.issue}
+
+
+@bp.after_app_request
+def protect_confirmation_responses(response):
+    if request.endpoint in {'auth.change_password', 'auth.enroll_2fa', 'auth.disable_2fa',
+                            'admin.reset_member_password', 'admin.reset_member_2fa', 'admin.edit_member'}:
+        response.headers['Cache-Control'] = 'no-store'
+    return response
+
 
 class LoginForm(FlaskForm):
     email = StringField('E-Mail', validators=[DataRequired(), Email()])
@@ -257,7 +272,8 @@ def enroll_2fa():
     
     totp_form = TOTPForm()
     
-    if totp_form.validate_on_submit():
+    if (totp_form.validate_on_submit()
+            and ActionConfirmationService.check('mfa_enroll', current_user, request.form.get('action_password'))):
         if SecurityService.verify_totp(secret, totp_form.token.data):
             user = SecurityService.lock_credential_member(current_user.id)
             if not user or not user.is_active:
@@ -319,7 +335,8 @@ def disable_2fa():
         return redirect(url_for('member.profile'))
     
     step_up_form = StepUpForm()
-    if step_up_form.validate_on_submit():
+    if (step_up_form.validate_on_submit()
+            and ActionConfirmationService.check('mfa_disable', current_user, step_up_form.password.data)):
         user = SecurityService.lock_credential_member(current_user.id)
         if not user or not user.is_active:
             abort(403)
@@ -395,7 +412,8 @@ def change_password():
     """Change password for logged in user"""
     form = ChangePasswordForm()
     
-    if form.validate_on_submit():
+    if (form.validate_on_submit()
+            and ActionConfirmationService.check('password_change', current_user, form.current_password.data)):
         user = SecurityService.lock_credential_member(current_user.id)
         if not user or not user.is_active:
             abort(403)

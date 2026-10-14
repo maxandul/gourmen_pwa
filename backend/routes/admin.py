@@ -20,6 +20,7 @@ from backend.models.auth_token import AuthToken, AuthTokenPurpose
 from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
+from backend.services.action_confirmation import ActionConfirmationService
 from backend.models.drive_access_task import DriveAccessTask
 from backend.services.drive_access import DriveAccessService, OPEN_STATUSES
 
@@ -579,6 +580,8 @@ def edit_member(member_id):
         new_access = (form.role.data, form.funktion.data or None,
                       bool(form.vorstandsmitglied.data), form.is_active.data)
         if old_access != new_access:
+            if not ActionConfirmationService.check('permissions', member, request.form.get('action_password'), admin=True):
+                return render_template('admin/edit_member_enhanced.html', form=form, member=member)
             member.rotate_auth_generation()
         deactivating = member.is_active and not form.is_active.data
         if deactivating:
@@ -798,12 +801,12 @@ def create_event():
 @bp.route('/members/<int:member_id>/reset-password', methods=['GET', 'POST'])
 @login_required
 @admin_required
-@require_step_up
 def reset_member_password(member_id):
     """Reset member password"""
     member = Member.query.get_or_404(member_id)
     
-    if request.method == 'POST':
+    if (request.method == 'POST'
+            and ActionConfirmationService.check('admin_password', member, request.form.get('action_password'), admin=True)):
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
             flash('Bitte gib "RESET" ein, um zu bestätigen.', 'error')
@@ -837,12 +840,12 @@ def reset_member_password(member_id):
 @bp.route('/members/<int:member_id>/reset-2fa', methods=['GET', 'POST'])
 @login_required
 @admin_required
-@require_step_up
 def reset_member_2fa(member_id):
     """Reset member 2FA"""
     member = Member.query.get_or_404(member_id)
     
-    if request.method == 'POST':
+    if (request.method == 'POST'
+            and ActionConfirmationService.check('admin_mfa', member, request.form.get('action_password'), admin=True)):
         # Check confirmation
         if request.form.get('confirm') != 'RESET':
             flash('Bitte gib "RESET" ein, um zu bestätigen.', 'error')

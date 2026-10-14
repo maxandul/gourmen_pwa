@@ -1,4 +1,6 @@
 """A-141 password scope: stale password/activation links cannot replace credentials."""
+from tests.action_confirmation_helpers import confirmed_post
+
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 from tests.conftest import auth_id
@@ -62,9 +64,9 @@ def test_success_revokes_password_links_only(app, client, credentials, entry, st
     uid, tokens = credentials
     if entry in ('change', 'admin'):
         login(client, uid)
-        response = (client.post('/auth/change-password', data={'current_password': OLD,
-                    'new_password': NEW, 'confirm_password': NEW}) if entry == 'change' else
-                    client.post(f'/admin/members/{uid}/reset-password', data={'confirm': 'RESET'}))
+        response = (confirmed_post(client, '/auth/change-password', data={'current_password': OLD,
+                    'new_password': NEW, 'confirm_password': NEW}, password=OLD) if entry == 'change' else
+                    confirmed_post(client, f'/admin/members/{uid}/reset-password', data={'confirm': 'RESET'}, password=OLD))
     else:
         purpose = AuthTokenPurpose.PASSWORD_RESET if entry == 'reset' else AuthTokenPurpose.ONBOARDING
         response = replacement(client, f'/auth/{"reset-password" if entry == "reset" else "activate"}/{tokens[purpose]}')
@@ -99,8 +101,8 @@ def test_new_issue_replaces_only_same_purpose(app, client, credentials, purpose)
 def test_failed_password_change_preserves_links(app, client, credentials):
     uid, tokens = credentials
     login(client, uid)
-    assert client.post('/auth/change-password', data={'current_password': 'wrong',
-        'new_password': NEW, 'confirm_password': NEW}).status_code == 200
+    assert confirmed_post(client, '/auth/change-password', data={'current_password': 'wrong',
+        'new_password': NEW, 'confirm_password': NEW}, password=OLD).status_code == 200
     with app.app_context():
         assert db.session.get(Member, uid).check_password(OLD)
         assert all(row.used_at is None for row in AuthToken.query.all())
@@ -109,8 +111,8 @@ def test_failed_password_change_preserves_links(app, client, credentials):
 def test_new_reset_after_change_still_works(app, client, credentials):
     uid, tokens = credentials
     login(client, uid)
-    client.post('/auth/change-password', data={'current_password': OLD,
-                'new_password': NEW, 'confirm_password': NEW})
+    confirmed_post(client, '/auth/change-password', data={'current_password': OLD,
+                'new_password': NEW, 'confirm_password': NEW}, password=OLD)
     with client.session_transaction() as state:
         state.clear()
     with app.app_context():
@@ -159,8 +161,8 @@ def test_commit_failure_rolls_back_password_and_revocation(app, client, credenti
         patch.setattr(db.session, 'commit', Mock(side_effect=RuntimeError('synthetic commit failure')))
         with pytest.raises(RuntimeError):
             if entry == 'change':
-                client.post('/auth/change-password', data={'current_password': OLD,
-                    'new_password': NEW, 'confirm_password': NEW})
+                confirmed_post(client, '/auth/change-password', data={'current_password': OLD,
+                    'new_password': NEW, 'confirm_password': NEW}, password=OLD)
             else:
                 replacement(client, '/auth/reset-password/' + tokens[AuthTokenPurpose.PASSWORD_RESET])
     with app.app_context():
@@ -199,8 +201,8 @@ def test_other_account_links_remain_valid(app, client, credentials):
         other_token = _issue_auth_token(other.id, AuthTokenPurpose.PASSWORD_RESET, timedelta(days=1), None)
         db.session.commit()
     login(client, uid)
-    client.post('/auth/change-password', data={'current_password': OLD,
-                'new_password': NEW, 'confirm_password': NEW})
+    confirmed_post(client, '/auth/change-password', data={'current_password': OLD,
+                'new_password': NEW, 'confirm_password': NEW}, password=OLD)
     with app.app_context():
         assert _resolve_auth_token(other_token, AuthTokenPurpose.PASSWORD_RESET)[1] is None
     with client.session_transaction() as state:

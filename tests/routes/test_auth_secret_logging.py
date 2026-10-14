@@ -1,4 +1,6 @@
 """Original auth routes: logging must not disclose synthetic credentials."""
+from tests.action_confirmation_helpers import confirmed_post
+
 
 from datetime import datetime
 
@@ -47,9 +49,9 @@ def test_enrollment_preserves_flow_without_logging_secret(app, client, auth_acto
         assert client.get('/auth/2fa/enroll').status_code == 200
         with client.session_transaction() as session:
             secret = session['2fa_secret']
-        assert client.post('/auth/2fa/enroll', data={'token': 'abcdef'}).status_code == 200
+        assert confirmed_post(client, '/auth/2fa/enroll', data={'token': 'abcdef'}, password='Synthetic-password-private').status_code == 200
         code = pyotp.TOTP(secret).now()
-        assert client.post('/auth/2fa/enroll', data={'token': code}).status_code == 200
+        assert confirmed_post(client, '/auth/2fa/enroll', data={'token': code}, password='Synthetic-password-private').status_code == 200
     with app.app_context():
         row = MemberMFA.query.filter_by(member_id=auth_actor).one()
         assert row.is_totp_enabled

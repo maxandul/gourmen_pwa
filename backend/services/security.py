@@ -337,7 +337,7 @@ class SecurityService:
         """Clear account-bound intermediate state at authentication boundaries."""
         SecurityService.revoke_step_up_access()
         for key in ('2fa_secret', 'pending_2fa_user_id', 'pending_2fa_next', 'pending_2fa_generation', 'step_up_next',
-                    'password_change_return'):
+                    'password_change_return', 'action_session'):
             session.pop(key, None)
     
     @staticmethod

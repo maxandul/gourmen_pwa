@@ -420,6 +420,17 @@ lange Adressen/Drive-IDs erhalten native `wbr`-Umbruchstellen. Status, Versuche,
 Fehlerhinweis und Wiederholung pro Mitglied; fehlende Drive-Zuordnung muss mit
 einer beschrifteten Checkbox bestätigt werden. PWA-Version lokal 3.16.4.
 
+### Bestehende Komponenten: Aktionsbestätigung (U1w)
+
+`partials/_action_confirmation.html` ergänzt die sechs vorhandenen Sicherheits-
+formulare mit einem verborgenen Aktionsnachweis. MFA-Einrichtung und Adminaktionen
+zeigen das Passwortfeld des Handelnden über bestehende `form-field`-Klassen;
+Passwortwechsel/MFA-Deaktivierung nutzen ihr vorhandenes Passwortfeld. Bei
+Mitgliedsbearbeitung erklärt der Hilfetext, dass nur Berechtigungsänderungen
+zusätzliches Passwort benötigen. Kein neues CSS, keine neue UI-Klasse.
+PWA-Version lokal 3.16.5, PWA-Fingerprint und Templateverweis nachgeführt.
+Visuelle Mobile-/Desktop-/Hell-/Dunkel-Abnahme bleibt separat offen.
+
 ## 6. Verbote
 
 - ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit

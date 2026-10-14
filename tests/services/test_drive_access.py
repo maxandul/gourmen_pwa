@@ -2,6 +2,8 @@
 
 from datetime import datetime
 from tests.conftest import auth_id
+from tests.action_confirmation_helpers import confirmed_post
+from backend.services.security import SecurityService
 import re
 from unittest.mock import Mock
 
@@ -28,7 +30,7 @@ def case(app, monkeypatch):
                         google_email_verified=True)
         admin = Member(password_changed_at=datetime(2026, 1, 1),
                        vorname='Admin', nachname='Test', email='admin@example.com',
-                       passwort_hash='unused', role=Role.ADMIN)
+                       passwort_hash=SecurityService.hash_password('Synthetic-drive-admin1!'), role=Role.ADMIN)
         db.session.add_all([member, admin])
         db.session.commit()
         return member.id, admin.id, external
@@ -173,7 +175,7 @@ def test_admin_deactivation_cancels_invite_and_retains_failed_revoke(app, client
         GoogleEmailVerificationService.consume(delivery.token)
     login(client, aid)
     external.side_effect = TimeoutError('do not leak')
-    assert client.post(f'/admin/members/{uid}/edit', data=member_form()).status_code == 302
+    assert confirmed_post(client, f'/admin/members/{uid}/edit', data=member_form(), password='Synthetic-drive-admin1!').status_code == 302
     with app.app_context():
         member = db.session.get(Member, uid)
         assert not member.is_active and not member.google_email_verified
@@ -193,8 +195,8 @@ def test_reactivation_requires_new_google_verification(app, client, case):
     with app.app_context():
         old = change(uid)
     login(client, aid)
-    client.post(f'/admin/members/{uid}/edit', data=member_form())
-    client.post(f'/admin/members/{uid}/edit', data=member_form(True))
+    confirmed_post(client, f'/admin/members/{uid}/edit', data=member_form(), password='Synthetic-drive-admin1!')
+    confirmed_post(client, f'/admin/members/{uid}/edit', data=member_form(True), password='Synthetic-drive-admin1!')
     external.reset_mock()
     with app.app_context():
         assert GoogleEmailVerificationService.consume(old.token)[0] is None
@@ -211,7 +213,7 @@ def test_deactivation_rollback_keeps_active_and_no_task(app, client, case):
     login(client, aid)
     data = member_form()
     data['email'] = 'admin@example.com'
-    assert client.post(f'/admin/members/{uid}/edit', data=data).status_code == 200
+    assert confirmed_post(client, f'/admin/members/{uid}/edit', data=data, password='Synthetic-drive-admin1!').status_code == 200
     with app.app_context():
         assert db.session.get(Member, uid).is_active
         assert DriveAccessTask.query.count() == 0
@@ -312,7 +314,7 @@ def test_deactivation_commit_failure_rolls_back_task_and_tokens(app, client, cas
     login(client, aid)
     with monkeypatch.context() as patch:
         patch.setattr(db.session, 'commit', Mock(side_effect=IntegrityError('synthetic', {}, None)))
-        assert client.post(f'/admin/members/{uid}/edit', data=member_form()).status_code == 200
+        assert confirmed_post(client, f'/admin/members/{uid}/edit', data=member_form(), password='Synthetic-drive-admin1!').status_code == 200
     with app.app_context():
         assert db.session.get(Member, uid).is_active
         assert AuthToken.query.one().used_at is None

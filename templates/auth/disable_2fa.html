@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "partials/_action_confirmation.html" import action_confirmation with context %}
 {% from 'partials/_lucide_icon.html' import lucide_icon %}
 
 {% block title %}2FA deaktivieren - Gourmen{% endblock %}
@@ -34,6 +35,7 @@
                         <p>Gib dein Passwort ein, um die Deaktivierung zu bestätigen.</p>
                         <form method="POST" class="form">
                             {{ form.hidden_tag() }}
+                    {{ action_confirmation('mfa_disable', current_user, password=false, optional=false) }}
 
                             <div class="form-field">
                                 {{ form.password.label(class="form-field__label") }}

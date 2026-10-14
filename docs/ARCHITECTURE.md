@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `ActionConfirmationService` | Frischer Passwortbeweis direkt bei Sicherheitsmutationen; signierter, sitzungs-/aktions-/zielgebundener Formularnachweis. Einmalverbrauch atomar über U1v-Zielgeneration, ohne neue Tabelle. |
 | `AuthenticationService` | Versionierte Flask-Login-Identitäten, Widerrufsprüfung bei Session/Remember-me, begrenztes TOTP-Gerätevertrauen und Erhalt der aktuellen Sitzung nach eigenem Passwortwechsel. |
 | `PasswordChangeService` | Zentrale Request-Sperre für Konten mit Initialpasswort; priorisiert Pflichtwechsel nach Login/MFA und erhält ein kontogebundenes Rückkehrziel. |
 | `DriveAccessService` | Dauerhafte Shared-Drive-Aufgaben (`DriveAccessTask`): atomare Erfassung bei Google-Adresswechsel, Verifikation und Deaktivierung; Widerruf vor Einladung, Admin-Wiederholung. Transport ohne DB-Commit über `DriveStorageService.apply_membership`. |
@@ -166,7 +167,7 @@ LOGIN
   ├─ alternativ Backup-Code (gehasht in DB)
   └─ Optional: "Remember this device"
 
-STEP-UP (sensible Aktionen)
+STEP-UP (sensible Daten)
   ├─ Time-limitierter Re-Auth via Passwort
   ├─ TTL: SENSITIVE_ACCESS_TTL_SECONDS (default 300)
   └─ SecurityService.check_step_up_access()

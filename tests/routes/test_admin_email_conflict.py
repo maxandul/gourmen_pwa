@@ -23,7 +23,7 @@ def admin_case(app, client, monkeypatch):
     monkeypatch.setattr(MailService, 'send', mail)
     monkeypatch.setattr(SecurityService, 'log_audit_event', audit)
     with app.app_context():
-        users = [Member(password_changed_at=datetime(2026, 1, 1), vorname='Original', nachname=str(i), email=email,
+        users = [Member(funktion='MEMBER', password_changed_at=datetime(2026, 1, 1), vorname='Original', nachname=str(i), email=email,
                         passwort_hash='unused', role=Role.ADMIN if i == 0 else Role.MEMBER)
                  for i, email in enumerate(['admin@example.com', 'edit@example.com', 'taken@example.com'])]
         db.session.add_all(users)

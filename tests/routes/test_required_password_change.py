@@ -1,4 +1,6 @@
 """A-076: initial passwords cannot open protected views or execute mutations."""
+from tests.action_confirmation_helpers import confirmed_post
+
 from tests.conftest import auth_id, device_grant
 import base64
 from datetime import datetime
@@ -40,7 +42,7 @@ def login(client, next=TARGET):
 def change(client, **overrides):
     data = {'current_password': OLD, 'new_password': NEW, 'confirm_password': NEW}
     data.update(overrides)
-    return client.post('/auth/change-password', data=data)
+    return confirmed_post(client, '/auth/change-password', data=data, password=OLD)
 
 
 def session_login(client, uid):
@@ -230,10 +232,10 @@ def test_remember_cookie_restores_restriction_and_clears_old_target(client, pend
 
 def test_real_admin_mutation_blocked_before_member_update(app, client, pending):
     session_login(client, pending)
-    response = client.post(f'/admin/members/{pending}/edit', data={
+    response = confirmed_post(client, f'/admin/members/{pending}/edit', data={
         'vorname': 'Changed', 'nachname': 'Name', 'email': 'pending@example.com',
         'role': 'ADMIN', 'is_active': 'y', 'funktion': 'MEMBER',
-    })
+    }, password=OLD)
     assert response.status_code == 303
     with app.app_context():
         assert db.session.get(Member, pending).vorname == 'Pending'

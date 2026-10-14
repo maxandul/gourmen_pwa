@@ -1,5 +1,12 @@
 # Konsolidierte Gesamtvorlage und Restabdeckung
 
+**U1w-Nachtrag 14.10.2026:** Aktionsgebundene Identitätsbestätigung für sechs
+bestehende Sicherheits-Schreibwege lokal beauftragt und umgesetzt auf
+`codex/u1w-action-confirmation` über `74077f0`. [Vertrag, Tests und Grenzen](U1W_AKTIONSBESTAETIGUNG.md).
+Kein neuer Rollenumbau. Mitgliederanlage/initiale Rechte, R13-Matrix,
+Admin-Notfallweg sowie PostgreSQL-/Geräteabnahmen bleiben separat; U1 offen.
+
+
 Stand der Zusammenführung: 11. Oktober 2026, nach Bestätigung von B02.
 Dies ist der aktuelle Einstieg für Gestaltung, Fachregeln und Umsetzungsreihenfolge.
 Die nachstehenden Detailregister bleiben erhalten. Ältere «offen»-Angaben sind

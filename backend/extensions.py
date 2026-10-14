@@ -67,6 +67,10 @@ def init_extensions(app):
             "Flask-Limiter initialized with in-memory storage (not recommended for production)"
         )
     
+    # Keep the app-owned instance even when disabled (Flask-Limiter does not
+    # register its own extension in that case).
+    app.extensions['gourmen_limiter'] = limiter
+
     # Configure login manager
     @login_manager.user_loader
     def load_user(user_id):

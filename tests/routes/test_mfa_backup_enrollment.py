@@ -1,4 +1,6 @@
 """A-080: fresh backup codes belong to the confirmed enrollment transaction."""
+from tests.action_confirmation_helpers import confirmed_post
+
 from tests.conftest import auth_id
 import base64
 import logging
@@ -46,7 +48,7 @@ def case(app, client, monkeypatch):
 
 
 def enroll(client):
-    return client.post('/auth/2fa/enroll', data={'token': pyotp.TOTP(SECRET).now()})
+    return confirmed_post(client, '/auth/2fa/enroll', data={'token': pyotp.TOTP(SECRET).now()}, password=PASSWORD)
 
 
 @pytest.mark.parametrize('old_state', [None, 'active', 'used', 'revoked'])
@@ -91,7 +93,7 @@ def test_disable_and_reenroll_provides_new_usable_codes(app, client, case):
     uid, shown = case
     enroll(client)
     old_codes = shown[0]
-    assert client.post('/auth/2fa/disable', data={'password': PASSWORD}).status_code == 302
+    assert confirmed_post(client, '/auth/2fa/disable', data={'password': PASSWORD}, password=PASSWORD).status_code == 302
     with client.session_transaction() as state:
         state['2fa_secret'] = SECRET
     assert enroll(client).status_code == 200
@@ -125,13 +127,21 @@ def test_failure_does_not_activate_or_replace_codes(app, client, case, monkeypat
         app.config['WTF_CSRF_ENABLED'] = True
         assert enroll(client).status_code == 400
     elif failure == 'invalid':
-        assert client.post('/auth/2fa/enroll', data={'token': 'wrong'}).status_code == 200
+        assert confirmed_post(client, '/auth/2fa/enroll', data={'token': 'wrong'}, password=PASSWORD).status_code == 200
     else:
         with monkeypatch.context() as patch:
             if failure == 'commit':
                 patch.setattr(db.session, 'commit', Mock(side_effect=RuntimeError('synthetic')))
             else:
-                patch.setattr('backend.routes.auth.render_template', Mock(side_effect=RuntimeError('synthetic')))
+                from backend.routes import auth
+                render = auth.render_template
+
+                def fail_result_only(template, **context):
+                    if template == 'auth/backup_codes.html':
+                        raise RuntimeError('synthetic')
+                    return render(template, **context)
+
+                patch.setattr(auth, 'render_template', fail_result_only)
             with pytest.raises(RuntimeError):
                 enroll(client)
     with app.app_context():
@@ -159,7 +169,7 @@ def test_other_members_codes_untouched(app, client, case):
 
 
 def test_anonymous_cannot_generate_codes(app, client):
-    assert client.post('/auth/2fa/enroll', data={'token': '123456'}).status_code == 302
+    assert confirmed_post(client, '/auth/2fa/enroll', data={'token': '123456'}, password=PASSWORD).status_code == 302
     assert client.get('/auth/2fa/backup-codes').status_code == 302
     with app.app_context():
         assert MFABackupCode.query.count() == 0

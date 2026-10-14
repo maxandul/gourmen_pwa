@@ -1,4 +1,6 @@
 """A-141 MFA scope: stale recovery links cannot disable a newly configured factor."""
+from tests.action_confirmation_helpers import confirmed_post
+
 from tests.conftest import auth_id
 import base64
 import hashlib
@@ -60,7 +62,7 @@ def login(client, uid):
 def enroll(client):
     with client.session_transaction() as state:
         state['2fa_secret'] = NEW_SECRET
-    return client.post('/auth/2fa/enroll', data={'token': pyotp.TOTP(NEW_SECRET).now()})
+    return confirmed_post(client, '/auth/2fa/enroll', data={'token': pyotp.TOTP(NEW_SECRET).now()}, password=PASSWORD)
 
 
 @pytest.mark.parametrize('entry', ['mail_reset', 'admin_reset', 'disable', 'enroll'])
@@ -71,9 +73,9 @@ def test_factor_change_revokes_old_links_and_preserves_new_factor(app, client, m
     else:
         login(client, uid)
         if entry == 'admin_reset':
-            response = client.post(f'/admin/members/{uid}/reset-2fa', data={'confirm': 'RESET'})
+            response = confirmed_post(client, f'/admin/members/{uid}/reset-2fa', data={'confirm': 'RESET'}, password=PASSWORD)
         elif entry == 'disable':
-            response = client.post('/auth/2fa/disable', data={'password': PASSWORD})
+            response = confirmed_post(client, '/auth/2fa/disable', data={'password': PASSWORD}, password=PASSWORD)
         else:
             with app.app_context():
                 MemberMFA.query.one().is_totp_enabled = False
@@ -121,12 +123,12 @@ def test_resend_replaces_previous_mfa_links_only(app, client, mfa_case):
 def test_invalid_proof_does_not_revoke(app, client, mfa_case, entry):
     login(client, mfa_case)
     if entry == 'disable':
-        response = client.post('/auth/2fa/disable', data={'password': 'wrong'})
+        response = confirmed_post(client, '/auth/2fa/disable', data={'password': 'wrong'}, password=PASSWORD)
     else:
         with app.app_context():
             MemberMFA.query.one().is_totp_enabled = False
             db.session.commit()
-        response = client.post('/auth/2fa/enroll', data={'token': 'invalid'})
+        response = confirmed_post(client, '/auth/2fa/enroll', data={'token': 'invalid'}, password=PASSWORD)
     assert response.status_code == 200
     with app.app_context():
         assert all(row.used_at is None for row in AuthToken.query.all())
@@ -137,7 +139,7 @@ def test_admin_reset_revokes_even_when_already_disabled(app, client, mfa_case):
         MemberMFA.query.one().is_totp_enabled = False
         db.session.commit()
     login(client, mfa_case)
-    client.post(f'/admin/members/{mfa_case}/reset-2fa', data={'confirm': 'RESET'})
+    confirmed_post(client, f'/admin/members/{mfa_case}/reset-2fa', data={'confirm': 'RESET'}, password=PASSWORD)
     with app.app_context():
         assert all(row.used_at is not None for row in AuthToken.query.filter_by(purpose=AuthTokenPurpose.MFA_RESET))
 

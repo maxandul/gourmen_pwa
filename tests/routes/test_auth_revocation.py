@@ -1,4 +1,6 @@
 """A-077/A-082: replay old cookies and pending MFA across security events."""
+from tests.action_confirmation_helpers import confirmed_post
+
 import base64
 import time
 from datetime import timedelta
@@ -93,10 +95,10 @@ def test_security_event_revokes_session_cookie_remember_cookie_and_pending_mfa(a
         administrator(operator, admin_id)
         if event in ('admin_password', 'admin_mfa'):
             route = 'reset-password' if event == 'admin_password' else 'reset-2fa'
-            response = operator.post(f'/admin/members/{uid}/{route}', data={'confirm': 'RESET'})
+            response = confirmed_post(operator, f'/admin/members/{uid}/{route}', data={'confirm': 'RESET'}, password=PASSWORD)
         else:
-            response = operator.post(f'/admin/members/{uid}/edit', data=edit_payload(
-                active=event != 'deactivate', function='SCHATZMEISTER' if event == 'permissions' else 'MEMBER'))
+            response = confirmed_post(operator, f'/admin/members/{uid}/edit', data=edit_payload(
+                active=event != 'deactivate', function='SCHATZMEISTER' if event == 'permissions' else 'MEMBER'), password=PASSWORD)
     assert response.status_code == 302
     for cookie in ('session', 'remember_token'):
         replay = app.test_client()
@@ -115,7 +117,7 @@ def test_security_event_revokes_session_cookie_remember_cookie_and_pending_mfa(a
             assert AuthenticationService.trusted_device(db.session.get(Member, uid)) is None
     if event == 'deactivate':
         administrator(operator, admin_id)
-        assert operator.post(f'/admin/members/{uid}/edit', data=edit_payload()).status_code == 302
+        assert confirmed_post(operator, f'/admin/members/{uid}/edit', data=edit_payload(), password=PASSWORD).status_code == 302
         replay = app.test_client()
         replay.set_cookie('session', old_session)
         assert replay.get('/member/profile').status_code == 302
@@ -129,8 +131,8 @@ def test_normal_password_change_preserves_only_current_session_and_trust(app, ac
     old_cookie = current.get_cookie('session').value
     with current.session_transaction() as state:
         old_expiry = state['remembered_device']['expires_at']
-    response = current.post('/auth/change-password', data={'current_password': PASSWORD,
-                            'new_password': NEW, 'confirm_password': NEW})
+    response = confirmed_post(current, '/auth/change-password', data={'current_password': PASSWORD,
+                            'new_password': NEW, 'confirm_password': NEW}, password=PASSWORD)
     assert response.status_code == 302
     assert current.get('/member/profile').status_code == 200
     assert other.get('/member/profile').status_code == 302
@@ -187,11 +189,11 @@ def test_trust_requires_totp_and_cannot_be_issued_by_legacy_endpoint(app, client
 def test_mfa_reenrollment_invalidates_previous_trust(app, client, accounts):
     login(client)
     old_cookie = client.get_cookie('session').value
-    assert client.post('/auth/2fa/disable', data={'password': PASSWORD}).status_code == 302
+    assert confirmed_post(client, '/auth/2fa/disable', data={'password': PASSWORD}, password=PASSWORD).status_code == 302
     assert client.get('/member/profile').status_code == 200
     with client.session_transaction() as state:
         state['2fa_secret'] = SECRET
-    assert client.post('/auth/2fa/enroll', data={'token': pyotp.TOTP(SECRET).now()}).status_code == 200
+    assert confirmed_post(client, '/auth/2fa/enroll', data={'token': pyotp.TOTP(SECRET).now()}, password=PASSWORD).status_code == 200
     assert client.get('/member/profile').status_code == 200
     with client.session_transaction() as state:
         assert 'remembered_device' not in state
@@ -208,8 +210,8 @@ def test_failed_password_commit_does_not_revoke_or_renew_sessions(app, accounts,
     with monkeypatch.context() as patch:
         patch.setattr(db.session, 'commit', Mock(side_effect=RuntimeError('synthetic')))
         with pytest.raises(RuntimeError):
-            current.post('/auth/change-password', data={'current_password': PASSWORD,
-                         'new_password': NEW, 'confirm_password': NEW})
+            confirmed_post(current, '/auth/change-password', data={'current_password': PASSWORD,
+                         'new_password': NEW, 'confirm_password': NEW}, password=PASSWORD)
     assert auth_id(current, accounts[0]) == old_id
     assert current.get('/member/profile').status_code == other.get('/member/profile').status_code == 200
 
@@ -259,8 +261,8 @@ def test_intervening_reset_after_commit_is_not_adopted(app, client, accounts, mo
         if entry == 'totp':
             response = client.post('/auth/2fa/verify', data={'token': pyotp.TOTP(SECRET).now(), 'remember_device': '1'})
         elif entry == 'change':
-            response = client.post('/auth/change-password', data={'current_password': PASSWORD,
-                                   'new_password': NEW, 'confirm_password': NEW})
+            response = confirmed_post(client, '/auth/change-password', data={'current_password': PASSWORD,
+                                   'new_password': NEW, 'confirm_password': NEW}, password=PASSWORD)
         else:
             response = client.post('/auth/activate/' + raw, data={'new_password': NEW, 'confirm_password': NEW})
     assert response.location.endswith('/auth/login')

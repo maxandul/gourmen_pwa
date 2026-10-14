@@ -1,4 +1,6 @@
 """A-090: member edits must preserve an active administrator."""
+from tests.action_confirmation_helpers import confirmed_post
+
 
 from datetime import datetime
 from unittest.mock import Mock
@@ -16,9 +18,9 @@ def admin_case(app, client, monkeypatch):
     audit = Mock()
     monkeypatch.setattr(SecurityService, 'log_audit_event', audit)
     with app.app_context():
-        rows = [Member(password_changed_at=datetime(2026, 1, 1),
+        rows = [Member(funktion='MEMBER', password_changed_at=datetime(2026, 1, 1),
                        vorname='Original', nachname='Test', email=f'admin{i}@example.com',
-                       passwort_hash='unused', role=Role.ADMIN if i == 0 else Role.MEMBER)
+                       passwort_hash=SecurityService.hash_password('Synthetic-admin-password1!'), role=Role.ADMIN if i == 0 else Role.MEMBER)
                 for i in range(2)]
         db.session.add_all(rows)
         db.session.commit()
@@ -47,7 +49,7 @@ def test_last_admin_rejected_without_partial_changes(app, client, admin_case, ro
             row.role, row.is_active = Role.ADMIN, False
             db.session.commit()
     for _ in range(2):
-        response = client.post(f'/admin/members/{ids[0]}/edit', data=payload(role, active))
+        response = confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload(role, active), password='Synthetic-admin-password1!')
         assert response.status_code == 200
         assert 'Mindestens ein aktiver Admin muss erhalten bleiben.' in response.get_data(as_text=True)
         assert b'value="Edited"' in response.data
@@ -63,7 +65,7 @@ def test_other_active_admin_allows_change(app, client, admin_case, role, active)
     with app.app_context():
         db.session.get(Member, ids[1]).role = Role.ADMIN
         db.session.commit()
-    response = client.post(f'/admin/members/{ids[0]}/edit', data=payload(role, active))
+    response = confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload(role, active), password='Synthetic-admin-password1!')
     assert response.status_code == 302
     with app.app_context():
         row = db.session.get(Member, ids[0])
@@ -74,7 +76,7 @@ def test_other_active_admin_allows_change(app, client, admin_case, role, active)
 
 def test_last_admin_can_edit_ordinary_data(app, client, admin_case):
     ids, audit = admin_case
-    assert client.post(f'/admin/members/{ids[0]}/edit', data=payload()).status_code == 302
+    assert confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload(), password='Synthetic-admin-password1!').status_code == 302
     with app.app_context():
         row = db.session.get(Member, ids[0])
         assert (row.vorname, row.role, row.is_active) == ('Edited', Role.ADMIN, True)
@@ -83,7 +85,7 @@ def test_last_admin_can_edit_ordinary_data(app, client, admin_case):
 
 def test_regular_member_can_be_deactivated(app, client, admin_case):
     ids, audit = admin_case
-    assert client.post(f'/admin/members/{ids[1]}/edit', data=payload('MEMBER', False, 1)).status_code == 302
+    assert confirmed_post(client, f'/admin/members/{ids[1]}/edit', data=payload('MEMBER', False, 1), password='Synthetic-admin-password1!').status_code == 302
     with app.app_context():
         assert not db.session.get(Member, ids[1]).is_active
         assert Member.query.filter_by(role=Role.ADMIN, is_active=True).count() == 1
@@ -91,8 +93,8 @@ def test_regular_member_can_be_deactivated(app, client, admin_case):
 
 def test_promote_then_handover_preserves_admin(app, client, admin_case):
     ids, audit = admin_case
-    assert client.post(f'/admin/members/{ids[1]}/edit', data=payload(index=1)).status_code == 302
-    assert client.post(f'/admin/members/{ids[0]}/edit', data=payload('MEMBER')).status_code == 302
+    assert confirmed_post(client, f'/admin/members/{ids[1]}/edit', data=payload(index=1), password='Synthetic-admin-password1!').status_code == 302
+    assert confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload('MEMBER'), password='Synthetic-admin-password1!').status_code == 302
     with app.app_context():
         assert db.session.get(Member, ids[1]).is_admin()
         assert not db.session.get(Member, ids[0]).is_admin()
@@ -108,13 +110,15 @@ def test_intervening_change_is_rechecked(app, client, admin_case, monkeypatch, c
     original = MemberForm.validate_on_submit
     def validate_then_change(form):
         valid = original(form)
+        if not valid:
+            return False
         target = ids[1] if change == 'peer_demotion' else ids[0]
         values = {'is_active': False} if change == 'actor_deactivation' else {'role': Role.MEMBER}
         db.session.execute(Member.__table__.update().where(Member.id == target).values(**values))
         db.session.commit()
         return valid
     monkeypatch.setattr(MemberForm, 'validate_on_submit', validate_then_change)
-    response = client.post(f'/admin/members/{ids[0]}/edit', data=payload('MEMBER'))
+    response = confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload('MEMBER'), password='Synthetic-admin-password1!')
     assert response.status_code == (200 if change == 'peer_demotion' else 403)
     with app.app_context():
         assert db.session.get(Member, ids[0]).vorname == 'Original'
@@ -125,7 +129,7 @@ def test_intervening_change_is_rechecked(app, client, admin_case, monkeypatch, c
 def test_csrf_rejects_member_edit(app, client, admin_case):
     ids, audit = admin_case
     app.config['WTF_CSRF_ENABLED'] = True
-    assert client.post(f'/admin/members/{ids[0]}/edit', data=payload('MEMBER')).status_code == 400
+    assert confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload('MEMBER'), password='Synthetic-admin-password1!').status_code == 400
     with app.app_context():
         assert db.session.get(Member, ids[0]).is_admin()
     audit.assert_not_called()
@@ -135,7 +139,7 @@ def test_non_admin_cannot_edit(app, client, admin_case):
     ids, audit = admin_case
     with client.session_transaction() as state:
         state['_user_id'] = auth_id(client, ids[1])
-    assert client.post(f'/admin/members/{ids[0]}/edit', data=payload('MEMBER')).status_code == 403
+    assert confirmed_post(client, f'/admin/members/{ids[0]}/edit', data=payload('MEMBER'), password='Synthetic-admin-password1!').status_code == 403
     with app.app_context():
         assert db.session.get(Member, ids[0]).is_admin()
     audit.assert_not_called()

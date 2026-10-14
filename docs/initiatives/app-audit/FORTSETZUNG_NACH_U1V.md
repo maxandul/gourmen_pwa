@@ -1,5 +1,10 @@
 # Fortsetzung nach U1v
 
+**Nachtrag 14.10.2026:** Dieser Auftrag wurde mit U1w lokal fortgesetzt.
+Aktueller Vertrag und Prüfnachweise: [Aktionsbestätigung](U1W_AKTIONSBESTAETIGUNG.md),
+Branch `codex/u1w-action-confirmation` über `74077f0`. Die folgende Startanweisung
+bleibt als Herkunft erhalten; U1w nicht nochmals von U1v neu beginnen.
+
 Stand: 13.10.2026. Einstieg: aktueller Nachtrag in `AGENT_HANDOFF.md`, danach
 `RESTABDECKUNG_GESAMTVORLAGE.md` und `U1V_SITZUNGS_GERAETEWIDERRUF.md`.
 Nach dem zusammenhängenden Auth-Paket ist ein Agentwechsel sinnvoll. Kein neuer

@@ -129,7 +129,7 @@ def webhook():
 - **Öffentliche Hitlist** (`GET /restaurants`): Query `page`, `q` (Textsuche), `sort` mit `rating` (Standard), `recent` oder `name`; Verarbeitung über `get_landing_restaurant_table`.
 - **Flash-Nachrichten** auf Deutsch
 - **Redirect nach POST** (PRG-Pattern)
-- **Step-Up bei sensiblen Aktionen**: `SecurityService.check_step_up_access()` + ggf. `require_step_up`-Decorator
+- **Step-Up beim Zugriff auf sensible Daten**: `SecurityService.check_step_up_access()` + ggf. `require_step_up`-Decorator. Sicherheitsänderungen benötigen stattdessen den eigenen Nachweis aus U1w (siehe unten).
 - **Step-Up-Sitzungsbindung**: Ablaufzeit und `sensitive_access_member_id` müssen
   zum angemeldeten Mitglied passen. Legacy-Freigaben ohne Mitgliedsbindung,
   fremde, abgelaufene oder fehlerhafte Freigaben werden verworfen. Erteilen nur
@@ -595,3 +595,33 @@ Reihenfolge: Standard → Third-Party → Lokal. Keine Mixed-Imports innerhalb e
 - **`/health`** Endpoint zeigt App-Health (DB-Connect-Test)
 - **Fehler-Templates** in `templates/errors/` (404, 500, 403)
 - **App-Boot ohne DB möglich** (siehe `app.py` Fallback-App), damit Healthchecks bei DB-Down zumindest melden können
+
+## Aktionsgebundene Identitätsbestätigung (U1w)
+
+Für eigenen Passwortwechsel, MFA-Einrichtung/-Deaktivierung, administrative
+Passwort-/MFA-Resets und Änderungen bestehender Kontoberechtigungen gilt
+`ActionConfirmationService`: Passwort des Handelnden im selben POST erneut
+prüfen. Ein Step-Up-Fenster ersetzt dies nicht. Der signierte Formularnachweis
+bindet Aktion, versionierte handelnde Identität, zufällige Anmeldesitzungskennung,
+Ziel-ID und Ziel-Zugangsversion; maximale Gültigkeit 600 Sekunden. Keine Secrets
+im Nachweis, keine gespeicherte Authentifizierungsfreigabe und keine automatische
+Wiederholung des POST nach Redirect. Neue Werte und Passwort kommen gemeinsam.
+
+Vor Schreiben unter Mitgliedssperren Login-Identität und Rechte frisch prüfen.
+Verlorene handelnde Identität oder Adminrechte führen direkt zu 403, ohne neue
+privilegierte Formularausgabe. Adminaktionen sperren wie der Letzter-Admin-Schutz alle Admins nach ID, dann das
+Ziel. Jede erfolgreiche geschützte Mutation muss die Ziel-Zugangsversion atomar
+rotieren: dies ist der dauerhafte Einmalverbrauch, einschliesslich Cookie-Replay.
+Bei Rollback kein Verbrauch; erneute Ausführung braucht erneut das Passwort.
+Nicht auf Aktionen ohne garantierte Rotation übertragen. Fehler speichern keine
+Teiländerungen; gewöhnliche Profiländerungen benötigen keinen Passwortnachweis.
+
+`action_session` wird bei Login/Logout/Cookie-Wiederanmeldung entfernt.
+Formularantworten sind `no-store`; Passwortprüfungen sind auf fünf pro Minute
+je Endpoint/IP begrenzt, über den Limiter der aktuellen App (erst im Request
+auflösen, damit frühe Blueprint-Imports keine uninitialisierte Extension binden).
+Bestehende CSRF- und Loginprüfungen bleiben davor aktiv. Zusätzliche Pflicht-MFA
+wird nicht eingeführt; Einrichtung verlangt weiterhin den neuen TOTP.
+Recovery mit Einmallink bleibt separat. Mitgliederanlage/initiale Rechte und
+vollständige Rollenmatrix sind mit diesem Paket noch nicht abgeschlossen.
+Details und Grenzen: `initiatives/app-audit/U1W_AKTIONSBESTAETIGUNG.md`.

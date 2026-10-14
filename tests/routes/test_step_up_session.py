@@ -15,7 +15,8 @@ from backend.services.security import SecurityService
 
 PASSWORD = 'Synthetic-session-password'
 TRANSIENTS = ('sensitive_access_until', 'sensitive_access_member_id',
-              '2fa_secret', 'pending_2fa_user_id', 'pending_2fa_next', 'step_up_next')
+              '2fa_secret', 'pending_2fa_user_id', 'pending_2fa_next', 'step_up_next',
+              'action_session')
 
 
 @pytest.fixture

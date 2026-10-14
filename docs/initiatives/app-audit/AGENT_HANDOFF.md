@@ -1,5 +1,12 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1w-Nachtrag 14.10.2026:** Aktionsgebundene Identitätsbestätigung für sechs
+bestehende Sicherheits-Schreibwege lokal beauftragt und umgesetzt auf
+`codex/u1w-action-confirmation` über `74077f0`. [Vertrag, Tests und Grenzen](U1W_AKTIONSBESTAETIGUNG.md).
+Kein neuer Rollenumbau. Mitgliederanlage/initiale Rechte, R13-Matrix,
+Admin-Notfallweg sowie PostgreSQL-/Geräteabnahmen bleiben separat; U1 offen.
+
+
 **U1v-Nachtrag 13.10.2026:** A-077/A-082 lokal auf
 `codex/u1v-auth-revocation` über `f756240`: serverseitige Zugangsversion für
 Session, Remember-me, MFA-Zwischenschritt und Gerätevertrauen. Migration separat

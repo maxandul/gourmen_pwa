@@ -16,7 +16,7 @@ def numeric_case(app, client, monkeypatch):
     mail = Mock(return_value={'success': True})
     monkeypatch.setattr(MailService, 'send', mail)
     with app.app_context():
-        user = Member(password_changed_at=datetime(2026, 1, 1),
+        user = Member(funktion='MEMBER', password_changed_at=datetime(2026, 1, 1),
                       vorname='Original', nachname='Test', email='numeric@example.com',
                       passwort_hash='unused', role=Role.ADMIN,
                       koerpergroesse=180, koerpergewicht=80, schuhgroesse=42.5)

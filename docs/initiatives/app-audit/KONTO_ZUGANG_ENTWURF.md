@@ -1,5 +1,12 @@
 # Konto, Einstellungen und Zugang
 
+**Technische Fortsetzung 14.10.2026:** [U1w](U1W_AKTIONSBESTAETIGUNG.md) konkretisiert
+die aktionsgebundene Bestätigung für bestehende Passwort-/MFA-/Berechtigungs-
+änderungen. Passwortbeweis direkt im POST, 10-Minuten-Formularnachweis mit
+Konto-/Sitzungs-/Zielbindung und Verbrauch durch atomare Zugangsversion-Rotation.
+Mitgliederanlage/initiale Rechte und umfassende F1-/U1-Abnahme bleiben offen.
+
+
 **Nachführung 11. Oktober 2026:** Die Vorschau erhält bei normaler selbst
 ausgelöster Passwortänderung jetzt die aktuelle Anmeldung; andere Sitzungen und
 deren Gerätevertrauen werden im Ergebnis als beendet erklärt. Passwort-Reset

@@ -1,0 +1,11 @@
+{% macro action_confirmation(action, target, password=false, optional=false) -%}
+<input type="hidden" name="action_token" value="{{ action_confirmation_token(action, target) }}">
+{% if password %}
+<div class="form-field">
+    <label class="form-field__label" for="action_password">Dein aktuelles Passwort</label>
+    <input class="form-field__input" type="password" name="action_password" id="action_password"
+           autocomplete="current-password" aria-describedby="action_password_help"{% if not optional %} required{% endif %}>
+    <span class="form-field__help" id="action_password_help">{% if optional %}Nur bei Änderungen an Rolle, Funktion, Vorstandsstatus oder Aktivität nötig. {% endif %}Bestätigt ausschliesslich die jetzt abgesendete Aktion.</span>
+</div>
+{% endif %}
+{%- endmacro %}
