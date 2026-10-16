@@ -1,3 +1,5 @@
+> Einordnung 16.10.2026: Historischer Audit-, Planungs- oder Übergabestand. Aktuelle Ausführungsfolge und Erledigungsnachweise stehen im [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Frühere Startaufträge und pauschal offene Entscheidungen hier nicht erneut ausführen oder abstimmen.
+
 # Fortsetzung nach U1v
 
 **U1x-Nachtrag 16.10.2026:** Mitgliederanlage einschliesslich initialer Rechte

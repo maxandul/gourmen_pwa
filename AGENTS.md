@@ -21,6 +21,15 @@ Bei aktiver Initiative zusätzlich deren `docs/initiatives/<name>/README.md` und
 Strategischer Rahmen: **`docs/STRATEGY_2026.md`** (Source-of-Truth-Karte: Mail/Storage/Auth-Entscheidungen).  
 Die fruehere Initiative liegt im Archiv unter `docs/initiatives/_archive/2026-04_modules-and-hosting/` – nur historische Referenz.
 
+## Einstieg für die App-Audit-Umsetzung
+
+Für Arbeiten an der laufenden App-Audit-Branchkette zusätzlich
+[Agenteneinstieg](docs/initiatives/app-audit/AGENT_HANDOFF.md) und
+[Umsetzungsplan](docs/initiatives/app-audit/IMPLEMENTATION_PLAN.md) lesen.
+Der Plan steuert die aktuelle Paketfolge; ältere Fortsetzungsdokumente sind Verlauf.
+Die beauftragte lokale Branchkette erhalten, nicht gemäss generischem
+Initiative-Beispiel von master neu beginnen. U1 ist noch nicht abgeschlossen.
+
 ## Cursor-Rules
 
 - `.cursor/rules/ui.mdc` – Pflicht-UI-Regeln (BEM, Tokens, Cache-Buster). Greift bei `templates/`, `static/css/`, `static/js/`.

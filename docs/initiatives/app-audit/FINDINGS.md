@@ -1,3 +1,5 @@
+> Einordnung 16.10.2026: Historischer Audit-, Planungs- oder Übergabestand. Aktuelle Ausführungsfolge und Erledigungsnachweise stehen im [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Frühere Startaufträge und pauschal offene Entscheidungen hier nicht erneut ausführen oder abstimmen.
+
 # Befundkatalog – Arbeitsstand, Durchlaeufe 00 bis 06, noch unvollstaendig
 
 Stand: 2026-10-10, Baseline siehe README. **Kein vollstaendiger Auditabschluss.**

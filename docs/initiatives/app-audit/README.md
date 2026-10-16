@@ -1,6 +1,10 @@
 # App-Audit und Zielbild fuer Refactoring / Redesign
 
-## Begrenzte Umsetzung (16.10.2026)
+## Aktuelle Arbeitssteuerung (16.10.2026)
+
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1z (Cache-Nutzertrennung). Die Konsolidierung auf `codex/app-audit-implementation-plan` enthält ausschliesslich Dokumentation.
+
+## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
 Der Nutzer hat U1a bis U1y schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
@@ -33,6 +37,10 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1q / A-141 anteilig: alte Passwortlinks entwerten | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1q-password-link-revocation`; [Umsetzung und Tests](U1Q_PASSWORTLINK_WIDERRUF.md) |
 | U1r / A-141 MFA-Anteil: alte MFA-Resetlinks entwerten | Lokal umgesetzt und geprüft, 12.10.2026 | `codex/u1r-mfa-link-revocation`; [Umsetzung und Tests](U1R_MFA_LINK_WIDERRUF.md) |
 
+
+## Historischer Planungsverlauf – keine aktuellen Startanweisungen
+
+Die folgenden datierten Stände bleiben als Quellen erhalten. Ihre damaligen Freigabegrenzen, offenen Entscheidungen und nächsten Schritte werden durch den aktuellen Umsetzungsplan eingeordnet.
 
 Stand: 2026-10-10. Status: **in_progress**. Auftrag: vollstaendiges, mehrstufiges Audit;
 danach User-Feedback zu den Empfehlungen, erst anschliessend Umsetzung.

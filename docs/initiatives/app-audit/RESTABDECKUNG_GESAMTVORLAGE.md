@@ -1,3 +1,5 @@
+> Einordnung 16.10.2026: Diese Gesamtvorlage bleibt Fach- und Entwurfsquelle. Die aktuelle Umsetzungsfolge, Restliste und Abnahmen stehen ausschliesslich im [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Datierte Umsetzungsstände und frühere nächste Schritte unten sind Verlauf.
+
 # Konsolidierte Gesamtvorlage und Restabdeckung
 
 **U1y-Nachtrag 16.10.2026:** A-139 lokal auf `codex/u1y-onboarding-delivery`

@@ -1,3 +1,5 @@
+> Einordnung 16.10.2026: Historischer Audit-, Planungs- oder Übergabestand. Aktuelle Ausführungsfolge und Erledigungsnachweise stehen im [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Frühere Startaufträge und pauschal offene Entscheidungen hier nicht erneut ausführen oder abstimmen.
+
 # Gourmen PWA Gesamtbeurteilung und vorläufiges Zielbild
 
 Stand 10. Oktober 2026. Erste Entscheidungsvorlage auf Basis des lokalen Codes `bf4d84a` und der vorhandenen Auditbelege. Das Gesamtaudit bleibt offen; die Gestaltung und Umsetzungspakete sind Vorschläge zur Rückmeldung.
