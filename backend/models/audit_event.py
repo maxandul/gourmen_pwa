@@ -127,7 +127,7 @@ class AuditEvent(db.Model):
             AuditAction.RESET_2FA: '2FA zurückgesetzt',
             AuditAction.ENABLE_2FA: '2FA aktiviert',
             AuditAction.USE_ONBOARDING_TOKEN: 'Onboarding-Link verwendet',
-            AuditAction.SEND_ONBOARDING_MAIL: 'Onboarding-Mail versendet',
+            AuditAction.SEND_ONBOARDING_MAIL: 'Einladungsversand versucht',
             AuditAction.ADMIN_RESET_PASSWORD: 'Passwort zurückgesetzt (Admin)',
             AuditAction.ADMIN_RESET_2FA: '2FA zurückgesetzt (Admin)',
             AuditAction.DOCUMENT_UPLOADED: 'Dokument hochgeladen',
@@ -164,4 +164,4 @@ class AuditEvent(db.Model):
             'event': 'Event',
             'participation': 'Teilnahme'
         }
-        return entity_names.get(self.entity, self.entity) 
+        return entity_names.get(self.entity, self.entity)

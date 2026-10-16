@@ -28,6 +28,11 @@ class AuthToken(db.Model):
     used_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     request_ip = db.Column(db.String(45))
+    # Nullable for legacy links and other token purposes; never infer old snapshots.
+    recipient_email = db.Column(db.String(254))
+    issued_generation = db.Column(db.String(32))
+    delivery_status = db.Column(db.String(20))
+    member = db.relationship('Member')
 
     __table_args__ = (
         db.Index("ix_auth_tokens_member_purpose_used_at", "member_id", "purpose", "used_at"),

@@ -22,6 +22,7 @@
     </div>
     
     <div class="page-content">
+    <p><a href="{{ url_for('admin.onboarding', member_id=member.id) }}">Einladungsstatus und erneuter Versand</a></p>
     <form method="POST" class="form">
         {{ form.hidden_tag() }}
                     {{ action_confirmation('permissions', member, password=true, optional=true) }}

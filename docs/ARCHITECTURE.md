@@ -105,7 +105,8 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
-| `ActionConfirmationService` | Frischer Passwortbeweis direkt bei Sicherheitsmutationen; signierter, sitzungs-/aktions-/zielgebundener Formularnachweis. Einmalverbrauch bestehender Ziele über U1v-Zielgeneration; Mitgliederanlage über atomar gespeicherten `ActionConfirmationUse` (U1x). |
+| `OnboardingService` | Aktivierungstoken mit Empfänger-/Zugangsversion-Snapshot vor Versand sichern, Versandresultat am Token festhalten und ausdrücklich bestätigte neue Einladung ermöglichen (U1y). Keine automatische Mail-Outbox. |
+| `ActionConfirmationService` | Frischer Passwortbeweis direkt bei Sicherheitsmutationen; signierter, sitzungs-/aktions-/zielgebundener Formularnachweis. Einmalverbrauch bestehender Ziele über U1v-Zielgeneration; Mitgliederanlage und erneute Einladung über atomar gespeicherten `ActionConfirmationUse` (U1x/U1y). |
 | `AuthenticationService` | Versionierte Flask-Login-Identitäten, Widerrufsprüfung bei Session/Remember-me, begrenztes TOTP-Gerätevertrauen und Erhalt der aktuellen Sitzung nach eigenem Passwortwechsel. |
 | `PasswordChangeService` | Zentrale Request-Sperre für Konten mit Initialpasswort; priorisiert Pflichtwechsel nach Login/MFA und erhält ein kontogebundenes Rückkehrziel. |
 | `DriveAccessService` | Dauerhafte Shared-Drive-Aufgaben (`DriveAccessTask`): atomare Erfassung bei Google-Adresswechsel, Verifikation und Deaktivierung; Widerruf vor Einladung, Admin-Wiederholung. Transport ohne DB-Commit über `DriveStorageService.apply_membership`. |

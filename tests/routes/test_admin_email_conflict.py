@@ -83,17 +83,13 @@ def test_edit_own_or_free_address(app, client, admin_case, email):
 
 
 @pytest.mark.parametrize('first_result', ['success', 'mail_failure', 'audit_failure'])
-def test_create_retry_does_not_send_again(app, client, admin_case, first_result):
+def test_create_retry_does_not_send_again(app, client, admin_case, first_result, monkeypatch):
     _, mail, audit = admin_case
     if first_result == 'mail_failure':
         mail.return_value = {'success': False, 'error': 'Synthetic mail failure'}
     elif first_result == 'audit_failure':
-        audit.side_effect = RuntimeError('Synthetic audit failure')
-    if first_result == 'audit_failure':
-        with pytest.raises(RuntimeError):
-            confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123')
-    else:
-        assert confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123').status_code == 302
+        monkeypatch.setattr('backend.services.onboarding.AuditEvent', Mock(side_effect=RuntimeError('Synthetic audit failure')))
+    assert confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123').status_code == 302
     assert mail.call_count == 1
     audit_count = audit.call_count
     response = confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123')

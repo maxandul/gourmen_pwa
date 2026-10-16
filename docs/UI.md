@@ -435,6 +435,11 @@ U1x ergänzt dasselbe Pflicht-Passwortfeld in `admin/create_member.html` für di
 Anlage einschliesslich initialer Rechte. Keine neuen Klassen oder Styles.
 PWA-Version 3.16.6 mit neuem Fingerprint; Geräte-/Darstellungsabnahme bleibt offen.
 
+U1y verlinkt aus der Mitgliedsbearbeitung auf `admin/onboarding.html`: bestehende
+Card-/Form-/Button-Klassen, Empfängeradresse, ehrlicher Versandstatus und frische
+Passwortbestätigung für eine neue Einladung. Keine neue CSS-Klasse. PWA 3.16.7;
+funktionale Templateprüfung ersetzt keine Geräte-/Hell-/Dunkel-Abnahme.
+
 ## 6. Verbote
 
 - ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit

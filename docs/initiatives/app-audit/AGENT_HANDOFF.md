@@ -1,5 +1,13 @@
 # Übergabe: Planungsstand gesichert, Einstieg in die Umsetzung
 
+**U1y-Nachtrag 16.10.2026:** A-139 lokal auf `codex/u1y-onboarding-delivery`
+über `95c213a` fortgesetzt. Mitglied und Aktivierungslink vor Versand gemeinsam
+sichern; ehrlicher Versandstatus und separat bestätigte neue Einladung.
+Migration `9405a7a` separat; [Vertrag und Prüfnachweise](U1Y_ONBOARDING_ZUSTELLUNG.md).
+Altlinks ohne Ausgabesnapshot bleiben bei ihrem bisherigen Vertrag und nutzen
+bestehende Recoverywege statt erneuter Einladung. PostgreSQL, reale Zustellung,
+Geräteabnahme, R13 und Admin-Notfallweg bleiben offen; U1 nicht abgeschlossen.
+
 **U1x-Nachtrag 16.10.2026:** Mitgliederanlage einschliesslich initialer Rechte
 lokal auf `codex/u1x-member-creation-confirmation` über U1w (`536242d`)
 fortgesetzt. Eigener Anlageauftrag mit Admin-/Sitzungsbindung, frischem Passwort

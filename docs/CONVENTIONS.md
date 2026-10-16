@@ -307,8 +307,9 @@ Formularwerte bleiben erhalten, DB-/SQL-Fehlertexte werden nicht ausgegeben.
 Dies gilt auch für Administration/Anlage: `MemberForm.validate_email` verwendet
 nur die von der Edit-Route gesetzte `editing_member_id` als Ausnahme; bei Anlage
 keine Ausnahme. `_commit_member_form()` schützt den ersten Mitglieds-Commit.
-Bei Konflikten keine Folgeaktionen (sensible Daten, Onboarding-Token, Mail, Audit).
-Fehler nach erfolgreichem ersten Commit bleiben ein separater Onboarding-Vertrag.
+Bei Konflikten keine dauerhaften Folgeaktionen (sensible Daten, Onboarding-Token,
+Mail, Audit). Fehler nach erfolgreichem ersten Commit folgen dem separaten
+Onboarding-Vertrag U1y weiter unten.
 
 ### Letzten aktiven Admin bewahren
 
@@ -641,3 +642,30 @@ Sitzungsbindung, 600 Sekunden Frist, Sperrreihenfolge, frische Rechteprüfung,
 CSRF und Rate-Limit folgen U1w. Tabelle vor Nutzung der U1x-App migrieren;
 keine Bereinigung noch gültiger Verbrauchsnachweise. Rollenmodell und bestehende
 Onboarding-Folgeprobleme bleiben separat. Details: `initiatives/app-audit/U1X_MITGLIEDERANLAGE.md`.
+
+### Onboarding-Zustellung und Wiederholung (U1y / A-139)
+
+`OnboardingService.prepare()` erzeugt einen gehashten ONBOARDING-Token mit
+`recipient_email`, `issued_generation` und `delivery_status='pending'`.
+Bei Anlage werden Token, Mitglied und U1x-Verbrauch zusammen committet; bei
+Wiederholung Tokenersetzung und Aktionsverbrauch zusammen. Erst danach `deliver()`.
+Transport verwendet die gespeicherte Adresse, keine später neu geladene Zieladresse.
+Keine Klartexttokens in DB, Session, Audit oder Fehlerlogs; keine automatische
+Transportwiederholung. Neue Einladung ersetzt ältere ONBOARDING-Links, sieben Tage
+gültig. Andere Tokenzwecke bleiben erhalten. Vor Aktivierung unter Mitgliedssperre
+Empfänger und Zugangsversion erneut prüfen; Legacy-Links ohne Snapshots behalten
+ihren bisherigen Vertrag und sind nicht Grundlage einer erneuten Einladung.
+
+Status `accepted` bestätigt nur Maildienst-Annahme, niemals Zustellung. Ausnahme,
+negatives Ergebnis oder Fehler beim Speichern werden als unbestätigt/offen
+ausgewiesen. Spätes Ergebnis betrifft ausschliesslich die eigene Token-ID. Audit
+und Versandstatus werden nach Transport gemeinsam gespeichert; Rollback lässt
+den zuvor gesicherten Link bestehen. Ein Prozessabbruch lässt `pending` für die
+manuelle Wiederaufnahme zurück. Allgemeine Audit-Ausfallsicherheit bleibt separat.
+
+`admin.onboarding` ist ein separater Admin-GET/POST-Einstieg. Er benötigt für POST
+frisches Passwort und den U1x-Einmalverbrauch unter `onboarding_resend`, zusätzlich
+an Zielgeneration und angezeigte Adresse gebunden. Nur aktives Konto mit aktuellem
+Ausgabesnapshot derselben Zugangsversion darf erneut eingeladen werden. Nach
+Aktivierung/Passwortwechsel/Sicherheitswiderruf bestehende Recoverywege verwenden.
+Normale Profilbearbeitung erhält dadurch keine zusätzliche Passwortabfrage.

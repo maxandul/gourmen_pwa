@@ -1,6 +1,4 @@
 import json
-import hashlib
-import secrets
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort
 from flask_login import login_required, current_user
@@ -21,6 +19,7 @@ from backend.models.audit_event import AuditEvent
 from backend.services.security import SecurityService, SensitiveDataReadError, AuditAction, require_step_up
 from backend.services.mail import MailService
 from backend.services.action_confirmation import ActionConfirmationService
+from backend.services.onboarding import OnboardingService
 from backend.models.drive_access_task import DriveAccessTask
 from backend.services.drive_access import DriveAccessService, OPEN_STATUSES
 
@@ -443,6 +442,7 @@ def create_member():
         member.set_password(initial_password)
         
         db.session.add(member)
+        onboarding_token, onboarding_row = OnboardingService.prepare(member)
         if not _commit_member_form(form):
             return render_template('admin/create_member.html', form=form)
 
@@ -463,65 +463,52 @@ def create_member():
                 sensitive = MemberSensitive(member_id=member.id, payload_encrypted=encrypted)
                 db.session.add(sensitive)
                 db.session.commit()
-        except Exception as e:
-            # don't fail creation; log and continue
-            from flask import current_app
-            current_app.logger.error(f"Failed to save sensitive data for member {member.id}: {e}")
+        except Exception:
+            db.session.rollback()
+            current_app.logger.warning('Sensitive data could not be saved during member creation')
+            flash('Mitglied erstellt; geschützte Angaben konnten nicht gespeichert werden.', 'warning')
         
-        onboarding_token = secrets.token_urlsafe(32)
-        onboarding_token_row = AuthToken(
-            member_id=member.id,
-            token_hash=hashlib.sha256(onboarding_token.encode('utf-8')).hexdigest(),
-            purpose=AuthTokenPurpose.ONBOARDING,
-            expires_at=datetime.utcnow() + timedelta(days=7),
-            request_ip=request.remote_addr,
-        )
-        db.session.add(onboarding_token_row)
-
-        activation_url = url_for('auth.activate', token=onboarding_token, _external=True)
-        onboarding_html = render_template(
-            'emails/onboarding.html',
-            display_name=member.display_name,
-            activation_url=activation_url,
-            valid_for='7 Tage',
-        )
-        onboarding_text = (
-            f"Hallo {member.display_name}\n\n"
-            "Dein Gourmen-Account wurde erstellt.\n"
-            f"Aktiviere deinen Account hier: {activation_url}\n\n"
-            "Der Link ist 7 Tage gueltig."
-        )
-        mail_result = MailService.send(
-            to=member.email,
-            subject='Willkommen bei Gourmen - Account aktivieren',
-            html=onboarding_html,
-            text=onboarding_text,
-            tags={'type': 'onboarding', 'member_id': str(member.id)},
-        )
-
-        SecurityService.log_audit_event(
-            AuditAction.ADMIN_CREATE_MEMBER, 'member', member.id
-        )
-        SecurityService.log_audit_event(
-            AuditAction.SEND_ONBOARDING_MAIL,
-            'member',
-            member.id,
-            extra_data={
-                'success': mail_result.get('success', False),
-                'message_id': mail_result.get('message_id'),
-                'error': mail_result.get('error'),
-                'admin_id': current_user.id,
-            },
-        )
-        db.session.commit()
-
-        if mail_result.get('success'):
-            flash('Mitglied erstellt und Onboarding-Mail versendet.', 'success')
+        status = OnboardingService.deliver(onboarding_row.id, onboarding_token, current_user.id, created=True)
+        if status == 'accepted':
+            flash('Mitglied erstellt. Die Einladung wurde vom Maildienst angenommen.', 'success')
         else:
-            flash('Mitglied erstellt, aber Onboarding-Mail fehlgeschlagen.', 'warning')
+            flash('Mitglied erstellt. Einladungsversand nicht bestätigt; bitte den Einladungsstatus prüfen.', 'warning')
         return redirect(url_for('admin.members'))
     
     return render_template('admin/create_member.html', form=form)
+
+@bp.route('/members/<int:member_id>/onboarding', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def onboarding(member_id):
+    member = Member.query.get_or_404(member_id)
+    form = FlaskForm()
+    if form.validate_on_submit():
+        if ActionConfirmationService.check('onboarding_resend', member,
+                                           request.form.get('action_password'), admin=True):
+            member = SecurityService.lock_credential_member(member_id)
+            if not OnboardingService.eligible(member, OnboardingService.latest(member_id)):
+                db.session.rollback()
+                flash('Erneute Einladung ist für diesen Kontostand nicht möglich. '
+                      'Bitte nutze bei Bedarf die Wiederherstellung.', 'error')
+            else:
+                try:
+                    raw, row = OnboardingService.prepare(member, replace=True)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.warning('Onboarding replacement could not be persisted')
+                    flash('Einladung konnte nicht vorbereitet werden. Es wurde keine Mail versendet.', 'error')
+                else:
+                    status = OnboardingService.deliver(row.id, raw, current_user.id)
+                    flash('Einladung vom Maildienst angenommen.' if status == 'accepted'
+                          else 'Einladungsversand nicht bestätigt. Bitte prüfe den Status.',
+                          'success' if status == 'accepted' else 'warning')
+                    return redirect(url_for('admin.onboarding', member_id=member_id))
+    row = OnboardingService.latest(member_id)
+    return render_template('admin/onboarding.html', member=member, form=form, invitation=row,
+                           eligible=OnboardingService.eligible(member, row))
+
 
 @bp.route('/members/<int:member_id>/edit', methods=['GET', 'POST'])
 @login_required

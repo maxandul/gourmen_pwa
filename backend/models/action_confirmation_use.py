@@ -1,4 +1,4 @@
-"""Durable one-time consumption for creation intents without an existing target."""
+"""Durable one-time consumption when an action does not rotate a target generation."""
 from datetime import datetime
 
 from backend.extensions import db

@@ -17,6 +17,7 @@ from backend.services.mail import MailService
 from backend.services.password_change import PasswordChangeService
 from backend.services.authentication import AuthenticationService
 from backend.services.action_confirmation import ActionConfirmationService
+from backend.services.onboarding import OnboardingService
 
 bp = Blueprint('auth', __name__)
 
@@ -30,7 +31,7 @@ def action_confirmation_context():
 def protect_confirmation_responses(response):
     if request.endpoint in {'auth.change_password', 'auth.enroll_2fa', 'auth.disable_2fa',
                             'admin.reset_member_password', 'admin.reset_member_2fa',
-                            'admin.edit_member', 'admin.create_member'}:
+                            'admin.edit_member', 'admin.create_member', 'admin.onboarding'}:
         response.headers['Cache-Control'] = 'no-store'
     return response
 
@@ -122,6 +123,9 @@ def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose, *, lock=False
             return None, "missing"
         auth_token = AuthToken.query.filter_by(token_hash=token_hash, purpose=purpose).populate_existing().first()
     if not auth_token:
+        return None, "missing"
+    if purpose == AuthTokenPurpose.ONBOARDING and not OnboardingService.matches(
+            db.session.get(Member, auth_token.member_id), auth_token):
         return None, "missing"
     if auth_token.used_at is not None:
         return None, "used"

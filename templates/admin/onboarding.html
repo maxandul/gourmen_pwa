@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from 'partials/_action_confirmation.html' import action_confirmation with context %}
+{% block title %}Einladung – {{ member.display_name }}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back"><a href="{{ url_for('admin.edit_member', member_id=member.id) }}">Zurück zum Mitglied</a></p>
+        <h1>Einladung · {{ member.display_name }}</h1>
+    </div>
+    <div class="page-content">
+        <div class="card"><div class="card__body">
+            {% if invitation and invitation.delivery_status %}
+            <p>Letzter Auftrag: {{ invitation.created_at.strftime('%d.%m.%Y %H:%M') }} UTC · {{ invitation.recipient_email }}</p>
+            <p>{{ {'pending': 'Vorbereitet; Versandresultat offen.', 'accepted': 'Vom Maildienst angenommen. Die tatsächliche Zustellung ist nicht bestätigt.', 'unconfirmed': 'Versand nicht bestätigt.', 'obsolete': 'Vor Versand nicht mehr gültig.'}.get(invitation.delivery_status, 'Versandresultat offen.') }}</p>
+            {% else %}
+            <p>Für dieses Konto liegt kein nachverfolgbarer Einladungsauftrag vor.</p>
+            {% endif %}
+            {% if eligible %}
+            <p>Erneut einladen an <strong>{{ member.email }}</strong>. Der neue Link gilt sieben Tage und ersetzt frühere Einladungslinks. Passwort, Rollen und bestehende Anmeldungen werden nicht geändert.</p>
+            <form method="POST" class="form">
+                {{ form.hidden_tag() }}
+                {{ action_confirmation('onboarding_resend', member, password=true) }}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn--primary">Neue Einladung senden</button>
+                    <a class="btn btn--outline" href="{{ url_for('admin.edit_member', member_id=member.id) }}">Abbrechen</a>
+                </div>
+            </form>
+            {% else %}
+            <p>Erneute Einladung ist für diesen Kontostand nicht verfügbar. Bei Zugangsproblemen bitte die bestehenden Wiederherstellungswege nutzen.</p>
+            {% endif %}
+        </div></div>
+    </div>
+</div>
+{% endblock %}

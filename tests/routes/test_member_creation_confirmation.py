@@ -139,9 +139,8 @@ def test_followup_failure_cannot_reuse_intent(app, client, creation, monkeypatch
         creation[1].return_value = {'success': False}
         assert post(client, token).status_code == 302
     else:
-        monkeypatch.setattr(SecurityService, 'log_audit_event', Mock(side_effect=RuntimeError('synthetic')))
-        with pytest.raises(RuntimeError):
-            post(client, token)
+        monkeypatch.setattr('backend.services.onboarding.AuditEvent', Mock(side_effect=RuntimeError('synthetic')))
+        assert post(client, token).status_code == 302
     assert post(client, token, email='other@example.com').status_code == 200
     assert counts(app) == (2, 1)
     assert creation[1].call_count == 1

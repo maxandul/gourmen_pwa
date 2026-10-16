@@ -16,7 +16,8 @@ from backend.services.security import SecurityService
 class ActionConfirmationService:
     MAX_AGE = 600
     ACTIONS = {'password_change', 'mfa_enroll', 'mfa_disable',
-               'admin_password', 'admin_mfa', 'permissions', 'member_create'}
+               'admin_password', 'admin_mfa', 'permissions', 'member_create', 'onboarding_resend'}
+    RECEIPT_ACTIONS = {'member_create', 'onboarding_resend'}
 
     @staticmethod
     def serializer():
@@ -35,8 +36,10 @@ class ActionConfirmationService:
             'session': session['action_session'], 'target': target.id if target else None,
             'generation': target.auth_generation if target else None,
         }
-        if action == 'member_create':
+        if action in cls.RECEIPT_ACTIONS:
             payload['nonce'] = secrets.token_urlsafe(32)
+        if action == 'onboarding_resend':
+            payload['email'] = target.email
         return cls.serializer().dumps(payload)
 
     @classmethod
@@ -53,7 +56,7 @@ class ActionConfirmationService:
 
         No reusable grant is issued. A rolled-back mutation may be retried with
         a fresh password proof. Existing targets consume through generation
-        rotation; member creation consumes its nonce through a unique receipt.
+        rotation; creation and invitation replacement use a unique receipt.
         """
         actor_id = current_user.id
         login_identity = session.get('_user_id')
@@ -79,11 +82,14 @@ class ActionConfirmationService:
             'generation': target.auth_generation if target else None,
         }
         nonce = payload.get('nonce') if isinstance(payload, dict) else None
-        if creating and isinstance(nonce, str) and re.fullmatch(r'[A-Za-z0-9_-]{43}', nonce):
+        receipt = action in cls.RECEIPT_ACTIONS
+        if action == 'onboarding_resend' and target:
+            expected['email'] = target.email
+        if receipt and isinstance(nonce, str) and re.fullmatch(r'[A-Za-z0-9_-]{43}', nonce):
             expected['nonce'] = nonce
         if (action not in cls.ACTIONS or (not target and not creating)
                 or (action == 'member_create' and not creating)
-                or (creating and 'nonce' not in expected)
+                or (receipt and ('nonce' not in expected or not admin))
                 or not session.get('action_session') or payload != expected
                 or (not admin and actor.id != target.id)):
             flash('Die Aktionsbestätigung ist abgelaufen oder der Kontostand hat sich geändert. '
@@ -92,13 +98,13 @@ class ActionConfirmationService:
         if not password or not actor.check_password(password):
             flash('Bitte bestätige diese Aktion mit deinem aktuellen Passwort.', 'error')
             return False
-        if creating:
+        if receipt:
             nonce_hash = hashlib.sha256(nonce.encode('ascii')).hexdigest()
             if db.session.get(ActionConfirmationUse, nonce_hash):
-                flash('Dieser Anlageauftrag wurde bereits verwendet. '
-                      'Bitte öffne für ein weiteres Mitglied ein neues Formular.', 'error')
+                flash('Dieser Auftrag wurde bereits verwendet. '
+                      'Bitte öffne für eine weitere Aktion ein neues Formular.', 'error')
                 return False
-            # No commit here: the unique receipt and new member must succeed
+            # No commit here: the receipt and the associated mutation must succeed
             # together. Actor locks serialize requests; the PK also guards races.
             db.session.add(ActionConfirmationUse(nonce_hash=nonce_hash))
         return True
