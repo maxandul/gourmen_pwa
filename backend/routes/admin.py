@@ -393,6 +393,9 @@ def create_member():
     form = MemberCreateForm()
     
     if form.validate_on_submit():
+        if not ActionConfirmationService.check(
+                'member_create', None, request.form.get('action_password'), admin=True):
+            return render_template('admin/create_member.html', form=form)
         member = Member(
             # Basic info
             vorname=form.vorname.data,

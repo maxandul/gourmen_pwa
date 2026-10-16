@@ -1,5 +1,13 @@
 # Konsolidierte Gesamtvorlage und Restabdeckung
 
+**U1x-Nachtrag 16.10.2026:** Mitgliederanlage einschliesslich initialer Rechte
+lokal auf `codex/u1x-member-creation-confirmation` über U1w (`536242d`)
+fortgesetzt. Eigener Anlageauftrag mit Admin-/Sitzungsbindung, frischem Passwort
+und dauerhaftem Einmalverbrauch gemeinsam mit dem neuen Mitglied.
+[Vertrag, Tests und Grenzen](U1X_MITGLIEDERANLAGE.md). Additive Migration separat.
+A-139 (Onboarding-Zustellung), R13-Matrix, Admin-Notfallweg und PostgreSQL-/
+Geräteabnahmen bleiben offen. U1 ist nicht abgeschlossen; keine Veröffentlichung.
+
 **U1w-Nachtrag 14.10.2026:** Aktionsgebundene Identitätsbestätigung für sechs
 bestehende Sicherheits-Schreibwege lokal beauftragt und umgesetzt auf
 `codex/u1w-action-confirmation` über `74077f0`. [Vertrag, Tests und Grenzen](U1W_AKTIONSBESTAETIGUNG.md).

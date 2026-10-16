@@ -4,6 +4,7 @@ from datetime import datetime
 from unittest.mock import Mock
 
 from tests.conftest import auth_id
+from tests.action_confirmation_helpers import confirmed_post
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -26,6 +27,7 @@ def admin_case(app, client, monkeypatch):
         users = [Member(funktion='MEMBER', password_changed_at=datetime(2026, 1, 1), vorname='Original', nachname=str(i), email=email,
                         passwort_hash='unused', role=Role.ADMIN if i == 0 else Role.MEMBER)
                  for i, email in enumerate(['admin@example.com', 'edit@example.com', 'taken@example.com'])]
+        users[0].set_password('Synthetic-admin-password-123')
         db.session.add_all(users)
         db.session.commit()
         ids = [user.id for user in users]
@@ -54,7 +56,7 @@ def test_duplicate_keeps_state_and_stops_followups(app, client, admin_case, monk
         db.session.get(Member, ids[2]).is_active = active
         db.session.commit()
     path = '/admin/members/new' if entry == 'create' else f'/admin/members/{ids[1]}/edit'
-    response = client.post(path, data=data('taken@example.com'))
+    response = confirmed_post(client, path, password='Synthetic-admin-password-123', data=data('taken@example.com'))
     assert response.status_code == 200
     assert 'Diese E-Mail-Adresse wird bereits verwendet.' in response.get_data(as_text=True)
     assert b'value="Edited"' in response.data
@@ -89,12 +91,12 @@ def test_create_retry_does_not_send_again(app, client, admin_case, first_result)
         audit.side_effect = RuntimeError('Synthetic audit failure')
     if first_result == 'audit_failure':
         with pytest.raises(RuntimeError):
-            client.post('/admin/members/new', data=data('new@example.com'))
+            confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123')
     else:
-        assert client.post('/admin/members/new', data=data('new@example.com')).status_code == 302
+        assert confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123').status_code == 302
     assert mail.call_count == 1
     audit_count = audit.call_count
-    response = client.post('/admin/members/new', data=data('new@example.com'))
+    response = confirmed_post(client, '/admin/members/new', data=data('new@example.com'), password='Synthetic-admin-password-123')
     assert response.status_code == 200
     assert mail.call_count == 1
     assert audit.call_count == audit_count
@@ -121,7 +123,7 @@ def test_other_integrity_failure_rolls_back_without_followups(app, client, admin
         raise IntegrityError('synthetic-private-sql', {}, Exception('synthetic-private-error'))
     with monkeypatch.context() as patch:
         patch.setattr(db.session, 'commit', fail)
-        response = client.post(path, data=data('free@example.com'))
+        response = confirmed_post(client, path, password='Synthetic-admin-password-123', data=data('free@example.com'))
     assert response.status_code == 200
     text = response.get_data(as_text=True)
     assert 'Mitglied konnte nicht gespeichert werden.' in text

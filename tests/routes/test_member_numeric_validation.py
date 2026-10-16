@@ -4,6 +4,7 @@ from datetime import datetime
 from unittest.mock import Mock
 
 from tests.conftest import auth_id
+from tests.action_confirmation_helpers import confirmed_post
 import pytest
 
 from backend.extensions import db
@@ -20,6 +21,7 @@ def numeric_case(app, client, monkeypatch):
                       vorname='Original', nachname='Test', email='numeric@example.com',
                       passwort_hash='unused', role=Role.ADMIN,
                       koerpergroesse=180, koerpergewicht=80, schuhgroesse=42.5)
+        user.set_password('Synthetic-admin-password-123')
         db.session.add(user)
         db.session.commit()
         uid = user.id
@@ -53,7 +55,8 @@ def test_numeric_values(app, client, numeric_case, entry, values, expected):
     }.items()}
     path = {'profile': '/member/profile', 'edit': f'/admin/members/{uid}/edit',
             'create': '/admin/members/new'}[entry]
-    response = client.post(path, data=data)
+    response = (confirmed_post(client, path, data=data, password='Synthetic-admin-password-123')
+                if entry == 'create' else client.post(path, data=data))
     assert response.status_code == (200 if expected is None else 302)
     with app.app_context():
         if expected is None:

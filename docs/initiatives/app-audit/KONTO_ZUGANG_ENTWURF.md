@@ -1,5 +1,13 @@
 # Konto, Einstellungen und Zugang
 
+**U1x-Nachtrag 16.10.2026:** Mitgliederanlage einschliesslich initialer Rechte
+lokal auf `codex/u1x-member-creation-confirmation` über U1w (`536242d`)
+fortgesetzt. Eigener Anlageauftrag mit Admin-/Sitzungsbindung, frischem Passwort
+und dauerhaftem Einmalverbrauch gemeinsam mit dem neuen Mitglied.
+[Vertrag, Tests und Grenzen](U1X_MITGLIEDERANLAGE.md). Additive Migration separat.
+A-139 (Onboarding-Zustellung), R13-Matrix, Admin-Notfallweg und PostgreSQL-/
+Geräteabnahmen bleiben offen. U1 ist nicht abgeschlossen; keine Veröffentlichung.
+
 **Technische Fortsetzung 14.10.2026:** [U1w](U1W_AKTIONSBESTAETIGUNG.md) konkretisiert
 die aktionsgebundene Bestätigung für bestehende Passwort-/MFA-/Berechtigungs-
 änderungen. Passwortbeweis direkt im POST, 10-Minuten-Formularnachweis mit

@@ -3,7 +3,7 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.16.5';
+const VERSION = '3.16.6';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;

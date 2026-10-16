@@ -29,7 +29,8 @@ def action_confirmation_context():
 @bp.after_app_request
 def protect_confirmation_responses(response):
     if request.endpoint in {'auth.change_password', 'auth.enroll_2fa', 'auth.disable_2fa',
-                            'admin.reset_member_password', 'admin.reset_member_2fa', 'admin.edit_member'}:
+                            'admin.reset_member_password', 'admin.reset_member_2fa',
+                            'admin.edit_member', 'admin.create_member'}:
         response.headers['Cache-Control'] = 'no-store'
     return response
 

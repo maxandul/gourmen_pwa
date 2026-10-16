@@ -625,3 +625,19 @@ wird nicht eingeführt; Einrichtung verlangt weiterhin den neuen TOTP.
 Recovery mit Einmallink bleibt separat. Mitgliederanlage/initiale Rechte und
 vollständige Rollenmatrix sind mit diesem Paket noch nicht abgeschlossen.
 Details und Grenzen: `initiatives/app-audit/U1W_AKTIONSBESTAETIGUNG.md`.
+
+### Mitgliederanlage (U1x)
+
+`member_create` bestätigt initiale Rechte mit dem aktuellen Adminpasswort im
+Anlage-POST. Ohne bestehende Zielgeneration bindet der Nachweis stattdessen eine
+zufällige Auftragskennung. Deren SHA-256-Hash wird als `ActionConfirmationUse`
+mit dem Mitglied im ersten Commit gespeichert (eindeutiger Primärschlüssel).
+Der Service committet nicht selbst. Niemals zwischen Nachweisprüfung und Anlage
+separat committen oder den Verbrauch nur im Cookie speichern. GET legt keine
+Verbrauchszeile an. Rollback erhält den Auftrag; nach Commit bleiben Wiederholungen
+auch mit geändertem Formular und altem Cookie gesperrt. Spätere Mail-/Auditfehler
+geben den Auftrag nicht wieder frei. Kein Widerruf der Adminsitzungen erforderlich.
+Sitzungsbindung, 600 Sekunden Frist, Sperrreihenfolge, frische Rechteprüfung,
+CSRF und Rate-Limit folgen U1w. Tabelle vor Nutzung der U1x-App migrieren;
+keine Bereinigung noch gültiger Verbrauchsnachweise. Rollenmodell und bestehende
+Onboarding-Folgeprobleme bleiben separat. Details: `initiatives/app-audit/U1X_MITGLIEDERANLAGE.md`.

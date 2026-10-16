@@ -431,6 +431,10 @@ zusätzliches Passwort benötigen. Kein neues CSS, keine neue UI-Klasse.
 PWA-Version lokal 3.16.5, PWA-Fingerprint und Templateverweis nachgeführt.
 Visuelle Mobile-/Desktop-/Hell-/Dunkel-Abnahme bleibt separat offen.
 
+U1x ergänzt dasselbe Pflicht-Passwortfeld in `admin/create_member.html` für die
+Anlage einschliesslich initialer Rechte. Keine neuen Klassen oder Styles.
+PWA-Version 3.16.6 mit neuem Fingerprint; Geräte-/Darstellungsabnahme bleibt offen.
+
 ## 6. Verbote
 
 - ❌ **Keine Inline-Styles** in HTML ausser mit explizitem User-OK + Begründung im Commit

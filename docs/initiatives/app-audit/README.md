@@ -1,12 +1,13 @@
 # App-Audit und Zielbild fuer Refactoring / Redesign
 
-## Begrenzte Umsetzung (14.10.2026)
+## Begrenzte Umsetzung (16.10.2026)
 
-Der Nutzer hat U1a bis U1w schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
+Der Nutzer hat U1a bis U1x schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
 bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1x / F1: Mitgliederanlage und initiale Rechte | Lokal umgesetzt und geprüft, 16.10.2026; U1 bleibt offen | `codex/u1x-member-creation-confirmation` über `536242d`; Migration `2c288ba` separat, abschliessend 63 Tests bestanden; [Vertrag und Nachweise](U1X_MITGLIEDERANLAGE.md) |
 | U1w / F1: Aktionsgebundene Identitätsbestätigung | Lokal umgesetzt und geprüft, 14.10.2026; U1 bleibt offen | `codex/u1w-action-confirmation` über `74077f0`; 703 im Gesamtlauf bestanden, einziger Testfehler korrigiert; abschliessend 56 gezielte Tests bestanden; [Vertrag und Nachweise](U1W_AKTIONSBESTAETIGUNG.md) |
 | U1v / A-077, A-082: Sitzungs- und Gerätewiderruf | Lokal umgesetzt und geprüft, 13.10.2026 | `codex/u1v-auth-revocation`; 669 im Gesamtlauf bestanden, einzige veraltete Migrationsannahme korrigiert/nachgeprüft; Migration separat; [Vertrag und Nachweise](U1V_SITZUNGS_GERAETEWIDERRUF.md) |
 | U1u / A-080: Backup-Codes bei MFA-Neueinrichtung | Lokal umgesetzt und getestet, 13.10.2026 | `codex/u1u-mfa-backup-reenrollment`; 48 gezielte und 77 angrenzende Tests, fünf erweiterte Fälle separat; [Vertrag und Nachweise](U1U_MFA_BACKUP_NEUEINRICHTUNG.md) |

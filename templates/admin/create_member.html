@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'partials/_action_confirmation.html' import action_confirmation with context %}
 {% macro lucide_icon(symbol_id, icon_class='icon') -%}
 <svg class="{{ icon_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
   <use href="{{ url_for('static', filename='icons/lucide-sprite.072ce5e4.svg') }}#{{ symbol_id }}"></use>
@@ -23,6 +24,7 @@
     <div class="page-content">
         <form method="POST" class="form">
             {{ form.hidden_tag() }}
+            {{ action_confirmation('member_create', none, password=true) }}
 
             <div class="card">
                 <div class="card__header"><h2 class="card__title">Persönliche Daten</h2></div>
