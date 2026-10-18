@@ -104,7 +104,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-02b1 / Einzelposten | lokal geprüft | Gemeinsame Richtungs-/Konto-/Mitglied-/Eventpruefung, explizite Aufrundung, keine automatische Bankzahler-Aliasvergabe. |
 | U2-02b2 / B01/F5 | lokal geprüft | Persistierte Mehrfachzuordnung mit summenerhaltendem offenen Rest bzw. Rueckzahlungsbedarf; Zahlung fuer mehrere Forderungen/Mitglieder, keine zweite Bankbewegung. Schema/Migration separat; Einzelpostenweg integrieren, Historie nicht umdeuten. |
 | U2-02c / A-062 | Schutz lokal in b2; Korrektur geplant nach U2-04 | Importbuchungen nicht frei editierbar. Versionsgebundene Korrektur/Ruecknahme samt vorgemerkten Rueckzahlungen auf Revisions-/Historienmodell aufbauen; keine stille Altdatenreparatur. |
-| U2-03 / A-063, A-064, A-065 | **bereit / nächstes Paket** | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
+| U2-03 / A-063, A-064, A-065 | a lokal geprüft; b offen | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
+| U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
+| U2-03b / A-063 | **bereit / nächstes Paket** | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
 | U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | geplant | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,

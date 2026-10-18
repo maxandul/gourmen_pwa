@@ -97,14 +97,17 @@ def normalize_bank_text(text: str) -> str:
 
 def parse_chf_to_rappen(raw: str) -> int:
     """'1626.01' → 162601. Toleriert Tausender-Apostrophe."""
-    cleaned = (raw or '').replace("'", '').replace('’', '').strip()
-    if not cleaned:
-        raise ValueError('Leerer Betrag')
-    sign = -1 if cleaned.startswith('-') else 1
-    cleaned = cleaned.lstrip('+-')
-    whole, _, fraction = cleaned.partition('.')
-    fraction = (fraction + '00')[:2]
-    return sign * (int(whole or 0) * 100 + int(fraction))
+    cleaned = (raw or '').strip()
+    if not re.fullmatch(r"[+-]?(?:[0-9]+|[0-9]{1,3}(?:['’][0-9]{3})+)(?:\.[0-9]{1,2})?",cleaned):
+        raise ValueError('Ungültiges Zahlenformat; ganze Rappen erwartet')
+    cleaned = cleaned.replace("'",'').replace('’','')
+    negative = cleaned.startswith('-')
+    whole, _, fraction = cleaned.lstrip('+-').partition('.')
+    rappen = int(whole)*100+int((fraction+'00')[:2])
+    if rappen > 2_147_483_647:
+        raise ValueError('Betrag ausserhalb des unterstützten Bereichs')
+    return -rappen if negative else rappen
+
 
 
 class BankImportError(AccountingValidationError):
@@ -163,8 +166,11 @@ class BankImportService:
         EUR-Detail-Beträge werden proportional auf den CHF-Parent verteilt.
         """
         text = cls._decode(payload)
-        reader = csv.reader(io.StringIO(text), delimiter=';', quotechar='"')
-        rows = [row for row in reader if any((cell or '').strip() for cell in row)]
+        reader = csv.reader(io.StringIO(text), delimiter=';', quotechar='"', strict=True)
+        try:
+            rows = [row for row in reader if any((cell or '').strip() for cell in row)]
+        except csv.Error as exc:
+            raise BankImportError('Ungültige CSV-Struktur; Anführungszeichen und Spalten prüfen.') from exc
         if not rows:
             raise BankImportError('Die Datei enthält keine Daten.')
 
@@ -174,6 +180,10 @@ class BankImportService:
                 'Unerwartetes CSV-Format – ZKB-Export mit Header '
                 '«Datum;Buchungstext;…» erwartet.'
             )
+        required = {'Datum','Buchungstext','Whg','Betrag Detail','ZKB-Referenz',
+                    'Belastung CHF','Gutschrift CHF','Valuta','Zahlungszweck','Details'}
+        if len(header)!=len(set(header)) or not required.issubset(header):
+            raise BankImportError('CSV-Spalten fehlen oder sind doppelt. Vollständigen ZKB-Export verwenden.')
         col = {name: idx for idx, name in enumerate(header)}
 
         def cell(row, name):
@@ -185,7 +195,22 @@ class BankImportService:
         parsed: list[ParsedRow] = []
         current_parent: ParsedRow | None = None
 
-        for row in rows[1:]:
+        for number, row in enumerate(rows[1:], start=2):
+            if len(row)!=len(header):
+                raise BankImportError(f'Datensatz {number}: Spaltenzahl stimmt nicht.')
+            def amount(value, field):
+                try:
+                    result=parse_chf_to_rappen(value)
+                    if result<=0:
+                        raise ValueError('Nicht positiv')
+                    return result
+                except (ValueError, OverflowError) as exc:
+                    raise BankImportError(f'Datensatz {number}, {field}: positiver Betrag in ganzen Rappen erforderlich.') from exc
+            def parsed_date(value, field):
+                try:
+                    return cls._parse_date(value)
+                except BankImportError as exc:
+                    raise BankImportError(f'Datensatz {number}, {field}: gültiges Datum TT.MM.JJJJ erforderlich.') from exc
             datum = cell(row, 'Datum')
             buchungstext = cell(row, 'Buchungstext')
             belastung = cell(row, 'Belastung CHF')
@@ -194,17 +219,18 @@ class BankImportService:
             if not datum:
                 # Detail-Zeile einer Sammelbuchung
                 if current_parent is None:
-                    logger.warning('Detail-Zeile ohne Parent übersprungen: %s', buchungstext)
-                    continue
+                    raise BankImportError(f'Datensatz {number}: Detail ohne Sammelbuchung.')
                 betrag_detail = cell(row, 'Betrag Detail')
                 if not betrag_detail:
-                    continue
+                    raise BankImportError(f'Datensatz {number}, Betrag Detail: Betrag fehlt.')
+                if belastung or gutschrift or cell(row, 'ZKB-Referenz'):
+                    raise BankImportError(f'Datensatz {number}: widersprüchliche Detail-Zeile.')
                 whg = cell(row, 'Whg') or 'CHF'
                 detail = ParsedRow(
                     zkb_ref=None,
                     booked_date=current_parent.booked_date,
                     valuta=current_parent.valuta,
-                    amount_rappen=parse_chf_to_rappen(betrag_detail),
+                    amount_rappen=amount(betrag_detail, 'Betrag Detail'),
                     direction=current_parent.direction,
                     currency=whg,
                     amount_original=f'{whg} {betrag_detail}' if whg != 'CHF' else None,
@@ -216,16 +242,15 @@ class BankImportService:
                 current_parent.detail_rows.append(detail)
                 continue
 
-            if not belastung and not gutschrift:
-                # Fusszeilen / Summenzeilen ohne Betrag überspringen
-                continue
+            if bool(belastung)==bool(gutschrift):
+                raise BankImportError(f'Datensatz {number}: genau Belastung oder Gutschrift erforderlich.')
 
             direction = BookingDirection.IN if gutschrift else BookingDirection.OUT
             main = ParsedRow(
                 zkb_ref=cell(row, 'ZKB-Referenz') or None,
-                booked_date=cls._parse_date(datum),
-                valuta=cls._parse_date(cell(row, 'Valuta')),
-                amount_rappen=parse_chf_to_rappen(gutschrift or belastung),
+                booked_date=parsed_date(datum, 'Datum'),
+                valuta=parsed_date(cell(row, 'Valuta'), 'Valuta'),
+                amount_rappen=amount(gutschrift or belastung, 'Gutschrift CHF' if gutschrift else 'Belastung CHF'),
                 direction=direction,
                 currency='CHF',
                 amount_original=None,
@@ -238,7 +263,15 @@ class BankImportService:
             current_parent = main if COLLECTIVE_PATTERN.match(buchungstext) else None
 
         for parent in parsed:
-            if parent.detail_rows:
+            group=COLLECTIVE_PATTERN.match(parent.buchungstext)
+            if not group and re.match(r'^(Belastungen|Gutschriften) eBanking',parent.buchungstext,re.IGNORECASE):
+                raise BankImportError('Sammelbuchung: eindeutige Detailanzahl fehlt.')
+            if group:
+                expected=BookingDirection.OUT if group.group(1).lower()=='belastungen' else BookingDirection.IN
+                if parent.direction!=expected:
+                    raise BankImportError('Sammelbuchung: Zahlungsrichtung widerspricht dem Kopf.')
+                if int(group.group(2))<=0 or len(parent.detail_rows)!=int(group.group(2)):
+                    raise BankImportError('Sammelbuchung: angekündigte Detailanzahl stimmt nicht.')
                 cls._distribute_parent_amount(parent)
         return parsed
 
@@ -246,26 +279,39 @@ class BankImportService:
     def _distribute_parent_amount(parent: ParsedRow) -> None:
         """Detail-Beträge proportional auf den CHF-Parent-Betrag verteilen.
 
-        Bei CHF-Details, deren Summe dem Parent entspricht, bleibt alles wie
-        erfasst. Bei Fremdwährung (oder Rundungs-Differenzen) wird der
-        CHF-Betrag anteilig verteilt; die letzte Zeile erhält den Rest.
+        CHF-Details müssen exakt dem Parent entsprechen. Fremdwährungsdetails
+        benötigen einen passenden ausgewiesenen Originalgesamtbetrag; erst
+        danach wird CHF anteilig verteilt, letzte Zeile erhält den Rest.
         """
         detail_sum = sum(d.amount_rappen for d in parent.detail_rows)
-        if detail_sum == parent.amount_rappen:
+        currencies={detail.currency for detail in parent.detail_rows}
+        if len(currencies)!=1:
+            raise BankImportError('Sammelbuchung: gemischte Währungen sind nicht eindeutig zuordenbar.')
+        currency=next(iter(currencies))
+        if currency=='CHF':
+            if detail_sum!=parent.amount_rappen:
+                raise BankImportError('Sammelbuchung: CHF-Details stimmen nicht mit dem Bankbetrag überein.')
             return
-        if detail_sum <= 0:
-            return
-        remaining = parent.amount_rappen
+        original=re.search(r",\s*([A-Z]{3})\s+([0-9'’.]+)\s*$",parent.buchungstext)
+        if not original or original.group(1)!=currency:
+            raise BankImportError('Sammelbuchung: eindeutiger Originalgesamtbetrag mit Währung fehlt.')
+        try:
+            declared=parse_chf_to_rappen(original.group(2))
+        except ValueError as exc:
+            raise BankImportError('Sammelbuchung: ungültiger Originalgesamtbetrag.') from exc
+        if detail_sum!=declared or detail_sum<=0:
+            raise BankImportError('Sammelbuchung: Fremdwährungsdetails sind nicht vollständig.')
+        remaining=parent.amount_rappen
         for detail in parent.detail_rows[:-1]:
-            share = round(parent.amount_rappen * detail.amount_rappen / detail_sum)
-            if detail.currency == 'CHF':
-                detail.amount_original = f'CHF {detail.amount_rappen / 100:.2f}'
-            detail.amount_rappen = share
-            remaining -= share
-        last = parent.detail_rows[-1]
-        if last.currency == 'CHF':
-            last.amount_original = f'CHF {last.amount_rappen / 100:.2f}'
-        last.amount_rappen = remaining
+            numerator=parent.amount_rappen*detail.amount_rappen
+            share=(2*numerator+detail_sum)//(2*detail_sum)
+            if share<=0 or share>=remaining:
+                raise BankImportError('Sammelbuchung: positive Rappenaufteilung nicht möglich.')
+            detail.amount_rappen=share
+            remaining-=share
+        if remaining<=0:
+            raise BankImportError('Sammelbuchung: positiver Restbetrag fehlt.')
+        parent.detail_rows[-1].amount_rappen=remaining
 
     # -- Import -----------------------------------------------------------
 

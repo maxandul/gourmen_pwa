@@ -892,3 +892,13 @@ Bankzahler bleibt im Originalauszug, Forderungsschuldner steht in jeder Zuordnun
 keine Aliasvergabe aus Sammel-/Fremdzahlung. Importbuchungen (auch historische
 ueber payment_ref/booking_id erkannte) nicht frei bearbeiten. Zuordnungen schuetzen
 vor Ignorieren/Importloeschen. Korrekturvertrag gesondert, keine stille Altdatenreparatur.
+
+
+## CSV-Betrags- und Sammelpruefung (U2-03a)
+
+Bank-CSV strikt lesen: eindeutige Pflichtspalten, ganze Rappen, genau eine
+positive Ein-/Ausgangsangabe je Hauptzeile. Parserfehler als BankImportError
+mit Datensatz/Feld, keine Teilimporte oder still uebersprungenen Detailzeilen.
+Sammelanzahl und CHF-Summe muessen exakt stimmen. Fremdwaehrung nur einheitlich
+und mit passendem Originalgesamtbetrag im Kopf; erst danach Integer-Verteilung
+mit deterministischem Rest. Fehlende Details nie auf den Bankbetrag hochrechnen.

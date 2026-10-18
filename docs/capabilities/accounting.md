@@ -764,3 +764,12 @@ bleiben ohne erfundenes Zuordnungsjournal; bestehende unklare Teilbuchungen werd
 fuer gezielten Abgleich gesperrt. Freies Editieren verbundener Importbuchungen,
 Ignorieren und Loeschen zugeordneter Bewegungen sind gesperrt. Korrektur und
 Rueckzahlungsvollzug folgen separat, ebenso PostgreSQL- und Browserabnahme.
+
+
+## App-Audit U2-03a: CSV vor Import validieren
+
+Ungültige Zahlen, Datums-/Spaltenfehler und unvollständige Sammelgruppen werden
+vor allen DB-Schreibvorgängen abgewiesen, mit konkretem Datensatz/Feld. CHF-Details
+bleiben exakt; keine automatische Hochrechnung bei Differenz. Fremdwährungs-
+aufteilung verlangt passende Anzahl, einheitliche Währung und ausgewiesenen
+Originalgesamtbetrag. Bankreferenzlose Identität bleibt eigener Folgevertrag U2-03b.
