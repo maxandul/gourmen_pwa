@@ -100,7 +100,7 @@ def test_direct_gets_are_blocked_even_for_admin(app, client, pending, path):
     response = client.get(path)
     assert response.status_code == 302
     assert response.location.endswith('/auth/change-password')
-    assert response.headers['Cache-Control'] == 'no-store'
+    assert 'no-store' in {directive.strip() for directive in response.headers['Cache-Control'].split(',')}
 
 
 @pytest.mark.parametrize('json_api', [False, True])

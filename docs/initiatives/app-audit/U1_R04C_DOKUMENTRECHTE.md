@@ -116,3 +116,13 @@ Worker: **19 bestanden**; `git diff --check` sauber. PWA 3.16.16, keine neue CSS
 Kein realer Loeschauftrag, PostgreSQL-Nachweis oder externe Drive-Abnahme.
 R04c lokal umgesetzt; U1 insgesamt offen. R04d bleibt mit U2/U3 gekoppelt;
 naechstes unabhaengiges Paket U1-R05 Linklebenszyklus-Restvertrag.
+
+## Breite Bestandsregression nach R04c2
+
+Isolierter Gesamtlauf auf dem beim Start geladenen R04c2-Stand: **843 bestanden,
+1 fehlgeschlagen, 11422 Warnungen**, 438.26 Sekunden. Ein bestehender Pflicht-
+Passwortwechsel-Test verlangte exakt `no-store`; `private, no-store` erfuellt
+dieselbe Speicherverbotsanforderung. Test auf Direktivenmenge korrigiert.
+Erneuter kompletter Lauf der betroffenen Datei test_required_password_change.py:
+**47 bestanden, 392 Warnungen**, 36.97 Sekunden. Kein angeblich gruener Gesamtlauf
+behauptet; R04c2-Pickerergaenzung/R04c3 haben ihre eigenen spaeteren Pakettests.
