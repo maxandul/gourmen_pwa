@@ -345,3 +345,13 @@ RecoveryLinkService verwendet die vorhandenen AuthToken-Snapshot-/Statusspalten
 fuer persistierten Passwort-/MFA-Resetversand. Statuswechsel vor/nach Transport
 vermeiden Send-before-commit und blinde Wiederholungen; Klartexttoken bleiben nur
 im laufenden Request. Mailservice-Annahme ist kein Zustellnachweis.
+
+
+## Admin-Notfallkommando (U1-R07)
+
+`backend/cli.py` registriert `flask --app backend.app admin-recover`. Es gibt
+keine HTTP-Route. AdminRecoveryService bereitet Passwort-/optional MFA-Reset,
+AuthToken-Widerruf und Audit in einer Transaktion vor. Nur bestehende aktive
+Admins, Vorschau als Standard, verdeckte Passwortbestaetigung und explizite
+Zielbestaetigung. Hostingzugriff ist die externe Vertrauensgrenze, keine neue
+App-Authentisierung. Runbook/Pruefgrenzen: U1_R07_ADMIN_NOTFALL.md im App-Audit.

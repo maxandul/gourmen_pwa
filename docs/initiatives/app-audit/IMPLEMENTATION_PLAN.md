@@ -85,8 +85,8 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 5b / U1-R05b | lokal geprüft | Einheitliche Hauptmailnormalisierung, Lookup und DB-Eindeutigkeit ohne Kontozusammenlegung. |
 | 5c / U1-R05c | lokal geprüft | Persistierte Resetlink-Ausgabe vor gebundenem Versand, kontrollierter Zustellstatus. |
 | 6 / U1-R06 | lokal geprüft | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
-| 7 / U1-R07 | **bereit / nächstes Paket** | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
-| 8 / U1-R08 | geplant | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
+| 7 / U1-R07 | lokal geprüft, Hosting-Abnahme offen | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
+| 8 / U1-R08 | **bereit / nächstes Paket** | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
 
 ### U1z: Cache-Nutzertrennung
 
@@ -174,7 +174,7 @@ abgleichen und den Nachweis ergänzen, nicht einen neuen Gesamtaudit eröffnen.
 | Browser / Geräte | Session, Remember-me, MFA-Zwischenschritt, vertrauenswürdiges Gerät, mehrere Tabs und installierte PWA nach Widerruf/Update | Versionierte Login-Identitäten aus U1v verwenden; konkrete Geräte und Fälle protokollieren |
 | Mail | Reale Zustellung, Linkadresse, Wiederholung, Fehlerstatus und Recovery | Fake-Mailservice beweist keine Zustellung; kein Versand an echte Mitglieder ohne Auftrag |
 | Drive | Reale Mitgliedschaften, Gruppen-/Domainrechte, individuell freigegebene Dateien, alte Adressen und Wiederholung nach Fehler | U1s deckt nicht alle externen Rechte ab; keine unautorisierten Inventare oder Freigabeänderungen |
-| Admin-Notfall | Ausführbare Wiederherstellung auf eigener Hosting-Infrastruktur | Erst lokaler Vertrag; Live-Nachweis separat, CRYPTO_KEY bleibt unverändert |
+| Admin-Notfall | Wiederherstellung auf eigener Hosting-Infrastruktur mit Identitaets-/Zugriffsnachweis | [Lokaler CLI-Nachweis](U1_R07_ADMIN_NOTFALL.md) vorhanden; Live-Nachweis separat, CRYPTO_KEY unveraendert |
 | Weitere Betriebs-/Inhaltsabnahmen | Offene Einträge im [Betriebsregister](OPERATIONS_EVIDENCE_REGISTER.md), Nutzungsrechte für öffentliche Inhalte | Je passendem U4/U5-Paket behandeln; keine pauschale Produktionsfreigabe |
 
 ## Arbeitsablauf und Fertigkriterien für Agenten

@@ -832,3 +832,15 @@ oder Klartextlink. Oeffentliche Antwort ist kontoneutral. MailService behandelt
 fehlende SMTP-Konfiguration/Zugang als Fehlschlag, nicht als Annahme. Provider-
 Fehlertexte von Passwort/MFA/Onboarding werden nicht in Logs oder Status uebernommen,
 da sie Linkinhalte spiegeln koennten. Echte Zustellung bleibt gesonderte Abnahme.
+
+
+## Hosting-Recovery (U1-R07)
+
+Admin-Recovery nur als expliziter CLI-Einstieg, nie als oeffentliche Route.
+Vorschau ohne Mutation; keine DB-Transaktion waehrend interaktiver Eingaben.
+Danach aktuelle Mitgliedssperre und Vergleich der zuvor gelesenen Generation;
+Passwort, Widerrufe und Audit gemeinsam committen. Keine Passwortargumente,
+Ausgabe oder Klartextpersistenz. Hostingidentitaet wird extern nachgewiesen;
+Audit nennt diesen Ursprung und Operator-/Vorgangsreferenz explizit, statt eine
+App-Anmeldung vorzutäuschen. Existierende aktive Adminrolle voraussetzen;
+keine Reaktivierung, Rollenvergabe oder Schluesselrotation im Notfallkommando.

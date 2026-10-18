@@ -64,6 +64,9 @@ def create_app(config_name=None):
             app.logger.warning(f"Database connection test failed: {db_error}")
             # Continue anyway - database might be available later
         
+        from backend.cli import admin_recover
+        app.cli.add_command(admin_recover)
+
         # Register blueprints
         from backend.routes import public, auth, dashboard, events, billbro, ggl, member, admin, notifications, ratings
         from backend.routes import push_notifications, cron, docs, calendar_feed, accounting
