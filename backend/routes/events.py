@@ -822,31 +822,8 @@ def edit(event_id):
                 event.place_locality = form.place_locality.data
                 event.place_country = form.place_country.data
             
-            # Handle organizer change and participation updates
-            if old_organizer_id != new_organizer_id:
-                # Remove old organizer from participants (they are usually unavailable)
-                old_organizer_participation = Participation.query.filter_by(
-                    member_id=old_organizer_id,
-                    event_id=event.id
-                ).first()
-                
-                if old_organizer_participation:
-                    db.session.delete(old_organizer_participation)
-                
-                # Add new organizer as participant (if not already participating)
-                new_organizer_participation = Participation.query.filter_by(
-                    member_id=new_organizer_id,
-                    event_id=event.id
-                ).first()
-                
-                if not new_organizer_participation:
-                    new_organizer_participation = Participation(
-                        member_id=new_organizer_id,
-                        event_id=event.id,
-                        teilnahme=True,
-                        responded_at=datetime.utcnow()
-                    )
-                    db.session.add(new_organizer_participation)
+            # Organizational responsibility does not imply an attendance change.
+            # Preserve both members' participation, guesses and financial history.
 
             after_cal = CalendarFeedService.calendar_relevant_state(event)
             CalendarFeedService.bump_sequence_if_changed(event, before_cal, after_cal)
@@ -866,7 +843,7 @@ def edit(event_id):
                         'new_organizer_name': new_organizer.display_name if new_organizer else 'Unbekannt'
                     }
                 )
-                flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}. Alter Organisator als Teilnehmer entfernt, neuer Organisator automatisch als Teilnehmer hinzugefügt.', 'success')
+                flash(f'Event erfolgreich bearbeitet. Organisator geändert: {old_organizer.display_name if old_organizer else "Unbekannt"} → {new_organizer.display_name if new_organizer else "Unbekannt"}. Bestehende Zu- und Absagen bleiben unverändert; fehlende Teilnahme bitte separat angeben.', 'success')
             else:
                 flash('Event erfolgreich bearbeitet', 'success')
             

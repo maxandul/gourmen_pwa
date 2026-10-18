@@ -1012,3 +1012,7 @@ Bereinigungs-Undo nur bei unveraendertem Event-/Teilnahmenachzustand; spaetere
 Fachwerte/Bewertungen/Finanzreferenzen sperren den einfachen Weg. Konflikt
 verbraucht alten Nachweis, technischer Commitfehler behaelt ihn fuer erneuten
 Versuch. Alte Sessions ohne Nachzustandsfingerabdruck duerfen nichts loeschen.
+
+Organisatorwechsel aendert keine Teilnahmezeilen. Weder alte Fachwerte
+loeschen noch neue Zusage erfinden; Teilnahme und finanzielle Korrekturen
+bleiben eigene explizite Aktionen. Erfolgsmeldung muss dies korrekt benennen.

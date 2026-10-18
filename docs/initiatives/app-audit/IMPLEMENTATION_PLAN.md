@@ -129,7 +129,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-09 / A-029 | lokal geprüft | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
 | A-031 / BillBro-Rundung | Fachentscheidung angefragt | Rappengenaue Summenverteilung versus 10-/5-Rappen-Rundung mit sichtbarer Differenz; Antwort abwarten, andere Pakete fortsetzen. |
 
-| U2-10 / A-033 | **bereit / nächstes Paket** | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
+| U2-10 / A-033 | lokal geprüft | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
+
+| U2-11 / A-053 | **bereit / nächstes Paket** | Merch-Preise rappengetreu und nichtnegativ validieren; Fehler ohne Teilmutation, bestehende Ausfuehrungspreise bewahren. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

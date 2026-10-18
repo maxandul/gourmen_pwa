@@ -25,6 +25,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 | U2-07 | lokal geprüft | Event, Teilnahme und Audit atomar; 23 und anschliessend 65 Tests bestanden. Fachhistorie bleibt erhalten. [Nachweis](U2_07_EVENTLOESCHUNG.md). |
 | U2-08 | lokal geprüft | Strikte BillBro-Betragseingaben und korrigierbare Feldfehler; 63 Python- und 19 Worker-Tests bestanden. [Nachweis](U2_08_BILLBRO_BETRAEGE.md). |
 | U2-09 | lokal geprüft | Konfliktsicheres Bereinigungs-Undo; 25 und anschliessend 67 Tests bestanden. [Nachweis](U2_09_BEREINIGUNG_UNDO.md). |
+| U2-10 | lokal geprüft | Organisationswechsel bewahrt Teilnahme und Finanzhistorie; 33 Tests bestanden. [Nachweis](U2_10_ORGANISATORWECHSEL.md). |
 | U2-03a / A-064, A-065: CSV-Prüfung | Lokal geprüft, Identität separat | 71 Python-Tests; [Nachweis](U2_03_IMPORTPRUEFUNG.md) |
 | U2-02b2 / B01/F5: Mehrfachzuordnung | Lokal geprüft; Korrektur/Vollzug/extern offen | Migration b63c328 separat, 104 Python- und 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
 | U2-02b1 / A-061: Einzelposten-Zuordnung | Lokal geprüft; Sammel-/Restmodell in b2 | 75 Python-Tests, erweitert 43; 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |

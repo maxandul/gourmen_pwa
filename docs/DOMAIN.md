@@ -289,3 +289,7 @@ Gezielte, durch Systemadmin vergebene und widerrufbare Zusatzberechtigung eines
 Mitglieds (F2). Ergaenzt Vereinsfunktion/Organisation, ist kein Systemadminstatus.
 Vergabe-/Entzugsverlauf bleibt erhalten. Erste Umsetzung: Reisedokumente lesen,
 weiterhin mit erneuter Identitaetsbestaetigung und begrenzter Feldmenge.
+
+Ein Wechsel der Eventorganisation bedeutet keine Zu- oder Absage. Bestehende
+Teilnahmen, Schaetzungen und Anteile beider Mitglieder bleiben erhalten.
+Ein neues Organisationsmitglied ohne Teilnahme muss diese separat angeben.
