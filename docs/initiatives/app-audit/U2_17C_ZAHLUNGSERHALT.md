@@ -100,3 +100,30 @@ C1a-Migration u217c1a20261018 nach u217b3b20261018: synthetischer SQLite-
 Upgrade/Downgrade/Upgrade und Historien-Downgrade-Sperre **1 bestanden,
 0.18 s**. Ignorierter pyreadline3-Handlefehler nach Testende, Prozessstatus 0.
 Anwendungsintegration noch in Arbeit; keine Live-Migration.
+
+
+## c1a lokal umgesetzt und geprueft
+
+Migration separat in 0856609. BillBroDraftService, persistente Entwuerfe,
+gebundene Vorschau, Ersetzen/Rueckzug und Finanz-Leseweg umgesetzt. Aktuelle
+Abrechnung und Banknachweise unveraendert, keine Freigabeaktion. Gemeinsames
+Formular mit unbezahltem Weg; Anzeige einschliesslich Ess-Typ/Anwesenheit/GGL.
+Eventloeschung schuetzt Entwuerfe und explizite Anwesenheitswerte.
+
+Isolierte Regression: draft, draft_migration, private_clarification, correction,
+attendance, invoice_correction, type_correction, event_deletion_atomicity,
+payment_allocations: **138 bestanden, 4431 Warnungen, 65.61 s**.
+Anschliessend reine Vorschauerzeugung aus demselben gesperrten Zustand statt
+zweiter Abfrage; erweiterte Draft-Suite: **22 bestanden, 1260 Warnungen,
+14.93 s**. Ignorierter pyreadline3-Handlefehler nach Testende, Prozessstatus 0.
+24 JavaScript-Tests bestanden; git diff --check ohne Fehler.
+
+Geprueft: 84->90/78, echte synthetische Zuordnung und Ruecknahme, keine Vorschau-
+DML, unveraenderte Fach-/Bankwerte beim Speichern/Rueckzug, Rollback bei Insert/
+Commit/Statusfehlern, Retry, zwei Vorschauen, veraltete Zahlungsstaende,
+CSRF, Rechte/Eventzugriff, Tokenzeit/-manipulation/-Zugang/-Akteur, geschlossenes
+Jahr, ungueltige Forderungsstaende, Anwesenheit/Ess-Typ/GGL ohne Anwendung und
+abgewiesene Freigabeaktion. Kein dotenv oder ausgehendes Netz.
+PWA 3.16.42 / pwa.96f8a9f1.js. Reale PostgreSQL-Sperren und Migrationen sowie
+Browser/Geraete bleiben offen. C1b Finanzbestaetigung/Rueckzahlungsmodell ist
+naechster Auftrag; C1/F3/F4 und U1 insgesamt bleiben offen.

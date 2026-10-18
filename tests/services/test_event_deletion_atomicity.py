@@ -40,7 +40,7 @@ def test_actual_delete_failure_preserves_event_and_participation(app,seed,monkey
         db.session.remove();unchanged(seed)
 
 
-@pytest.mark.parametrize('relation',['rating','document','receipt','claim','booking','billbro','ggl'])
+@pytest.mark.parametrize('relation',['rating','document','receipt','claim','booking','billbro','ggl','attendance','draft'])
 def test_referenced_history_is_not_deleted_or_detached(app,seed,relation):
     with app.app_context():
         if relation=='rating':db.session.add(EventRating(event_id=seed[1],participant_id=seed[0],food_rating=3,drinks_rating=4,service_rating=5))
@@ -53,6 +53,10 @@ def test_referenced_history_is_not_deleted_or_detached(app,seed,relation):
             db.session.add(Booking(event_id=seed[1],fiscal_year_id=fy.id,account_id=account.id,booking_date=date(2026,1,1),description='Synthetic',amount_rappen=1000,direction=BookingDirection.IN,created_by=seed[0]))
         if relation=='billbro':db.session.get(Event,seed[1]).rechnungsbetrag_rappen=0
         if relation=='ggl':Participation.query.one().guess_bill_amount_rappen=1000
+        if relation=='attendance':Participation.query.one().billbro_attendance=False
+        if relation=='draft':
+            from backend.models.billbro_correction_draft import BillBroCorrectionDraft
+            db.session.add(BillBroCorrectionDraft(event_id=seed[1],actor_id=seed[0],request_hash='synthetic',before_json={},proposal_json={},preview_json={}))
         db.session.commit()
         with pytest.raises(EventDeletionError,match='bleibt erhalten'):Service.delete(seed[1],db.session.get(Member,seed[0]))
         unchanged(seed)

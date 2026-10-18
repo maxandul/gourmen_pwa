@@ -6,8 +6,8 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17c1a – bezahlten Vereinsentwurf vorbereiten**. U1z bis R08 sowie
-   U2-01 bis U2-17c0 sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+3. Naechstes Paket: **U2-17c1b – Finanzbestaetigung und Rueckzahlungsmodell konkretisieren**. U1z bis R08 sowie
+   U2-01 bis U2-17c1a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
@@ -73,3 +73,11 @@ C0 verlangt nun ausdrueckliche Klaerung und signierten Vermerk fuer private
 Ausgangsfaelle; paid=0 ist kein Unbezahlt-Beweis. C1 auf Vereinszahlungen
 begrenzen. Legacy-Privatbestaetigung bleibt in B02 zu ersetzen; keine neue
 private Zahlungskontrolle. Keine pauschale Finanzfreigabe.
+
+C1a lokal: 138 Regressionen, anschliessend 22 erweiterte Entwurfstests;
+24 JS-Tests. Migration 0856609 separat (u217c1a20261018). PWA 3.16.42 /
+pwa.96f8a9f1.js. Entwurf und Rueckzug aendern keine Finanzen. C1b muss vor
+Code den Erstattungsabgleich bei erhaltenen Zahlungs-/Forderungs-IDs
+konkretisieren; aktuelle BankRefundConfirmation gilt nur fuer Eingangsueberschuss,
+nicht automatisch fuer nachtraeglich gesenkte Forderungen. K1-Ausgang 6710;
+keine neue 3620-Einnahme fuer schon verbuchte Zahlungen erfinden.

@@ -340,3 +340,11 @@ Unbezahlte Korrektur verlangt deshalb eine ausdrueckliche Erklaerung nach
 Klaerung plus Vermerk. Die Historie benennt dies als Erklaerung der Organisation,
 nicht als Banknachweis. Bekannte Zahlungen bleiben gesperrt; keine laufende
 private Zahlungskontrolle und keine automatische Zahlung werden eingefuehrt.
+
+
+Vereinskorrekturentwurf (U2-17c1a): gespeicherter Vorschlag der Organisation
+mit Grund, alten/neuen Anteilen, erfassten Zahlungen sowie Mehrforderung oder
+Rueckzahlungsbedarf. Er aendert die laufende Abrechnung noch nicht. Rueckzug
+oder neuerer Entwurf bleibt im Verlauf; Finanzberechtigte koennen mit
+Eventzugriff lesen. Finanzielle Bestaetigung und tatsaechlicher Ausgang sind
+getrennte Schritte des Folgepakets. Kein automatischer Zahlungsauftrag.

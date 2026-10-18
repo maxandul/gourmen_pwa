@@ -1128,3 +1128,16 @@ Signiertes Payload ist allein massgeblich beim Bestaetigen; nachtraegliche
 unsignierte Formularwerte ersetzen die Erklaerung nicht. History.after_json
 haelt private_unpaid_clarification fest. Bestehende Zahlungs-/Buchungs-/Jahres-
 grenzen gelten unveraendert; Erklaerung ist kein Zahlungsnachweis.
+
+
+U2-17c1a: BillBroDraftService trennt bezahlte Vereinsentwuerfe vom wirksamen
+Abschluss. Signierte 30-Minuten-Vorschau bindet Zugang, Event, Vorschlag,
+Forderungen, Buchungen, Zuordnungen und offene Entwurfs-IDs. Speichern prueft
+den Stand unter Event-/Jahres-/Forderungssperren; dieselbe Vorschau ist
+wiederholbar. Anzeige wird rein aus demselben geprueften Snapshot berechnet.
+Neuer Entwurf markiert vorherigen als superseded; Rueckzug mit Grund als
+withdrawn. Beide erhalten alle Finanzdaten und Entwurfshistorie.
+Organisation schreibt, accounting_read mit Eventzugriff liest. Geschlossenes
+Jahr erlaubt nur Vorbereitung, keine Wiedereroeffnung oder Finanzfreigabe.
+Eventloeschung schuetzt Entwuerfe und explizite Anwesenheit auch bei False.
+PostgreSQL-Parallelitaet bleibt separat nachzuweisen.

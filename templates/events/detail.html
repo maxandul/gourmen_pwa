@@ -301,6 +301,7 @@
                     {# Management rights are supplied by the shared server policy. #}
                     {% set has_bill = event.rechnungsbetrag_rappen is not none %}
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
+                    {% if can_read_billbro_drafts and event.is_paid_by_club and event.gesamtbetrag_rappen is not none %}<p><a href="{{ url_for('billbro.correction_drafts', event_id=event.id) }}">Vereinskorrektur: Entwürfe ansehen</a></p>{% endif %}
                     {% set can_access_billbro = (participation and participation.billbro_attending) or is_organizer %}
                     {% set supports_ggl = event.supports_ggl %}
                     {% if can_access_billbro %}
@@ -356,7 +357,7 @@
                                 {% elif billbro_phase == 3 %}
                                     Bestätige den vorgeschlagenen Gesamtbetrag oder passe ihn an. Erst danach werden die Anteile berechnet.
                                 {% else %}
-                                    BillBro ist abgeschlossen. Die Übersichten findest du unten; du kannst bei Bedarf die Finalisierung aufheben oder den Ablauf neu starten.
+                                    BillBro ist abgeschlossen. Die Übersichten findest du unten; Änderungen werden über eine nachvollziehbare Korrektur vorbereitet.
                                 {% endif %}
                             {% else %}
                                 {% if billbro_phase == 1 %}

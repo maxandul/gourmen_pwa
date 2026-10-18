@@ -122,10 +122,10 @@ class BillBroCorrectionService:
                     private_unpaid_note=(form.get('private_unpaid_note') or '').strip())
 
     @classmethod
-    def validate(cls, event, parts, claims, years, proposed):
+    def validate(cls, event, parts, claims, years, proposed, *, paid_club_draft=False):
         if event.gesamtbetrag_rappen is None or not event.rechnungsbetrag_rappen:
             raise CorrectionError('Dieser Weg benötigt einen vollständigen bestehenden Abschluss.')
-        if event.bill_paid_by == BillPaidBy.MITGLIED and (
+        if not paid_club_draft and event.bill_paid_by == BillPaidBy.MITGLIED and (
                 proposed.get('private_unpaid_confirmed') is not True or
                 not 1 <= len(proposed.get('private_unpaid_note', '')) <= 1000):
             raise CorrectionError('Private Zahlungen sind der App unbekannt. Zuerst klären und mit Vermerk bestätigen, dass noch keine privaten Zahlungen erfolgt sind. Bei Zahlung oder unklarem Stand ist der Finanzklärungsweg erforderlich.')
@@ -138,11 +138,21 @@ class BillBroCorrectionService:
             raise CorrectionError('Neue anwesende Person ist für dieses Event nicht auswählbar.')
         if proposed['paid_by'] == BillPaidBy.MITGLIED.value and proposed['payer'] not in new_attending:
             raise CorrectionError('Auslegende Person muss am Essen teilnehmen.')
-        if any(c.paid_rappen != 0 or c.status != ClaimStatus.OFFEN or c.settled_at is not None for c in claims):
+        if paid_club_draft:
+            if not event.is_paid_by_club or proposed['paid_by'] != BillPaidBy.VEREINSKONTO.value:
+                raise CorrectionError('Dieser Entwurf erhält den Vereinszahlweg. Private Ausgleichsfälle bleiben separat.')
+            for claim in claims:
+                if type(claim.paid_rappen) is not int or claim.paid_rappen < 0:
+                    raise CorrectionError('Gespeicherter Zahlungsstand ist ungültig. Zuerst klären.')
+                expected_status = (ClaimStatus.BEGLICHEN if claim.paid_rappen >= claim.expected_rappen else
+                                   ClaimStatus.TEILWEISE if claim.paid_rappen else ClaimStatus.OFFEN)
+                if claim.status != expected_status:
+                    raise CorrectionError('Erlass oder Zahlungsstatus benötigt eine gesonderte Klärung.')
+        if not paid_club_draft and any(c.paid_rappen != 0 or c.status != ClaimStatus.OFFEN or c.settled_at is not None for c in claims):
             raise CorrectionError('Zahlungen oder abgeschlossene Posten benötigen den Finanzkorrekturweg.')
-        if BankPaymentAllocation.query.filter(BankPaymentAllocation.claim_id.in_([c.id for c in claims])).first() or Booking.query.filter_by(event_id=event.id).first():
+        if not paid_club_draft and (BankPaymentAllocation.query.filter(BankPaymentAllocation.claim_id.in_([c.id for c in claims])).first() or Booking.query.filter_by(event_id=event.id).first()):
             raise CorrectionError('Verbuchte Vorgänge benötigen den Finanzkorrekturweg; ihre Historie bleibt erhalten.')
-        if (event.is_paid_by_club or proposed['paid_by'] == BillPaidBy.VEREINSKONTO.value or any(c.fiscal_year_id for c in claims)) and any(y.status != FiscalYearStatus.OPEN for y in years):
+        if not paid_club_draft and (event.is_paid_by_club or proposed['paid_by'] == BillPaidBy.VEREINSKONTO.value or any(c.fiscal_year_id for c in claims)) and any(y.status != FiscalYearStatus.OPEN for y in years):
             raise CorrectionError('Betroffenes Geschäftsjahr ist in Revision oder abgeschlossen. Zuerst mit Grund wieder öffnen.')
         old_shares = {p.member_id: BillBroShareService.stored_share(event, p) for p in parts if p.billbro_attending}
         if any(type(v) is not int or v < 0 for v in old_shares.values()):

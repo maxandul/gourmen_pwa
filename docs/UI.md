@@ -564,3 +564,11 @@ U2-17c0 ergaenzt im privaten Ausgangsfall native Checkbox und Klaerungsvermerk
 mit vorhandenen form-field-Klassen. Vorschau und Verlauf unterscheiden die
 Erklaerung von einem Banknachweis. Keine neue Klasse. PWA 3.16.41 /
 pwa.a93228ba.js; funktionale Templates geprueft, reale Geraeteabnahme offen.
+
+
+U2-17c1a verwendet fuer Vereinsentwuerfe dieselben Formularfelder als Partial,
+info-row, disclosure und bestehende Buttons. Gespeicherte Entwuerfe zeigen
+Anteile/Anwesenheit/Ess-Typ/GGL, Zahlungsstand, offenen Betrag und moeglichen
+Rueckzahlungsbedarf; ausdruecklich noch keine wirksame Abrechnung. Veralteter
+Ausgangsstand wird sichtbar. Keine neue CSS-Klasse. PWA 3.16.42 /
+pwa.96f8a9f1.js; Browser/Geraete und Hell-/Dunkel-Abnahme weiterhin offen.

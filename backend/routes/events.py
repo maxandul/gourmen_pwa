@@ -672,6 +672,7 @@ def detail(event_id):
     )
     
     return render_template('events/detail.html', 
+                         can_read_billbro_drafts=AreaPermissionService.has_scope(current_user, 'accounting_read'),
                          is_organizer=is_organizer,
                          event=event, 
                          participation=participation,

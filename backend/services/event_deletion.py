@@ -8,6 +8,7 @@ from backend.models.document import Document
 from backend.models.accounting import Booking, MemberClaim, Receipt
 from backend.models.audit_event import AuditEvent, AuditAction
 from backend.models.billbro_correction import BillBroCorrection
+from backend.models.billbro_correction_draft import BillBroCorrectionDraft
 
 
 class EventDeletionError(ValueError):
@@ -25,12 +26,12 @@ class EventDeletionService:
                 raise EventDeletionError('Vergangene Events können nicht gelöscht werden.')
             participants = Participation.query.filter_by(event_id=event.id).order_by(Participation.id).populate_existing().with_for_update().all()
             relations = ((EventRating, 'event_id'), (Document, 'event_id'), (Booking, 'event_id'),
-                         (MemberClaim, 'event_id'), (BillBroCorrection, 'event_id'), (Receipt, 'suggested_event_id'))
+                         (MemberClaim, 'event_id'), (BillBroCorrectionDraft, 'event_id'), (BillBroCorrection, 'event_id'), (Receipt, 'suggested_event_id'))
             if any(model.query.filter(getattr(model, field) == event.id).first() for model, field in relations):
                 raise EventDeletionError('Event bleibt erhalten: Bewertungen, Dokumente, Belege oder Buchhaltungsdaten sind verknüpft.')
             event_fields = ('rechnungsbetrag_rappen', 'gesamtbetrag_rappen', 'trinkgeld_rappen',
                             'betrag_sparsam_rappen', 'betrag_normal_rappen', 'betrag_allin_rappen', 'bill_paid_by', 'bill_payer_member_id')
-            participation_fields = ('esstyp', 'guess_bill_amount_rappen', 'diff_amount_rappen', 'rank', 'points', 'calculated_share_rappen')
+            participation_fields = ('billbro_attendance', 'esstyp', 'guess_bill_amount_rappen', 'diff_amount_rappen', 'rank', 'points', 'calculated_share_rappen')
             if event.billbro_closed or any(getattr(event, field) is not None for field in event_fields) or any(
                     getattr(p, field) is not None for p in participants for field in participation_fields):
                 raise EventDeletionError('Event bleibt erhalten: BillBro- oder GGL-Daten benötigen einen eigenen Korrekturablauf.')

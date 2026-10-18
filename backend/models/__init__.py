@@ -22,3 +22,5 @@ from backend.models.bank_refund_confirmation import BankRefundConfirmation
 from backend.models.bank_refund_payment import BankRefundPayment
 
 from .billbro_correction import BillBroCorrection
+
+from .billbro_correction_draft import BillBroCorrectionDraft

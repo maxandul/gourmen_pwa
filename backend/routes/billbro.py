@@ -874,3 +874,47 @@ def correction(event_id):
     history = BillBroCorrection.query.filter_by(event_id=event_id).order_by(BillBroCorrection.id.desc()).all()
     return render_template('events/billbro_correction.html', event=event, values=values,
                            preview=preview, error=error, members=members, history=history, correction_parts=correction_parts), 400 if error else 200
+
+
+@bp.route('/<int:event_id>/correction-drafts', methods=['GET', 'POST'])
+@login_required
+def correction_drafts(event_id):
+    from backend.services.billbro_drafts import BillBroDraftService
+    from backend.services.billbro_correction import CorrectionError, digest
+    from backend.models.billbro_correction_draft import BillBroCorrectionDraft
+    event = _get_visible_event_or_404(event_id)
+    try:
+        BillBroDraftService.require_actor(event, current_user)
+    except CorrectionError:
+        abort(403)
+    can_prepare = AreaPermissionService.can_manage_event(current_user, event)
+    if request.method == 'POST' and not can_prepare:
+        abort(403)
+    values = request.form if request.method == 'POST' else dict(
+        invoice=f'{(event.rechnungsbetrag_rappen or 0)/100:.2f}',
+        total=f'{(event.gesamtbetrag_rappen or 0)/100:.2f}', paid_by='vereinskonto', reason='')
+    preview, error = None, None
+    if request.method == 'POST':
+        try:
+            action = request.form.get('action', 'preview')
+            if action == 'save':
+                _, changed = BillBroDraftService.save(event_id, current_user, request.form.get('preview_token'))
+                flash('Entwurf gespeichert. Die Abrechnung bleibt unverändert.' if changed else 'Entwurf war bereits gespeichert.', 'success')
+                return redirect(url_for('billbro.correction_drafts', event_id=event_id))
+            if action == 'withdraw':
+                BillBroDraftService.withdraw(event_id, request.form.get('draft_id', type=int), current_user, request.form.get('withdraw_reason'))
+                flash('Entwurf zurückgezogen. Die Abrechnung bleibt unverändert.', 'success')
+                return redirect(url_for('billbro.correction_drafts', event_id=event_id))
+            if action != 'preview':
+                raise CorrectionError('Unbekannte Entwurfsaktion.')
+            preview = BillBroDraftService.preview(event_id, current_user, request.form)
+        except CorrectionError as exc:
+            db.session.rollback()
+            error = str(exc)
+    correction_parts = BillBroDraftService.candidates(event, list(event.participations))
+    drafts = BillBroCorrectionDraft.query.filter_by(event_id=event_id).order_by(BillBroCorrectionDraft.id.desc()).all()
+    state_hash = digest(BillBroDraftService.load(event_id, current_user)[4])
+    return render_template('events/billbro_drafts.html', event=event, values=values, preview=preview,
+        error=error, can_prepare=can_prepare, paid_draft=True, correction_parts=correction_parts,
+        members={p.member_id:p.member.display_name for p in correction_parts}, drafts=drafts,
+        current={d.id: digest(d.before_json) == state_hash for d in drafts}), 400 if error else 200
