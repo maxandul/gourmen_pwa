@@ -198,12 +198,15 @@
                         </span>
                         <span class="info-row__value">
                             {{ comment.text }}
+{% if comment.blocking %}<br><strong>Beanstandung</strong>{% else %}<br>Hinweis{% endif %}
+{% if comment.revision %} · Fassung {{ comment.revision.version }}{% endif %}
                             {% if comment.resolved %}
                             <br><span class="chip chip--success">Erledigt</span>
                             {% else %}
-                            {% if is_treasurer or is_reviewer %}
+                            {% if (is_treasurer or is_reviewer) and not fiscal_year.is_closed %}
 <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                                 <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
                             </form>
 {% endif %}
@@ -215,9 +218,13 @@
                 <p class="text-secondary">Noch keine Kommentare zu dieser Buchung.</p>
                 {% endif %}
 
-                {% if is_treasurer or is_reviewer %}
+                {% if (is_treasurer or is_reviewer) and not fiscal_year.is_closed %}
 <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
                     {{ comment_form.hidden_tag() }}
+{% if fiscal_year.is_in_review and (is_reviewer or current_user.is_admin()) %}
+<div class="form-field"><label><input type="checkbox" name="blocking" value="1"> Blockierende Beanstandung</label></div>
+{% endif %}
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                     <input type="hidden" name="booking_id" value="{{ booking.id }}">
                     <div class="form-field">
                         <label class="form-field__label" for="booking-comment-text">Neuer Kommentar</label>

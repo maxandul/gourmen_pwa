@@ -730,6 +730,7 @@
 
                 {# ---------------- Abschluss ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'abschluss' else '' }}" role="tabpanel">
+                    <p><a href="{{ url_for('accounting.revision_history', fiscal_year_id=fiscal_year.id) }}">Prüffassungen und Verlauf</a> · Aktuelle Fassung {{ fiscal_year.review_version }}</p>
                     <div class="billbro-workflow-block">
                         <ol class="billbro-workflow" aria-label="Jahresabschluss-Ablauf">
                             {% for label in ['Offen', 'In Prüfung', 'Abgeschlossen'] %}
@@ -758,6 +759,7 @@
                     <form method="POST" action="{{ url_for('accounting.year_submit', fiscal_year_id=fiscal_year.id) }}" class="form"
                           onsubmit="return confirm('Jahr {{ fiscal_year.year }} zur Prüfung freigeben? Buchungen und Belege sind danach gesperrt.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                         <div class="form-actions">
                             <button type="submit" class="btn btn--primary">
                                 {{ lucide_icon('send') }} Jahr zur Prüfung freigeben
@@ -770,6 +772,11 @@
                     <form method="POST" action="{{ url_for('accounting.year_withdraw', fiscal_year_id=fiscal_year.id) }}" class="form"
                           onsubmit="return confirm('Freigabe für {{ fiscal_year.year }} zurückziehen? Das Jahr wird wieder offen und Buchungen sind bearbeitbar.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
+                        <div class="form-field">
+<label class="form-field__label" for="reason-withdraw">Grund (Pflicht)</label>
+<textarea class="form-field__textarea" name="reason" id="reason-withdraw" required maxlength="2000"></textarea>
+</div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn--outline">
                                 {{ lucide_icon('undo-2') }} Freigabe zurückziehen
@@ -778,22 +785,28 @@
                     </form>
                     {% endif %}
 
-                    {% if is_reviewer and abschluss_phase == 2 %}
+                    {% if (is_reviewer or current_user.is_admin()) and abschluss_phase == 2 %}
                     <form method="POST" action="{{ url_for('accounting.year_approve', fiscal_year_id=fiscal_year.id) }}" class="form"
-                          onsubmit="return confirm('Jahr {{ fiscal_year.year }} bestätigen? Das Jahr wird endgültig abgeschlossen und der Revisorenbericht generiert.');">
+                          onsubmit="return confirm('Jahr {{ fiscal_year.year }} bestätigen? Das Jahr wird für diese Fassung abgeschlossen und der Revisorenbericht generiert.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                         <div class="form-actions">
                             <button type="submit" class="btn btn--primary">
-                                {{ lucide_icon('shield-check') }} Jahr bestätigen
+                                {{ lucide_icon('shield-check') }} {% if current_user.is_admin() %}Stellvertretend als Systemadmin bestätigen{% else %}Jahr bestätigen{% endif %}
                             </button>
                         </div>
                     </form>
                     {% endif %}
 
-                    {% if (is_reviewer or current_user.is_admin()) and abschluss_phase == 3 %}
+                    {% if can_manage_revision and abschluss_phase == 3 %}
                     <form method="POST" action="{{ url_for('accounting.year_revoke', fiscal_year_id=fiscal_year.id) }}" class="form"
-                          onsubmit="return confirm('Abschluss {{ fiscal_year.year }} rückgängig machen? Das Jahr geht zurück in die Prüfung.');">
+                          onsubmit="return confirm('Abschluss {{ fiscal_year.year }} rückgängig machen? Das Jahr wird zur Bearbeitung geöffnet. Eine neue Revision ist erforderlich.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
+                        <div class="form-field">
+<label class="form-field__label" for="reason-revoke">Grund (Pflicht)</label>
+<textarea class="form-field__textarea" name="reason" id="reason-revoke" required maxlength="2000"></textarea>
+</div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn--outline">
                                 {{ lucide_icon('undo-2') }} Abschluss rückgängig
@@ -810,7 +823,8 @@
                         <div class="card__body">
                             <div class="info-row">
                                 <span class="info-row__label">Bestätigt von</span>
-                                <span class="info-row__value">{{ fiscal_year.revision_approval.reviewer.display_name_with_spirit }}</span>
+                                <span class="info-row__value">{{ fiscal_year.revision_approval.reviewer_name or fiscal_year.revision_approval.reviewer.display_name_with_spirit }}
+{% if fiscal_year.revision_approval.admin_substitute %} · Stellvertretend als Systemadmin{% endif %}</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-row__label">Bestätigt am</span>
@@ -842,15 +856,18 @@
                                     </span>
                                     <span class="info-row__value">
                                         {{ comment.text }}
+{% if comment.blocking %}<br><strong>Beanstandung</strong>{% else %}<br>Hinweis{% endif %}
+{% if comment.revision %} · Fassung {{ comment.revision.version }}{% endif %}
                                         {% if comment.booking %}
                                         <br><a href="{{ url_for('accounting.booking_detail', booking_id=comment.booking_id) }}">Zur Buchung: {{ comment.booking.description }}</a>
                                         {% endif %}
                                         {% if comment.resolved %}
                                         <br><span class="chip chip--success">Erledigt</span>
-                                        {% elif is_treasurer or is_reviewer %}
-                                        {% if is_treasurer or is_reviewer %}
+                                        {% elif (is_treasurer or is_reviewer) and not fiscal_year.is_closed %}
+                                        {% if (is_treasurer or is_reviewer) and not fiscal_year.is_closed %}
 <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                                             <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
                                         </form>
 {% endif %}
@@ -862,9 +879,13 @@
                             <p class="text-secondary">Noch keine Kommentare.</p>
                             {% endif %}
 
-                            {% if is_treasurer or is_reviewer %}
+                            {% if (is_treasurer or is_reviewer) and not fiscal_year.is_closed %}
 <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
                                 {{ comment_form.hidden_tag() }}
+{% if fiscal_year.is_in_review and (is_reviewer or current_user.is_admin()) %}
+<div class="form-field"><label><input type="checkbox" name="blocking" value="1"> Blockierende Beanstandung</label></div>
+{% endif %}
+<input type="hidden" name="review_version" value="{{ fiscal_year.review_version }}">
                                 <div class="form-field">
                                     <label class="form-field__label" for="comment-text">Neuer Kommentar</label>
                                     {{ comment_form.text(class='form-field__textarea', rows=3, id='comment-text') }}

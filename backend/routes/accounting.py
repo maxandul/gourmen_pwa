@@ -79,7 +79,7 @@ def _require_funktion(*funktionen) -> None:
         return
     # Explicit endpoint sets fail closed for future routes, including revision actions.
     read_endpoints = {'accounting.index', 'accounting.booking_detail',
-                      'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations'}
+                      'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations', 'accounting.revision_history'}
     write_endpoints = {'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
                        'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
                        'accounting.bank_import_upload', 'accounting.bank_import_review',
@@ -645,9 +645,11 @@ def year_comment(fiscal_year_id: int):
         try:
             AccountingService.add_revision_comment(
                 booking_id=booking_id,
-                fiscal_year_id=None if booking_id else fy.id,
+                fiscal_year_id=fy.id,
                 author=current_user,
                 text=form.text.data,
+                expected_version=request.form.get('review_version', type=int),
+                blocking=request.form.get('blocking') == '1',
             )
             flash('Kommentar gespeichert.', 'success')
         except AccountingError as exc:
@@ -666,7 +668,7 @@ def comment_resolve(comment_id: int):
     _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
     _validate_csrf_or_403()
     try:
-        comment = AccountingService.resolve_comment(comment_id)
+        comment = AccountingService.resolve_comment(comment_id, current_user, expected_version=request.form.get('review_version', type=int))
         flash('Kommentar als erledigt markiert.', 'success')
     except AccountingError as exc:
         flash(str(exc), 'error')
@@ -819,7 +821,7 @@ def year_withdraw(fiscal_year_id: int):
     _validate_csrf_or_403()
     fy = FiscalYear.query.get_or_404(fiscal_year_id)
     try:
-        AccountingService.withdraw_from_review(fy.id, current_user)
+        AccountingService.withdraw_from_review(fy.id, current_user, expected_version=request.form.get('review_version', type=int), reason=request.form.get('reason'))
     except AccountingError as exc:
         flash(str(exc), 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
@@ -833,17 +835,17 @@ def year_withdraw(fiscal_year_id: int):
 @bp.route('/year/<int:fiscal_year_id>/revoke', methods=['POST'])
 @login_required
 def year_revoke(fiscal_year_id: int):
-    """Abschluss rückgängig: closed → in_review."""
-    _require_funktion('RECHNUNGSPRUEFER')
+    """Abschluss mit Grund wiederöffnen: closed → open."""
+    _require_funktion('SCHATZMEISTER')
     _validate_csrf_or_403()
     fy = FiscalYear.query.get_or_404(fiscal_year_id)
     try:
-        AccountingService.revoke_approval(fy.id, current_user)
+        AccountingService.revoke_approval(fy.id, current_user, expected_version=request.form.get('review_version', type=int), reason=request.form.get('reason'))
     except AccountingError as exc:
         flash(str(exc), 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
     flash(
-        f'Abschluss {fy.year} rückgängig. Das Jahr ist wieder in Prüfung.',
+        f'Abschluss {fy.year} rückgängig. Das Jahr ist wieder offen und benötigt eine neue Revision.',
         'success',
     )
     return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
@@ -881,7 +883,7 @@ def year_submit(fiscal_year_id: int):
     _validate_csrf_or_403()
     fy = FiscalYear.query.get_or_404(fiscal_year_id)
     try:
-        AccountingService.submit_for_review(fy.id, current_user)
+        AccountingService.submit_for_review(fy.id, current_user, expected_version=request.form.get('review_version', type=int))
     except AccountingError as exc:
         flash(str(exc), 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
@@ -904,7 +906,7 @@ def year_submit(fiscal_year_id: int):
                 exc_info=True,
             )
 
-    flash(f'Jahr {fy.year} ist zur Prüfung freigegeben. Der Revisor wurde benachrichtigt.', 'success')
+    flash(f'Jahr {fy.year} ist zur Prüfung freigegeben. Eine Benachrichtigung wurde versucht.', 'success')
     return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
 
 
@@ -916,11 +918,12 @@ def year_approve(fiscal_year_id: int):
     _validate_csrf_or_403()
     fy = FiscalYear.query.get_or_404(fiscal_year_id)
     try:
-        fy = AccountingService.approve_year(fy.id, current_user)
+        fy = AccountingService.approve_year(fy.id, current_user, expected_version=request.form.get('review_version', type=int))
     except AccountingError as exc:
         flash(str(exc), 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
 
+    approved_version = fy.review_version
     try:
         pdf_bytes = AccountingPdfService.generate_report(
             fy, approval=fy.revision_approval
@@ -928,13 +931,13 @@ def year_approve(fiscal_year_id: int):
         folder_id = AccountingService.get_receipt_folder_id(fy.year)
         drive_meta = DriveStorageService.upload_bytes(
             payload=pdf_bytes,
-            filename_stem=f'Revisorenbericht_{fy.year}',
+            filename_stem=f'Revisorenbericht_{fy.year}_v{approved_version}',
             drive_folder_id=folder_id,
             mime_type='application/pdf',
             extension='pdf',
             actor=current_user,
         )
-        AccountingService.set_approval_report(fy.id, drive_meta['id'])
+        AccountingService.set_approval_report(fy.id, drive_meta['id'], expected_version=approved_version)
         flash(f'Jahr {fy.year} bestätigt. Revisorenbericht wurde in Drive abgelegt.', 'success')
     except Exception:
         current_app.logger.error(
@@ -1237,3 +1240,12 @@ def year_budget(fiscal_year_id: int):
     except AccountingError as exc:
         flash(str(exc), 'error')
     return redirect(url_for('accounting.index', year=fy.id, tab='budget'))
+
+
+@bp.route('/year/<int:fiscal_year_id>/revisions')
+@login_required
+def revision_history(fiscal_year_id):
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    fy = FiscalYear.query.get_or_404(fiscal_year_id)
+    return render_template('accounting/revisions.html', fiscal_year=fy,
+                           comments=AccountingService.get_comments_for_year(fy.id))

@@ -80,7 +80,7 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 4c1 / U1-R04c1 | lokal geprüft | Datei-/Ordnerpolicy und Historie, gemeinsame Servicepruefung; Migration separat. Vertrag U1_R04C_DOKUMENTRECHTE.md. |
 | 4c2 / U1-R04c2 | lokal geprüft | Adminzuordnung und durchgaengige Route-/Service-/UI-Grenzen einschliesslich Altbestand und Archiv. |
 | 4c3 / U1-R04c3 | lokal geprüft | Referenz-/Aufbewahrungspruefung vor endgueltigem Loeschen; Abschlussregression, direkte Drive-Abnahme bleibt extern. |
-| 4d / U1-R04d | geplant; mit U2/U3 | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
+| 4d / U1-R04d | Zustandsvertrag lokal in U2-04b; Bericht c offen | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
 | 5 / U1-R05 | a–c lokal geprüft, externe Abnahmen offen | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
 | 5a / U1-R05a | lokal geprüft | Hauptadressbindung der Reset-/Aktivierungslinks, Altlinks und Adresswechsel; Vertrag U1_R05_LINKRESTVERTRAG.md. |
 | 5b / U1-R05b | lokal geprüft | Einheitliche Hauptmailnormalisierung, Lookup und DB-Eindeutigkeit ohne Kontozusammenlegung. |
@@ -109,8 +109,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
 | U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | in Teilpakete gegliedert | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
 | U2-04a / A-059, A-066 | lokal geprüft | Offenes Jahr fuer Budget und Quelle/Ziel der Belegzuordnung durchsetzen; gemeinsame Jahres-Sperrgrenze fuer betroffene Mutationen und Revision. Keine Historie loeschen. |
-| U2-04b / R04d, A-073, A-074 | **bereit / nächstes Paket** | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
-| U2-04c / A-069, A-070 | geplant | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
+| U2-04b / R04d, A-073, A-074 | lokal geprüft | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
+| U2-04c / A-069, A-070 | **bereit / nächstes Paket** | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

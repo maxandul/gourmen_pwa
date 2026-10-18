@@ -58,6 +58,7 @@ class FiscalYear(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.Enum(FiscalYearStatus), default=FiscalYearStatus.OPEN, nullable=False)
     closed_at = db.Column(db.DateTime)
+    review_version = db.Column(db.Integer, nullable=False, default=0)
     # Jahresbeitrag pro Mitglied in Rappen (2026: 84000) – Basis für
     # Beitrags-Claims und Budget-Vorschlag (Spec Sektion 11.7 / 11.11).
     membership_fee_rappen = db.Column(db.Integer)
@@ -68,6 +69,16 @@ class FiscalYear(db.Model):
 
     def __repr__(self):
         return f'<FiscalYear {self.year}: {self.status.value}>'
+
+    @property
+    def revision_approval(self):
+        if not self.is_closed:
+            return None
+        if self.review_version:
+            from backend.models.accounting_revision import AccountingRevision
+            return AccountingRevision.query.filter_by(
+                fiscal_year_id=self.id, version=self.review_version, state='approved').first()
+        return self.legacy_revision_approval
 
     @property
     def is_open(self):
@@ -315,10 +326,16 @@ class RevisionComment(db.Model):
     text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     resolved = db.Column(db.Boolean, default=False, nullable=False)
+    revision_id = db.Column(db.Integer, db.ForeignKey('accounting_revisions.id', ondelete='RESTRICT'))
+    blocking = db.Column(db.Boolean, default=False, nullable=False)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('members.id', ondelete='RESTRICT'))
+    resolved_at = db.Column(db.DateTime)
+    revision = db.relationship('AccountingRevision')
+    resolver = db.relationship('Member', foreign_keys=[resolved_by])
 
     booking = db.relationship('Booking', backref='revision_comments')
     fiscal_year = db.relationship('FiscalYear', backref='revision_comments')
-    author = db.relationship('Member')
+    author = db.relationship('Member', foreign_keys=[author_id])
 
     def __repr__(self):
         return f'<RevisionComment {self.id} by {self.author_id}>'
@@ -343,7 +360,7 @@ class RevisionApproval(db.Model):
     approved_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     report_drive_id = db.Column(db.String(255))
 
-    fiscal_year = db.relationship('FiscalYear', backref=db.backref('revision_approval', uselist=False))
+    fiscal_year = db.relationship('FiscalYear', backref=db.backref('legacy_revision_approval', uselist=False))
     reviewer = db.relationship('Member')
 
     def __repr__(self):
@@ -580,6 +597,16 @@ class MemberClaim(db.Model):
     @property
     def open_chf(self):
         return self.open_rappen / 100
+
+    @property
+    def revision_approval(self):
+        if not self.is_closed:
+            return None
+        if self.review_version:
+            from backend.models.accounting_revision import AccountingRevision
+            return AccountingRevision.query.filter_by(
+                fiscal_year_id=self.id, version=self.review_version, state='approved').first()
+        return self.legacy_revision_approval
 
     @property
     def is_open(self):

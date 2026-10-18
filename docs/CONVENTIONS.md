@@ -923,3 +923,16 @@ Revisionszustandswechsel laden das Jahr frisch unter FOR UPDATE. Mehrere Jahre
 in ID-Reihenfolge sperren, danach Beleg sperren und alten Zuordnungsstand vergleichen.
 Keine negative/gebrochene/nichtendliche Budgeteingabe; Null ist erlaubt.
 Diese Sperrgrenze ist noch keine versionsgebundene Revisionshistorie (U2-04b).
+
+
+### Versionsgebundene Revisionsaktionen
+
+Revisionsformulare senden review_version; Services sperren das Jahr frisch
+und vergleichen diese Version vor jeder Mutation. Vorlage erzeugt einen neuen
+Snapshot. Ruecknahme/Wiederoeffnung verlangt Grund, Schatzmeister oder Admin;
+Bestaetigung nur Rechnungspruefer oder sichtbar stellvertretender Admin.
+Keine Finanzdelegation darf Revisionszustaende wechseln. Beanstandungen sind
+explizit, alte Kommentare bleiben Hinweise. Erledigung haelt Person/Zeit fest,
+offene Beanstandungen sperren auch eine erneute Vorlage beim Bestaetigen.
+Keine Bestaetigung oder Berichtreferenz loeschen/ueberschreiben. Berichtresultate
+an die bestaetigte Version binden, auch wenn inzwischen wiedergeoeffnet wurde.

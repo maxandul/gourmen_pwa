@@ -9,6 +9,7 @@ oder im AccountingService.
 import logging
 from datetime import date
 from io import BytesIO
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -160,7 +161,10 @@ class AccountingPdfService:
 
     @staticmethod
     def _approval_block(fiscal_year, approval, h2, body) -> list:
-        reviewer_name = approval.reviewer.full_name if approval.reviewer else '–'
+        reviewer_name = getattr(approval, 'reviewer_name', None) or (approval.reviewer.full_name if approval.reviewer else '–')
+        reviewer_name = escape(reviewer_name)
+        if getattr(approval, 'admin_substitute', False):
+            reviewer_name += ' (stellvertretend als Systemadmin)'
         return [
             Spacer(1, 8 * mm),
             Paragraph('Bestätigung der Revision', h2),

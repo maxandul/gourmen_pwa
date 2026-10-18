@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <a class="page-back" href="{{ url_for('accounting.index', year=fiscal_year.id, tab='abschluss') }}">Zur Buchhaltung</a>
+    <h1>Prüffassungen {{ fiscal_year.year }}</h1>
+    <p>Frühere Bestätigungen gelten nur für die jeweilige Fassung. Belegreferenzen sind erhalten; direkte Änderungen in Drive sind hier nicht archiviert.</p>
+    {% if fiscal_year.legacy_revision_approval %}
+    <section class="card"><div class="card__body">
+        <h2>Frühere Bestätigung ohne gespeicherten Prüfstand</h2>
+        <p>{{ fiscal_year.legacy_revision_approval.reviewer.display_name_with_spirit }} · {{ fiscal_year.legacy_revision_approval.approved_at.strftime('%d.%m.%Y %H:%M') }}</p>
+        {% if fiscal_year.legacy_revision_approval.report_drive_id %}<a href="https://drive.google.com/file/d/{{ fiscal_year.legacy_revision_approval.report_drive_id }}/view" target="_blank" rel="noopener">Früherer Bericht in Drive</a>{% endif %}
+    </div></section>
+    {% endif %}
+    {% for revision in fiscal_year.revisions|reverse %}
+    <section class="card"><div class="card__body">
+        <h2>Fassung {{ revision.version }} · {{ {'in_review':'In Prüfung', 'approved':'Bestätigt', 'withdrawn':'Zurückgenommen'}[revision.state] }}</h2>
+        {% if revision.snapshot %}<p>Vorgelegt von {{ revision.submitter.display_name_with_spirit }} am {{ revision.submitted_at.strftime('%d.%m.%Y %H:%M') }}</p>
+        {% else %}<p>Altstand ohne gespeicherte Einreichungsdaten. Erfasst bei Rücknahme.</p>{% endif %}
+        {% if revision.approved_at %}<p>Bestätigt: {{ revision.reviewer_name }} · {{ revision.approved_at.strftime('%d.%m.%Y %H:%M') }}{% if revision.admin_substitute %} · Stellvertretend als Systemadmin{% endif %}</p>{% endif %}
+        {% if revision.withdrawn_at %}<p>Zurückgenommen: {{ revision.withdrawer.display_name_with_spirit }} · {{ revision.withdrawn_at.strftime('%d.%m.%Y %H:%M') }} · {{ revision.withdrawal_reason }}</p>{% endif %}
+        {% if revision.report_drive_id %}<p><a href="https://drive.google.com/file/d/{{ revision.report_drive_id }}/view" target="_blank" rel="noopener">Bericht dieser Fassung in Drive</a></p>{% endif %}
+        {% if revision.snapshot %}
+        <details class="disclosure"><summary>Gespeicherte Prüfunterlagen</summary><div class="disclosure__content">
+            <h3>Journal</h3>
+            {% for booking in revision.snapshot.bookings %}<p>{{ booking.date }} · {{ booking.description }} · {{ booking.direction }} {{ booking.amount_rappen }} Rp · Konto {{ booking.account_id }}</p>{% else %}<p>Keine Buchungen.</p>{% endfor %}
+            <h3>Konten und Budget</h3>
+            {% for account in revision.snapshot.accounts %}<p>Konto {{ account.id }}: {{ account.code }} {{ account.name }}</p>{% endfor %}
+            {% for entry in revision.snapshot.budget %}<p>Konto {{ entry.account_id }}: {{ entry.amount_rappen }} Rp</p>{% endfor %}
+            <h3>Belegreferenzen</h3>
+            {% for receipt in revision.snapshot.receipts %}<p>Buchung {{ receipt.booking_id }}: {{ receipt.name }}</p>{% else %}<p>Keine verknüpften Belege.</p>{% endfor %}
+        </div></details>
+        {% endif %}
+    </div></section>
+    {% else %}<p>Noch keine versionierte Einreichung.</p>{% endfor %}
+    <h2>Prüfanmerkungen aller Fassungen</h2>
+    {% for comment in comments %}
+    <p>{{ comment.author.display_name_with_spirit }} · {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }} · {% if comment.revision %}Fassung {{ comment.revision.version }}{% else %}Ohne Einreichungsbezug{% endif %} · {{ 'Beanstandung' if comment.blocking else 'Hinweis' }}: {{ comment.text }}<br>
+    {% if comment.resolved %}Erledigt{% if comment.resolved_at %} am {{ comment.resolved_at.strftime('%d.%m.%Y %H:%M') }} durch {{ comment.resolver.display_name_with_spirit }}{% endif %}{% else %}Offen{% endif %}</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -368,3 +368,13 @@ schreibt ebenfalls Journalzeilen; Altbestand wird nicht automatisch rueckbefuell
 Zuordnungsansicht zeigt gebuchte Anteile, Rest und vorgemerkte Rueckzahlung getrennt.
 Vormerkung ist keine Ausgabe/Bankanweisung und bleibt offen bis zum gesonderten
 Rueckfluss-/Korrekturablauf. Migration u202b220261018 separat, kein Live-Lauf.
+
+
+### Versionierte Revision (App-Audit U2-04b)
+
+AccountingRevisionService fuehrt lokale Revisionswechsel unter Jahressperre
+atomar aus. AccountingRevision speichert pro Jahr/Fassung eingereichte
+Journal-/Budget-/Belegreferenzen sowie Bestaetigung, Stellvertretung,
+Ruecknahmegrund und Berichtreferenz. Alte RevisionApproval-Zeilen bleiben
+unveraendert; FiscalYear.revision_approval liefert nur die aktuell gueltige
+Bestaetigung. Historie ist separat lesbar.

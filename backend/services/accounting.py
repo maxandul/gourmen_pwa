@@ -200,55 +200,19 @@ class AccountingService:
         return FiscalYear.query.order_by(FiscalYear.year.desc()).all()
 
     @classmethod
-    def submit_for_review(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
-        fy = cls.lock_fiscal_year(fiscal_year_id)
-        if fy.status != FiscalYearStatus.OPEN:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} ist nicht offen und kann nicht freigegeben werden."
-            )
-        fy.status = FiscalYearStatus.IN_REVIEW
-        db.session.commit()
-        logger.info("Geschäftsjahr %s zur Revision freigegeben von Member %s",
-                    fy.year, by_member.id)
-        return fy
+    def submit_for_review(cls, fiscal_year_id, by_member, *, expected_version):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.submit(fiscal_year_id, by_member, expected_version=expected_version)
 
     @classmethod
-    def withdraw_from_review(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
-        """Freigabe zurückziehen: in_review → open (Schatzmeister/Admin)."""
-        fy = cls.lock_fiscal_year(fiscal_year_id)
-        if fy.status != FiscalYearStatus.IN_REVIEW:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} ist nicht in Prüfung und kann nicht zurückgezogen werden."
-            )
-        fy.status = FiscalYearStatus.OPEN
-        db.session.commit()
-        logger.info(
-            "Geschäftsjahr %s Freigabe zurückgezogen von Member %s",
-            fy.year, by_member.id,
-        )
-        return fy
+    def withdraw_from_review(cls, fiscal_year_id, by_member, *, expected_version, reason):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.withdraw(fiscal_year_id, by_member, expected_version=expected_version, reason=reason)
 
     @classmethod
-    def revoke_approval(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
-        """Abschluss rückgängig: closed → in_review (Revisor/Admin)."""
-        fy = cls.lock_fiscal_year(fiscal_year_id)
-        if fy.status != FiscalYearStatus.CLOSED:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} ist nicht abgeschlossen und kann nicht geöffnet werden."
-            )
-        if fy.revision_approval is None:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} hat keine Revisionsbestätigung."
-            )
-        db.session.delete(fy.revision_approval)
-        fy.status = FiscalYearStatus.IN_REVIEW
-        fy.closed_at = None
-        db.session.commit()
-        logger.info(
-            "Geschäftsjahr %s Abschluss rückgängig von Member %s",
-            fy.year, by_member.id,
-        )
-        return fy
+    def revoke_approval(cls, fiscal_year_id, by_member, *, expected_version, reason):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.withdraw(fiscal_year_id, by_member, expected_version=expected_version, reason=reason, closed=True)
 
     @classmethod
     def create_fiscal_year(cls, year: int, by_member: Member) -> FiscalYear:
@@ -290,41 +254,14 @@ class AccountingService:
         return fy
 
     @classmethod
-    def approve_year(cls, fiscal_year_id: int, reviewer: Member) -> FiscalYear:
-        """Jahr bestätigen: RevisionApproval anlegen, Status auf closed.
-
-        PDF-Bericht und Drive-Ablage werden vom Revisions-Workflow
-        (Route) via AccountingPdfService angestossen und via
-        `set_approval_report` nachgetragen.
-        """
-        fy = cls.lock_fiscal_year(fiscal_year_id)
-        if fy.status != FiscalYearStatus.IN_REVIEW:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} ist nicht in Prüfung und kann nicht bestätigt werden."
-            )
-        if fy.revision_approval is not None:
-            raise AccountingValidationError(
-                f"Jahr {fy.year} wurde bereits bestätigt."
-            )
-        approval = RevisionApproval(
-            fiscal_year_id=fy.id,
-            reviewer_id=reviewer.id,
-            approved_at=datetime.utcnow(),
-        )
-        fy.status = FiscalYearStatus.CLOSED
-        fy.closed_at = datetime.utcnow()
-        db.session.add(approval)
-        db.session.commit()
-        logger.info("Geschäftsjahr %s bestätigt von Revisor %s", fy.year, reviewer.id)
-        return fy
+    def approve_year(cls, fiscal_year_id, reviewer, *, expected_version):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.approve(fiscal_year_id, reviewer, expected_version=expected_version)
 
     @classmethod
-    def set_approval_report(cls, fiscal_year_id: int, report_drive_id: str) -> None:
-        fy = cls.get_fiscal_year(fiscal_year_id)
-        if fy.revision_approval is None:
-            raise AccountingValidationError("Keine Revisionsbestätigung vorhanden.")
-        fy.revision_approval.report_drive_id = report_drive_id
-        db.session.commit()
+    def set_approval_report(cls, fiscal_year_id, report_drive_id, *, expected_version):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.set_report(fiscal_year_id, report_drive_id, expected_version=expected_version)
 
     # -- Budget -----------------------------------------------------------
 
@@ -1118,34 +1055,15 @@ class AccountingService:
     # -- Revisions-Kommentare ----------------------------------------------
 
     @classmethod
-    def add_revision_comment(cls, booking_id: int | None,
-                             fiscal_year_id: int | None,
-                             author: Member, text: str) -> RevisionComment:
-        text = (text or '').strip()
-        if not text:
-            raise AccountingValidationError("Kommentar darf nicht leer sein.")
-        if booking_id is None and fiscal_year_id is None:
-            raise AccountingValidationError(
-                "Kommentar braucht eine Buchung oder ein Geschäftsjahr."
-            )
-        comment = RevisionComment(
-            booking_id=booking_id,
-            fiscal_year_id=fiscal_year_id,
-            author_id=author.id,
-            text=text,
-        )
-        db.session.add(comment)
-        db.session.commit()
-        return comment
+    def add_revision_comment(cls, booking_id, fiscal_year_id, author, text, *, expected_version, blocking=False):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.comment(fiscal_year_id, author, text, expected_version=expected_version,
+                                                  booking_id=booking_id, blocking=blocking)
 
     @staticmethod
-    def resolve_comment(comment_id: int) -> RevisionComment:
-        comment = db.session.get(RevisionComment, comment_id)
-        if comment is None:
-            raise AccountingValidationError("Kommentar nicht gefunden.")
-        comment.resolved = True
-        db.session.commit()
-        return comment
+    def resolve_comment(comment_id, actor, *, expected_version):
+        from backend.services.accounting_revision import AccountingRevisionService
+        return AccountingRevisionService.resolve(comment_id, actor, expected_version=expected_version)
 
     @staticmethod
     def get_comments_for_year(fiscal_year_id: int) -> list[RevisionComment]:

@@ -12,3 +12,5 @@ from backend.models.document_policy import DocumentPolicy, DocumentPolicyChange
 from backend.models.document_deletion import DocumentDeletionRequest
 
 from .bank_payment_allocation import BankPaymentAllocation
+
+from .accounting_revision import AccountingRevision

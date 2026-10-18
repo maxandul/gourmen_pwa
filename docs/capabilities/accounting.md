@@ -795,3 +795,20 @@ offenen Jahren umgehaengt werden; ein offenes Ziel hebt die Quellsperre nicht au
 Jahresdaten werden vor betroffenen Mutationen und Revisionswechseln frisch gesperrt.
 Budgetbetraege sind exakt in Rappen, Null erlaubt. Revisionshistorie, begruendete
 Ruecknahme und erhaltener Bericht folgen als U2-04b/c, weiterhin keine Gesamtfreigabe.
+
+
+## App-Audit U2-04b: Fassungen und Wiederöffnung
+
+Vorlage friert Journal, Budget, Kontobezeichnungen und Belegreferenzen in einer
+neuen Fassung ein. Unter Abschluss ist die Historie erreichbar. Schatzmeister
+oder Systemadmin nimmt mit Grund zur Bearbeitung zurueck, auch nach Abschluss;
+Revisorzustimmung ist nicht erforderlich. Danach ist eine neue Vorlage und
+Bestaetigung erforderlich. Rechnungspruefer bestaetigt regulaer, Admin sichtbar
+stellvertretend. Ein Schatzmeister ohne Adminrolle darf nicht bestaetigen.
+
+Explizite offene Beanstandungen verhindern die Bestaetigung; Hinweise und
+fehlende Belege allein nicht. Kommentare/Fassungsbezug und Erledigung mit
+Person/Zeit bleiben erhalten. Alte Bestaetigungen/Berichte bleiben lesbar,
+Alt-Pruefstaende werden nicht rekonstruiert. Alter IN_REVIEW-Stand muss vor
+Bestaetigung begruendet zurueckgenommen und erneut vorgelegt werden.
+Stabile Abschlussauswertungen und wiederholbare Berichte folgen U2-04c.

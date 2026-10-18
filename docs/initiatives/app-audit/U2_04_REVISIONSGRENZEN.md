@@ -30,3 +30,39 @@ PWA 3.16.22 / pwa.73705b99.js. Keine Migration.
 Der Windows-pyreadline-Destruktor meldete nach erfolgreichem pytest-Ende einen
 ignorierten Handlefehler. PostgreSQL-Sperrwirkung und Browserabnahme bleiben offen.
 Revisionshistorie folgt in b, stabile Abschlusszahlen/Berichte in c. U1 bleibt offen.
+
+## b: Vertrag vor Code
+
+Eigene unveraenderliche Einreichungsdaten in AccountingRevision, je Jahr
+fortlaufende Version; bisherige RevisionApproval-Zeilen bleiben unangetastet.
+Ein Snapshot enthaelt Journal, Kontobezeichnungen, Budget und Belegreferenzen.
+Jahressperre serialisiert Vorlage, Kommentare, Erledigung und Bestaetigung;
+Formulare senden die erwartete Version. Alte Formulare duerfen keine neue
+Fassung bestaetigen oder zuruecknehmen. Fehler rollen die ganze Transaktion zurueck.
+
+Nur aktiver Schatzmeister/Systemadmin legt vor oder nimmt mit Pflichtgrund
+zurueck (auch CLOSED nach OPEN). Nur Rechnungspruefer/Systemadmin bestaetigt,
+Admin immer sichtbar stellvertretend. Keine neuen Rechte fuer Finanzdelegation.
+Offene explizite Beanstandungen blockieren; Kommentare und fehlende Belege sind
+Hinweise. Bestehende Kommentare werden nicht nachtraeglich zu Beanstandungen.
+Neue Kommentare erhalten Versionsbezug, Beanstandungswahl nur Revisor/Admin;
+Erledigung speichert Person/Zeit. Alte Beanstandungen bleiben bis Erledigung offen.
+
+Alte IN_REVIEW-Jahre ohne Snapshot koennen nicht als neue Fassung bestaetigt
+werden: begruendet zuruecknehmen und neu vorlegen. Bei Alt-Wiederoeffnung wird
+kein historischer Pruefstand erfunden; alte Bestaetigung/Bericht bleiben lesbar.
+Historienansicht zeigt Fassungen, Gruende, Handelnde, Kommentare und Snapshots.
+Berichts-Fertigstellung ist versionsgebunden; stabile Berechnung/Retry folgt c.
+Migration separat; kein produktiver Backfill, keine realen Drive-Zugriffe.
+
+### Nachweise b
+
+Isolierter Runner ohne dotenv/Netz: erster Lauf 72 bestanden, 503 Warnungen,
+25.53 s (Revisionsregression, Jahresgrenzen, Buchungswerte). Erweiterter Lauf
+60 bestanden, 1050 Warnungen, 22.89 s (Revisionsregression einschliesslich
+Originalrouten/Rollen, Finanzfreigaben, Belegauswahl, Zahlungszuordnungen).
+Keine Summe daraus als Gesamtlauf. SQLite-Migration Upgrade/Downgrade/Upgrade
+mit Altkommentar sowie verweigertem Historienverlust im Test enthalten.
+19 Worker-Tests bestanden, git diff --check sauber. PWA 3.16.23 / pwa.f5ad7d83.js.
+Keine neuen CSS-Klassen. PostgreSQL-Parallelitaet, reale Drive-Dateiinhalte
+und Browser/visuelle Abnahme offen. Berichtsberechnung und Retry bleiben c.
