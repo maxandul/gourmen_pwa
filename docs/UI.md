@@ -547,3 +547,7 @@ Funktionale Templatepruefung ersetzt keine reale Geraete-/Darstellungsabnahme.
 U2-17b2 ergaenzt Restaurantrechnung und lesbare GGL-Vorher-/Nachher-Werte
 in derselben Korrekturseite/Verlauf. Eventrangliste zeigt gespeicherten Rang
 statt Listenposition; keine neue CSS-Klasse. PWA 3.16.38 / pwa.34b2a6b8.js.
+
+U2-17b3a ergaenzt vorhandene Ess-Typ-Selects je anwesender Person sowie alte/neue
+Typen in Vorschau und Verlauf. Ungueltige Eingaben korrigierbar erhalten und
+escapen; keine neue UI-Klasse. PWA 3.16.39 / pwa.7dd2c898.js.

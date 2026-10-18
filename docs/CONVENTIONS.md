@@ -1075,7 +1075,7 @@ committeten Zahlwegwechsel. Bereinigung behaelt ihre strengere U2-09-Grenze.
 
 BillBro-Korrektur b1 ist ein eigener Prepare/Confirm-Weg. Vorschau schreibt
 nichts und bindet konkrete Eingabe/Akteur/auth_generation/Event/Ausgangsstand
-per URLSafeTimedSerializer, Zweck billbro-correction-v2, Ablauf 30 Minuten.
+per URLSafeTimedSerializer, Zweck billbro-correction-v3, Ablauf 30 Minuten.
 Bestaetigung sperrt Event, betroffene Jahreszeilen und Posten und prueft erneut.
 Request-Hash in BillBroCorrection verhindert doppelte Anwendung. Alte Posten
 werden vor Ersatz vollstaendig als before_json gesichert; after_json beschreibt
@@ -1091,3 +1091,9 @@ Gleichstand. rank/points sind Float fuer exakt darstellbare halbe Werte.
 Bei Rechnungswechsel werden Differenz/Rang/Punkte mit Abrechnung und Historie
 committet. Reine Gesamtbetrag-/Zahlwegkorrektur erhaelt GGL-Werte. Alte
 V1-Vorschauen neu vorbereiten. Keine automatische Altdaten-Neuberechnung.
+
+Ess-Typ-Korrektur b3a: konkrete Typen aller bestehenden Anwesenden signieren;
+reine hypothetische Verteilung ueber getrennte Datenobjekte, keine ORM-Mutation
+in Vorschau. Bestaetigung aktualisiert Typen/Anteile/Posten/Historie atomar.
+RSVP/Anwesenheit und GGL bleiben bei reiner Typkorrektur unveraendert. Unbekannte
+oder abwesende Zielzeilen ablehnen; V2-Vorschauen neu vorbereiten.

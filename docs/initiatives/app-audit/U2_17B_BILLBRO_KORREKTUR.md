@@ -130,3 +130,39 @@ B3 wird weiter begrenzt: b3a Ess-Typ der vorhandenen Anwesenden mit Auswirkung
 auf Einzelanteile/Forderungen; b3b Anwesenheit getrennt von urspruenglicher
 RSVP-Antwort modellieren. Die bestaetigte Regel verbietet erfundene nachtraegliche
 Absagen; daher keine einfache Erweiterung um ein teilnahme-Umschreibefeld.
+
+
+## Vertrag vor Code: b3a Ess-Typ
+
+Vorhandene anwesende Personen erhalten je einen korrigierbaren Ess-Typ in der
+unbezahlten Vorschau. Vorhandene Gewichte und bestaetigte Rappenverteilung
+verwenden; alle betroffenen Anteile/Forderungen vor Bestaetigung zeigen. Typen
+als Teil des konkreten signierten Vorschlags binden. Teilnehmerliste, urspruengliche
+RSVP-Antwort, Schaetzungen und GGL-Ergebnisse bleiben bei reiner Typkorrektur
+unveraendert. Keine neue Migration. Fremde/inaktive Teilnahmezeilen nicht ueber
+manipulierte Feldnamen mitbearbeiten; abwesende Personen nicht aktivieren.
+
+Service berechnet hypothetische Anteile ohne ORM-Mutation. Erst Bestaetigung
+uebernimmt Typen, Anteile, neue Forderungen und Historie in einer Transaktion.
+Gleiche Typen/Betraege/Zahlweg bleiben eine abgewiesene Nullaenderung. Alte
+V2-Vorschauen neu vorbereiten. Geld-/Jahres-/Zustaendigkeitsgrenzen aus b1 bleiben.
+
+
+## b3a umgesetzt und lokal geprueft (18.10.2026)
+
+Ess-Typen als konkrete V3-Vorschau; Berechnung ueber hypothetische Datenobjekte,
+Uebernahme erst im Fachcommit. Beispiel CHF 100 mit Sparsam/Normal/Normal ergibt
+CHF 25.92/37.04/37.04. Vorher/Nachher-Typ und Anteil/Posten sichtbar; Grund und
+vollstaendige Historie bleiben Pflicht. Keine neue Migration. PWA 3.16.39 /
+pwa.7dd2c898.js; bestehende Form-/Info-/Disclosure-Klassen.
+
+Isolierter Runner: test_billbro_type_correction, test_billbro_invoice_correction,
+test_billbro_correction und test_billbro_shares: **82 bestanden, 2021 Warnungen,
+40.09 s**, Prozesscode 0. Neu: reine Typaenderung ohne Betrag/Zahlwegwechsel,
+Vorschau ohne Mutation, neue Verteilung und Claim-Summe, unveraenderte GGL-Werte,
+Typ-Historie, Wiederholung, ungueltige/escaped Eingaben, fremde Teilnahme-ID,
+echter Participation-UPDATE-Fehler mit vollstaendigem Rollback/Retry und alte
+V2-Vorschau. Kein dotenv/Netz. Breite Regression nach lokalem Commit nachtragen.
+B3b Anwesenheit/RSVP-Trennung und bezahlte Finanzkorrekturen bleiben offen.
+
+B3a: Node Worker **19 bestanden**, git diff --check ohne Fehler.

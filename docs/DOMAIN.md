@@ -314,3 +314,7 @@ Finanzkorrekturweg. Restaurantrechnung/Teilnahmen bleiben in b1 unveraendert.
 U2-17b2 erweitert diesen Weg um die Restaurantrechnung: GGL-Differenzen,
 Raenge und Punkte vorab vergleichen und gemeinsam bestaetigen. Gleichstaende
 bleiben als halbe Raenge/Punkte gespeichert; Schätzungen bleiben unveraendert.
+
+U2-17b3a erlaubt im selben unbezahlten Korrekturweg neue Ess-Typen der bereits
+anwesenden Personen. Alle Einzelanteile werden summengleich neu verteilt.
+Urspruengliche Teilnahmeantwort, Schaetzungen und GGL-Werte bleiben erhalten.
