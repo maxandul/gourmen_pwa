@@ -115,6 +115,7 @@ Aktuelle Services:
 | `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
+| `MerchPriceService` | Exakte nichtnegative Katalogpreise vor Artikel-/Variantenmutation (U2-11). |
 | `MoneyService` | Beträge in Rappen rechnen, Rundung, Trinkgeld-Regeln |
 | `PlacesService` | Google-Places-Lookup für Restaurant-Daten |
 | `MailService` | Transaktionale E-Mails (Resend HTTPS oder SMTP) |

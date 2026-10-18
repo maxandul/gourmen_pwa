@@ -1016,3 +1016,7 @@ Versuch. Alte Sessions ohne Nachzustandsfingerabdruck duerfen nichts loeschen.
 Organisatorwechsel aendert keine Teilnahmezeilen. Weder alte Fachwerte
 loeschen noch neue Zusage erfinden; Teilnahme und finanzielle Korrekturen
 bleiben eigene explizite Aktionen. Erfolgsmeldung muss dies korrekt benennen.
+
+MerchPriceService validiert beide Katalogpreise vor Mutation: exakte Rappen,
+Null erlaubt, Integer-Grenze und Mitgliederpreis hoechstens Einkaufspreis.
+Fehler behalten Formularwerte; historische Bestellpreise werden nicht korrigiert.

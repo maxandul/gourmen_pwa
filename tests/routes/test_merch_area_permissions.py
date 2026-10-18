@@ -41,7 +41,7 @@ def test_merch_area_matrix(app,client,merch_case,kind):
     assert ('/admin/merch' in client.get('/member/').get_data(as_text=True))==allowed
     for suffix in ['status','status-update']:
         assert client.post(f'/admin/merch/orders/{oid}/{suffix}',data={'status':'BESTELLT'}).status_code==(302 if allowed else 403)
-    data={'name':'New synthetic shirt','base_supplier_price_chf':'1','base_member_price_chf':'2',
+    data={'name':'New synthetic shirt','base_supplier_price_chf':'2','base_member_price_chf':'1',
           'colors':'blue','sizes':'M','is_active':'on'}
     assert client.post('/admin/merch/articles/new',data=data).status_code==(302 if allowed else 403)
     assert client.post(f'/admin/merch/articles/{aid}/edit',data=data).status_code==(302 if allowed else 403)

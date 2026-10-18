@@ -127,11 +127,11 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-08 / A-025 | lokal geprüft | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
 
 | U2-09 / A-029 | lokal geprüft | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
-| U2-12 / A-031 | Fachregel bestaetigt; nach U2-11 | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
+| U2-12 / A-031 | **bereit / nächstes Paket** | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
 
 | U2-10 / A-033 | lokal geprüft | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
 
-| U2-11 / A-053 | **bereit / nächstes Paket** | Merch-Preise rappengetreu und nichtnegativ validieren; Fehler ohne Teilmutation, bestehende Ausfuehrungspreise bewahren. |
+| U2-11 / A-053 | lokal geprüft | Merch-Preise rappengetreu und nichtnegativ validieren; Fehler ohne Teilmutation, bestehende Ausfuehrungspreise bewahren. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

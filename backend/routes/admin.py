@@ -1382,8 +1382,10 @@ def create_merch_article():
     from backend.models.merch_article import MerchArticle
     from backend.models.merch_variant import MerchVariant
     
+    from backend.services.merch_prices import MerchPriceService, MerchPriceError
     if request.method == 'POST':
         try:
+            supplier_price, member_price = MerchPriceService.form_prices(request.form)
             # Get selected colors and sizes
             colors = request.form.getlist('colors')
             sizes = request.form.getlist('sizes')
@@ -1400,8 +1402,8 @@ def create_merch_article():
             article = MerchArticle(
                 name=request.form.get('name'),
                 description=request.form.get('description'),
-                base_supplier_price_rappen=int(float(request.form.get('base_supplier_price_chf')) * 100),
-                base_member_price_rappen=int(float(request.form.get('base_member_price_chf')) * 100),
+                base_supplier_price_rappen=supplier_price,
+                base_member_price_rappen=member_price,
                 image_url=request.form.get('image_url') or None,
                 is_active=request.form.get('is_active') == 'on'
             )
@@ -1429,6 +1431,11 @@ def create_merch_article():
             flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich erstellt!', 'success')
             return redirect(url_for('admin.merch_article_detail', article_id=article.id))
             
+        except MerchPriceError as exc:
+            db.session.rollback()
+            return render_template('admin/merch/article_form.html', article=None,
+                price_errors=exc.errors, existing_colors=request.form.getlist('colors'),
+                existing_sizes=request.form.getlist('sizes')), 400
         except Exception as e:
             db.session.rollback()
             flash(f'Fehler beim Erstellen des Artikels: {str(e)}', 'error')
@@ -1445,8 +1452,10 @@ def edit_merch_article(article_id):
     
     article = MerchArticle.query.get_or_404(article_id)
     
+    from backend.services.merch_prices import MerchPriceService, MerchPriceError
     if request.method == 'POST':
         try:
+            supplier_price, member_price = MerchPriceService.form_prices(request.form)
             # Get selected colors and sizes
             colors = request.form.getlist('colors')
             sizes = request.form.getlist('sizes')
@@ -1464,8 +1473,8 @@ def edit_merch_article(article_id):
             # Update article
             article.name = request.form.get('name')
             article.description = request.form.get('description')
-            article.base_supplier_price_rappen = int(float(request.form.get('base_supplier_price_chf')) * 100)
-            article.base_member_price_rappen = int(float(request.form.get('base_member_price_chf')) * 100)
+            article.base_supplier_price_rappen = supplier_price
+            article.base_member_price_rappen = member_price
             article.image_url = request.form.get('image_url') or None
             article.is_active = request.form.get('is_active') == 'on'
             article.updated_at = datetime.utcnow()
@@ -1493,6 +1502,11 @@ def edit_merch_article(article_id):
             flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich aktualisiert!', 'success')
             return redirect(url_for('member.merch', tab='shop'))
             
+        except MerchPriceError as exc:
+            db.session.rollback()
+            return render_template('admin/merch/article_form.html', article=article,
+                price_errors=exc.errors, existing_colors=request.form.getlist('colors'),
+                existing_sizes=request.form.getlist('sizes')), 400
         except Exception as e:
             db.session.rollback()
             flash(f'Fehler beim Aktualisieren des Artikels: {str(e)}', 'error')
