@@ -6,7 +6,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17c1b – Finanzbestaetigung und Rueckzahlungsmodell konkretisieren**. U1z bis R08 sowie
+3. Naechstes Paket: **U2-17c1b1 – Zahlungsbilanz und Journalgrundlage**. U1z bis R08 sowie
    U2-01 bis U2-17c1a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
@@ -81,3 +81,7 @@ Code den Erstattungsabgleich bei erhaltenen Zahlungs-/Forderungs-IDs
 konkretisieren; aktuelle BankRefundConfirmation gilt nur fuer Eingangsueberschuss,
 nicht automatisch fuer nachtraeglich gesenkte Forderungen. K1-Ausgang 6710;
 keine neue 3620-Einnahme fuer schon verbuchte Zahlungen erfinden.
+
+C1b-Vertrag vor Code in U2_17C_ZAHLUNGSERHALT.md konkretisiert: c1b1
+Bilanz/Journal, danach c1b2 Freigabe und Bankabgleich. Migration u217c1b120261018
+additiv, 1 SQLite-Test bestanden (0.13 s); Anwendung noch nicht integriert.

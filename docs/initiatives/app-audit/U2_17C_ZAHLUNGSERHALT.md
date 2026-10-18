@@ -127,3 +127,58 @@ abgewiesene Freigabeaktion. Kein dotenv oder ausgehendes Netz.
 PWA 3.16.42 / pwa.96f8a9f1.js. Reale PostgreSQL-Sperren und Migrationen sowie
 Browser/Geraete bleiben offen. C1b Finanzbestaetigung/Rueckzahlungsmodell ist
 naechster Auftrag; C1/F3/F4 und U1 insgesamt bleiben offen.
+
+
+## Vertrag vor Code: c1b Finanzbestaetigung und Rueckzahlung
+
+C1b wird fuer pruefbare lokale Abschluesse in zwei Teile geschnitten:
+c1b1 liefert die Zahlungsbilanz/Journalgrundlage, c1b2 verbindet Freigabe und
+Bankarbeitsplatz. C1b1 allein aktiviert keinen bezahlten Korrekturabschluss.
+
+Die bisherige Forderungs-ID und paid_rappen (Bruttoeingang) bleiben erhalten.
+Nach Finanzfreigabe wird nur expected_rappen an den korrigierten Anteil
+angepasst; abwesende bisherige Schuldner behalten ihren Posten mit Soll 0.
+Neue Anwesende bekommen neue Forderungen. Historie haelt Vorher/Nachher fest.
+Schatzmeister/Systemadmin bzw. bestehendes accounting_write mit Eventzugriff
+bestätigt einen aktuellen Entwurf; Organisation allein reicht nicht. Keine
+Selbsttestat-Regel aus Revision auf die normale Finanzbearbeitung uebertragen.
+Betroffene Jahre muessen fuer echte Korrektur offen sein; Vorbereitung allein
+bleibt erlaubt. Fehlende Zahlungsnachweise/inkonsistenter Altbestand sperren
+Freigabe gezielt statt neue Bankbewegungen zu erfinden.
+
+Separate additive Tabelle ClaimRefundPayment verbindet tatsaechliche
+Ausgangszuordnung, erhaltene Forderung und wirksame BillBroCorrection.
+Kein Backfill. Ein Ausgang kann nur einmal verknuepft werden; alte Links bleiben
+bei Zuordnungsruecknahme erhalten. Downgrade mit Historie verweigern.
+Rueckzahlungsbedarf ist eigenstaendig in der Anzeige, berechnet am stabilen
+Forderungsposten: Bruttoeingang minus aktive tatsaechliche Rueckzahlungen minus
+korrigierter Sollbetrag, mindestens 0. Offene Forderung umgekehrt Soll minus
+Nettoeingang, mindestens 0. Niemals beides gleichzeitig positiv.
+
+Beispiel 84 bezahlt, Soll 78: 6 Rueckzahlung offen. Nach Ausgang 6 bleiben
+84 Brutto und 6 Rueckfluss, netto 78. Spaeter Soll 90 ergibt 12 offen. Ein
+weiterer Eingang 12 ergibt Brutto 96, Rueckfluss 6, netto 90. Kein erneutes
+Fordern bereits verbleibender Zahlung und kein doppelter Rueckzahlungsbedarf.
+Vorhandene Status-/Offen-/Mitgliederuebersicht nutzt dieselbe Nettobilanz;
+paid_rappen/paid_chf bleibt ausdruecklich Bruttohistorie.
+
+C1b1: Modell und Bilanz, Statusfortschreibung beim Eingang, Ruecknahme von
+verknuepften Ausgaengen und Schutz der Eingangsruecknahme bei aktiven
+Rueckzahlungen. Bestehende Ueberschuss-Rueckzahlung bleibt separat unveraendert.
+C1b2: signierte Finanzbestaetigung mit unveraendertem Entwurfs-/Zahlungsstand,
+atomarer Forderungs-/Anteils-/GGL-Historie und danach getrennter Bankabgleich
+auf 6710. Keine neue 3620-Einnahme bei Senkung eines schon verbuchten Anteils.
+Ausgang darf im Folgejahr liegen; nur sein Zahlungsjahr muss offen sein.
+Keine automatische Ueberweisung, Benachrichtigung oder externe Abfrage.
+
+Pruefung c1b1: Migrationszyklus/Historienerhalt; Betragsszenarien mit Teil-/Voll-
+rueckzahlung, erneuter Sollerhoehung/Zahlung, Status/Offen/Netto, Nullbedarf,
+aktiven und zurueckgenommenen Ausgaengen; Eingangsruecknahme erst nach
+Ruecknahme zugehoeriger Ausgaenge; Fehler atomar. C1b2 prueft zusaetzlich
+Freigabe-/Abgleichrollen, Ausgangsstand, Entwurfsstatus, Wiederholung, Fehler,
+Jahressperre, Ausgangsrichtung/Datum/Konto/Betrag und komplette Zuordnungskette.
+PostgreSQL-Parallelitaet bleibt separate Abnahme, keine Behauptung aus SQLite.
+
+C1b1-Migration u217c1b120261018: Upgrade/Downgrade/Upgrade, FK- und
+Eindeutigkeitspruefung sowie Downgrade-Historiensperre: **1 bestanden, 0.13 s**.
+pyreadline3-Handlefehler erst nach Testende, Exit 0. Keine Live-Migration.

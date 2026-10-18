@@ -139,7 +139,10 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-17c1 / F3, K1 | in Teilpakete aufgeteilt | Bezahlte Vereinskorrektur bei unveraendertem Zahlweg/Glaeubiger fein abgrenzen und umsetzen: Zahlungsnachweise erhalten, Mehrforderung/Rueckzahlungsbedarf sichtbar, Bestaetigung durch berechtigte Finanzrolle. Vor Code Zahlungs-/Erstattungsmodell gegen bestaetigte F3/K1-Quellen konkretisieren; Migration separat. Private Faelle folgen B01/B02/G1 (keine allgemeine Zahlungskontrolle; Legacy-Eingangsbestaetigung in B02 ersetzen); bezahlter Glaeubigerwechsel bleibt eigenes Folgepaket. |
 
 | U2-17c1a | lokal geprüft | Bezahlten Vereinsentwurf mit gebundenem Zahlungsstand/Vorschau speichern und zurueckziehen; bisherige Abrechnung bleibt wirksam. Finanzrolle liest mit Eventzugriff. Migration separat, keine Freigabeaktion. Vertrag U2_17C_ZAHLUNGSERHALT.md. |
-| U2-17c1b | **bereit / nächstes Paket** | Finanzielle Bestaetigung des aktuellen Entwurfs, erhaltene Forderungs-/Zahlungs-IDs und eigenstaendiger Rueckzahlungsbedarf mit K1-Abgleich; erst nach c1a und konkretisiertem Erstattungsmodell. |
+| U2-17c1b | in Teilpakete aufgeteilt | Finanzielle Bestaetigung des aktuellen Entwurfs, erhaltene Forderungs-/Zahlungs-IDs und eigenstaendiger Rueckzahlungsbedarf mit K1-Abgleich; erst nach c1a und konkretisiertem Erstattungsmodell. |
+
+| U2-17c1b1 | **bereit / nächstes Paket** | Zahlungsbilanz und Journalgrundlage fuer Forderungsrueckzahlungen; Bruttoeingang erhalten, aktive Ausgaenge getrennt, konsistente Nettobilanz und Ruecknahme. Migration separat. Noch keine Finanzfreigabe. |
+| U2-17c1b2 | geplant | Aktuellen Vereinsentwurf finanziell bestaetigen und korrigierte Forderungen unter derselben ID erhalten; Rueckzahlungsbedarf separat anzeigen und echte Ausgaenge auf 6710 abgleichen. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
