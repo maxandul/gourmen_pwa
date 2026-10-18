@@ -14,6 +14,7 @@
   </div>
 
   <div class="page-content docs-browser">
+    {% if current_user.is_admin() %}<a class="btn btn--outline" href="{{ url_for('docs.classify', drive_id=root_folder_id) }}">Root-Zuordnung</a>{% endif %}
     <div class="card card--filter tool-surface docs-browser__toolbar-card">
       <div class="card__body">
         <details id="docs-browser-toolbar" class="disclosure" {% if search_query %}open{% endif %}>
@@ -53,10 +54,10 @@
                 </div>
               </form>
               <div class="docs-browser__upload-slot">
-                <button type="button" class="btn btn--primary docs-browser__upload-btn" data-docs-upload-trigger>
+                {% if can_upload %}<button type="button" class="btn btn--primary docs-browser__upload-btn" data-docs-upload-trigger>
                   {{ lucide_icon('upload') }}
                   <span>Hochladen</span>
-                </button>
+                </button>{% endif %}
               </div>
             </div>
           </div>
@@ -104,7 +105,7 @@
                  class="docs-folder-tile {% if archive_folder_id and folder.id == archive_folder_id %}docs-folder-tile--archive{% endif %}">
                 <span class="docs-folder-tile__icon" aria-hidden="true">{{ lucide_icon('folder') }}</span>
                 <span class="docs-folder-tile__name">{{ folder.name }}</span>
-                <span class="docs-folder-tile__meta">{{ folder.direct_child_count }} Einträge</span>
+                <span class="docs-folder-tile__meta">{% if folder.direct_child_count is not none %}{{ folder.direct_child_count }} Einträge{% endif %}</span>
               </a>
             {% endfor %}
           </div>
@@ -120,13 +121,13 @@
 </div>
 
 {% set upload_folder_id = root_folder_id %}
-{% include 'docs/_upload_modal.html' %}
+{% if can_upload %}{% include 'docs/_upload_modal.html' %}{% endif %}
 
 {% include 'docs/_folder_picker_modal.html' %}
 
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.16.15" defer></script>
 <script src="{{ url_for('static', filename='js/v2/docs-upload-modal.js') }}?v=3.12.0" defer></script>
 {% endblock %}

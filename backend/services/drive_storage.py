@@ -380,6 +380,27 @@ _drive_retry = retry(
 class DriveStorageService:
     """Service-Layer fuer Google Shared Drive Operations."""
 
+    @classmethod
+    def _require_document_permission(cls, document, actor, *, write=False):
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        check = Policy.can_manage_document if write else Policy.can_read_document
+        if not check(actor, document, root_id=current_app.config.get('GOOGLE_DRIVE_ID')):
+            raise DriveValidationError('Dokumentzugriff nicht erlaubt.')
+
+    @staticmethod
+    def _require_folder_write(folder_id, actor):
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        if not Policy.can_manage_item(actor, folder_id, is_folder=True):
+            raise DriveValidationError('Zielordner nicht erlaubt.')
+
+    @classmethod
+    def classification_metadata(cls, drive_id):
+        drive = cls._build_drive()
+        meta = cls._drive_file_meta(drive, drive_id)
+        if meta.get('trashed') or not cls._folder_reachable_from_root(drive, drive_id, cls.get_root_id()):
+            raise DriveValidationError('Objekt liegt nicht im Vereins-Drive.')
+        return dict(meta, is_folder=meta.get('mimeType') == GOOGLE_FOLDER_MIME)
+
     # -- Auth / Client ------------------------------------------------------
 
     @staticmethod
@@ -802,6 +823,7 @@ class DriveStorageService:
         mime_type: str | None = None,
     ) -> Document:
         """Laedt nach Drive hoch und legt den Document-Datensatz an."""
+        cls._require_folder_write(drive_folder_id, uploader)
         if event_id is not None:
             from backend.models.event import Event
             event = db.session.get(Event, event_id)
@@ -867,6 +889,15 @@ class DriveStorageService:
                 last_seen_at=datetime.utcnow(),
             )
             db.session.add(document)
+            from backend.services.document_permissions import DocumentPermissionService as Policy
+            from backend.models.document_policy import DocumentPolicy, DocumentPolicyChange
+            folder_policy = Policy.policy(drive_folder_id)
+            if folder_policy:
+                file_policy = DocumentPolicy(drive_id=document.drive_file_id, is_folder=False,
+                    access_level=folder_policy.access_level, maintenance_scope=folder_policy.maintenance_scope)
+                db.session.add(file_policy)
+                db.session.add(DocumentPolicyChange(drive_id=document.drive_file_id, actor_id=uploader.id,
+                    reason='Upload: explizite Zielordnerzuordnung uebernommen.', before=None, after=file_policy.snapshot()))
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -1094,8 +1125,9 @@ class DriveStorageService:
         return meta.get("name") or "Unbenannt"
 
     @classmethod
-    def download_document(cls, document: Document) -> tuple[bytes, str, str]:
+    def download_document(cls, document: Document, *, reader: Member) -> tuple[bytes, str, str]:
         """Bytes, MIME, Original-Dateiname aus Drive."""
+        cls._require_document_permission(document, reader)
         try:
             from googleapiclient.http import MediaIoBaseDownload
         except ImportError as exc:
@@ -1103,6 +1135,10 @@ class DriveStorageService:
 
         drive = cls._build_drive()
         meta = cls._drive_file_meta(drive, document.drive_file_id)
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        parent = (meta.get('parents') or [None])[0]
+        if not Policy.can_read_file_at(reader, document.drive_file_id, parent, root_id=current_app.config.get('GOOGLE_DRIVE_ID')):
+            raise DriveValidationError('Aktueller Dateiordner nicht erlaubt.')
         name = meta.get("name") or "download"
         mime = meta.get("mimeType") or "application/octet-stream"
 
@@ -1151,11 +1187,19 @@ class DriveStorageService:
         *,
         audit_move: bool = True,
     ) -> None:
+        cls._require_document_permission(document, moved_by, write=True)
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        is_shared_archive = new_parent_id == cls._archive_folder_id_config()
+        if not (is_shared_archive and Policy.can_read_folder(moved_by, new_parent_id, root_id=cls.get_root_id())):
+            cls._require_folder_write(new_parent_id, moved_by)
         cls.assert_is_folder_in_drive(new_parent_id)
         drive = cls._build_drive()
         meta = cls._drive_file_meta(drive, document.drive_file_id)
         parents = meta.get("parents") or []
         old_parent_id = parents[0] if parents else document.drive_parent_id
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        if not Policy.can_read_file_at(moved_by, document.drive_file_id, old_parent_id, root_id=current_app.config.get('GOOGLE_DRIVE_ID')):
+            raise DriveValidationError('Aktueller Dateiordner nicht erlaubt.')
         if old_parent_id == new_parent_id:
             return
         cls._move_drive_file(
@@ -1179,6 +1223,7 @@ class DriveStorageService:
 
     @classmethod
     def archive_document(cls, document: Document, archived_by: Member) -> None:
+        cls._require_document_permission(document, archived_by, write=True)
         archive_id = cls._archive_folder_id_required()
         if cls.document_is_under_archive(document):
             return
@@ -1207,6 +1252,8 @@ class DriveStorageService:
         target_folder_id: str,
         restored_by: Member,
     ) -> None:
+        cls._require_document_permission(document, restored_by, write=True)
+        cls._require_folder_write(target_folder_id, restored_by)
         cls.assert_is_folder_in_drive(target_folder_id)
         archive_id = cls._archive_folder_id_required()
         if not cls.document_is_under_archive(document):
@@ -1279,6 +1326,7 @@ class DriveStorageService:
         new_filename_stem: str,
         renamed_by: Member,
     ) -> None:
+        cls._require_document_permission(document, renamed_by, write=True)
         stem = (new_filename_stem or "").strip()
         if not stem:
             raise DriveValidationError("Dateiname ist erforderlich.")
@@ -1289,6 +1337,10 @@ class DriveStorageService:
 
         drive = cls._build_drive()
         existing = cls._drive_file_meta(drive, document.drive_file_id)
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        parent = (existing.get('parents') or [None])[0]
+        if not Policy.can_read_file_at(renamed_by, document.drive_file_id, parent, root_id=current_app.config.get('GOOGLE_DRIVE_ID')):
+            raise DriveValidationError('Aktueller Dateiordner nicht erlaubt.')
         old_name = existing.get("name") or ""
         ext = old_name.rsplit(".", 1)[-1] if "." in old_name else None
         new_filename = sanitize_drive_filename(stem, ext)

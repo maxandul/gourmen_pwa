@@ -11,6 +11,7 @@ Pfade:
 from __future__ import annotations
 
 import io
+import json
 
 from flask import (
     Blueprint,
@@ -43,7 +44,23 @@ from backend.services.drive_storage import (
     MAX_FILE_SIZE_BYTES,
 )
 
+from backend.services.document_permissions import DocumentPermissionService as Policy
+from backend.services.document_browser import DocumentBrowserService as Browser
+from backend.models.document_policy import DocumentPolicyChange
+
 bp = Blueprint("docs", __name__)
+
+
+@bp.errorhandler(PermissionError)
+def permission_denied(error):
+    return render_template('errors/403.html'), 403
+
+
+@bp.after_request
+def private_documents(response):
+    response.headers['Cache-Control'] = 'private, no-store'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
 
 
 def _drive_enabled() -> bool:
@@ -87,7 +104,7 @@ def index():
     search_hits = []
     if len(q) >= 2:
         try:
-            search_hits = DriveStorageService.search_files(q)
+            search_hits = Browser.search(current_user, q)
         except DriveError as exc:
             current_app.logger.warning("Drive-Suche fehlgeschlagen: %s", exc)
             flash("Suche konnte gerade nicht ausgeführt werden.", "warning")
@@ -95,7 +112,7 @@ def index():
     top_level = []
     if not search_hits and not q:
         try:
-            listing = DriveStorageService.list_folder(root_id)
+            listing = Browser.listing(current_user, root_id)
             top_level = listing.subfolders
         except DriveError as exc:
             current_app.logger.error("Drive-Ordnerliste Root fehlgeschlagen: %s", exc)
@@ -105,6 +122,7 @@ def index():
         "docs/index.html",
         root_folder_id=root_id,
         top_level_folders=top_level,
+        can_upload=Policy.can_manage_item(current_user, root_id, is_folder=True),
         search_query=q,
         search_hits=search_hits,
         archive_folder_id=(current_app.config.get("DRIVE_ARCHIVE_FOLDER_ID") or "").strip(),
@@ -118,18 +136,19 @@ def index():
 @login_required
 def folder_view(drive_folder_id: str):
     _require_feature()
+    Browser.require_folder(current_user, drive_folder_id)
     q = (request.args.get("q") or "").strip()
     scope_hits = []
     if len(q) >= 2:
         try:
-            scope_hits = DriveStorageService.search_files(q, scope_folder_id=drive_folder_id)
+            scope_hits = Browser.search(current_user, q, scope_folder_id=drive_folder_id)
         except DriveError as exc:
             current_app.logger.warning("Drive-Suche Ordner fehlgeschlagen: %s", exc)
             flash("Suche konnte gerade nicht ausgeführt werden.", "warning")
 
     try:
-        listing = DriveStorageService.list_folder(drive_folder_id)
-        crumbs = DriveStorageService.get_folder_breadcrumb(drive_folder_id)
+        listing = Browser.listing(current_user, drive_folder_id)
+        crumbs = Browser.breadcrumbs(current_user, DriveStorageService.get_folder_breadcrumb(drive_folder_id))
     except DriveValidationError:
         abort(404)
     except DriveError as exc:
@@ -154,6 +173,7 @@ def folder_view(drive_folder_id: str):
         drive_folder_id=drive_folder_id,
         folder_display_name=folder_display_name,
         listing=listing,
+        can_upload=Policy.can_manage_item(current_user, drive_folder_id, is_folder=True),
         breadcrumbs=crumbs,
         search_query=q,
         search_hits=scope_hits,
@@ -178,6 +198,7 @@ def folder_view(drive_folder_id: str):
 def detail(doc_id: int):
     _require_feature()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=False)
 
     sync_failed = False
     try:
@@ -198,8 +219,9 @@ def detail(doc_id: int):
         )
         return redirect(url_for("docs.index"))
 
+    Browser.require_document(current_user, fresh)
     drive_filename = DriveStorageService.fetch_drive_filename(fresh)
-    crumbs = DriveStorageService.get_folder_breadcrumb(fresh.drive_parent_id)
+    crumbs = Browser.breadcrumbs(current_user, DriveStorageService.get_folder_breadcrumb(fresh.drive_parent_id))
     drive_web_link = DriveStorageService.get_web_view_link(fresh)
 
     history = (
@@ -214,6 +236,7 @@ def detail(doc_id: int):
     return render_template(
         "docs/detail.html",
         document=fresh,
+        can_manage_document=Policy.can_manage_document(current_user, fresh, root_id=DriveStorageService.get_root_id()),
         drive_filename=drive_filename,
         drive_web_link=drive_web_link,
         breadcrumbs=crumbs,
@@ -233,20 +256,21 @@ def detail(doc_id: int):
 def api_root():
     _require_feature()
     rid = DriveStorageService.get_root_id()
-    return jsonify({"id": rid, "name": "Dokumente"})
+    return jsonify({"id": rid, "name": "Dokumente", "can_select": Policy.can_manage_item(current_user, rid, is_folder=True)})
 
 
 @bp.route("/api/folder/<drive_folder_id>/children", methods=["GET"])
 @login_required
 def api_folder_children(drive_folder_id: str):
     _require_feature()
+    Browser.require_folder(current_user, drive_folder_id)
     try:
-        subs = DriveStorageService.list_subfolders_only(drive_folder_id)
+        subs = Browser.folders(current_user, DriveStorageService.list_subfolders_only(drive_folder_id))
     except DriveError as exc:
         return jsonify({"error": str(exc)}), 400
     return jsonify(
         {
-            "folders": [{"id": f.id, "name": f.name} for f in subs],
+            "folders": [{"id": f.id, "name": f.name, "can_select": Policy.can_manage_item(current_user, f.id, is_folder=True)} for f in subs],
         }
     )
 
@@ -271,6 +295,8 @@ def upload():
     if not folder_raw:
         flash("Kein Zielordner gewählt.", "error")
         return redirect(_redirect_docs_fallback())
+
+    Browser.require_folder(current_user, folder_raw, write=True)
 
     title = (request.form.get("title") or "").strip()
     if not title:
@@ -334,6 +360,7 @@ def rename(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=True)
     next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
@@ -358,6 +385,7 @@ def move(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=True)
     next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
@@ -365,6 +393,7 @@ def move(doc_id: int):
     if not parent_raw:
         flash("Kein Zielordner gewählt.", "error")
         return redirect(next_url)
+    Browser.require_folder(current_user, parent_raw, write=True)
     try:
         DriveStorageService.move_document(document, parent_raw, current_user)
     except DriveValidationError as exc:
@@ -385,9 +414,13 @@ def archive(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=True)
     next_url = SecurityService.local_return_target(request.form.get("next")) or url_for(
         "docs.folder_view", drive_folder_id=document.drive_parent_id
     )
+    archive_target = (current_app.config.get("DRIVE_ARCHIVE_FOLDER_ID") or "").strip()
+    if archive_target:
+        Browser.require_folder(current_user, archive_target)
     try:
         DriveStorageService.archive_document(document, current_user)
     except DriveNotConfiguredError as exc:
@@ -411,11 +444,13 @@ def restore(doc_id: int):
     _require_feature()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=True)
     next_url = SecurityService.local_return_target(request.form.get("next")) or url_for("docs.detail", doc_id=doc_id)
     target = (request.form.get("target_folder_id") or "").strip()
     if not target:
         flash("Kein Zielordner gewählt.", "error")
         return redirect(next_url)
+    Browser.require_folder(current_user, target, write=True)
     try:
         DriveStorageService.restore_document(document, target, current_user)
     except DriveError as exc:
@@ -436,6 +471,7 @@ def hard_delete(doc_id: int):
     _require_admin()
     _validate_csrf_or_403()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=True)
 
     if not DriveStorageService.document_is_under_archive(document):
         flash("Endgültig löschen ist nur im Archiv möglich.", "error")
@@ -471,8 +507,9 @@ def hard_delete(doc_id: int):
 def download(doc_id: int):
     _require_feature()
     document = Document.query.get_or_404(doc_id)
+    Browser.require_document(current_user, document, write=False)
     try:
-        payload, mime, fname = DriveStorageService.download_document(document)
+        payload, mime, fname = DriveStorageService.download_document(document, reader=current_user)
     except DriveError as exc:
         current_app.logger.error(
             "Drive-Download fehlgeschlagen: %s", exc, exc_info=True
@@ -518,3 +555,45 @@ def admin_resync():
             "success",
         )
     return redirect(url_for("admin.index"))
+
+
+@bp.route('/classify/<drive_id>', methods=['GET', 'POST'])
+@login_required
+def classify(drive_id):
+    _require_feature()
+    _require_admin()
+    if request.method == 'POST':
+        _validate_csrf_or_403()
+    from sqlalchemy.exc import SQLAlchemyError
+    try:
+        meta = DriveStorageService.classification_metadata(drive_id)
+    except DriveValidationError:
+        abort(404)
+    except DriveError:
+        flash('Drive-Zuordnung derzeit nicht verfuegbar.', 'error')
+        return redirect(url_for('docs.index'))
+    is_folder = meta['is_folder']
+    policy = Policy.policy(drive_id)
+    before = policy.snapshot() if policy else None
+    if request.method == 'POST':
+        try:
+            expected = json.loads(request.form.get('expected_before', 'null'))
+            Policy.classify(current_user, drive_id, is_folder=is_folder,
+                access_level=request.form.get('access_level'), maintenance_scope=request.form.get('maintenance_scope'),
+                reason=request.form.get('reason'), expected_before=expected)
+            if not is_folder and not Document.query.filter_by(drive_file_id=drive_id).first():
+                parent = (meta.get('parents') or [None])[0]
+                if not parent:
+                    raise ValueError('Datei ohne zugeordneten Ordner.')
+                db.session.add(Document(drive_file_id=drive_id, drive_parent_id=parent))
+            db.session.commit()
+            flash('Dokumentzuordnung gespeichert.', 'success')
+            return redirect(url_for('docs.classify', drive_id=drive_id))
+        except (ValueError, SQLAlchemyError):
+            db.session.rollback()
+            flash('Zuordnung nicht gespeichert. Eingaben pruefen und Seite neu laden.', 'error')
+    from backend.services.area_permissions import AreaPermissionService
+    changes = DocumentPolicyChange.query.filter_by(drive_id=drive_id).order_by(DocumentPolicyChange.id.desc()).limit(20).all()
+    return render_template('docs/classify.html', drive_id=drive_id, item_name=meta.get('name') or 'Dokument',
+        is_folder=is_folder, policy=policy, expected_before=json.dumps(before), changes=changes,
+        levels=Policy.ACCESS_LEVELS, scopes={scope:AreaPermissionService.SCOPES[scope] for scope in Policy.MAINTENANCE_SCOPES})

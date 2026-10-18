@@ -88,6 +88,11 @@ def test_treasurer_can_link_visible_booking_but_not_board_booking(app,selection_
 def test_document_options_and_forged_event(app,client,selection_data,monkeypatch):
     members,events,_,_=selection_data;login(client,members[1])
     app.config['GOOGLE_DRIVE_ID']='synthetic-root'
+    from backend.models.document_policy import DocumentPolicy
+    from backend.models.member_area_grant import MemberAreaGrant
+    with app.app_context():
+        db.session.add(DocumentPolicy(drive_id='synthetic-root',is_folder=True,access_level='club',maintenance_scope='documents_manage'))
+        db.session.add(MemberAreaGrant(member_id=members[1],scope='documents_manage',granted_by=members[3]));db.session.commit()
     monkeypatch.setattr(DriveStorageService,'list_folder',lambda *args:FolderListing(folder_id='synthetic-root',subfolders=[],files=[]))
     monkeypatch.setattr(DriveStorageService,'get_folder_breadcrumb',lambda *args:[])
     monkeypatch.setattr(DriveStorageService,'get_web_view_link_for_folder_id',lambda *args:'')

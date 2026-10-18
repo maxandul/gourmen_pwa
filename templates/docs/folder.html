@@ -12,14 +12,15 @@
     <div class="docs-folder-head">
       <h1>{{ lucide_icon('folder') }} {{ folder_display_name }}</h1>
       <div class="docs-folder-head__actions">
+        {% if current_user.is_admin() %}<a class="btn btn--outline" href="{{ url_for('docs.classify', drive_id=drive_folder_id) }}">Zuordnung</a>{% endif %}
         {% if folder_drive_link %}
           <a href="{{ folder_drive_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline">
             {{ lucide_icon('external-link') }} <span>In Drive öffnen</span>
           </a>
         {% endif %}
-        <button type="button" class="btn btn--primary" data-docs-upload-trigger>
+        {% if can_upload %}<button type="button" class="btn btn--primary" data-docs-upload-trigger>
           {{ lucide_icon('upload') }} <span>Hochladen</span>
-        </button>
+        </button>{% endif %}
       </div>
     </div>
     <p class="docs-browser__breadcrumb text-muted" aria-label="Pfad">
@@ -94,7 +95,7 @@
                  class="docs-folder-tile {% if archive_folder_id and folder.id == archive_folder_id %}docs-folder-tile--archive{% endif %}">
                 <span class="docs-folder-tile__icon" aria-hidden="true">{{ lucide_icon('folder') }}</span>
                 <span class="docs-folder-tile__name">{{ folder.name }}</span>
-                <span class="docs-folder-tile__meta">{{ folder.direct_child_count }} Einträge</span>
+                <span class="docs-folder-tile__meta">{% if folder.direct_child_count is not none %}{{ folder.direct_child_count }} Einträge{% endif %}</span>
               </a>
             {% endfor %}
           </div>
@@ -129,6 +130,7 @@
                         <a href="{{ row.web_view_link }}" target="_blank" rel="noopener noreferrer" class="docs-file-row__kebab-link">In Drive öffnen</a>
                       {% endif %}
                       <a href="{{ url_for('docs.download', doc_id=row.document_id) }}" class="docs-file-row__kebab-link">Herunterladen</a>
+                      {% if row.can_manage %}
                       <button type="button" class="docs-file-row__kebab-btn"
                               data-drive-quick-rename data-doc-id="{{ row.document_id }}" data-filename="{{ row.name }}">Umbenennen</button>
                       <button type="button" class="docs-file-row__kebab-btn"
@@ -140,12 +142,14 @@
                         <button type="button" class="docs-file-row__kebab-btn"
                                 data-drive-quick-restore data-doc-id="{{ row.document_id }}">Wiederherstellen</button>
                       {% endif %}
+                      {% endif %}
                       <a href="{{ url_for('docs.detail', doc_id=row.document_id) }}" class="docs-file-row__kebab-link">Details</a>
                     </div>
                   </details>
                 {% elif row.web_view_link %}
                   <a href="{{ row.web_view_link }}" target="_blank" rel="noopener noreferrer" class="btn btn--outline btn--sm">{{ lucide_icon('external-link') }} Öffnen</a>
                 {% endif %}
+                {% if current_user.is_admin() %}<a class="btn btn--outline btn--sm" href="{{ url_for('docs.classify', drive_id=row.drive_file_id) }}">Zuordnung</a>{% endif %}
               </li>
             {% endfor %}
           </ul>
@@ -159,14 +163,14 @@
 </div>
 
 {% set upload_folder_id = drive_folder_id %}
-{% include 'docs/_upload_modal.html' %}
+{% if can_upload %}{% include 'docs/_upload_modal.html' %}{% endif %}
 {% include 'docs/_folder_picker_modal.html' %}
 {% include 'docs/_drive_quick_modals.html' %}
 
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.16.15" defer></script>
 <script src="{{ url_for('static', filename='js/v2/docs-upload-modal.js') }}?v=3.12.0" defer></script>
 <script src="{{ url_for('static', filename='js/v2/docs-quick-actions.js') }}?v=3.12.0" defer></script>
 {% endblock %}

@@ -71,6 +71,7 @@
           label.type = 'button';
           label.className = 'docs-folder-picker__choose';
           label.textContent = f.name;
+          label.disabled = f.can_select !== true;
 
           row.appendChild(toggle);
           row.appendChild(label);
@@ -123,6 +124,7 @@
       label.type = 'button';
       label.className = 'docs-folder-picker__choose';
       label.textContent = root.name || 'Dokumente';
+      label.disabled = root.can_select !== true;
 
       row.appendChild(toggle);
       row.appendChild(label);

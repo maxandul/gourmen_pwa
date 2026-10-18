@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Dokumentzuordnung – Gourmen{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header"><h1>Zuordnung: {{ item_name }}</h1><p>{{ 'Ordner' if is_folder else 'Datei' }} · Nur Systemadmin</p></div>
+  <div class="page-content"><div class="card"><div class="card__body">
+    <p>Die Zuordnung gilt in der App. Direkte Drive-Freigaben werden separat verwaltet.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="expected_before" value="{{ expected_before }}">
+      <div class="form-field"><label class="form-field__label" for="access_level">Lesergruppe</label>
+        <select class="form-field__input" name="access_level" id="access_level" required>
+          <option value="">Bitte zuordnen</option>{% for key,label in levels.items() %}<option value="{{ key }}" {% if policy and policy.access_level==key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div class="form-field"><label class="form-field__label" for="maintenance_scope">Pflegebereich</label>
+        <select class="form-field__input" name="maintenance_scope" id="maintenance_scope" required>
+          <option value="">Bitte zuordnen</option>{% for key,label in scopes.items() %}<option value="{{ key }}" {% if policy and policy.maintenance_scope==key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div class="form-field"><label class="form-field__label" for="reason">Begruendung</label><input class="form-field__input" id="reason" name="reason" required maxlength="500"></div>
+      <button class="btn btn--primary" type="submit">Zuordnung speichern</button>
+      <a class="btn btn--outline" href="{{ url_for('docs.index') }}">Dokumente</a>
+    </form>
+  </div></div>
+  <div class="card"><div class="card__body"><h2>Zuordnungsverlauf</h2>
+    {% for change in changes %}<p>{{ change.changed_at.strftime('%d.%m.%Y %H:%M') }} · Mitglied {{ change.actor_id }} · {{ change.reason }} · {{ change.before or 'Nicht zugeordnet' }} → {{ change.after }}</p>{% else %}<p>Noch nicht zugeordnet. Bis zur Zuordnung nur fuer Systemadmin sichtbar.</p>{% endfor %}
+  </div></div></div>
+</div>
+{% endblock %}

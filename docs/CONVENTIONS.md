@@ -767,3 +767,19 @@ Scopes documents_manage/board_documents_manage sind gezielte Zusatzfreigaben.
 classify prueft aktuellen aktiven Admin, erlaubte Werte und erwarteten Vorzustand;
 Policy und DocumentPolicyChange bleiben in einer Caller-Transaktion. PostgreSQL-
 Sperrnachweis bleibt offen. Routenbindung folgt separat in R04c2.
+
+## Dokumentrouten und Transportgrenze (U1-R04c2)
+
+DocumentBrowserService filtert Listen, Suche, Pfade und Ordnerpicker mit der
+lokalen Policy, bevor Daten an Templates/JSON gehen. Ungefilterte Child-Counts
+werden Nichtadmins nicht angezeigt. Picker zeigt lesbare Ordner zum Navigieren,
+markiert aber nur pflegbare Ziele als can_select. Backend prueft Ziele erneut.
+DriveStorageService wiederholt Rechtepruefungen vor Upload/Download/Pflege-I/O;
+Download/Move/Rename pruefen den tatsaechlichen Drive-Elternordner erneut.
+Uploads uebernehmen explizite Ordnerpolicy plus Historie in derselben lokalen
+Transaktion; unbekannte Adminuploads bleiben unklassifiziert. Archivierung
+verlangt Pflege des Dokuments und Leserecht im konfigurierten gemeinsamen Archiv,
+aendert aber nie dessen Lese-/Pflegepolicy. Wiederherstellung braucht Zielpflege.
+Adminzuordnung ist CSRF-geschuetzt, validiert Drive-Zugehoerigkeit und Vorzustand.
+Alle Dokumentantworten private,no-store; keine neue UI-Klasse. Die externe
+Drive-Berechtigung ist eine separate, noch offene Abnahme.

@@ -68,6 +68,16 @@ class DocumentPermissionService:
             member, document.drive_file_id, is_folder=False)
 
     @classmethod
+    def can_read_file_at(cls, member, drive_id, parent_id, *, root_id=None):
+        from types import SimpleNamespace
+        from backend.models.document import Document
+        document = Document.query.filter_by(drive_file_id=drive_id).first()
+        if not document:
+            return bool(member and member.is_active and member.is_admin())
+        return cls.can_read_document(member, SimpleNamespace(drive_file_id=drive_id,
+            drive_parent_id=parent_id, event_id=document.event_id), root_id=root_id)
+
+    @classmethod
     def classify(cls, actor, drive_id, *, is_folder, access_level, maintenance_scope, reason, expected_before):
         """Stage policy + history atomically. Caller commits or rolls both back."""
         if not actor or not actor.id:

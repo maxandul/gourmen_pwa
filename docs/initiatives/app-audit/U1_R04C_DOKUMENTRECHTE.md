@@ -53,3 +53,32 @@ Erster Lauf vor zusaetzlichem Beleg-Aliastest 25 bestanden/549 Warnungen.
 `git diff --check` sauber. Keine UI-/Worker-Aenderung, kein erneuter Worker-Lauf.
 PostgreSQL-Parallelitaet und externe Drive-Grenzen offen. Bestehende Dokumentrouten
 verwenden die neue Grundlage erst nach R04c2; U1 bleibt insgesamt offen.
+
+## R04c2 Nachweis 18.10.2026
+
+DocumentBrowserService filtert Root/Ordner/Suche/Picker und Breadcrumbs vor
+Darstellung. Nichtadmins erhalten keine ungefilterten Child-Counts. Direkte
+Datei-/Download-/Pflegewege pruefen dieselben Rechte, nach Auto-Sync erneut.
+Transport prueft Upload/Download/Move/Rename/Archiv/Restore vor I/O; Live-Eltern-
+wechsel wird vor Download/Move/Rename erneut geprueft. Admin ordnet Dateien und
+Ordner mit CSRF, Begruendung und Vorzustandspruefung zu. Externe Dateien werden
+bei Zuordnung lokal registriert; keine Freigabeaenderung in Drive.
+
+Gemeinsames Archiv: Dokumentpflege plus Leserecht am konfigurierten Archivziel
+reicht fuer Archivierung; Datei-Leseebene/Pflegebereich bleiben erhalten. Normales
+Verschieben/Wiederherstellen verlangt Zielpflege. Upload kopiert eine vorhandene
+explizite Zielpolicy atomar samt Historie; Root/Altbestand wird nicht pauschal offen.
+Ordnerpicker navigiert durch lesbare Ordner, nur can_select-Ziele sind waehlbar.
+
+Isolierte Regression (test_document_access, test_docs_smoke,
+test_merch_docs_return_target, test_upload_selection_permissions,
+test_document_permissions): **98 bestanden, 1573 Warnungen**. Vorlaeufige Laeufe:
+88 bestanden/1 Fehler (alter Upload-Smoke ohne nun erforderliche Pflegefreigabe),
+92 bestanden/3 Fehler (abort innerhalb PermissionError-Handler wurde weitergeworfen;
+auf regulaere 403-Antwort korrigiert), danach 97 bestanden und ergaenzter Archivtest.
+Fakes pruefen keinen realen Drive-Zugriff. CSRF-Verweigerung, veraltete Formulare,
+verbotene Transporte, Klassifikationserhalt und aktuelle Download-Eltern geprueft.
+Worker: **19 bestanden**. `node --check` Folder-Picker und `git diff --check` sauber.
+PWA 3.16.15, Picker-Queryversion 3.16.15, keine neue UI-Klasse/Migration.
+Breite isolierte Bestandsregression gestartet; deren Ergebnis wird separat
+nachgetragen und ist noch keine Abschlussbehauptung. Naechstes Paket R04c3.

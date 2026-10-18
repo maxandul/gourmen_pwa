@@ -2,7 +2,7 @@
 > «alle sehen alles». Unklassifizierter Altbestand in der App nur Systemadmin;
 > explizite Datei-/Ordnerrechte gemaess
 > [R04c-Vertrag](../initiatives/app-audit/U1_R04C_DOKUMENTRECHTE.md).
-> R04c1 ist die lokale Grundlage, Routenbindung folgt R04c2. Direkte
+> R04c1 ist die lokale Grundlage; R04c2 bindet die Dokumentrouten an. Direkte
 > Drive-Freigaben sind damit weder geaendert noch abgenommen.
 
 # Capability: Vereinsdokumente in Google Shared Drive

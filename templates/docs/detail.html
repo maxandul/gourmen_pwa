@@ -32,6 +32,8 @@
         {{ lucide_icon('download') }} <span>Herunterladen</span>
       </a>
 
+      {% if current_user.is_admin() %}<a class="btn btn--outline" href="{{ url_for('docs.classify', drive_id=document.drive_file_id) }}">Zuordnung</a>{% endif %}
+      {% if can_manage_document %}
       <button type="button" class="btn btn--outline" data-drive-quick-rename data-doc-id="{{ document.id }}" data-filename="{{ drive_filename }}">{{ lucide_icon('pencil') }} <span>Umbenennen</span></button>
       <button type="button" class="btn btn--outline" data-drive-quick-move data-doc-id="{{ document.id }}">{{ lucide_icon('folder-symlink') }} <span>Verschieben</span></button>
 
@@ -42,6 +44,7 @@
         {% if current_user.is_admin() %}
           <button type="button" class="btn btn--danger" data-docs-action-trigger="delete">{{ lucide_icon('trash-2') }} <span>Endgültig löschen</span></button>
         {% endif %}
+      {% endif %}
       {% endif %}
     </div>
 
@@ -128,7 +131,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.12.0" defer></script>
+<script src="{{ url_for('static', filename='js/v2/docs-folder-picker.js') }}?v=3.16.15" defer></script>
 <script src="{{ url_for('static', filename='js/v2/docs-quick-actions.js') }}?v=3.12.0" defer></script>
 <script>
   (function () {

@@ -331,4 +331,5 @@ Drive bleibt Quelle fuer Inhalte/Dateinamen. DocumentPolicy und
 DocumentPolicyChange speichern ausschliesslich lokale Zugriffsklassifikation
 und deren Aenderungshistorie. DocumentPermissionService verbindet diese Regeln
 mit Event- und Belegrechten. Keine implizite Uebertragung auf externe Drive-
-Freigaben. R04c1 liefert die Grundlage, R04c2 bindet die App-Einstiege an.
+Freigaben. R04c1 liefert die Grundlage; DocumentBrowserService bindet seit R04c2 die
+App-Einstiege an und filtert die Drive-Transportdaten vor der Darstellung.

@@ -8,6 +8,14 @@ from backend.services.drive_storage import DriveStorageService, FolderListing
 def test_docs_index_renders_with_event_dropdown(logged_in_client, app):
     """Liefert 200 und rendert Event-Zeile im Upload-Modal (faengt falsche Event-Feldnamen)."""
     app.config["GOOGLE_DRIVE_ID"] = "test-shared-drive-id"
+    from backend.extensions import db
+    from backend.models.member import Member, Funktion
+    from backend.models.document_policy import DocumentPolicy
+    with app.app_context():
+        Member.query.first().funktion = Funktion.REISEKOMMISSAR
+        db.session.add(DocumentPolicy(drive_id='test-shared-drive-id',is_folder=True,
+            access_level='club',maintenance_scope='travel_manage'))
+        db.session.commit()
     empty_listing = FolderListing(
         folder_id="test-shared-drive-id", subfolders=[], files=[]
     )
