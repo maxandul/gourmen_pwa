@@ -35,7 +35,9 @@ Zusaetzlich jeweils aktuellen Status pruefen.
 
 ## Aktueller lokaler Nachweis und Grenzen
 
-Breite Regression auf 68246e2: **1320 bestanden, 18268 Warnungen, 739.49 s**.
+Breite Regression auf 02dd63f: **1439 bestanden, 21380 Warnungen, 806.99 s**;
+24 JavaScript-Tests bestanden. Danach GGL-Anzeige-Nachkorrektur: 23 Tests bestanden (705 Warnungen, 11.11 s);
+halbe Gesamtpunkte und gleiche Saisonraenge erhalten.
 Vor diesem Gesamtlauf U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
 U2-14: 61. Danach U2-15: 80 Python-/23 JS-Tests. Einzelvertraege im README.
 Migration U2-14 **e9d6f95** (u21420261018), Snapshotfelder ohne erfundene
@@ -45,7 +47,8 @@ und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-1
 (u217b120261018). B2: 91 Tests, erweitert 14; Migration 37e081c
 (u217b220261018) fuer halbe GGL-Werte, fehlende Legacy-Punktespalte beruecksichtigt.
 B3a: 82 Tests. PWA 3.16.39 / pwa.7dd2c898.js.
-Breite Regression vor b3b ausfuehren und Ergebnis/Commit nachtragen.
+Gesamtlauf auf unveraendertem 02dd63f abgeschlossen; pyreadline3 meldete erst
+nach Testende einen ignorierten Windows-Handle-Fehler (Prozessstatus 0).
 
 U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
 U2-15 erhaelt Positionspreise/IDs, Nulloperationen schreiben nichts; Versions-

@@ -318,3 +318,9 @@ bleiben als halbe Raenge/Punkte gespeichert; Schätzungen bleiben unveraendert.
 U2-17b3a erlaubt im selben unbezahlten Korrekturweg neue Ess-Typen der bereits
 anwesenden Personen. Alle Einzelanteile werden summengleich neu verteilt.
 Urspruengliche Teilnahmeantwort, Schaetzungen und GGL-Werte bleiben erhalten.
+
+
+GGL-Anschlusspruefung U2-17b2: Halbe Gesamtpunkte bleiben auch in persoenlichen
+Punkteabstaenden erhalten. Persoenliche Saisonansicht und Tabelle verwenden
+denselben berechneten Saisonrang; eine Listenposition ist bei Gleichstand
+kein zusaetzlicher Rang. Gespeicherte Eventergebnisse werden nicht neu berechnet.

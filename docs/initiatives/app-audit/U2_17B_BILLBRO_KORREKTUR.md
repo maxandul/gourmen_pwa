@@ -166,3 +166,39 @@ V2-Vorschau. Kein dotenv/Netz. Breite Regression nach lokalem Commit nachtragen.
 B3b Anwesenheit/RSVP-Trennung und bezahlte Finanzkorrekturen bleiben offen.
 
 B3a: Node Worker **19 bestanden**, git diff --check ohne Fehler.
+
+
+## Vertrag vor Code: b2-Nachkorrektur der GGL-Auswertung
+
+Lesender Anschlussabgleich nach b3a: Die persoenliche Performance schneidet
+Gesamtpunkte mit int ab und verwendet fuer den Rang die Listenposition statt
+des bereits berechneten Saisonrangs. Damit koennen halbe Punkte und Gleichstaende
+zwischen Tabelle und persoenlicher Anzeige abweichen. Vor b3b begrenzt korrigieren:
+Gesamtpunkte unverkuerzt uebernehmen, denselben Saisonrang anzeigen und echte
+Punkteabstaende pruefen. Keine neue Rangregel, keine Neuberechnung gespeicherter
+Events, keine Migration. Regression mit synthetischem Gleichstand und halben
+Punkten einschliesslich originaler GGL-Seite. Laufender Gesamttest auf 02dd63f
+bleibt bis zu seinem Ende unveraendert; Nachkorrektur danach separat pruefen.
+
+
+## Breite Regression nach b3a
+
+Unveraenderter Anwendungsstand **02dd63f**: isolierter Gesamtlauf tests mit
+-q --disable-warnings --tb=short -p no:cacheprovider ueber audit_bootstrap:
+**1439 bestanden, 21380 Warnungen, 806.99 s**. Danach ignorierter pyreadline3-
+Destruktorfehler (Windows-Handle), Prozessstatus 0. Node Worker/Bestell-Edit:
+**24 bestanden, 0 fehlgeschlagen**. Kein dotenv, keine ausgehenden Verbindungen.
+Dies ist kein Nachweis fuer PostgreSQL, Geraete oder Live-Dienste; U1 bleibt offen.
+
+
+## b2-Nachkorrektur lokal geprueft
+
+Zwei neue parametrische Regressionen reproduzierten vor der Korrektur das
+Abschneiden von 1.5 auf 1 bzw. 2.5 auf 2 (2 fehlgeschlagen, 52 Warnungen,
+4.32 s). Gesamtpunkte bleiben nun unverkuerzt, persoenliche Saison- und
+Performanceansicht uebernehmen den Tabellenrang auch bei Gleichstand.
+Danach fractional_display, invoice_correction, type_correction und
+fractional_migration: **23 bestanden, 705 Warnungen, 11.11 s**. Originale
+GGL-Seite mit halben Werten/Gleichstand gerendert. Keine Datenmutation,
+Migration oder Assetaenderung; kein neuer Gesamtlauf fuer diese drei kleinen
+Leselogik-Aenderungen. Naechstes Paket bleibt b3b Anwesenheit/RSVP-Trennung.

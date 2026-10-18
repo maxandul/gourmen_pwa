@@ -519,7 +519,7 @@ class GGLService:
             user_points = 0
             user_idx = None
         else:
-            user_points = int(member_stats['total_points'] or 0)
+            user_points = member_stats['total_points'] or 0
             user_idx = next(
                 (i for i, row in enumerate(ranking) if row['member_id'] == member_id),
                 None,
@@ -548,7 +548,7 @@ class GGLService:
         ctx = {
             'has_participation': member_stats is not None,
             'user_points': user_points,
-            'rank': user_idx + 1 if user_idx is not None else None,
+            'rank': ranking[user_idx]['rank'] if user_idx is not None else None,
             'rank_total': len(ranking),
             'show_gap_above': False,
             'gap_above_points': None,

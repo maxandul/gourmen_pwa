@@ -39,9 +39,9 @@ def index():
             # Calculate rank for this season
             season_ranking_for_stat = GGLService.get_season_ranking(season)
             user_rank = None
-            for i, member_stats in enumerate(season_ranking_for_stat):
+            for member_stats in season_ranking_for_stat:
                 if member_stats['member_id'] == current_user.id:
-                    user_rank = i + 1
+                    user_rank = member_stats['rank']
                     break
 
             # Add rank to stats

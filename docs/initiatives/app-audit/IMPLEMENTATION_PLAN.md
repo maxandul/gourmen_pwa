@@ -134,7 +134,7 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-17b1 | lokal geprüft | Unbezahlte Gesamtbetrag-/Zahlwegkorrektur mit Vorschau, Grund und vollstaendiger Forderungshistorie. Migration 3f16cb4 separat; 139 Tests, nach Ergaenzung 41. |
 | U2-17b2 | lokal geprüft | Restaurantrechnung im unbezahlten Korrekturweg: GGL-Folgen vor Bestaetigung zeigen und atomar speichern. Gebrochene Raenge/Punkte korrekt im Schema abbilden, Migration separat. Teilnahme/Ess-Typ anschliessend b3; bezahlte Faelle separat. |
 | U2-17b3a | lokal geprüft | Ess-Typ-Korrektur vorhandener Anwesender im unbezahlten Vorschau-/Historienweg; Auswirkungen auf alle Anteile/Forderungen, unveraenderte GGL-Werte. Danach b3b tatsaechliche Anwesenheit von urspruenglichem RSVP trennen. |
-| U2-17b3b | **bereit / nächstes Paket** | Nach breiter Regression: tatsaechliche BillBro-Anwesenheit von urspruenglichem RSVP trennen; korrigierbare Anwesenheit mit Vorschau/Anteil-/GGL-Folgen und Historie. Keine erfundene Absage oder automatische Zusage; Migration separat. |
+| U2-17b3b | **bereit / nächstes Paket** | Breite Regression auf 02dd63f: 1439 Tests bestanden; GGL-Anzeige-Nachkorrektur 23 Tests. Tatsaechliche BillBro-Anwesenheit von urspruenglichem RSVP trennen; korrigierbare Anwesenheit mit Vorschau/Anteil-/GGL-Folgen und Historie. Keine erfundene Absage oder automatische Zusage; Migration separat. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
