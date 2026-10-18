@@ -71,13 +71,14 @@ def test_duplicate_keeps_state_and_stops_followups(app, client, admin_case, monk
     audit.assert_not_called()
 
 
-@pytest.mark.parametrize('email', ['edit@example.com', 'FreeMixed@example.com'])
-def test_edit_own_or_free_address(app, client, admin_case, email):
+@pytest.mark.parametrize('email,expected', [('edit@example.com', 'edit@example.com'),
+                                           ('FreeMixed@example.com', 'freemixed@example.com')])
+def test_edit_own_or_free_address(app, client, admin_case, email, expected):
     ids, mail, audit = admin_case
     response = client.post(f'/admin/members/{ids[1]}/edit', data=data(email))
     assert response.status_code == 302
     with app.app_context():
-        assert db.session.get(Member, ids[1]).email == email
+        assert db.session.get(Member, ids[1]).email == expected
     mail.assert_not_called()
     audit.assert_called_once()
 

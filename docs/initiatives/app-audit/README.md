@@ -2,15 +2,17 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R08. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-01. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
-## Nachweisregister der lokalen Umsetzung (16.10.2026)
+## Nachweisregister der lokalen Umsetzung (18.10.2026)
 
-Der Nutzer hat U1a bis U1y schrittweise zur lokalen Umsetzung beauftragt. Die folgenden älteren Planungsstände
-bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
+Der aktuelle Auftrag umfasst die fortlaufende lokale Umsetzung entlang des Plans.
+Die folgenden älteren Planungsstände bleiben als Verlauf erhalten; keine
+Veröffentlichung oder externe Ausführung ist damit freigegeben.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R08 / lokaler Abschlussabgleich | U1 weiterhin offen | Gesamtsuite 903 bestanden/1 alte Erwartung; korrigiert und 34 betroffene Tests bestanden; [Abgleich](U1_R08_ABGLEICH.md) |
 | U1-R07 / F1: Admin-Notfallweg | Lokal geprüft, Hostingnachweis offen | 53 Python-Tests; nach erweiterter Wiederherstellung 15 erneut; [Nachweis](U1_R07_ADMIN_NOTFALL.md) |
 | U1-R06 / A-121: Backup-QR entfernt | Lokal geprüft, Browserabnahme offen | 26 Python- und 19 Worker-Tests; [Nachweis](U1_R06_BACKUP_QR.md) |
 | U1-R05c / F1: persistierter Recoveryversand | Lokal geprüft, echte Zustellung offen | 78 Python- und 19 Worker-Tests; [Nachweis](U1_R05_LINKRESTVERTRAG.md) |
@@ -18,13 +20,13 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 | U1-R05a / F1: Hauptadressbindung | Lokal geprüft, U1 offen | 91 Python-Tests; [Nachweis](U1_R05_LINKRESTVERTRAG.md) |
 | U1-R04c3 / F2/R13: Dokument-Loeschgrenzen | Lokal geprüft, Live-/PostgreSQL-Abnahme offen | Migration aa47d64 separat, 25 Python- und 19 Worker-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
 | U1-R04c2 / F2/R13: Dokumentzugriff | Lokal geprüft, externe Drive-Abnahme offen | 98 Python- und 19 Worker-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
-| U1-R04c1 / F2/R13: Dokumentpolicy-Grundlage | Lokal geprüft; Routenbindung offen | Migration 7d471a4 separat, 26 Python-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
+| U1-R04c1 / F2/R13: Dokumentpolicy-Grundlage | Grundlage lokal geprüft; Routenbindung in R04c2 | Migration 7d471a4 separat, 26 Python-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
 | U1-R04b4 / F2: Merchbereichsrechte | Lokal geprüft, U1 offen | 80 Python- und 19 Worker-Tests; [Nachweis](U1_R04B4_MERCHRECHTE.md) |
 | U1-R04b3 / F2: Reisebereichsrechte | Lokal geprüft, U1 offen | 47 Python- und 19 Worker-Tests; [Nachweis](U1_R04B3_REISEBEREICHSRECHTE.md) |
 | U1-R04b2 / F2: Finanzbereichsrechte | Lokal geprüft, U1 offen | 27 Python- und 19 Worker-Tests; [Nachweis](U1_R04B2_FINANZRECHTE.md) |
 | U1-R04b1 / F2: Bereichsfreigaben-Grundlage | Lokal geprüft, PostgreSQL/Browser offen | Migration ee39355 separat, 56 Python- und 19 Worker-Tests; [Nachweis](U1_R04B1_BEREICHSFREIGABEN.md) |
 | U1-R04a / R13: Reisedokumentansicht | Lokal geprüft, Browserabnahme offen | [Feldprojektion und Regression](U1_R04A_REISEDOKUMENTE.md); U1 offen |
-| U1-R04 / F2/R13: Aktion-/Rolle-/Feldmatrix | Matrix lokal geprüft, Durchsetzung offen | [Matrix und getrennte Folgepakete](U1_R04_RECHTEMATRIX.md); U1 offen |
+| U1-R04 / F2/R13: Aktion-/Rolle-/Feldmatrix | a–c lokal geprüft, Revision R04d offen | [Matrix und getrennte Folgepakete](U1_R04_RECHTEMATRIX.md); U1 offen |
 | U1-R03 / A-071: Beleg-/Dokumentauswahl | Lokal geprüft, 18.10.2026; U1 offen | 34 Tests bestanden; [Vertrag und Nachweise](U1_R03_BELEGAUSWAHL.md) |
 | U1-R02 / A-026, A-037, A-042: Sichtbarkeit | Lokal geprüft, 18.10.2026; U1 offen | 63 Tests bestanden; [Vertrag und Nachweise](U1_R02_SICHTBARKEIT.md) |
 | U1z / A-010: Cache-Nutzertrennung | Lokal geprüft, 18.10.2026; Browser/Geraete offen | `codex/app-audit-implementation-plan` über `5b6d28d`; [Vertrag und Nachweise](U1Z_CACHE_NUTZERTRENNUNG.md) |

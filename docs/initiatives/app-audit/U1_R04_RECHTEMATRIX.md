@@ -3,7 +3,17 @@
 Stand 18.10.2026, lokale Quelleneinordnung nach U1-R03 (`0601d81`).
 Quellen: ROLLEN_ENTSCHEIDUNGEN.md (F2/R13), CONVENTIONS.md, DOMAIN.md,
 RESTABDECKUNG_GESAMTVORLAGE.md. Keine neuen fachlichen Rollen.
-Diese Matrix ist ein Implementierungsvertrag, kein Nachweis fertiger Durchsetzung.
+Diese Matrix ist ein Implementierungsvertrag; die Ist-Spalte beschreibt den
+Ausgangsstand nach R03. Aktueller Nachweisstand siehe folgenden Abschnitt.
+
+## Nachweisstand nach R04a bis R04c3
+
+Sensible Reise-Feldansicht, gezielte Bereichsfreigaben und Finanz-/Reise-/Merch-
+Durchsetzung sind lokal implementiert und geprueft. Dokumentklassifikation,
+Lesen/Auswahl/Transport/Pflege und gesicherte Loeschauftraege sind lokal vorhanden;
+Altbestand bleibt bis Zuordnung admin-only. Einzelbelege stehen im README und
+[U1-R08-Abgleich](U1_R08_ABGLEICH.md). R04d (Revision) bleibt mit U2/U3 offen;
+direkte Drive-Rechte und andere externe Abnahmen sind nicht belegt.
 
 ## Aktionen und bestehende Durchsetzung
 
@@ -62,10 +72,9 @@ pruefen, Ausgabefelder vor Templateuebergabe selektieren, Cache no-store.
 4. **U1-R04d – Revisionsgrenzen**: versionsgebundener Pruefstand und begruendete
    Ruecknahme mit U2/U3 gemeinsam; keine isolierte Rollenlockerung vor Zustandsmodell.
 
-R04b ist vor Umsetzung weiter in die genannten Bereiche zu schneiden.
-R04c benoetigt eine konkrete Altbestands-/Klassifikationsregel, nicht allein einen
-Foldernamenvergleich. Diese Entscheidung blockiert nicht R04a oder andere
-unabhaengige lokale Pakete. U1 insgesamt bleibt offen.
+Die obige Folge beschreibt den urspruenglichen Zuschnitt. R04b1–b4 und R04c1–c3
+sind inzwischen lokal geprueft; die bestaetigte Altbestandsregel steht unten.
+R04d ist die verbleibende lokale Rechte-/Zustandsarbeit. U1 bleibt offen.
 
 ## Lokale Pruefung dieses Matrixpakets
 

@@ -40,7 +40,8 @@ Zwei getrennte Zustände verwenden:
 U1a–U1y sind lokale Pakete mit den im README und ihren Einzelunterlagen genannten
 Prüfergebnissen. Diese Ergebnisse werden hier nicht zu einem neuen Gesamttest
 zusammengezählt. U1 enthält weiterhin offene Befunde, Fachverträge und Abnahmen.
-U2–U6 sind geplant; aus dieser Konsolidierung folgt keine neue Umsetzung dieser Pakete.
+U2–U6 folgen im aktuellen lokalen Fortsetzungsauftrag. Ausstehende externe
+Abnahmen sind keine pauschale Sperre fuer unabhaengige lokale Pakete.
 
 ## Gesamtfolge U1–U6
 
@@ -69,7 +70,7 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 1 / **U1z** | lokal geprüft | Cache-Nutzertrennung A-010; vollständiger Arbeitsvertrag im nächsten Abschnitt |
 | 2 / U1-R02 | lokal geprüft | A-026/A-037/A-042: Sichtbarkeit von Events, internen Bewertungen und Aggregaten konsistent machen. Eingabewechsel all/board, Board-Meeting-Regel, Listen/Detail/API/Kalender/Dashboard prüfen. Öffentliche Aggregate erlauben, interne Namen/Kommentare und geschützte Eventdetails nicht offenlegen. Bestehende Forderungen nicht durch unsichtbare Events verlieren. Quellen: FINDINGS, Rollenentscheidungen, Bewertungs- und Public-Entwurf. Lesergruppe am 18.10.2026 bestaetigt: alle Mitglieder mit Eventzugriff; [Nachweis](U1_R02_SICHTBARKEIT.md). |
 | 3 / U1-R03 | lokal geprüft | A-071: Beleg-/Dokumentauswahl und manipulierte Schreibanfragen nach denselben Rechten filtern. Keine fremden Beträge, Beschreibungen oder Board-Eventnamen über Optionslisten. R13-Belegrechte berücksichtigen; keine neuen Rollen einführen. |
-| 4 / U1-R04 | Matrix lokal geprüft; Durchsetzung offen | F2/R13 zunächst als explizite Aktion-/Rolle-/Feldmatrix mit Ist-Zuordnung und Negativfällen konkretisieren. Danach getrennte Folgepakete für Delegationen, sensible Felder und Dokumentrechte nummerieren; je Paket serverseitige Durchsetzung und Tests. Vorstand ist nicht Admin; Bereichsrechte, Organisator, Revision und Admin-Stellvertretung gemäss bestätigten Regeln. Revisionszustände mit U2/U3 koordinieren. Kein Gesamtumbau in einem Paket. |
+| 4 / U1-R04 | a–c lokal geprüft; R04d offen | F2/R13 zunächst als explizite Aktion-/Rolle-/Feldmatrix mit Ist-Zuordnung und Negativfällen konkretisieren. Danach getrennte Folgepakete für Delegationen, sensible Felder und Dokumentrechte nummerieren; je Paket serverseitige Durchsetzung und Tests. Vorstand ist nicht Admin; Bereichsrechte, Organisator, Revision und Admin-Stellvertretung gemäss bestätigten Regeln. Revisionszustände mit U2/U3 koordinieren. Kein Gesamtumbau in einem Paket. |
 | 4a / U1-R04a | lokal geprüft | Sechs Pass-/ID-Felder lesend fuer Reisekommissar mit Step-Up; Feld-/Rollen-/Fehlerregression. Vertrag: [Rechtematrix](U1_R04_RECHTEMATRIX.md). |
 | 4b1 / U1-R04b1 | lokal geprüft | Grundlage und erste travel_documents-Freigabe; [Nachweis](U1_R04B1_BEREICHSFREIGABEN.md), Migration ee39355 separat. |
 | 4b2 / U1-R04b2 | lokal geprüft | Finanz-Lese-/Bearbeitungsfreigaben mit Negativtests; Revisionseigenbestaetigung und Zustandsumbau bleiben R04d. |
@@ -86,7 +87,24 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 5c / U1-R05c | lokal geprüft | Persistierte Resetlink-Ausgabe vor gebundenem Versand, kontrollierter Zustellstatus. |
 | 6 / U1-R06 | lokal geprüft | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
 | 7 / U1-R07 | lokal geprüft, Hosting-Abnahme offen | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
-| 8 / U1-R08 | **bereit / nächstes Paket** | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
+| 8 / U1-R08 | lokal abgeglichen; U1 offen | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
+
+## Bereite Fortsetzung U2
+
+U1-R08 ist lokal abgeglichen ([Nachweis](U1_R08_ABGLEICH.md)). U1 bleibt offen;
+R04d wird mit dem Revisionszustand in U2/U3 umgesetzt. Externe Abnahmen bleiben
+in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
+
+| Paket | Lokal | Begrenzter Auftrag |
+|---|---|---|
+| U2-01 / A-057, A-058 | **bereit / nächstes Paket** | Rappengetreue Buchungseingaben; Datum/Jahr zentral fuer Anlage/Bearbeitung/Import pruefen, verstaendliche Feldfehler. B01, BUCHHALTUNG_PRAXISABGLEICH.md, BUCHHALTUNG_PROZESSE_ENTWURF.md und Accounting-Capability lesen. Keine historischen Werte verschieben. |
+| U2-02 / A-060, A-061, A-062 | geplant | Atomare Importverbuchung, Richtung/Mitglied/Forderung, konsistente Korrektur mit erhaltenem Zahlungsstand; Summenerhalt und Wiederholung. Vor Code fein abgrenzen. |
+| U2-03 / A-063, A-064, A-065 | geplant | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
+| U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | geplant | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
+
+Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
+Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
+aufnehmen. U3–U6 folgen je Fachablauf, keine Gesamtumstellung in einem Schritt.
 
 ### U1z: Cache-Nutzertrennung
 
@@ -137,7 +155,7 @@ Alle 26 primär U1 zugeordneten Befunde aus dem historischen Paketregister:
 | A-037 | Lokal: [U1-R02](U1_R02_SICHTBARKEIT.md); Browser/Kalenderclients offen |
 | A-042 | Lokal: [U1-R02](U1_R02_SICHTBARKEIT.md); Browser/Kalenderclients offen |
 | A-043 | Lokal: [U1e](U1E_REMINDER_RECHTE.md) |
-| A-071 | Lokal: [U1-R03](U1_R03_BELEGAUSWAHL.md); umfassende R13-Matrix folgt |
+| A-071 | Lokal: [U1-R03](U1_R03_BELEGAUSWAHL.md); R13-Dokumentdurchsetzung in R04c1–c3 |
 | A-075 | Lokal: [U1c](U1C_STEP_UP.md); aktionsgebundener Folgevertrag U1w |
 | A-076 | Lokal: [U1t](U1T_PFLICHTWECHSEL.md) |
 | A-077 | Lokal: [U1v](U1V_SITZUNGS_GERAETEWIDERRUF.md); PostgreSQL/Geräte offen |
@@ -148,7 +166,7 @@ Alle 26 primär U1 zugeordneten Befunde aus dem historischen Paketregister:
 | A-082 | Lokal: [U1v](U1V_SITZUNGS_GERAETEWIDERRUF.md); Geräte offen |
 | A-083 | Lokal: [U1k](U1K_MFA_RESET_BESTAETIGUNG.md); visuelle Abnahme offen |
 | A-086 | Lokal: [U1a](U1A_DATENERHALT.md) |
-| A-087 | Lokale Form-Bereitstellung bereits in [U1a](U1A_DATENERHALT.md) dokumentiert; R13-Feldrechte bleiben U1-R04 |
+| A-087 | Lokale Form-Bereitstellung bereits in [U1a](U1A_DATENERHALT.md) dokumentiert; R13-Feldrechte lokal in U1-R04a |
 | A-088 | Lokal: [U1o](U1O_GOOGLE_VERIFIKATION.md) |
 | A-089 | Lokal: [U1s](U1S_DRIVE_WIDERRUF.md); externe Rechte und Mehrfachzuordnung offen |
 | A-090 | Lokal: [U1p](U1P_LETZTER_ADMIN.md); PostgreSQL-Parallelität offen |
