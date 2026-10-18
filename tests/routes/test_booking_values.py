@@ -161,7 +161,7 @@ def test_import_cannot_bypass_year_service_guard(app, setup, monkeypatch):
         tx = BankTransaction(import_id=statement.id, line_key='synthetic-invalid-year', booked_date=date(2027,1,1),
             amount_rappen=1999, direction=BookingDirection.OUT, buchungstext='Synthetic payment')
         db.session.add(tx); db.session.commit()
-        monkeypatch.setattr(AccountingService,'get_or_create_fiscal_year',lambda year: fy)
+        monkeypatch.setattr(AccountingService,'get_or_create_fiscal_year',lambda year, **kwargs: fy)
         with pytest.raises(AccountingValidationError, match='Geschäftsjahr'):
             BankImportService.book_transaction(tx.id, account_id=setup[2],
                 booked_by=db.session.get(Member,setup[0]))

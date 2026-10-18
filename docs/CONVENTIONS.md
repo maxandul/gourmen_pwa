@@ -855,3 +855,15 @@ Feldfehler; Service prueft unabhaengig Betrag und Datum im Geschaeftsjahr.
 Updates validieren alle Kandidaten vor dem ersten Setzen von ORM-Feldern.
 Bankbuchungsjahr folgt dem Bankdatum, nicht dem Beitrags-/Forderungsjahr.
 Historische Werte werden durch diese Eingabegrenze nicht korrigiert.
+
+
+## Atomare Importverbuchung (U2-02a)
+
+AccountingService.create_booking und get_or_create_fiscal_year akzeptieren
+`commit=False` fuer zusammengesetzte Transaktionen: validieren/anlegen/flushen,
+niemals dort committen. Der aufrufende BankImportService committet genau einmal
+oder rollt bei jedem Fehler zurueck. Importkopf vor Bankzeile sperren, danach
+Jahr und Forderung frisch sperren. Status-/Loeschwege teilen Kopf-/Zeilensperren.
+Wiederholung einer bereits verarbeiteten Zeile schreibt keine Zahlung erneut fort.
+Keine Eindeutigkeit allein auf payment_ref, da echte Aufteilung mehrere Buchungen
+benoetigt. SQLite-Nachweis ersetzt keinen PostgreSQL-Konkurrenztest.

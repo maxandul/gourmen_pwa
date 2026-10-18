@@ -722,3 +722,15 @@ GET  /member/claims (bzw. Dashboard)     → Eigene offene Posten mit Status
 - **Merch-Verknüpfung**: `Receipt.suggested_event_id` ist vorhanden; eine `suggested_merch_order_id` kann bei Phase 10 ergänzt werden ohne Modell-Bruch.
 - **Datenschutz**: Buchungen und Belege enthalten Finanzdaten von Mitgliedern. Zugriff strikt nach Sektion 5. `vorlagen_buchhaltung/` ist in `.gitignore`.
 - **Framework-Frage**: React + Tailwind vs. Flask/Jinja2 ist als Open Decision in STRATEGY_2026.md festgehalten. Accounting-Modul wird zunächst in Jinja2 umgesetzt — ein späterer Frontend-Umbau betrifft Routes und Templates, nicht das Datenmodell.
+
+
+## App-Audit U2-02a: Speichergrenze der Importverbuchung
+
+Haupt-/Zusatzbuchung, Forderungsfortschreibung, Alias, Bankstatus und ein neu
+benoetigtes Zahlungsjahr werden zusammen committet oder zurueckgerollt.
+Original-POST-Wiederholung nach fehlendem Aufrundungskonto erzeugt keine halbe
+Buchung. Bereits verarbeitete Bankzeilen sind gesperrt; Status-/Loeschwege teilen
+Importkopfsperre und frischen Zeilenstand. Reale PostgreSQL-Konkurrenz bleibt offen.
+Die bislang automatische Ueberzahlungsbehandlung wird im naechsten Teilpaket
+U2-02b durch die bestaetigte explizite F5-Auswahl ersetzt; keine Gesamtfreigabe
+von Importlogik oder historischen Zahlungsdaten durch diesen Transaktionsnachweis.

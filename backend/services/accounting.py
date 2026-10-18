@@ -167,7 +167,7 @@ class AccountingService:
         return fy
 
     @staticmethod
-    def get_or_create_fiscal_year(year: int) -> FiscalYear:
+    def get_or_create_fiscal_year(year: int, *, commit=True) -> FiscalYear:
         fy = FiscalYear.query.filter_by(year=year).first()
         if fy is None:
             fy = FiscalYear(
@@ -177,7 +177,10 @@ class AccountingService:
                 status=FiscalYearStatus.OPEN,
             )
             db.session.add(fy)
-            db.session.commit()
+            if commit:
+                db.session.commit()
+            else:
+                db.session.flush()
         return fy
 
     @staticmethod
@@ -431,7 +434,7 @@ class AccountingService:
                        description: str, amount_rappen: int, direction,
                        account_id: int, event_id: int | None,
                        member_id: int | None, created_by: Member,
-                       payment_ref: str | None = None) -> Booking:
+                       payment_ref: str | None = None, *, commit=True) -> Booking:
         fy = cls.get_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
@@ -459,7 +462,10 @@ class AccountingService:
             created_by=created_by.id,
         )
         db.session.add(booking)
-        db.session.commit()
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()
         return booking
 
     @classmethod

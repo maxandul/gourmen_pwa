@@ -486,10 +486,15 @@ class BankImportService:
     # -- Verbuchen -----------------------------------------------------------
 
     @classmethod
-    def get_transaction(cls, tx_id: int) -> BankTransaction:
+    def get_transaction(cls, tx_id: int, *, lock=False) -> BankTransaction:
         tx = db.session.get(BankTransaction, tx_id)
         if tx is None:
             raise BankImportError('Transaktion nicht gefunden.')
+        if lock:
+            cls.get_statement(tx.import_id, lock=True)
+            tx = BankTransaction.query.filter_by(id=tx_id).populate_existing().with_for_update().first()
+            if tx is None:
+                raise BankImportError('Transaktion nicht mehr vorhanden.')
         return tx
 
     @classmethod
@@ -504,7 +509,23 @@ class BankImportService:
         zugeordnete Claim fort und verbucht Überzahlungen als
         ausserordentliche Einnahme (Spec 11.5).
         """
-        tx = cls.get_transaction(tx_id)
+        try:
+            booking = cls._stage_transaction(tx_id, account_id=account_id, member_id=member_id,
+                event_id=event_id, claim_id=claim_id, booked_by=booked_by)
+            db.session.commit()
+            return booking
+        except AccountingValidationError:
+            db.session.rollback()
+            raise
+        except Exception:
+            db.session.rollback()
+            raise BankImportError(
+                'Verbuchung nicht bestätigt. Vor erneutem Versuch den Importstatus prüfen.'
+            ) from None
+
+    @classmethod
+    def _stage_transaction(cls, tx_id, *, account_id, member_id, event_id, claim_id, booked_by):
+        tx = cls.get_transaction(tx_id, lock=True)
         if not tx.is_pending:
             raise BankImportError('Transaktion ist bereits verarbeitet.')
         if tx.is_collective:
@@ -512,7 +533,8 @@ class BankImportService:
                 'Sammelbuchung wird über ihre Detail-Zeilen verbucht.'
             )
 
-        fiscal_year = AccountingService.get_or_create_fiscal_year(tx.booked_date.year)
+        fiscal_year = AccountingService.get_or_create_fiscal_year(tx.booked_date.year, commit=False)
+        fiscal_year = FiscalYear.query.filter_by(id=fiscal_year.id).populate_existing().with_for_update().one()
         if fiscal_year.status != FiscalYearStatus.OPEN:
             raise BankImportError(
                 f'Jahr {fiscal_year.year} ist nicht offen – keine Buchungen möglich.'
@@ -520,7 +542,7 @@ class BankImportService:
 
         claim = None
         if claim_id:
-            claim = db.session.get(MemberClaim, claim_id)
+            claim = MemberClaim.query.filter_by(id=claim_id).populate_existing().with_for_update().first()
             if claim is None:
                 raise BankImportError('Offener Posten nicht gefunden.')
             if not claim.is_club_claim:
@@ -552,7 +574,7 @@ class BankImportService:
             event_id=event_id or (claim.event_id if claim else None),
             member_id=member_id,
             created_by=booked_by,
-            payment_ref=tx.line_key,
+            payment_ref=tx.line_key, commit=False,
         )
 
         if rounding_amount > 0:
@@ -571,7 +593,7 @@ class BankImportService:
                 event_id=event_id or (claim.event_id if claim else None),
                 member_id=member_id,
                 created_by=booked_by,
-                payment_ref=tx.line_key,
+                payment_ref=tx.line_key, commit=False,
             )
 
         if claim is not None:
@@ -584,12 +606,11 @@ class BankImportService:
 
         tx.status = BankTransactionStatus.BOOKED
         tx.booking_id = booking.id
-        db.session.commit()
         return booking
 
     @classmethod
     def ignore_transaction(cls, tx_id: int) -> BankTransaction:
-        tx = cls.get_transaction(tx_id)
+        tx = cls.get_transaction(tx_id, lock=True)
         if not tx.is_pending:
             raise BankImportError('Transaktion ist bereits verarbeitet.')
         tx.status = BankTransactionStatus.IGNORED
@@ -599,7 +620,7 @@ class BankImportService:
     @classmethod
     def reopen_transaction(cls, tx_id: int) -> BankTransaction:
         """Ignorierte Transaktion zurück auf pending (kein Booking-Undo)."""
-        tx = cls.get_transaction(tx_id)
+        tx = cls.get_transaction(tx_id, lock=True)
         if tx.status != BankTransactionStatus.IGNORED or tx.is_collective:
             raise BankImportError('Nur ignorierte Zeilen können zurückgeholt werden.')
         tx.status = BankTransactionStatus.PENDING
@@ -614,9 +635,10 @@ class BankImportService:
         Dateinamen zurück. line_keys werden freigegeben → erneuter Upload
         derselben Datei ist danach wieder möglich.
         """
-        statement = cls.get_statement(import_id)
+        statement = cls.get_statement(import_id, lock=True)
+        transactions = BankTransaction.query.filter_by(import_id=import_id).populate_existing().with_for_update().all()
         booked = [
-            tx for tx in statement.transactions
+            tx for tx in transactions
             if tx.status == BankTransactionStatus.BOOKED
         ]
         if booked:
@@ -655,8 +677,9 @@ class BankImportService:
         )
 
     @staticmethod
-    def get_statement(import_id: int) -> BankStatementImport:
-        statement = db.session.get(BankStatementImport, import_id)
+    def get_statement(import_id: int, *, lock=False) -> BankStatementImport:
+        statement = (BankStatementImport.query.filter_by(id=import_id).populate_existing()
+                     .with_for_update().first() if lock else db.session.get(BankStatementImport, import_id))
         if statement is None:
             raise BankImportError('Import nicht gefunden.')
         return statement
