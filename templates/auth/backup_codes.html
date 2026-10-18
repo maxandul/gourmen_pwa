@@ -32,18 +32,10 @@
                     </div>
                     {% endfor %}
                 </div>
-
-                <div id="qr-code-section" style="display: none; text-align: center; margin: var(--space-4) 0;">
-                    <h3>QR-Code für Backup-Codes</h3>
-                    <p>Scanne den QR-Code, um die Codes auf deinem Gerät zu speichern.</p>
-                    <div id="qr-code-container" style="display:flex; justify-content:center;"></div>
-                    <p class="form-field__help">Der QR-Code enthält alle Backup-Codes in einem sicheren Format.</p>
-                </div>
             </div>
             <div class="card__footer card__footer--wrap" style="justify-content: center;">
                 <button class="btn btn--primary" type="button" onclick="window.print()">{{ lucide_icon('printer') }} Drucken</button>
                 <button class="btn btn--outline" type="button" onclick="copyAllCodes()">{{ lucide_icon('copy') }} Alle kopieren</button>
-                <button class="btn btn--outline" type="button" onclick="showQRCode()">{{ lucide_icon('qr-code') }} QR-Code anzeigen</button>
             </div>
         </div>
 
@@ -118,35 +110,6 @@ function showCopySuccess() {
     } else {
         alert('Alle Backup-Codes kopiert!');
     }
-}
-
-function showQRCode() {
-    const codes = Array.from(document.querySelectorAll('.backup-code'))
-        .map(code => code.textContent.trim())
-        .join(',');
-
-    const qrData = `GOURMEN_BACKUP_CODES:${codes}`;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 300;
-    canvas.height = 300;
-
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, 300, 300);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(10, 10, 280, 280);
-    ctx.fillStyle = '#000';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('QR-Code für Backup-Codes', 150, 150);
-    ctx.fillText('(In Produktion: Echter QR-Code)', 150, 170);
-
-    const container = document.getElementById('qr-code-container');
-    container.innerHTML = '';
-    container.appendChild(canvas);
-
-    document.getElementById('qr-code-section').style.display = 'block';
 }
 
 let codesConfirmed = false;

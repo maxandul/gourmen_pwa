@@ -65,6 +65,13 @@ def test_enrollment_replaces_old_codes_and_displays_only_once(app, client, case,
     assert response.status_code == 200
     assert response.headers['Cache-Control'] == 'no-store'
     assert response.headers['Referrer-Policy'] == 'no-referrer'
+    assert 'onclick="window.print()"' in response.text
+    assert 'onclick="copyAllCodes()"' in response.text
+    assert 'onclick="confirmCodesSaved()"' in response.text
+    assert 'showQRCode' not in response.text
+    assert 'GOURMEN_BACKUP_CODES:' not in response.text
+    assert 'QR-Code anzeigen' not in response.text
+    assert 'qr-code-section' not in response.text
     codes = shown[0]
     assert len(codes) == len(set(codes)) == 10
     for code in codes:

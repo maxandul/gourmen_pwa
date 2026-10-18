@@ -84,8 +84,8 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 5a / U1-R05a | lokal geprüft | Hauptadressbindung der Reset-/Aktivierungslinks, Altlinks und Adresswechsel; Vertrag U1_R05_LINKRESTVERTRAG.md. |
 | 5b / U1-R05b | lokal geprüft | Einheitliche Hauptmailnormalisierung, Lookup und DB-Eindeutigkeit ohne Kontozusammenlegung. |
 | 5c / U1-R05c | lokal geprüft | Persistierte Resetlink-Ausgabe vor gebundenem Versand, kontrollierter Zustellstatus. |
-| 6 / U1-R06 | **bereit / nächstes Paket** | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
-| 7 / U1-R07 | geplant | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
+| 6 / U1-R06 | lokal geprüft | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
+| 7 / U1-R07 | **bereit / nächstes Paket** | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
 | 8 / U1-R08 | geplant | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
 
 ### U1z: Cache-Nutzertrennung
@@ -154,7 +154,7 @@ Alle 26 primär U1 zugeordneten Befunde aus dem historischen Paketregister:
 | A-090 | Lokal: [U1p](U1P_LETZTER_ADMIN.md); PostgreSQL-Parallelität offen |
 | A-110 | Lokal: [U1b](U1B_LOGGING.md) |
 | A-113 | Lokal: [U1d](U1D_CRON_TEST.md) |
-| A-121 | Offen → U1-R06 |
+| A-121 | Lokal: [U1-R06](U1_R06_BACKUP_QR.md); Schein-QR entfernt, Browserabnahme offen |
 | A-140 | Lokal: [U1v](U1V_SITZUNGS_GERAETEWIDERRUF.md), `test_activation_with_existing_mfa_does_not_log_in` in [Regression](../../../tests/routes/test_auth_revocation.py); Altlinkvertrag zusätzlich U1-R05 |
 | A-141 | Lokal für dokumentierte Wege: [U1q](U1Q_PASSWORTLINK_WIDERRUF.md), [U1r](U1R_MFA_LINK_WIDERRUF.md), U1v/y; vollständiger Zweck-/Altlinkabgleich U1-R05 |
 

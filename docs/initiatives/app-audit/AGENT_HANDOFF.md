@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U1-R06 – irrefuehrenden Backup-QR entfernen** nach U1_R04_RECHTEMATRIX.md. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U1-R07 – lokaler Admin-Notfallweg** nach KONTO_ZUGANG_ENTWURF.md. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
 4. Vor Codeänderungen relevante Anchor-Docs und Paketquellen lesen. Bestätigte
