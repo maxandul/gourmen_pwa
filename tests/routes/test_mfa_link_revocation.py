@@ -28,7 +28,7 @@ OLD_LINKS = ('synthetic-old-mfa-link-one', 'synthetic-old-mfa-link-two')
 @pytest.fixture
 def mfa_case(app, monkeypatch):
     app.config['CRYPTO_KEY'] = base64.urlsafe_b64encode(bytes(range(32)))
-    monkeypatch.setattr(MailService, 'send_async', Mock())
+    monkeypatch.setattr(MailService, 'send', Mock())
     monkeypatch.setattr(SecurityService, 'log_audit_event', Mock())
     with app.app_context():
         member = Member(vorname='MFA', nachname='Links', email='mfa-links@example.com', role=Role.ADMIN)
@@ -108,7 +108,7 @@ def test_resend_replaces_previous_mfa_links_only(app, client, mfa_case):
     links = []
     for _ in range(2):
         client.post('/auth/2fa/reset-request', data={'email': 'mfa-links@example.com'})
-        text = MailService.send_async.call_args.kwargs['text']
+        text = MailService.send.call_args.kwargs['text']
         links.append(re.search(r'/auth/2fa/reset/([^\s]+)', text).group(1))
     client.post('/auth/2fa/reset/' + links[0], data={'confirm': 'y'})
     with app.app_context():

@@ -30,7 +30,7 @@ def test_login_accepts_normalized_legacy_address(app,client,legacy_member,email)
 
 
 def test_reset_uses_canonical_recipient(app,client,legacy_member,monkeypatch):
-    send=Mock();monkeypatch.setattr(MailService,'send_async',send)
+    send=Mock();monkeypatch.setattr(MailService,'send',send)
     assert client.post('/auth/forgot-password',data={'email':' LEGACY@example.com '}).status_code==302
     assert send.call_args.kwargs['to']=='legacy@example.com'
 

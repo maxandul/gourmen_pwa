@@ -339,3 +339,9 @@ DocumentDeletionRequest haelt Loeschabsicht und Abschluss pro Drive-ID dauerhaft
 fest. Der externe Trash-Aufruf folgt erst nach gespeichertem Intent; bei unklarem
 Ausgang ist keine blinde Wiederholung erlaubt. Das ersetzt keine externe Abnahme
 oder allgemeine Drive-Sync-Recovery (U2/U5).
+
+
+RecoveryLinkService verwendet die vorhandenen AuthToken-Snapshot-/Statusspalten
+fuer persistierten Passwort-/MFA-Resetversand. Statuswechsel vor/nach Transport
+vermeiden Send-before-commit und blinde Wiederholungen; Klartexttoken bleiben nur
+im laufenden Request. Mailservice-Annahme ist kein Zustellnachweis.

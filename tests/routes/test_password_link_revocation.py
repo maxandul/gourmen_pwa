@@ -31,7 +31,7 @@ ATTACK = 'Synthetic-stale-link-password'
 
 @pytest.fixture
 def credentials(app, monkeypatch):
-    monkeypatch.setattr(MailService, 'send_async', Mock())
+    monkeypatch.setattr(MailService, 'send', Mock())
     monkeypatch.setattr(SecurityService, 'log_audit_event', Mock())
     monkeypatch.setattr(SecurityService, 'generate_secure_password', lambda: NEW)
     with app.app_context():
@@ -215,7 +215,7 @@ def test_two_forgot_password_requests_only_latest_works(app, client, credentials
     links = []
     for _ in range(2):
         assert client.post('/auth/forgot-password', data={'email': 'links@example.com'}).status_code == 302
-        text = MailService.send_async.call_args.kwargs['text']
+        text = MailService.send.call_args.kwargs['text']
         links.append(re.search(r'/auth/reset-password/([^\s]+)', text).group(1))
     replacement(client, '/auth/reset-password/' + links[0])
     with app.app_context():

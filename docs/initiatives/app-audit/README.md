@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R05c. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R06. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R05c / F1: persistierter Recoveryversand | Lokal geprüft, echte Zustellung offen | 78 Python- und 19 Worker-Tests; [Nachweis](U1_R05_LINKRESTVERTRAG.md) |
 | U1-R05b / A-084: Hauptmailnormalisierung | Lokal geprüft, PostgreSQL offen | Migration b17be2b separat, 45 Python-Tests; [Nachweis](U1_R05_LINKRESTVERTRAG.md) |
 | U1-R05a / F1: Hauptadressbindung | Lokal geprüft, U1 offen | 91 Python-Tests; [Nachweis](U1_R05_LINKRESTVERTRAG.md) |
 | U1-R04c3 / F2/R13: Dokument-Loeschgrenzen | Lokal geprüft, Live-/PostgreSQL-Abnahme offen | Migration aa47d64 separat, 25 Python- und 19 Worker-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |

@@ -819,3 +819,16 @@ ASCII-Leerraum)) schliesst konkurrierende Schreibvarianten ein. Migration prueft
 Konflikte vor Indexanlage und stoppt ohne Kontozusammenlegung. Inaktive Konten
 belegen ihre Adresse weiterhin. Mehrdeutiger Lookup vor Migration liefert keinen
 Account. Google-Mail ist weiterhin separat und erhaelt keine neue 1:1-Regel.
+
+## Persistierter Recoveryversand (U1-R05c)
+
+RecoveryLinkService speichert Tokenhash/Empfaengersnapshot/pending und Anfrage-
+Audit vor Versand. Unter Mitgliedssperre wird pending nach sending beansprucht;
+keine DB-Sperre bleibt waehrend Mailtransport offen. accepted verlangt eine
+positive Antwort mit Message-ID ohne Fehler, ansonsten unconfirmed. Ergebnis-
+Commitfehler bleibt sending; keine automatische Wiederholung. Ein neuer bewusster
+Antrag ersetzt den alten Link. Adminstatus zeigt Zeit/Zweck/Ergebnis ohne Tokenhash
+oder Klartextlink. Oeffentliche Antwort ist kontoneutral. MailService behandelt
+fehlende SMTP-Konfiguration/Zugang als Fehlschlag, nicht als Annahme. Provider-
+Fehlertexte von Passwort/MFA/Onboarding werden nicht in Logs oder Status uebernommen,
+da sie Linkinhalte spiegeln koennten. Echte Zustellung bleibt gesonderte Abnahme.

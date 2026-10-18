@@ -77,3 +77,36 @@ Konfliktabbruch ohne Bestandsaenderung. `git diff --check` sauber.
 Keine UI-/Assetaenderung; Worker nicht erneut ausgefuehrt. PostgreSQL-Index/
 Konkurrenz und echter Bestandskonflikt-Check bleiben offen; keine Produktionsdaten
 gelesen. Naechstes Paket R05c persistierter Resetversand.
+
+## R05c technischer Vertrag
+
+Passwort-/MFA-Reset: unter Mitgliedssperre alten eigenen Zweck ersetzen, neuen
+Link mit Empfaengersnapshot und pending sowie Audit speichern, dann erst Versand.
+Vor Transport atomar pending nach sending beanspruchen; angenommener Versand
+accepted, Fehler/unbestaetigtes Ergebnis unconfirmed, veralteter Link obsolete.
+Unklarer Ergebniscommit bleibt sending, nie automatisch erneut senden. Ein neuer
+bewusster Antrag ersetzt den alten Link; kein dauerhafter Klartexttoken gespeichert.
+Empfaenger wird vor Entsperren als unveraenderlicher Snapshot entnommen.
+Oeffentliche Antwort bleibt kontoneutral und behauptet keine Zustellung; Admin
+sieht Status/Zeit/Zweck ohne Token/Hash. Keine automatische Mitgliedernachricht
+ueber die bereits angeforderte Recoverymail hinaus. Tests ersetzen Mailtransport.
+
+## R05c Nachweis 18.10.2026
+
+RecoveryLinkService, persistierte Versandbeanspruchung und Adminstatus umgesetzt.
+Keine neue Migration: recipient_email/delivery_status werden wiederverwendet.
+Fehlende SMTP-Konfiguration ist nun ausdruecklich kein Erfolg; accepted verlangt
+beim Recoveryversand Message-ID und fehlerfreie Annahme. Provider-/Exceptiontexte
+fuer Zugangsmails werden redigiert, sodass gespiegelte Links nicht geloggt werden.
+
+Isolierter pytest-Lauf (test_recovery_link_delivery, test_password_link_revocation,
+test_mfa_link_revocation, test_primary_email_normalization,
+test_onboarding_delivery): **78 bestanden, 1878 Warnungen**, 53.03 Sekunden.
+Vorher 56 Bestands- und 9 neue Tests bestanden, danach zusaetzliche Tests fuer
+uebersprungenen SMTP-Versand und gespiegelt sensible Providerfehler aufgenommen.
+Pruefungen: persistierter Token/Versandclaim, fester Empfaenger trotz Adresswechsel,
+Strukturfehler/Exception, Ausgabe-/Claim-/Ergebniscommitfehler, kein automatischer
+Zweitversand, veraltete Adresse, neutrale oeffentliche Antwort, Adminstatus ohne
+Token/Hash. Worker **19 bestanden**, `git diff --check` sauber. PWA 3.16.17.
+Keine reale Mail, kein PostgreSQL-Paralleltest, keine neue UI-Klasse.
+R05 lokal umgesetzt; reale Zustellung und D-01 bleiben offen. Naechstes Paket R06.

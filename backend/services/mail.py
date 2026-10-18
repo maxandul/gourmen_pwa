@@ -95,7 +95,7 @@ class MailService:
                     resend_id,
                     to_recipients,
                 )
-                return {'success': True, 'message_id': message_id, 'error': None}
+                return {'success': bool(message_id), 'message_id': message_id, 'error': None if message_id else 'missing_message_id'}
 
             err_body = response.text[:500] if response.text else ''
             try:
@@ -104,18 +104,18 @@ class MailService:
             except ValueError:
                 detail = err_body or str(response.status_code)
             logger.error(
-                "Resend-Mail fehlgeschlagen: status=%s body=%s",
+                "Resend-Mail fehlgeschlagen: status=%s",
                 response.status_code,
-                err_body,
             )
             return {
                 'success': False,
                 'message_id': None,
-                'error': f"resend: {detail}"[:400],
+                'error': 'resend_rejected' if (tags or {}).get('type') in {'password_reset','2fa_reset','onboarding'} else f"resend: {detail}"[:400],
             }
         except requests.RequestException as exc:
-            logger.error("Resend-Mail fehlgeschlagen: %s", exc, exc_info=True)
-            return {'success': False, 'message_id': None, 'error': str(exc)}
+            sensitive = (tags or {}).get('type') in {'password_reset','2fa_reset','onboarding'}
+            logger.error("Resend-Mail fehlgeschlagen: %s", type(exc).__name__ if sensitive else exc)
+            return {'success': False, 'message_id': None, 'error': type(exc).__name__ if sensitive else str(exc)}
 
     @staticmethod
     def send(
@@ -163,7 +163,7 @@ class MailService:
                 to_recipients,
                 subject,
             )
-            return {'success': True, 'message_id': None, 'error': 'smtp_host_missing'}
+            return {'success': False, 'message_id': None, 'error': 'smtp_host_missing'}
 
         if not smtp_username or not smtp_password:
             logger.warning(
@@ -172,7 +172,7 @@ class MailService:
                 to_recipients,
                 subject,
             )
-            return {'success': True, 'message_id': None, 'error': None}
+            return {'success': False, 'message_id': None, 'error': 'smtp_credentials_missing'}
 
         try:
             message = EmailMessage()
@@ -202,8 +202,9 @@ class MailService:
             logger.info("Mail erfolgreich versendet: message_id=%s to=%s", message_id, to_recipients)
             return {'success': True, 'message_id': message_id, 'error': None}
         except Exception as exc:
-            logger.error("Mail-Versand fehlgeschlagen: %s", exc, exc_info=True)
-            return {'success': False, 'message_id': None, 'error': str(exc)}
+            sensitive = (tags or {}).get('type') in {'password_reset','2fa_reset','onboarding'}
+            logger.error("Mail-Versand fehlgeschlagen: %s", type(exc).__name__ if sensitive else exc)
+            return {'success': False, 'message_id': None, 'error': type(exc).__name__ if sensitive else str(exc)}
 
     @staticmethod
     def send_async(

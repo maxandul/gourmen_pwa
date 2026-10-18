@@ -1523,3 +1523,19 @@ def edit_merch_variant(variant_id):
     variant = MerchVariant.query.get_or_404(variant_id)
     return redirect(url_for('admin.edit_merch_article', article_id=variant.article_id))
 
+
+
+@bp.route('/members/<int:member_id>/recovery-links')
+@login_required
+@admin_required
+def recovery_links(member_id):
+    from flask import after_this_request
+    @after_this_request
+    def private(response):
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        return response
+    member = Member.query.get_or_404(member_id)
+    rows = AuthToken.query.filter(AuthToken.member_id==member.id,
+        AuthToken.purpose.in_([AuthTokenPurpose.PASSWORD_RESET,AuthTokenPurpose.MFA_RESET])).order_by(AuthToken.id.desc()).limit(20).all()
+    return render_template('admin/recovery_links.html',member=member,rows=rows)

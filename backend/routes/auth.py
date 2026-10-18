@@ -1,4 +1,5 @@
 from backend.services.primary_email import PrimaryEmailService
+from backend.services.recovery_links import RecoveryLinkService
 import hashlib
 import secrets
 from datetime import datetime, timedelta
@@ -98,12 +99,12 @@ def _hash_auth_token(token: str) -> str:
 
 
 def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: timedelta, request_ip: str | None):
-    if purpose in (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.ONBOARDING):
+    if purpose in RecoveryLinkService.PURPOSES:
+        raw, _ = RecoveryLinkService.prepare(member_id,purpose,expires_in,request_ip)
+        return raw
+    if purpose == AuthTokenPurpose.ONBOARDING:
         SecurityService.lock_credential_member(member_id)
-        SecurityService.invalidate_password_links(member_id, purpose=purpose)
-    elif purpose == AuthTokenPurpose.MFA_RESET:
-        SecurityService.lock_credential_member(member_id)
-        SecurityService.invalidate_mfa_reset_links(member_id)
+        SecurityService.invalidate_password_links(member_id,purpose=purpose)
     member = db.session.get(Member, member_id)
     token = secrets.token_urlsafe(32)
     token_hash = _hash_auth_token(token)
@@ -482,54 +483,16 @@ def change_password():
 @bp.route('/forgot-password', methods=['GET', 'POST'])
 @limiter.limit("3 per hour", methods=['POST'])
 def forgot_password():
-    """Request password reset by mail without user enumeration."""
+    """Request a durable, address-bound reset without account enumeration."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
-
     form = ForgotPasswordForm()
     if form.validate_on_submit():
         user = PrimaryEmailService.find_active(form.email.data)
-
         if user:
-            token = _issue_auth_token(
-                member_id=user.id,
-                purpose=AuthTokenPurpose.PASSWORD_RESET,
-                expires_in=timedelta(hours=1),
-                request_ip=request.remote_addr,
-            )
-            reset_url = url_for('auth.reset_password', token=token, _external=True)
-            html = render_template(
-                'emails/password_reset.html',
-                display_name=user.display_name,
-                reset_url=reset_url,
-                valid_for='1 Stunde',
-            )
-            text = (
-                f"Hallo {user.display_name}\n\n"
-                "Du hast eine Anfrage zum Zuruecksetzen deines Passworts gestellt.\n"
-                f"Setze dein Passwort ueber diesen Link zurueck: {reset_url}\n\n"
-                "Der Link ist 1 Stunde gueltig.\n"
-                "Falls du das nicht warst, kannst du diese Mail ignorieren."
-            )
-            MailService.send_async(
-                to=PrimaryEmailService.normalize(user.email),
-                subject='Gourmen Passwort zuruecksetzen',
-                html=html,
-                text=text,
-                tags={'type': 'password_reset', 'member_id': str(user.id)},
-            )
-            SecurityService.log_audit_event(
-                AuditAction.REQUEST_PASSWORD_RESET,
-                'member',
-                user.id,
-                extra_data={'ip': request.remote_addr},
-                actor_id=user.id,
-            )
-            db.session.commit()
-
-        flash('Wenn die Adresse existiert, wurde eine Mail versendet.', 'success')
+            RecoveryLinkService.request(user.id, AuthTokenPurpose.PASSWORD_RESET, request.remote_addr)
+        flash('Wenn die Adresse fuer eine Wiederherstellung verwendet werden kann, erhaeltst du einen Link. Bitte pruefe auch den Spamordner.', 'success')
         return redirect(url_for('auth.login'))
-
     return render_template('auth/forgot_password.html', form=form)
 
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
@@ -588,60 +551,16 @@ def reset_password(token):
 @bp.route('/2fa/reset-request', methods=['GET', 'POST'])
 @limiter.limit("3 per hour")
 def request_2fa_reset():
-    """Request 2FA reset via email"""
+    """Request a durable reset with the same neutral public response."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
-    
-    form = ForgotPasswordForm()  # Reuse existing form
-    
+    form = ForgotPasswordForm()
     if form.validate_on_submit():
         user = PrimaryEmailService.find_active(form.email.data)
-        
         if user:
-            # Check if user has 2FA enabled
-            mfa_data = MemberMFA.query.filter_by(member_id=user.id).first()
-            if mfa_data and mfa_data.is_totp_enabled:
-                token = _issue_auth_token(
-                    member_id=user.id,
-                    purpose=AuthTokenPurpose.MFA_RESET,
-                    expires_in=timedelta(hours=1),
-                    request_ip=request.remote_addr,
-                )
-                reset_url = url_for('auth.reset_2fa', token=token, _external=True)
-                html = render_template(
-                    'emails/2fa_reset.html',
-                    display_name=user.display_name,
-                    reset_url=reset_url,
-                    valid_for='1 Stunde',
-                )
-                text = (
-                    f"Hallo {user.display_name}\n\n"
-                    "Du hast einen 2FA-Reset angefordert.\n"
-                    f"Setze 2FA ueber diesen Link zurueck: {reset_url}\n\n"
-                    "Der Link ist 1 Stunde gueltig."
-                )
-                MailService.send_async(
-                    to=PrimaryEmailService.normalize(user.email),
-                    subject='Gourmen 2FA zuruecksetzen',
-                    html=html,
-                    text=text,
-                    tags={'type': '2fa_reset', 'member_id': str(user.id)},
-                )
-                
-                # Log audit event
-                SecurityService.log_audit_event(
-                    AuditAction.REQUEST_2FA_RESET, 'member', user.id,
-                    extra_data={'ip': request.remote_addr},
-                    actor_id=user.id,
-                )
-                db.session.commit()
-            else:
-                # Don't reveal if 2FA is enabled or not
-                pass
-        
-        flash('Wenn die Adresse existiert, wurde eine Mail versendet.', 'success')
+            RecoveryLinkService.request(user.id, AuthTokenPurpose.MFA_RESET, request.remote_addr)
+        flash('Wenn die Adresse fuer eine Wiederherstellung verwendet werden kann, erhaeltst du einen Link. Bitte pruefe auch den Spamordner.', 'success')
         return redirect(url_for('auth.login'))
-    
     return render_template('auth/request_2fa_reset.html', form=form)
 
 @bp.route('/2fa/reset/<token>', methods=['GET', 'POST'])

@@ -80,11 +80,11 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 4c2 / U1-R04c2 | lokal geprüft | Adminzuordnung und durchgaengige Route-/Service-/UI-Grenzen einschliesslich Altbestand und Archiv. |
 | 4c3 / U1-R04c3 | lokal geprüft | Referenz-/Aufbewahrungspruefung vor endgueltigem Loeschen; Abschlussregression, direkte Drive-Abnahme bleibt extern. |
 | 4d / U1-R04d | geplant; mit U2/U3 | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
-| 5 / U1-R05 | aufgeteilt in a–c | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
+| 5 / U1-R05 | a–c lokal geprüft, externe Abnahmen offen | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
 | 5a / U1-R05a | lokal geprüft | Hauptadressbindung der Reset-/Aktivierungslinks, Altlinks und Adresswechsel; Vertrag U1_R05_LINKRESTVERTRAG.md. |
 | 5b / U1-R05b | lokal geprüft | Einheitliche Hauptmailnormalisierung, Lookup und DB-Eindeutigkeit ohne Kontozusammenlegung. |
-| 5c / U1-R05c | **bereit / nächstes Paket** | Persistierte Resetlink-Ausgabe vor gebundenem Versand, kontrollierter Zustellstatus. |
-| 6 / U1-R06 | geplant | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
+| 5c / U1-R05c | lokal geprüft | Persistierte Resetlink-Ausgabe vor gebundenem Versand, kontrollierter Zustellstatus. |
+| 6 / U1-R06 | **bereit / nächstes Paket** | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |
 | 7 / U1-R07 | geplant | F1-Admin-Notfallweg: lokaler Ablauf und synthetischer Wiederherstellungsnachweis für den einzigen Admin, Backup-Codes und technische Wiederherstellung über eigenes Hosting. Kein zusätzlicher Admin, kein Schlüsselwechsel. Tatsächliche Hosting-Abnahme separat autorisieren. |
 | 8 / U1-R08 | geplant | U1-Abschlussabgleich: verbleibende Rechte-/Recovery-/Widerrufsfälle und externe Nachweise zusammenführen. Offene Punkte nicht durch einen grünen SQLite-Lauf schliessen. |
 

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Wiederherstellungslinks – Gourmen{% endblock %}
+{% block content %}<div class="container"><div class="page-header"><h1>Wiederherstellungslinks</h1><p>{{ member.display_name }}</p></div>
+<div class="page-content"><p>Vom Maildienst angenommen bedeutet noch keine bestaetigte Zustellung. Bei unklarem Versand wird nicht automatisch erneut gesendet. Ein neuer bewusster Antrag ersetzt den vorherigen Link desselben Zwecks.</p>
+{% set labels={'pending':'Vorbereitet, Versand nicht bestaetigt','sending':'Versandausgang ungeklaert','accepted':'Vom Maildienst angenommen','unconfirmed':'Versand nicht bestaetigt','obsolete':'Nicht mehr aktuell'} %}
+{% for row in rows %}<div class="card"><div class="card__body">
+<h2>{{ 'Passwort' if row.purpose.value == 'PASSWORD_RESET' else 'Zwei-Faktor-Anmeldung' }}</h2>
+<p>{{ row.created_at.strftime('%d.%m.%Y %H:%M') }} · {{ labels.get(row.delivery_status, 'Altbestand ohne Versandstatus') }}</p>
+<p>{{ 'Verbraucht oder widerrufen' if row.used_at else 'Nicht verbraucht' }} · Ablauf {{ row.expires_at.strftime('%d.%m.%Y %H:%M') }}</p>
+</div></div>{% else %}<p>Keine Wiederherstellungsanfragen vorhanden.</p>{% endfor %}
+<a class="btn btn--outline" href="{{ url_for('admin.members') }}">Mitglieder</a></div></div>{% endblock %}

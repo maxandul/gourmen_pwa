@@ -127,6 +127,7 @@
                                         Sicherheit
                                     </a>
                                     <a href="{{ url_for('admin.member_area_permissions', member_id=member.id) }}" class="btn btn--outline btn--sm">Zusätzliche Zugriffe</a>
+                                    <a href="{{ url_for('admin.recovery_links', member_id=member.id) }}" class="btn btn--outline btn--sm">Wiederherstellungslinks</a>
                                     {% endif %}
                                     {% if can_read_travel %}
                                     <a href="{{ url_for('admin.member_travel_documents', member_id=member.id) }}" class="btn btn--outline btn--sm">Reisedokumente</a>
