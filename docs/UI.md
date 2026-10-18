@@ -543,3 +543,7 @@ separate Bestaetigung, Abbrechen und lesbarer Verlauf. Keine neue CSS-Klasse.
 Gesamtbetrag/Zahlweg sind b1; Rechnung/Teilnahme/GGL folgen getrennt. Keine
 Zahlung oder automatische Nachricht. PWA 3.16.37 / pwa.c4809d76.js.
 Funktionale Templatepruefung ersetzt keine reale Geraete-/Darstellungsabnahme.
+
+U2-17b2 ergaenzt Restaurantrechnung und lesbare GGL-Vorher-/Nachher-Werte
+in derselben Korrekturseite/Verlauf. Eventrangliste zeigt gespeicherten Rang
+statt Listenposition; keine neue CSS-Klasse. PWA 3.16.38 / pwa.34b2a6b8.js.

@@ -310,3 +310,7 @@ und Zahlweg mit Grund/Vorschau korrigieren. Alte und neue Forderungen bleiben
 in der Korrekturhistorie nachvollziehbar; nur die neuen Posten sind aktuell.
 Zahlungen, Buchungen oder abgeschlossene Posten verlangen den gesonderten
 Finanzkorrekturweg. Restaurantrechnung/Teilnahmen bleiben in b1 unveraendert.
+
+U2-17b2 erweitert diesen Weg um die Restaurantrechnung: GGL-Differenzen,
+Raenge und Punkte vorab vergleichen und gemeinsam bestaetigen. Gleichstaende
+bleiben als halbe Raenge/Punkte gespeichert; Schätzungen bleiben unveraendert.

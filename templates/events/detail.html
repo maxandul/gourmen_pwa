@@ -535,8 +535,8 @@
                                 </thead>
                                 <tbody>
                                 {% for p in ranked %}
-                                    <tr class="{% if p.member_id == current_user.id %}billbro-guess-ranking-table__row--current{% endif %} {% if loop.index == 1 %}billbro-guess-ranking-table__row--rank-1{% elif loop.index == 2 %}billbro-guess-ranking-table__row--rank-2{% elif loop.index == 3 %}billbro-guess-ranking-table__row--rank-3{% endif %}">
-                                        <td class="billbro-guess-ranking-table__col-rank">{{ loop.index }}</td>
+                                    <tr class="{% if p.member_id == current_user.id %}billbro-guess-ranking-table__row--current{% endif %} {% if p.rank == 1 %}billbro-guess-ranking-table__row--rank-1{% elif p.rank == 2 %}billbro-guess-ranking-table__row--rank-2{% elif p.rank == 3 %}billbro-guess-ranking-table__row--rank-3{% endif %}">
+                                        <td class="billbro-guess-ranking-table__col-rank">{{ "%g"|format(p.rank) if p.rank is not none else "–" }}</td>
                                         <td class="billbro-guess-ranking-table__col-name">{{ p.member.display_name_with_spirit }}</td>
                                         <td class="billbro-guess-ranking-table__col-num">{{ "%.2f"|format((p.guess_bill_amount_rappen or 0)/100) }}&nbsp;CHF</td>
                                         <td class="billbro-guess-ranking-table__col-num">{% if p.diff_amount_rappen is not none %}{{ "%.2f"|format(p.diff_amount_rappen/100) }}&nbsp;CHF{% else %}—{% endif %}</td>

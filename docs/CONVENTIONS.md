@@ -1075,7 +1075,7 @@ committeten Zahlwegwechsel. Bereinigung behaelt ihre strengere U2-09-Grenze.
 
 BillBro-Korrektur b1 ist ein eigener Prepare/Confirm-Weg. Vorschau schreibt
 nichts und bindet konkrete Eingabe/Akteur/auth_generation/Event/Ausgangsstand
-per URLSafeTimedSerializer, Zweck billbro-correction-v1, Ablauf 30 Minuten.
+per URLSafeTimedSerializer, Zweck billbro-correction-v2, Ablauf 30 Minuten.
 Bestaetigung sperrt Event, betroffene Jahreszeilen und Posten und prueft erneut.
 Request-Hash in BillBroCorrection verhindert doppelte Anwendung. Alte Posten
 werden vor Ersatz vollstaendig als before_json gesichert; after_json beschreibt
@@ -1083,3 +1083,11 @@ den neuen Stand. Historie und Fachwerte haben einen Commit. Referenzierte oder
 bezahlte/erlassene Posten niemals im unbezahlten Weg ersetzen. Kein Backfill.
 Manuelle Zahlung/Erlass und private Bestaetigung laden Posten mit Zeilensperre,
 damit sie keine gleichzeitig ersetzten Posten aus veraltetem ORM-Stand schreiben.
+
+Rechnungskorrektur b2 bindet auch die Restaurantrechnung im Vorschautoken.
+GGLService.project_points berechnet rein aus anwesenden Personen mit Tipp:
+absolute Differenz, Null vor allen Abweichungen, durchschnittlicher Rang bei
+Gleichstand. rank/points sind Float fuer exakt darstellbare halbe Werte.
+Bei Rechnungswechsel werden Differenz/Rang/Punkte mit Abrechnung und Historie
+committet. Reine Gesamtbetrag-/Zahlwegkorrektur erhaelt GGL-Werte. Alte
+V1-Vorschauen neu vorbereiten. Keine automatische Altdaten-Neuberechnung.

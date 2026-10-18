@@ -74,3 +74,59 @@ Migration, kein Versand/Push/Deploy. U1 und U2-17b insgesamt bleiben offen.
 Naechstes b2: Rechnungsbetrag mit korrekter GGL-Vorschau/Neuberechnung und
 Speicherung gebrochener Raenge; Teilnahme/Ess-Typ danach separat (b3).
 Bezahlte Korrekturen brauchen anschliessend die bestaetigten Finanzrollen.
+
+
+## Vertrag vor Code: b2 Restaurantrechnung und GGL
+
+Rechnungsbetrag als zusaetzliche explizite Korrektureingabe. Vorschau bindet alte/
+neue Rechnung und zeigt betroffene GGL-Differenzen, Raenge und Punkte. Keine
+Aenderung von Schaetzungen/Teilnahme/Ess-Typ. Neuer Gesamtbetrag mindestens
+Rechnung; Trinkgeld ist Differenz. Genauigkeit/Summe nach U2-12. Berechnung
+von GGL nach DOMAIN: absolute Differenz, Null ist bester Treffer, mittlerer
+Rang bei Gleichstand, Punkte N-Rang+1. Alles zusammen mit Forderungen/Historie
+atomar speichern; vorhandene Zahlungssperren bleiben bestehen.
+
+Schemafund: Participation.rank und points sind Integer im Model; Initial-
+migration hat rank, aber keine points-Spalte, auch keine spaetere Migration.
+Separate Migration hebt rank auf Float und points auf Float (falls vorhanden)
+oder fuegt die fehlende nullable Spalte hinzu. Keine Neuberechnung alter Werte.
+Downgrade verweigert gebrochene Werte, konvertiert sonst beide auf Integer;
+points bleibt als Kompatibilitaetsspalte erhalten, weil der vorige App-Code sie
+bereits verwendet. Dieser bewusste Unterschied zur unvollstaendigen alten
+Migrationskette verhindert Verlust vorhandener Legacy-Punkte.
+
+Rechnungswechsel berechnet GGL neu; reine Gesamtbetrag-/Zahlwegkorrektur b1
+laesst bestehende GGL-Werte unveraendert. Keine neue GGL-Fachregel. Vorschau
+bei Nicht-GGL-Event ohne erfundene GGL-Neuberechnung. Alter signierter b1-
+Nachweis darf nach b2 nicht mit fehlender Rechnung bestaetigt werden; neu vorbereiten.
+
+
+## b2 umgesetzt und lokal geprueft (18.10.2026)
+
+Separate Migration **37e081c** (u217b220261018): beide Legacy-Formen, Integer-
+Datenerhalt, Upgrade/Downgrade/Upgrade und Sperre gegen Verlust halber Werte:
+**2 bestanden, 0.29 s**. Downgrade behaelt die alte App-Kompatibilitaetsspalte
+points wie im Vertrag beschrieben. Keine bestehende GGL-Historie neu berechnet.
+
+GGLService.project_points ist eine reine Projektion. Rechnungskorrektur verwendet
+sie fuer Vorschau und denselben atomaren Fachcommit; erstmalige Rechnung verwendet
+dieselbe Berechnung. Das alte `difference or infinity` behandelte einen exakten
+Treffer falsch; Null wird nun richtig vor positiven Abweichungen sortiert.
+Gespeicherte halbe Raenge werden auch im Eventdetail statt Listenposition angezeigt.
+Verlauf zeigt alte/neue Rechnung und GGL-Werte; vorhandene Tipps bleiben erhalten.
+Nicht-GGL-Events erhalten keine erfundenen Punkte. Tokenzweck jetzt v2, alte
+b1-Vorschauen werden kontrolliert abgewiesen. PWA 3.16.38 / pwa.34b2a6b8.js.
+
+Isolierter Runner: test_billbro_invoice_correction, test_billbro_correction,
+test_ggl_fractional_migration und test_billbro_amount_validation:
+**91 bestanden, 1824 Warnungen, 44.83 s**. Nach Erweiterung um fehlende Tipps,
+Abwesenheit und alte Vorschautokens: invoice_correction + fractional_migration
+**14 bestanden, 376 Warnungen, 10.27 s**. Node Worker **19 bestanden**.
+git diff --check ohne Fehler. Kein dotenv/Netz/Produktionszugriff; pyreadline3
+meldete teilweise erst beim Interpreterabbau einen ignorierten Handlefehler
+bei Prozesscode 0. Echte PostgreSQL-/Browserabnahme weiterhin offen.
+
+B3 wird weiter begrenzt: b3a Ess-Typ der vorhandenen Anwesenden mit Auswirkung
+auf Einzelanteile/Forderungen; b3b Anwesenheit getrennt von urspruenglicher
+RSVP-Antwort modellieren. Die bestaetigte Regel verbietet erfundene nachtraegliche
+Absagen; daher keine einfache Erweiterung um ein teilnahme-Umschreibefeld.

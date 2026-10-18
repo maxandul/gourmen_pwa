@@ -13,72 +13,45 @@ class GGLService:
     """GGL (Gourmen Guessing League) service for points calculation and ranking"""
     
     @staticmethod
-    def calculate_event_points(event_id):
-        """Calculate points for all participants in an event"""
-        # Get all participations with valid guesses
-        participations = Participation.query.filter_by(
-            event_id=event_id,
-            teilnahme=True
-        ).filter(
-            Participation.guess_bill_amount_rappen.isnot(None)
-        ).all()
-        
-        if not participations:
-            return []
-        
-        # Sort by difference amount (ascending - best guess first)
-        sorted_participations = sorted(
-            participations, 
-            key=lambda p: p.diff_amount_rappen or float('inf')
-        )
-        
-        # Calculate fractional ranking
-        rankings = GGLService._calculate_fractional_ranking(sorted_participations)
-        
-        # Calculate points (N - rank + 1)
-        n_participants = len(sorted_participations)
-        for participation, rank in rankings.items():
-            points = n_participants - rank + 1
-            participation.rank = rank
-            participation.points = points
-        
-        # Update database
+    def project_points(participations, invoice):
+        """Pure projection: zero difference wins, ties share the average rank."""
+        if type(invoice) is not int or invoice <= 0:
+            raise ValueError('Gültige Restaurantrechnung für GGL erforderlich.')
+        result = {p.id: dict(diff_amount_rappen=None, rank=None, points=None) for p in participations}
+        ranked = []
+        for part in participations:
+            guess = part.guess_bill_amount_rappen
+            if not part.teilnahme or guess is None:
+                continue
+            if type(guess) is not int or guess < 0:
+                raise ValueError('Historische Schätzung ist ungültig. Zuerst klären.')
+            difference = abs(guess - invoice)
+            result[part.id]['diff_amount_rappen'] = difference
+            ranked.append((difference, part.member_id, part.id))
+        ranked.sort()
+        start = 0
+        while start < len(ranked):
+            end = start + 1
+            while end < len(ranked) and ranked[end][0] == ranked[start][0]:
+                end += 1
+            rank = (start + end + 1) / 2
+            for _, _, part_id in ranked[start:end]:
+                result[part_id].update(rank=rank, points=len(ranked) - rank + 1)
+            start = end
+        return result
+
+    @classmethod
+    def calculate_event_points(cls, event_id):
+        """Legacy first-invoice caller; correction applies the pure projection itself."""
+        event = db.session.get(Event, event_id)
+        parts = Participation.query.filter_by(event_id=event_id).all()
+        projected = cls.project_points(parts, event.rechnungsbetrag_rappen)
+        for part in parts:
+            for field, value in projected[part.id].items():
+                setattr(part, field, value)
         db.session.commit()
-        
-        return sorted_participations
-    
-    @staticmethod
-    def _calculate_fractional_ranking(participations):
-        """Calculate fractional ranking for participants with same difference"""
-        rankings = {}
-        current_rank = 1
-        i = 0
-        
-        while i < len(participations):
-            # Find all participants with same difference
-            current_diff = participations[i].diff_amount_rappen
-            same_diff_indices = [i]
-            
-            j = i + 1
-            while j < len(participations) and participations[j].diff_amount_rappen == current_diff:
-                same_diff_indices.append(j)
-                j += 1
-            
-            # Calculate average rank for this group
-            if len(same_diff_indices) == 1:
-                # Single participant
-                rankings[participations[i]] = current_rank
-            else:
-                # Multiple participants with same difference
-                avg_rank = sum(range(current_rank, current_rank + len(same_diff_indices))) / len(same_diff_indices)
-                for idx in same_diff_indices:
-                    rankings[participations[idx]] = avg_rank
-            
-            current_rank += len(same_diff_indices)
-            i = j
-        
-        return rankings
-    
+        return sorted((p for p in parts if p.rank is not None), key=lambda p: (p.rank, p.member_id))
+
     @staticmethod
     def get_season_ranking(season_year):
         """Saison-Rangliste (Tab Tabelle): Sortierung nach Gesamtpunkten, bei Gleichstand nach ØPkt (beides absteigend)."""

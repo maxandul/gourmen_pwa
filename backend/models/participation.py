@@ -24,8 +24,8 @@ class Participation(db.Model):
     esstyp = db.Column(db.Enum(Esstyp))
     guess_bill_amount_rappen = db.Column(db.Integer)  # Guess for total bill (without tip)
     diff_amount_rappen = db.Column(db.Integer)        # |guess - actual_bill|
-    rank = db.Column(db.Integer)                      # 1 = best guess
-    points = db.Column(db.Integer)                    # GGL points earned
+    rank = db.Column(db.Float)                      # 1 = best guess
+    points = db.Column(db.Float)                    # GGL points earned
     calculated_share_rappen = db.Column(db.Integer)   # Final amount to pay
     
     # Timestamps

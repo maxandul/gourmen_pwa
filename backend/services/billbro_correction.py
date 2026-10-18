@@ -17,6 +17,7 @@ from backend.models.billbro_correction import BillBroCorrection
 from backend.services.area_permissions import AreaPermissionService
 from backend.services.billbro_shares import BillBroShareService, ShareError
 from backend.services.money import MoneyService
+from backend.services.ggl_rules import GGLService
 
 
 class CorrectionError(ValueError):
@@ -38,7 +39,7 @@ def record(obj):
 class BillBroCorrectionService:
     @staticmethod
     def serializer():
-        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v1')
+        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v2')
 
     @staticmethod
     def require_actor(event, actor):
@@ -66,23 +67,24 @@ class BillBroCorrectionService:
         return event, parts, claims, years, state
 
     @staticmethod
-    def proposal(form):
+    def proposal(form, previous_invoice):
         reason = (form.get('reason') or '').strip()
         if not 1 <= len(reason) <= 1000:
             raise CorrectionError('Einen Grund mit 1 bis 1000 Zeichen angeben.')
         try:
             total = MoneyService.parse_positive_rappen(form.get('total'))
+            invoice = MoneyService.parse_positive_rappen(form.get('invoice', f'{(previous_invoice or 0) / 100:.2f}'))
             mode = BillPaidBy(form.get('paid_by'))
             payer = int(form.get('payer_member_id') or 0) if mode == BillPaidBy.MITGLIED else None
         except (ValueError, TypeError):
-            raise CorrectionError('Gesamtbetrag und Zahlweg gültig und rappengenau angeben.') from None
-        return dict(reason=reason, total=total, paid_by=mode.value, payer=payer)
+            raise CorrectionError('Restaurantrechnung, Gesamtbetrag und Zahlweg gültig und rappengenau angeben.') from None
+        return dict(reason=reason, total=total, invoice=invoice, paid_by=mode.value, payer=payer)
 
     @staticmethod
     def validate(event, parts, claims, years, proposed):
         if event.gesamtbetrag_rappen is None or not event.rechnungsbetrag_rappen:
             raise CorrectionError('Dieser Weg benötigt einen vollständigen bestehenden Abschluss.')
-        if proposed['total'] < event.rechnungsbetrag_rappen:
+        if proposed['total'] < proposed['invoice']:
             raise CorrectionError('Gesamtbetrag darf die Restaurantrechnung nicht unterschreiten.')
         attending = {p.member_id for p in parts if p.teilnahme}
         if proposed['paid_by'] == BillPaidBy.MITGLIED.value and proposed['payer'] not in attending:
@@ -104,22 +106,29 @@ class BillBroCorrectionService:
                 c.claim_type != ClaimType.ESSENSANTEIL or c.expected_rappen != expected.get(c.member_id) or
                 c.creditor_member_id != old_creditor or c.merch_order_id is not None for c in claims):
             raise CorrectionError('Bestehende Forderungen und Anteile stimmen nicht überein. Zuerst klären.')
-        if (event.gesamtbetrag_rappen, event.bill_paid_by.value if event.bill_paid_by else None, old_creditor) == (proposed['total'], proposed['paid_by'], proposed['payer']):
+        if (event.rechnungsbetrag_rappen, event.gesamtbetrag_rappen, event.bill_paid_by.value if event.bill_paid_by else None, old_creditor) == (proposed['invoice'], proposed['total'], proposed['paid_by'], proposed['payer']):
             raise CorrectionError('Keine Änderung gewählt.')
         try:
             shares = BillBroShareService.calculate(event, proposed['total'])
         except ShareError as exc:
             raise CorrectionError(str(exc)) from None
+        if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen:
+            try:
+                GGLService.project_points(parts, proposed['invoice'])
+            except ValueError as exc:
+                raise CorrectionError(str(exc)) from None
         return old_shares, shares
 
     @classmethod
     def preview(cls, event_id, actor, form):
-        proposed = cls.proposal(form)
         event, parts, claims, years, state = cls.load(event_id, actor)
+        proposed = cls.proposal(form, event.rechnungsbetrag_rappen)
         old_shares, shares = cls.validate(event, parts, claims, years, proposed)
         token = cls.serializer().dumps(dict(actor=actor.id, generation=actor.auth_generation,
             event=event.id, before=digest(state), proposed=proposed, nonce=uuid4().hex))
-        return dict(token=token, proposed=proposed, old_total=event.gesamtbetrag_rappen,
+        ggl = GGLService.project_points(parts, proposed['invoice']) if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen else None
+        return dict(token=token, proposed=proposed, old_invoice=event.rechnungsbetrag_rappen, old_total=event.gesamtbetrag_rappen,
+                    ggl_rows=[dict(name=p.member.display_name, before=dict(rank=p.rank, points=p.points, diff_amount_rappen=p.diff_amount_rappen), after=ggl[p.id]) for p in parts] if ggl is not None else [],
                     old_paid_by=event.bill_paid_by.value if event.bill_paid_by else None,
                     old_payer=event.bill_payer_member_id,
                     rows=[dict(id=p.member_id, name=p.member.display_name, before=old_shares.get(p.member_id, 0), after=shares.get(p.member_id, 0),
@@ -146,6 +155,12 @@ class BillBroCorrectionService:
                 raise CorrectionError('Stand wurde seit der Vorschau geändert. Neu vorbereiten; nichts wurde überschrieben.')
             proposed = payload['proposed']
             cls.validate(event, parts, claims, years, proposed)
+            if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen:
+                ggl = GGLService.project_points(parts, proposed['invoice'])
+                for part in parts:
+                    for field, value in ggl[part.id].items():
+                        setattr(part, field, value)
+            event.rechnungsbetrag_rappen = proposed['invoice']
             event.gesamtbetrag_rappen = proposed['total']
             event.trinkgeld_rappen = proposed['total'] - event.rechnungsbetrag_rappen
             event.bill_paid_by = BillPaidBy(proposed['paid_by'])

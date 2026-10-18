@@ -925,6 +925,7 @@ def correction(event_id):
         abort(403)
     values = request.form if request.method == 'POST' else dict(
         total=f'{(event.gesamtbetrag_rappen or 0) / 100:.2f}',
+        invoice=f'{(event.rechnungsbetrag_rappen or 0) / 100:.2f}',
         paid_by=event.bill_paid_by.value if event.bill_paid_by else '',
         payer_member_id=str(event.bill_payer_member_id or ''), reason='')
     preview = None
