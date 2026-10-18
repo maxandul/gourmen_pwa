@@ -808,3 +808,14 @@ zusammen committet. Damit wirkt auch ein Wechsel zurueck nicht reaktivierend.
 Linkseiten no-store/no-referrer. Legacy-Aktivierung ohne Einladungssnapshot kann
 nicht automatisch erneut eingeladen werden: vorhandener Passwort-Recoveryweg
 bzw. bestaetigter Admin-Recoveryweg, keine stille neue Einladung/2FA-Umgehung.
+
+## Normalisierte Hauptmail (U1-R05b)
+
+PrimaryEmailService vereinheitlicht Formularfilter, Konfliktquery und Login/
+Recovery-Lookup: ASCII-Rand-Leerraum entfernen, kleinschreiben, keine Alias-
+Umdeutung. Profil/Admin speichern neue Eingaben kanonisch; bestehende Adressen
+werden nicht pauschal umgeschrieben. SQL-Unique-Index ueber lower(trim(email,
+ASCII-Leerraum)) schliesst konkurrierende Schreibvarianten ein. Migration prueft
+Konflikte vor Indexanlage und stoppt ohne Kontozusammenlegung. Inaktive Konten
+belegen ihre Adresse weiterhin. Mehrdeutiger Lookup vor Migration liefert keinen
+Account. Google-Mail ist weiterhin separat und erhaelt keine neue 1:1-Regel.

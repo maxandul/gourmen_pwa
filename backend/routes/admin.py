@@ -1,3 +1,4 @@
+from backend.services.primary_email import PrimaryEmailService
 from backend.services.area_permissions import AreaPermissionService
 import json
 from datetime import datetime, timedelta
@@ -217,7 +218,7 @@ class MemberForm(FlaskForm):
     editing_member_id = None  # Set only by the edit route, never from submitted fields.
 
     def validate_email(self, field):
-        query = Member.query.filter_by(email=field.data)
+        query = PrimaryEmailService.query(field.data)
         if self.editing_member_id is not None:
             query = query.filter(Member.id != self.editing_member_id)
         if query.first():
@@ -237,6 +238,7 @@ class MemberForm(FlaskForm):
     rufname = StringField('Rufname')
     email = StringField(
         'E-Mail',
+        filters=[PrimaryEmailService.normalize],
         validators=[DataRequired(), Email()],
         render_kw={'aria-required': 'true'},
     )
@@ -343,7 +345,7 @@ def _commit_member_form(form):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        query = Member.query.filter_by(email=form.email.data)
+        query = PrimaryEmailService.query(form.email.data)
         if form.editing_member_id is not None:
             query = query.filter(Member.id != form.editing_member_id)
         if query.first():

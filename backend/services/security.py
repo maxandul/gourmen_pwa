@@ -52,7 +52,7 @@ class SecurityService:
 
     @staticmethod
     def normalized_primary_email(value):
-        return (value or '').strip().lower()
+        return (value or '').strip(' \t\r\n\v\f').lower()
 
     @staticmethod
     def update_primary_email(member, value):
@@ -60,7 +60,7 @@ class SecurityService:
         if SecurityService.normalized_primary_email(member.email) != SecurityService.normalized_primary_email(value):
             SecurityService.invalidate_password_links(member.id)
             SecurityService.invalidate_mfa_reset_links(member.id)
-        member.email = value
+        member.email = SecurityService.normalized_primary_email(value)
 
     @staticmethod
     def invalidate_password_links(member_id, *, purpose=None):

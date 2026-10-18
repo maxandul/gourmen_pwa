@@ -58,7 +58,7 @@ def test_duplicate_email_preserves_profile_and_input(app, client, members, activ
 def test_available_or_own_email_saves(app, client, members, email):
     response = submit(client, email)
     assert response.status_code == 302
-    assert saved(app, members[0]) == (email, 'Edited', 'edited-phone')
+    assert saved(app, members[0]) == (email.strip().lower(), 'Edited', 'edited-phone')
 
 
 def test_db_conflict_after_precheck_rolls_back(app, client, members, monkeypatch):

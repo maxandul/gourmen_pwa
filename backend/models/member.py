@@ -56,6 +56,8 @@ class Member(db.Model, UserMixin):
     ort = db.Column(db.String(100))
     telefon = db.Column(db.String(50))
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    __table_args__ = (db.Index('uq_members_primary_email_normalized',
+        db.func.lower(db.func.trim(email, ' \t\r\n\v\f')), unique=True),)
     passwort_hash = db.Column(db.String(255), nullable=False)
     auth_generation = db.Column(db.String(32), nullable=False,
                                 default=lambda: secrets.token_hex(16), server_default='0')

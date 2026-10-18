@@ -1,3 +1,4 @@
+from backend.services.primary_email import PrimaryEmailService
 import hashlib
 import secrets
 from datetime import datetime, timedelta
@@ -39,7 +40,7 @@ def protect_confirmation_responses(response):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('E-Mail', validators=[DataRequired(), Email()])
+    email = StringField('E-Mail', filters=[PrimaryEmailService.normalize], validators=[DataRequired(), Email()])
     password = PasswordField('Passwort', validators=[DataRequired()])
     remember_me = BooleanField('Angemeldet bleiben')
     submit = SubmitField('Anmelden')
@@ -69,7 +70,7 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField('Passwort ändern')
 
 class ForgotPasswordForm(FlaskForm):
-    email = StringField('E-Mail', validators=[DataRequired(), Email()])
+    email = StringField('E-Mail', filters=[PrimaryEmailService.normalize], validators=[DataRequired(), Email()])
     submit = SubmitField('Zurücksetzen-Link senden')
 
 class ResetPasswordForm(FlaskForm):
@@ -156,7 +157,7 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+        user = PrimaryEmailService.find_active(form.email.data)
         if user:
             user = SecurityService.lock_credential_member(user.id)
         
@@ -487,7 +488,7 @@ def forgot_password():
 
     form = ForgotPasswordForm()
     if form.validate_on_submit():
-        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+        user = PrimaryEmailService.find_active(form.email.data)
 
         if user:
             token = _issue_auth_token(
@@ -511,7 +512,7 @@ def forgot_password():
                 "Falls du das nicht warst, kannst du diese Mail ignorieren."
             )
             MailService.send_async(
-                to=user.email,
+                to=PrimaryEmailService.normalize(user.email),
                 subject='Gourmen Passwort zuruecksetzen',
                 html=html,
                 text=text,
@@ -594,7 +595,7 @@ def request_2fa_reset():
     form = ForgotPasswordForm()  # Reuse existing form
     
     if form.validate_on_submit():
-        user = Member.query.filter_by(email=form.email.data, is_active=True).first()
+        user = PrimaryEmailService.find_active(form.email.data)
         
         if user:
             # Check if user has 2FA enabled
@@ -620,7 +621,7 @@ def request_2fa_reset():
                     "Der Link ist 1 Stunde gueltig."
                 )
                 MailService.send_async(
-                    to=user.email,
+                    to=PrimaryEmailService.normalize(user.email),
                     subject='Gourmen 2FA zuruecksetzen',
                     html=html,
                     text=text,

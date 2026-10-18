@@ -51,3 +51,29 @@ die der Mailvalidator korrekt ablehnt. Auf lazy Import bzw. example.com korrigie
 keine Validatorlockerung. Rollback, Altlink-POST, fehlende Sitzung, Adresswechsel
 hin/zurueck und Zweckverwechslung nachgewiesen. `git diff --check` sauber.
 Reale Mail-/PostgreSQL-/Geraeteabnahme offen. Naechstes Paket R05b Normalisierung.
+
+## R05b technischer Vertrag
+
+Neue Formulareingaben: ASCII-Rand-Leerraum (Leerzeichen/Tab/CR/LF/VT/FF) entfernen,
+kleinschreiben; keine Plus-/Punkt-/Providerumdeutung. Lookup/Formular-Konfliktcheck
+und Unique-Index verwenden dieselbe lower(trim())-Form. Bestehende gespeicherte
+Adressen werden durch die Migration nicht umgeschrieben. Konflikte einschliesslich
+inaktiver Konten blockieren die Migration, ohne Adressen in Fehlermeldungen zu
+nennen. Lookup liefert bei Mehrdeutigkeit keinen Account. Primary und Google-Mail
+bleiben getrennt; keine Entscheidung zu D-01 vorwegnehmen.
+
+## R05b Nachweis 18.10.2026
+
+Migration **b17be2b** separat. Modellindex, Formularfilter, Konfliktpruefung und
+Login-/Resetlookup vereinheitlicht; bestehende Adressen bleiben unveraendert,
+neue Profileingaben kanonisch. Reset-Empfaenger wird normalisiert.
+Isolierter pytest-Lauf mit test_primary_email_normalization,
+test_primary_email_migration, test_profile_email_conflict,
+test_primary_email_link_binding und test_onboarding_delivery:
+**45 bestanden, 916 Warnungen**, 22.95 Sekunden. Login mit vier Schreibweisen
+gegen Legacybestand, kanonischer Empfaenger, Profil/Admin-Duplikate, DB-Konflikt
+und Mehrdeutigkeit vor Migration geprueft. Migration Upgrade/Downgrade/Upgrade,
+Konfliktabbruch ohne Bestandsaenderung. `git diff --check` sauber.
+Keine UI-/Assetaenderung; Worker nicht erneut ausgefuehrt. PostgreSQL-Index/
+Konkurrenz und echter Bestandskonflikt-Check bleiben offen; keine Produktionsdaten
+gelesen. Naechstes Paket R05c persistierter Resetversand.

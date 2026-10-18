@@ -1,3 +1,4 @@
+from backend.services.primary_email import PrimaryEmailService
 from datetime import datetime
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, abort
@@ -19,8 +20,8 @@ bp = Blueprint('member', __name__, url_prefix='/member')
 
 class ProfileForm(FlaskForm):
     def validate_email(self, field):
-        # Match the existing database/login semantics; do not rewrite stored addresses.
-        if Member.query.filter(Member.email == field.data, Member.id != current_user.id).first():
+        # Match normalized login lookup and database uniqueness, including inactive accounts.
+        if PrimaryEmailService.query(field.data).filter(Member.id != current_user.id).first():
             raise ValidationError('Diese E-Mail-Adresse wird bereits verwendet.')
 
     # Personal data
@@ -37,6 +38,7 @@ class ProfileForm(FlaskForm):
     rufname = StringField('Rufname')
     email = StringField(
         'E-Mail',
+        filters=[PrimaryEmailService.normalize],
         validators=[DataRequired(), Email()],
         render_kw={'aria-required': 'true'},
     )
@@ -274,9 +276,7 @@ def profile():
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-                if Member.query.filter(
-                    Member.email == form.email.data, Member.id != current_user.id
-                ).first():
+                if PrimaryEmailService.query(form.email.data).filter(Member.id != current_user.id).first():
                     form.email.errors.append('Diese E-Mail-Adresse wird bereits verwendet.')
                     flash('Bitte überprüfe die E-Mail-Adresse.', 'error')
                 else:
