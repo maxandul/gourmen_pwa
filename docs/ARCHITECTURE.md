@@ -324,3 +324,11 @@ Cron-Trigger → run_cron_reminders.py
 
 - **Drei Hilfs-Routes** (`init_db`, `migrate`, `test_migrate`): einmalige Migration-Helper, sollten bei Cleanup entfernt werden.
 - **Tests**: aktuell kein automatisches Test-Setup. Manuell + Production-Smoke-Testing.
+
+## Lokale Dokumentrechte (App-Audit R04c)
+
+Drive bleibt Quelle fuer Inhalte/Dateinamen. DocumentPolicy und
+DocumentPolicyChange speichern ausschliesslich lokale Zugriffsklassifikation
+und deren Aenderungshistorie. DocumentPermissionService verbindet diese Regeln
+mit Event- und Belegrechten. Keine implizite Uebertragung auf externe Drive-
+Freigaben. R04c1 liefert die Grundlage, R04c2 bindet die App-Einstiege an.

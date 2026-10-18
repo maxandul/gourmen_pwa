@@ -6,3 +6,5 @@ from . import drive_access_task
 from . import action_confirmation_use
 
 from . import member_area_grant
+
+from backend.models.document_policy import DocumentPolicy, DocumentPolicyChange

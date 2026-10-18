@@ -1,3 +1,10 @@
+> Rechte-Update App-Audit 18.10.2026: F2/R13 ersetzt das historische
+> «alle sehen alles». Unklassifizierter Altbestand in der App nur Systemadmin;
+> explizite Datei-/Ordnerrechte gemaess
+> [R04c-Vertrag](../initiatives/app-audit/U1_R04C_DOKUMENTRECHTE.md).
+> R04c1 ist die lokale Grundlage, Routenbindung folgt R04c2. Direkte
+> Drive-Freigaben sind damit weder geaendert noch abgenommen.
+
 # Capability: Vereinsdokumente in Google Shared Drive
 
 > **Zweck**: Mitglieder verwalten Vereinsdokumente (Statuten, Protokolle, Verträge, Belege, Fotos) in der PWA – hochladen, anzeigen, organisieren, archivieren. Speicherort ist ein **Google Shared Drive**, das im Workspace-Starter-Konto `kontakt@gourmen.ch` lebt. Editieren von Office-Dokumenten erfolgt über den Drive-Web-View («Öffnen»-Aktion in der App), nicht in der App selbst.

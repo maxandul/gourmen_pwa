@@ -755,3 +755,15 @@ vorhandene Merchverwaltung. Alle admin.merch*-Leseseiten und Mutationswege nutze
 den gemeinsamen merch_manager_required-Pruefer. Mitgliederwege bleiben auf eigene
 Bestellungen gebunden, auch fuer Bereichsverwalter. UI verwendet denselben Scope;
 Vorstandsamt oder fremde Funktionsrechte genuegen nicht. Kein neues CMS.
+
+## Dokumentklassifikation (U1-R04c1 Grundlage)
+
+DocumentPolicy ordnet eine Drive-ID explizit als Datei/Ordner einer Leseebene und
+einem Pflegebereich zu. Keine Namensheuristik/Altbestandsfreigabe. Unbekannte oder
+ungueltige Policy ist nur fuer aktive Admins lesbar. DocumentPermissionService
+prueft Datei, direkten Elternordner, Event und gleichnamige Belegreferenzen. Root
+ist nur Navigation, keine Schreibfreigabe. Pflege setzt Lesen voraus. Die neuen
+Scopes documents_manage/board_documents_manage sind gezielte Zusatzfreigaben.
+classify prueft aktuellen aktiven Admin, erlaubte Werte und erwarteten Vorzustand;
+Policy und DocumentPolicyChange bleiben in einer Caller-Transaktion. PostgreSQL-
+Sperrnachweis bleibt offen. Routenbindung folgt separat in R04c2.
