@@ -30,7 +30,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 | U2-12 | lokal geprüft | Summengleiche Einzelanteile und atomarer Erstabschluss; 114 Python-/19 Worker-Tests. [Nachweis](U2_12_BILLBRO_VERTEILUNG.md). |
 | U2-13 | lokal geprüft | Merch-Lesewege ohne Fachmutation, gebuendelte Katalogabfragen; 45 Tests. [Nachweis](U2_13_MERCH_LESEWEGE.md). |
 | U2-14 | lokal geprüft | Stabile Varianten, normalisierte Auswahl und Bestellbezeichnungen; 61 Python-/19 Worker-Tests. Migration e9d6f95 separat. [Nachweis](U2_14_MERCH_VARIANTEN.md). |
-| U2-15 | lokal geprüft | Bestellpreise/Positions-IDs erhalten, echte Nulloperation, Versionsvergleich und Mengen-Erhalt im JS; 80 Python-/23 JS-Tests. [Nachweis](U2_15_MERCH_PREISBINDUNG.md). |
+| U2-15 | lokal geprüft | Bestellpreise/Positions-IDs erhalten, echte Nulloperation, Versionsvergleich und Mengen-Erhalt im JS; 80 Python-/23 JS-Tests; Nachkorrektur 82/24. Gesamtlauf auf 68246e2: 1320 bestanden. [Nachweis](U2_15_MERCH_PREISBINDUNG.md). |
 | U2-03a / A-064, A-065: CSV-Prüfung | Lokal geprüft, Identität separat | 71 Python-Tests; [Nachweis](U2_03_IMPORTPRUEFUNG.md) |
 | U2-02b2 / B01/F5: Mehrfachzuordnung | Lokal geprüft; Korrektur/Vollzug/extern offen | Migration b63c328 separat, 104 Python- und 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
 | U2-02b1 / A-061: Einzelposten-Zuordnung | Lokal geprüft; Sammel-/Restmodell in b2 | 75 Python-Tests, erweitert 43; 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |

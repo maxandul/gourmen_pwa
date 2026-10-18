@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(process.env.MERCH_EDIT_TEST_SOURCE || 'static/js/v2/merch-order-edit.js', 'utf8');
 
-function run({ quantity = '3', color = 'Blue', size = 'M', price = 1900 } = {}) {
+function run({ quantity = '3', color = 'Blue', size = 'M', price = 1900, variants = null } = {}) {
   const callbacks = {};
   const dataset = () => new Proxy({}, { set(target, key, value) { target[key] = String(value); return true; } });
   function select(options, initial) {
@@ -29,7 +29,7 @@ function run({ quantity = '3', color = 'Blue', size = 'M', price = 1900 } = {}) 
   const total = { textContent: '' };
   const count = { textContent: '' };
   const elements = {
-    'merch-order-edit-data': { textContent: JSON.stringify({ articles: [{ id: 1, available_colors: ['Blue'], variants: [{ id: 1, color: 'Blue', size: 'M', price }] }] }) },
+    'merch-order-edit-data': { textContent: JSON.stringify({ articles: [{ id: 1, available_colors: ['Blue'], variants: variants || [{ id: 1, color: 'Blue', size: 'M', price }] }] }) },
     'merch-order-form': { querySelectorAll() { return [row]; }, addEventListener(name, fn) { callbacks[name] = fn; } },
     'total-price': total, 'selected-items': count
   };
@@ -70,4 +70,14 @@ test('rejected unavailable selection remains correctable after initialization', 
 
 test('invalid quantity text from server error is not reset', () => {
   assert.equal(run({ quantity: '-1.5' }).qty.value, '-1.5');
+});
+
+
+test('underscores in colour and size cannot collide in price lookup', () => {
+  const variants = [
+    { id: 1, color: 'Blue_M', size: 'L', price: 1900 },
+    { id: 2, color: 'Blue', size: 'M_L', price: 2700 }
+  ];
+  assert.equal(run({ color: 'Blue_M', size: 'L', variants }).total.textContent, '57.00 CHF');
+  assert.equal(run({ color: 'Blue', size: 'M_L', variants }).total.textContent, '81.00 CHF');
 });

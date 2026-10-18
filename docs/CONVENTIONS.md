@@ -1051,3 +1051,7 @@ und Anzeige-Kontext vor Mutation. Nulloperationen schreiben nichts.
 Vorhandene Forderungen oder widerspruechliche Altbetraege sperren den einfachen
 Aenderungsweg. Historische/inaktive eigene Varianten im getrennten Kontext
 anzeigen und erhalten, nicht erhoehen. Fachkorrektur/Rundenmodell separat.
+
+Versionsfingerabdruecke sortieren projizierte Varianten nach ID, unabhaengig
+von ORM-Relationsreihenfolge. Farb-/Groessenpaare im JS als JSON-Paar
+schluesseln; Trennzeichen in freien Bezeichnungen sind nicht eindeutig.

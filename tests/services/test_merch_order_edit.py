@@ -156,3 +156,33 @@ def test_aggregate_quantity_limit_even_for_free_items(app,client,catalogue):
     response=post(client,catalogue,data)
     assert response.status_code==400 and 'Gesamtmenge' in response.text
     with app.app_context():assert db.session.get(MerchOrderItem,catalogue[4]).quantity==1
+
+
+def test_version_independent_of_relation_order(app, catalogue):
+    from types import SimpleNamespace
+    from backend.services.merch_order_edit import MerchOrderEditService
+    with app.app_context():
+        order = db.session.get(MerchOrder, catalogue[3])
+        variant = db.session.get(MerchVariant, catalogue[1])
+        variant.is_active = False
+        item = MerchOrderItem(order_id=order.id, article_id=catalogue[0], variant_id=variant.id,
+                              quantity=1, unit_member_price_rappen=1500, unit_supplier_price_rappen=2000)
+        item.calculate_totals()
+        db.session.add(item)
+        db.session.commit()
+        db.session.expire(order, ['order_items'])
+        attrs = {key: getattr(order, key) for key in
+                 ('id', 'status', 'total_member_price_rappen', 'total_supplier_price_rappen', 'total_profit_rappen')}
+        forward = SimpleNamespace(**attrs, order_items=list(order.order_items))
+        reverse = SimpleNamespace(**attrs, order_items=list(reversed(order.order_items)))
+        assert MerchOrderEditService.context(forward)['order_edit_version'] == MerchOrderEditService.context(reverse)['order_edit_version']
+
+
+def test_missing_color_preserves_other_posted_fields(app, client, catalogue):
+    data = form(client, catalogue, quantity='7', size='Retain size')
+    del data[f'color_{catalogue[0]}[]']
+    response = post(client, catalogue, data)
+    assert response.status_code == 400
+    assert 'Retain size' in response.text and 'value="7"' in response.text
+    with app.app_context():
+        assert db.session.get(MerchOrderItem, catalogue[4]).quantity == 1

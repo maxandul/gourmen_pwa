@@ -6,7 +6,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-16a – Merch-Status/Forderung (A-049)** (nach breiter Regression). U1z bis R08 sowie
+3. Naechstes Paket: **U2-16a – Merch-Status/Forderung (A-049)** (breite Regression bestanden). U1z bis R08 sowie
    U2-01 bis U2-15 sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
@@ -35,17 +35,17 @@ Zusaetzlich jeweils aktuellen Status pruefen.
 
 ## Aktueller lokaler Nachweis und Grenzen
 
-Breite Regression auf 623f5ba: **1212 bestanden, 16748 Warnungen, 727.76 s**.
+Breite Regression auf 68246e2: **1320 bestanden, 18268 Warnungen, 739.49 s**.
 Danach U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
 U2-14: 61. Danach U2-15: 80 Python-/23 JS-Tests. Einzelvertraege im README.
 Migration U2-14 **e9d6f95** (u21420261018), Snapshotfelder ohne erfundene
 Altbezeichnungen; SQLite-Zyklus und Historie-Downgrade-Sperre geprueft.
-PWA zuletzt 3.16.34 / pwa.e1afe4db.js.
+U2-15-Nachkorrektur: 82 Python-/24 JS-Tests; Reihenfolge/Varianten-Schluessel
+und unvollstaendige Fehlereingaben. PWA zuletzt 3.16.35 / pwa.61d523f4.js.
 
 U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
 U2-15 erhaelt Positionspreise/IDs, Nulloperationen schreiben nichts; Versions-
-vergleich und Mengen-Erhalt im Edit-JS. Breiten Gesamttest vor weiterer
-Implementierung ausfuehren und tatsaechliches Ergebnis nachtragen.
+vergleich und Mengen-Erhalt im Edit-JS. Breiter Gesamttest bestanden; gezielte Nachkorrektur separat geprueft.
 A-049/Runden-/Zuschussmodell sowie F3/F4-Korrekturwege bleiben Folgepakete.
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und
 Hosting-Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;

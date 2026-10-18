@@ -42,13 +42,13 @@ class MerchOrderEditService:
             projected[aid] = [dict(id=v.id, color=v.color, size=v.size,
                                   member_price_rappen=bound.get(v.id, (v.member_price_rappen, v.supplier_price_rappen))[0],
                                   supplier_price_rappen=bound.get(v.id, (v.member_price_rappen, v.supplier_price_rappen))[1],
-                                  is_active=v.is_active and articles[aid].is_active) for v in rows]
+                                  is_active=v.is_active and articles[aid].is_active) for v in sorted(rows, key=lambda variant: variant.id)]
         state = [order.id, order.status.value,
                  [order.total_member_price_rappen, order.total_supplier_price_rappen, order.total_profit_rappen],
                  sorted((i.id, i.variant_id, i.quantity, i.unit_member_price_rappen, i.unit_supplier_price_rappen,
                          i.description_snapshot, i.description_snapshot_source) for i in order.order_items),
                  projected]
-        context.update(articles=list(articles.values()), catalogue_variants=projected,
+        context.update(articles=[articles[aid] for aid in sorted(articles)], catalogue_variants=projected,
                        catalogue_colors={aid: sorted({v['color'] for v in rows}) for aid, rows in projected.items()},
                        existing_items=dict(items), order_edit_version=hashlib.sha256(json.dumps(state, sort_keys=True).encode()).hexdigest())
         return context
@@ -57,11 +57,11 @@ class MerchOrderEditService:
     def posted_items(form):
         result = {}
         for key in form:
-            match = re.fullmatch(r'color_([0-9]+)\[\]', key)
+            match = re.fullmatch(r'(?:color|size|quantity)_([0-9]+)\[\]', key)
             if match:
                 aid = int(match[1])
                 result[aid] = [dict(color=color, size=size, quantity=quantity)
-                               for color, size, quantity in zip_longest(form.getlist(key), form.getlist(f'size_{aid}[]'),
+                               for color, size, quantity in zip_longest(form.getlist(f'color_{aid}[]'), form.getlist(f'size_{aid}[]'),
                                                                         form.getlist(f'quantity_{aid}[]'), fillvalue='')]
         return result
 

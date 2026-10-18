@@ -56,3 +56,26 @@ bestaetigte Preis-/Korrekturregeln und die letzten Pakete abgeglichen. Keine
 neue Fachfreigabe angenommen: definitive Preisfestlegung, Storno, Rundenzustand
 und Finanzkorrektur bleiben eigene Folgepakete. Naechster Schritt ist eine
 breite lokale Regression vor weiterer Implementierung; U1 bleibt offen.
+
+
+## Breite Regression und Nachkorrektur
+
+Gesamter Python-Testbestand auf Commit 68246e2 mit audit_bootstrap, pytest
+`tests -q --disable-warnings --tb=short -p no:cacheprovider`:
+**1320 bestanden, 18268 Warnungen, 739.49 s**. Prozesscode 0; erst beim
+Interpreterabbau meldet pyreadline3 einen ignorierten Windows-Handle-Fehler.
+Dies ist keine PostgreSQL- oder Browserabnahme.
+
+Gezielte Nachpruefung fand drei Randfaelle: Reihenfolge eigener inaktiver
+Varianten beeinflusste den Formularfingerabdruck; Unterstriche in Farbe/Groesse
+konnten im JS denselben Schluessel bilden; bei fehlendem Farbfeld gingen die
+anderen geposteten Felder in der Fehleransicht verloren. Neue Regressionen
+reproduzierten **2 Python-Fehler und 1 JS-Fehler** vor der Korrektur.
+Varianten/Artikel werden jetzt stabil nach ID projiziert, der JS-Schluessel
+ist ein JSON-Paar, und die Fehlereingaben werden aus allen drei Feldarten
+zusammengetragen. Keine neue Fachregel oder Migration. PWA 3.16.35 /
+pwa.61d523f4.js, Edit-JS-URL v2.0.3; keine neuen UI-Klassen.
+
+Nachkorrektur: derselbe erweiterte Merch-Testumfang **82 bestanden, 1763
+Warnungen, 33.16 s**; Node Edit/Worker **24 bestanden**. git diff --check
+ohne Fehler. Volltest oben gilt fuer 68246e2, nicht fuer diese Nachkorrektur.

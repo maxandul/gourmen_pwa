@@ -89,7 +89,7 @@
     articles.forEach((article) => {
       const variantsMap = {};
       (article.variants || []).forEach((v) => {
-        variantsMap[`${v.color}_${v.size}`] = v;
+        variantsMap[JSON.stringify([v.color, v.size])] = v;
       });
       map[article.id] = {
         colors: article.available_colors || [],
@@ -210,7 +210,7 @@
     resetRow(null, qty, priceEl);
 
     if (color && size) {
-      const variant = article.variantsMap[`${color}_${size}`];
+      const variant = article.variantsMap[JSON.stringify([color, size])];
       if (variant) {
         qty.disabled = false;
         qty.dataset.price = variant.price;
