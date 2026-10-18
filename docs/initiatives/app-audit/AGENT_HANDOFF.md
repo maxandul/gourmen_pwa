@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-09 – Bereinigungs-Undo (A-029)**. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U2-10 – Organisatorwechsel (A-033)**. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
    U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
@@ -57,3 +57,6 @@ Abhaengigkeiten und BillBro/GGL-Fachhistorie bleiben erhalten (65 Regressionen).
 U2-08 lokal geprueft (63 Python-/19 Worker-Tests): strikte BillBro-Betraege,
 Feldfehler ohne Teilmutation. A-031 Rundungsregel beim Nutzer angefragt;
 Antwort steht noch aus, unabhaengige Pakete weiterfuehren.
+
+U2-09 lokal geprueft (67 Regressionen): Undo vergleicht eigenen Nachzustand
+und bewahrt spaetere Fachwerte; technische Fehler erlauben sicheren Retry.

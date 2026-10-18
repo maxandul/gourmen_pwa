@@ -412,3 +412,8 @@ und Dokumentloeschservices behalten ihre strengere atomare Audit-Grenze.
 EventDeletionService prueft Event-/Teilnahmehistorie und fuehrt erlaubte
 Eventloeschung inklusive verbindlichem Audit in einem Commit aus. Keine
 Dokument-/Finanzkaskade und kein externer Drive-Zugriff.
+
+CleanupParticipationService fuehrt einfache Bereinigungsantworten und Undo
+unter Event-/Teilnahmesperre aus. Der signierte Sitzungseintrag enthaelt den
+Vorstatus und einen Fingerabdruck des eigenen Nachzustands, keine freie
+Wiederherstellung alter Teilnahmedatensaetze.

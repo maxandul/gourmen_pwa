@@ -1007,3 +1007,8 @@ Rundung. Vor Fachmutation pruefen; HTML-Fehler behalten korrigierbare Eingabe,
 AJAX liefert errors nach Feld. MoneyService.to_rappen bleibt Legacy fuer
 andere Aufrufer; neue Eingaben duerfen dessen permissive Konvertierung nicht
 als Validierung behandeln. Automatische Gesamtbetraege ebenfalls pruefen.
+
+Bereinigungs-Undo nur bei unveraendertem Event-/Teilnahmenachzustand; spaetere
+Fachwerte/Bewertungen/Finanzreferenzen sperren den einfachen Weg. Konflikt
+verbraucht alten Nachweis, technischer Commitfehler behaelt ihn fuer erneuten
+Versuch. Alte Sessions ohne Nachzustandsfingerabdruck duerfen nichts loeschen.

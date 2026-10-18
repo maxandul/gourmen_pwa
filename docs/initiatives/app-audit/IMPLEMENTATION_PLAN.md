@@ -126,8 +126,10 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | U2-08 / A-025 | lokal geprüft | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
 
-| U2-09 / A-029 | **bereit / nächstes Paket** | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
+| U2-09 / A-029 | lokal geprüft | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
 | A-031 / BillBro-Rundung | Fachentscheidung angefragt | Rappengenaue Summenverteilung versus 10-/5-Rappen-Rundung mit sichtbarer Differenz; Antwort abwarten, andere Pakete fortsetzen. |
+
+| U2-10 / A-033 | **bereit / nächstes Paket** | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

@@ -53,6 +53,7 @@ def _cleanup_rsvp_undo_available() -> bool:
     payload = session.get(CLEANUP_RSVP_UNDO_SESSION_KEY)
     return bool(
         payload
+        and payload.get('after')
         and payload.get('member_id') == current_user.id
     )
 
@@ -520,32 +521,18 @@ def cleanup():
 @login_required
 def cleanup_undo_rsvp():
     """Stellt die Teilnahme-Zeile vor der letzten Zu-/Absage in der Bereinigung wieder her."""
-    payload = session.pop(CLEANUP_RSVP_UNDO_SESSION_KEY, None)
-    if not payload or payload.get('member_id') != current_user.id:
-        flash('Nichts zum Rückgängigmachen.', 'info')
+    from backend.services.cleanup_participation import CleanupParticipationService, CleanupConflict, CleanupFailure
+    payload = session.get(CLEANUP_RSVP_UNDO_SESSION_KEY)
+    try:
+        event_id = CleanupParticipationService.undo(payload, current_user)
+    except CleanupConflict as exc:
+        session.pop(CLEANUP_RSVP_UNDO_SESSION_KEY, None)
+        flash(str(exc), 'error')
         return redirect(url_for('events.cleanup'))
-
-    event_id = payload['event_id']
-    prev = payload['prev']
-    participation = Participation.query.filter_by(
-        member_id=current_user.id,
-        event_id=event_id,
-    ).first()
-
-    if not prev['had_row']:
-        if participation:
-            db.session.delete(participation)
-        db.session.commit()
-    else:
-        if not participation:
-            flash('Eintrag nicht gefunden — Rückgängig nicht möglich.', 'error')
-            return redirect(url_for('events.cleanup'))
-        participation.teilnahme = prev['teilnahme']
-        if prev.get('responded_at'):
-            participation.responded_at = datetime.fromisoformat(prev['responded_at'])
-        else:
-            participation.responded_at = None
-        db.session.commit()
+    except CleanupFailure as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('events.cleanup'))
+    session.pop(CLEANUP_RSVP_UNDO_SESSION_KEY, None)
 
     flash('Die letzte Zu-/Absage wurde rückgängig gemacht.', 'success')
     open_events = RetroCleanupService.list_open_cleanup_events(current_user.id)
@@ -569,38 +556,13 @@ def cleanup_rsvp(event_id):
         flash('Dieses Event gehört nicht zur Datenbereinigung.', 'error')
         return redirect(url_for('events.cleanup'))
 
-    participation = Participation.query.filter_by(
-        member_id=current_user.id,
-        event_id=event_id
-    ).first()
-
-    if participation:
-        prev = {
-            'had_row': True,
-            'teilnahme': participation.teilnahme,
-            'responded_at': participation.responded_at.isoformat() if participation.responded_at else None,
-        }
-    else:
-        prev = {'had_row': False}
-
-    if not participation:
-        participation = Participation(
-            member_id=current_user.id,
-            event_id=event_id,
-            teilnahme=(status == 'yes')
-        )
-        db.session.add(participation)
-
-    participation.teilnahme = (status == 'yes')
-    participation.responded_at = datetime.utcnow()
-
-    db.session.commit()
-
-    session[CLEANUP_RSVP_UNDO_SESSION_KEY] = {
-        'member_id': current_user.id,
-        'event_id': event_id,
-        'prev': prev,
-    }
+    from backend.services.cleanup_participation import CleanupParticipationService, CleanupConflict, CleanupFailure
+    try:
+        payload = CleanupParticipationService.apply(event_id, current_user, status)
+    except (CleanupConflict, CleanupFailure) as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('events.cleanup'))
+    session[CLEANUP_RSVP_UNDO_SESSION_KEY] = payload
     session.modified = True
 
     focus = (
