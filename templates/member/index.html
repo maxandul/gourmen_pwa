@@ -119,6 +119,7 @@
                             </svg>
                         </a>
                     </li>
+                    {% if can_manage_merch %}
                     <li>
                         <a href="{{ url_for('admin.merch') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">
@@ -128,13 +129,14 @@
                             </span>
                             <span class="settings-nav__meta">
                                 <span class="settings-nav__label">Merch-Verwaltung</span>
-                                <span class="settings-nav__description">Bestellungen und Artikel; Ändern nur für Admins</span>
+                                <span class="settings-nav__description">Bestellungen und Artikel verwalten</span>
                             </span>
                             <svg class="icon settings-nav__chevron" viewBox="0 0 24 24" aria-hidden="true">
                                 <use href="{{ _sprite }}#chevron-right"></use>
                             </svg>
                         </a>
                     </li>
+                    {% endif %}
                     {% if can_read_accounting %}
                     <li>
                         <a href="{{ url_for('accounting.index') }}" class="settings-nav__row">

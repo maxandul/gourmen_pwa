@@ -90,6 +90,7 @@ def index():
     """Member main overview page (Verein-Hub)."""
     from backend.services.area_permissions import AreaPermissionService
     return render_template('member/index.html',
+                           can_manage_merch=AreaPermissionService.has_scope(current_user, 'merch_manage'),
                            can_read_accounting=AreaPermissionService.has_scope(current_user, 'accounting_read'))
 
 

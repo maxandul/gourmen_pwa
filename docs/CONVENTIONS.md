@@ -747,3 +747,11 @@ verwenden diese Pruefung. Ausflug-Anlage und Typwahl sind serverseitig begrenzt;
 Reiseberechtigte koennen Ausfluege auch nach Selbstzuweisung nicht umtypisieren.
 travel_documents bleibt ein separater Scope mit Step-Up. RSVP-Erinnerungen bleiben
 Organisator/Admin, Jahresplanung und Loeschung Admin. Keine neuen UI-Klassen.
+
+## Merchbereichsfreigaben (U1-R04b4)
+
+merch_manage erlaubt Marketingchef, Systemadmin oder explizit Freigegebenen die
+vorhandene Merchverwaltung. Alle admin.merch*-Leseseiten und Mutationswege nutzen
+den gemeinsamen merch_manager_required-Pruefer. Mitgliederwege bleiben auf eigene
+Bestellungen gebunden, auch fuer Bereichsverwalter. UI verwendet denselben Scope;
+Vorstandsamt oder fremde Funktionsrechte genuegen nicht. Kein neues CMS.

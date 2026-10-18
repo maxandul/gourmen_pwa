@@ -21,7 +21,7 @@
     
     <div class="page-content">
         <!-- Status-Änderung (eingeklappt) -->
-        {% if current_user.is_admin() %}
+        {% if can_manage_merch %}
         <div class="card card--filter tool-surface">
             <div class="card__body">
                 <details class="disclosure">

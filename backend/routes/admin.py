@@ -28,6 +28,23 @@ from backend.services.drive_access import DriveAccessService, OPEN_STATUSES
 bp = Blueprint('admin', __name__)
 
 
+def merch_manager_required(f):
+    from functools import wraps
+
+    @wraps(f)
+    def guarded(*args, **kwargs):
+        if not current_user.is_authenticated or not AreaPermissionService.has_scope(current_user, 'merch_manage'):
+            abort(403)
+        return f(*args, **kwargs)
+    return guarded
+
+
+@bp.context_processor
+def merch_permissions():
+    return {'can_manage_merch': current_user.is_authenticated and
+            AreaPermissionService.has_scope(current_user, 'merch_manage')}
+
+
 def normalize_to_month_start(value):
     """Stellt auf den Monatsbeginn (01.) ein, wenn ein Datum vorhanden ist."""
     if not value:
@@ -996,7 +1013,7 @@ def show_temp_password():
 # Admin Merch Routes
 @bp.route('/merch')
 @login_required
-@verein_member_required
+@merch_manager_required
 def merch():
     """Admin Merch Übersicht mit Tabs (Bestellungen, Lieferanten, Artikel)"""
     from backend.models.merch_article import MerchArticle
@@ -1241,14 +1258,14 @@ def merch():
 
 @bp.route('/merch/orders')
 @login_required
-@verein_member_required
+@merch_manager_required
 def merch_orders():
     """Admin merch orders management (redirect to new tabbed view)."""
     return redirect(url_for('admin.merch', tab='orders'))
 
 @bp.route('/merch/orders/<int:order_id>')
 @login_required
-@verein_member_required
+@merch_manager_required
 def merch_order_detail(order_id):
     """Admin order detail"""
     from backend.models.merch_order import MerchOrder
@@ -1259,7 +1276,7 @@ def merch_order_detail(order_id):
 
 @bp.route('/merch/orders/<int:order_id>/status', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def update_order_status(order_id):
     """Update order status"""
     from backend.models.merch_order import MerchOrder, OrderStatus
@@ -1307,7 +1324,7 @@ def update_order_status(order_id):
 
 @bp.route('/merch/orders/<int:order_id>/status-update', methods=['POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def update_order_status_alt(order_id):
     """Alternative update order status route"""
     from backend.models.merch_order import MerchOrder, OrderStatus
@@ -1344,7 +1361,7 @@ def update_order_status_alt(order_id):
 
 @bp.route('/merch/articles/<int:article_id>')
 @login_required
-@verein_member_required
+@merch_manager_required
 def merch_article_detail(article_id):
     """Admin article detail"""
     from backend.models.merch_article import MerchArticle
@@ -1357,7 +1374,7 @@ def merch_article_detail(article_id):
 
 @bp.route('/merch/articles/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def create_merch_article():
     """Create new merch article"""
     from backend.models.merch_article import MerchArticle
@@ -1418,7 +1435,7 @@ def create_merch_article():
 
 @bp.route('/merch/articles/<int:article_id>/edit', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def edit_merch_article(article_id):
     """Edit merch article"""
     from backend.models.merch_article import MerchArticle
@@ -1490,14 +1507,14 @@ def edit_merch_article(article_id):
 
 @bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def create_merch_variant(article_id):
     """Legacy: Variants werden über die Artikel-Form gepflegt."""
     return redirect(url_for('admin.edit_merch_article', article_id=article_id))
 
 @bp.route('/merch/variants/<int:variant_id>/edit', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@merch_manager_required
 def edit_merch_variant(variant_id):
     """Legacy: Varianten-Bearbeitung entfällt, bitte Artikel-Form nutzen."""
     from backend.models.merch_variant import MerchVariant

@@ -7,10 +7,10 @@ from backend.services.action_confirmation import ActionConfirmationService
 
 
 class AreaPermissionService:
-    SCOPES = {'travel_manage': 'Reisen verwalten', 'travel_documents': 'Reisedokumente lesen',
+    SCOPES = {'merch_manage': 'Merch verwalten', 'travel_manage': 'Reisen verwalten', 'travel_documents': 'Reisedokumente lesen',
               'accounting_read': 'Buchhaltung lesen',
               'accounting_write': 'Buchhaltung bearbeiten (ohne Revisionsabschluss)'}
-    FUNCTIONS = {'travel_manage': ('REISEKOMMISSAR',), 'travel_documents': ('REISEKOMMISSAR',),
+    FUNCTIONS = {'merch_manage': ('MARKETINGCHEF',), 'travel_manage': ('REISEKOMMISSAR',), 'travel_documents': ('REISEKOMMISSAR',),
                  'accounting_read': ('SCHATZMEISTER', 'RECHNUNGSPRUEFER'),
                  'accounting_write': ('SCHATZMEISTER',)}
 

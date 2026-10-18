@@ -74,8 +74,8 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 4b1 / U1-R04b1 | lokal geprüft | Grundlage und erste travel_documents-Freigabe; [Nachweis](U1_R04B1_BEREICHSFREIGABEN.md), Migration ee39355 separat. |
 | 4b2 / U1-R04b2 | lokal geprüft | Finanz-Lese-/Bearbeitungsfreigaben mit Negativtests; Revisionseigenbestaetigung und Zustandsumbau bleiben R04d. |
 | 4b3 / U1-R04b3 | lokal geprüft | Reisebereich fuer Reisekommissar/gezielte Freigabe; keine Ausweitung auf fremde andere Events. |
-| 4b4 / U1-R04b4 | **bereit / nächstes Paket** | Merchbereich fuer Marketing/gezielte Freigabe an bestehenden Mutationswegen; Zielsystemwechsel bleibt U3. |
-| 4c / U1-R04c | geplant | Dokumentklassifikation, Auswahl/Listen/Download/Mutationen; Altbestand am 18.10. bestaetigt: bis Klassifikation nur Systemadmin; direkte Drive-Abnahme separat. |
+| 4b4 / U1-R04b4 | lokal geprüft | Merchbereich fuer Marketing/gezielte Freigabe an bestehenden Mutationswegen; Zielsystemwechsel bleibt U3. |
+| 4c / U1-R04c | **bereit / nächstes Paket** | Dokumentklassifikation, Auswahl/Listen/Download/Mutationen; Altbestand am 18.10. bestaetigt: bis Klassifikation nur Systemadmin; direkte Drive-Abnahme separat. |
 | 4d / U1-R04d | geplant; mit U2/U3 | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
 | 5 / U1-R05 | geplant | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
 | 6 / U1-R06 | geplant | A-121: irreführenden Backup-Code-QR-Export beseitigen oder durch nachweislich dekodierbare lokale Ausgabe ersetzen. Vor Code den gewählten minimalen Weg dokumentieren; kein externer QR-Dienst, keine Code-Leaks in Logs/Cache. U1u-Einmalanzeige erhalten. |

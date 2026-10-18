@@ -120,7 +120,7 @@
                             <div class="card__header">
                                 <h2 class="card__title">{{ order.member.display_name_with_spirit }}</h2>
                                 <div class="card__actions">
-                                    {% if current_user.is_admin() %}
+                                    {% if can_manage_merch %}
                                     <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="next" value="{{ next_url }}">
@@ -327,7 +327,7 @@
 
                 <!-- Artikel -->
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'articles' else '' }}" role="tabpanel">
-                    {% if current_user.is_admin() %}
+                    {% if can_manage_merch %}
                     <div class="page-actions">
                         <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.072ce5e4.svg') }}#plus"></use></svg>
@@ -382,7 +382,7 @@
                                     </div>
                                 </div>
                             <div class="card__footer">
-                                {% if current_user.is_admin() %}
+                                {% if can_manage_merch %}
                                 <a href="{{ url_for('admin.edit_merch_article', article_id=article.id) }}" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -409,7 +409,7 @@
                                 <p class="text-secondary">Es wurden noch keine Merch-Artikel erstellt.</p>
                             </div>
                             <div class="card__footer">
-                                {% if current_user.is_admin() %}
+                                {% if can_manage_merch %}
                                 <a href="{{ url_for('admin.create_merch_article') }}" class="btn btn--primary">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.072ce5e4.svg') }}#plus"></use></svg>
                                     Neuen Artikel erstellen
