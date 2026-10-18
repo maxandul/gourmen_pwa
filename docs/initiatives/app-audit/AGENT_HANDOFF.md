@@ -6,8 +6,8 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17c1 – bezahlte Korrektur bei gleichem Zahlweg**. U1z bis R08 sowie
-   U2-01 bis U2-17b3b sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+3. Naechstes Paket: **U2-17c1 – bezahlte Vereinskorrektur**. U1z bis R08 sowie
+   U2-01 bis U2-17c0 sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
@@ -35,7 +35,7 @@ Zusaetzlich jeweils aktuellen Status pruefen.
 
 ## Aktueller lokaler Nachweis und Grenzen
 
-Breite Regression auf 02dd63f: **1439 bestanden, 21380 Warnungen, 806.99 s**;
+Breite Regression auf ae43000: **1467 bestanden, 22209 Warnungen, 580.93 s**;
 24 JavaScript-Tests bestanden. Danach GGL-Anzeige-Nachkorrektur: 23 Tests bestanden (705 Warnungen, 11.11 s);
 halbe Gesamtpunkte und gleiche Saisonraenge erhalten.
 Vor diesem Gesamtlauf U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
@@ -47,9 +47,8 @@ und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-1
 (u217b120261018). B2: 91 Tests, erweitert 14; Migration 37e081c
 (u217b220261018) fuer halbe GGL-Werte, fehlende Legacy-Punktespalte beruecksichtigt.
 B3a: 82 Tests. B3b: 230 Tests, Anschluss 47/40, erweitert 23; 24 JS-Tests.
-Migration 3f09db1 (u217b3b20261018) separat. PWA 3.16.40 / pwa.3be7ee61.js.
-Gesamtlauf auf unveraendertem 02dd63f abgeschlossen; pyreadline3 meldete erst
-nach Testende einen ignorierten Windows-Handle-Fehler (Prozessstatus 0).
+Migration 3f09db1 (u217b3b20261018) separat. C0: 79 Python-/19 Worker-Tests; PWA 3.16.41 / pwa.a93228ba.js.
+Gesamtlauf auf unveraendertem ae43000 abgeschlossen, Prozessstatus 0.
 
 U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
 U2-15 erhaelt Positionspreise/IDs, Nulloperationen schreiben nichts; Versions-
@@ -67,3 +66,10 @@ unabhaengige lokale Arbeiten fortsetzen. Keine pauschale Produktionsfreigabe.
 
 Aeltere U1-Uebergabe: [Verlauf](AGENT_HANDOFF_HISTORY_20261016.md).
 Datierte alte Naechstes-Absaetze sind Verlauf, keine aktuelle Warteschlange.
+
+
+B01/B02/G1 ersetzt den alten privaten Zahlungsbestaetigungsentwurf.
+C0 verlangt nun ausdrueckliche Klaerung und signierten Vermerk fuer private
+Ausgangsfaelle; paid=0 ist kein Unbezahlt-Beweis. C1 auf Vereinszahlungen
+begrenzen. Legacy-Privatbestaetigung bleibt in B02 zu ersetzen; keine neue
+private Zahlungskontrolle. Keine pauschale Finanzfreigabe.

@@ -103,7 +103,7 @@ Bei Vorstandssitzungen (und anderen Nicht-GGL-Events) wählen Teilnehmende nur d
 Der Organisator gibt an, wie die Rechnung beglichen wird (`Event.bill_paid_by`):
 
 - **Vereinskonto** (`VEREINSKONTO`) – bei Finalisierung entstehen pro Teilnehmer offene Posten (`MemberClaim`, Typ `ESSENSANTEIL`); Rücküberweisungen werden über den ZKB-Import den Posten zugeordnet, Aufrundungen landen auf Konto `3315`.
-- **Mitglied** (`MITGLIED`) – ein teilnehmendes Mitglied legt privat aus (`Event.bill_payer_member_id`); die Anteile laufen **nicht** über die Vereinsbuchhaltung. Der Auslegende bestätigt eingegangene Zahlungen der anderen direkt in der App (Dashboard).
+- **Mitglied** (`MITGLIED`) – ein teilnehmendes Mitglied legt privat aus (`Event.bill_payer_member_id`); die Anteile laufen **nicht** über die Vereinsbuchhaltung. Bestaetigtes Ziel B01/B02: Die App zeigt eine persoenliche Betragserinnerung ohne verifizierten privaten Zahlungsstatus. Der noch vorhandene Legacy-Eingangsbestaetigungsweg ist damit kein Zielablauf und muss im B02-Folgepaket ersetzt werden.
 
 ## GGL – Gourmen Guessing League
 
@@ -333,3 +333,10 @@ ihre vorhandenen Eingaben bleiben erhalten. Unbezahlte Korrektur zeigt auch
 Anwesenheits- und GGL-Folgen vor Bestaetigung; bezahlte Korrektur bleibt separat.
 Legacy-Werte ohne explizite Anwesenheit werden weiter wie bisher ausgewertet;
 es wird keine unbekannte historische Antwort erfunden.
+
+
+U2-17c0: Bei privatem Ausgangszahlweg ist paid=0 kein Unbezahlt-Nachweis.
+Unbezahlte Korrektur verlangt deshalb eine ausdrueckliche Erklaerung nach
+Klaerung plus Vermerk. Die Historie benennt dies als Erklaerung der Organisation,
+nicht als Banknachweis. Bekannte Zahlungen bleiben gesperrt; keine laufende
+private Zahlungskontrolle und keine automatische Zahlung werden eingefuehrt.

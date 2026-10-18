@@ -275,3 +275,8 @@ Keine echte PostgreSQL-Sperrpruefung oder Browser-/Geraeteabnahme. U1 bleibt off
 Naechster begrenzter Auftrag: U2-17c1, bezahlte Korrektur bei unveraendertem
 Zahlweg/Glaeubiger vorbereiten; Zahlungs- und Erstattungshistorie vor Code
 gegen F3/K1 konkretisieren, keine automatische Auszahlung.
+
+
+Gesamtlauf auf unveraendertem **ae43000** nach b3b: **1467 bestanden,
+22209 Warnungen, 580.93 s**; isolierter audit_bootstrap, keine Fehler,
+Prozessstatus 0. Nachfolgende c0-Ergaenzung separat pruefen.

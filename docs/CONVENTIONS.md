@@ -1120,3 +1120,11 @@ Bewertungs-Schreibrecht und Bewertungsaufforderungen verwenden ebenfalls
 billbro_attending; die bestehende Organisator-Ausnahme bleibt bestehen.
 RSVP-Erinnerungen vor dem Event bleiben bei der urspruenglichen Antwort.
 Kein automatischer Versand wird durch Anwesenheitskorrekturen ausgeloest.
+
+
+U2-17c0 erweitert den Vorschauvertrag auf v5: privater Ausgangszahlweg benoetigt
+private_unpaid_confirmed=yes und getrimmten Klaerungsvermerk (1..1000 Zeichen).
+Signiertes Payload ist allein massgeblich beim Bestaetigen; nachtraegliche
+unsignierte Formularwerte ersetzen die Erklaerung nicht. History.after_json
+haelt private_unpaid_clarification fest. Bestehende Zahlungs-/Buchungs-/Jahres-
+grenzen gelten unveraendert; Erklaerung ist kein Zahlungsnachweis.

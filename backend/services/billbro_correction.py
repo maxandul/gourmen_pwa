@@ -40,7 +40,7 @@ def record(obj):
 class BillBroCorrectionService:
     @staticmethod
     def serializer():
-        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v4')
+        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v5')
 
     @staticmethod
     def require_actor(event, actor):
@@ -117,12 +117,18 @@ class BillBroCorrectionService:
                     types[str(part.id)] = Esstyp(form.get(f'esstyp_{part.id}', part.esstyp.value if part.esstyp else '')).value
                 except ValueError:
                     raise CorrectionError('Für jede anwesende Person einen gültigen Ess-Typ wählen.') from None
-        return dict(reason=reason, total=total, invoice=invoice, paid_by=mode.value, payer=payer, types=types, attendance=attendance)
+        return dict(reason=reason, total=total, invoice=invoice, paid_by=mode.value, payer=payer, types=types, attendance=attendance,
+                    private_unpaid_confirmed=form.get('private_unpaid_confirmed') == 'yes',
+                    private_unpaid_note=(form.get('private_unpaid_note') or '').strip())
 
     @classmethod
     def validate(cls, event, parts, claims, years, proposed):
         if event.gesamtbetrag_rappen is None or not event.rechnungsbetrag_rappen:
             raise CorrectionError('Dieser Weg benötigt einen vollständigen bestehenden Abschluss.')
+        if event.bill_paid_by == BillPaidBy.MITGLIED and (
+                proposed.get('private_unpaid_confirmed') is not True or
+                not 1 <= len(proposed.get('private_unpaid_note', '')) <= 1000):
+            raise CorrectionError('Private Zahlungen sind der App unbekannt. Zuerst klären und mit Vermerk bestätigen, dass noch keine privaten Zahlungen erfolgt sind. Bei Zahlung oder unklarem Stand ist der Finanzklärungsweg erforderlich.')
         if proposed['total'] < proposed['invoice']:
             raise CorrectionError('Gesamtbetrag darf die Restaurantrechnung nicht unterschreiten.')
         attending = {p.member_id for p in parts if p.billbro_attending}
@@ -235,6 +241,10 @@ class BillBroCorrectionService:
                 db.session.delete(claim)
             db.session.flush()
             after = cls.load(event_id, actor)[4]
+            if before['event']['bill_paid_by'] == BillPaidBy.MITGLIED.value:
+                after['private_unpaid_clarification'] = dict(
+                    statement='Organisation erklärt nach Klärung: keine privaten Zahlungen erfolgt.',
+                    note=proposed['private_unpaid_note'])
             history = BillBroCorrection(event_id=event.id, actor_id=actor.id, reason=proposed['reason'],
                                        request_hash=request_hash, before_json=before, after_json=after)
             db.session.add(history)

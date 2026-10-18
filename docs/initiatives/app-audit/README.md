@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-17c1 (bezahlte Korrektur bei gleichem Zahlweg). Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-17c1 (bezahlte Vereinskorrektur). Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (18.10.2026)
 
@@ -30,6 +30,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 | U2-12 | lokal geprüft | Summengleiche Einzelanteile und atomarer Erstabschluss; 114 Python-/19 Worker-Tests. [Nachweis](U2_12_BILLBRO_VERTEILUNG.md). |
 | U2-13 | lokal geprüft | Merch-Lesewege ohne Fachmutation, gebuendelte Katalogabfragen; 45 Tests. [Nachweis](U2_13_MERCH_LESEWEGE.md). |
 | U2-14 | lokal geprüft | Stabile Varianten, normalisierte Auswahl und Bestellbezeichnungen; 61 Python-/19 Worker-Tests. Migration e9d6f95 separat. [Nachweis](U2_14_MERCH_VARIANTEN.md). |
+| U2-17c0 | lokal geprüft | Private Nullzaehler nicht als Unbezahlt-Beweis; signierte Klaerung/Vermerk und Historie. 79 Python-/19 Worker-Tests. [Nachweis](U2_17C_ZAHLUNGSERHALT.md). |
 | U2-17b3b | lokal geprüft | Anwesenheit von RSVP getrennt; 230 Tests, Anschluss 47/40, erweitert 23; 24 JS-Tests. Migration 3f09db1 separat. [Nachweis](U2_17B_BILLBRO_KORREKTUR.md). |
 | U2-17b2-Nachkorrektur | lokal geprüft | Halbe Gesamtpunkte und gleiche Saisonraenge in persoenlicher Ansicht erhalten; 23 Tests. Gesamtlauf zuvor auf 02dd63f: 1439 Python-/24 JS-Tests bestanden. [Nachweis](U2_17B_BILLBRO_KORREKTUR.md). |
 | U2-17b3a | lokal geprüft | Ess-Typ-Korrektur mit Vorschau, Verteilung und Historie; 82 Python-Tests. [Nachweis](U2_17B_BILLBRO_KORREKTUR.md). |

@@ -558,3 +558,9 @@ Anwesend/Abwesend sowie Ess-Typ in der Korrekturvorschau. Organisator-Check
 verwendet vorhandene info-row/form/button-Klassen; RSVP-Selects behalten
 Keine-Antwort-Zustand. Verlauf zeigt Anwesenheit/Antwort/Ess-Typ und GGL.
 Keine neue CSS-Klasse. PWA 3.16.40 / pwa.3be7ee61.js; reale Darstellungsabnahme offen.
+
+
+U2-17c0 ergaenzt im privaten Ausgangsfall native Checkbox und Klaerungsvermerk
+mit vorhandenen form-field-Klassen. Vorschau und Verlauf unterscheiden die
+Erklaerung von einem Banknachweis. Keine neue Klasse. PWA 3.16.41 /
+pwa.a93228ba.js; funktionale Templates geprueft, reale Geraeteabnahme offen.

@@ -15,6 +15,12 @@
 <div class="form-field"><label class="form-field__label" for="correction-total">Neuer Gesamtbetrag inkl. Trinkgeld (CHF)</label><input class="form-field__input" id="correction-total" name="total" type="text" inputmode="decimal" value="{{ values.get('total', '') }}" required></div>
 <div class="form-field"><label class="form-field__label" for="correction-mode">Zahlweg</label><select class="form-field__select" id="correction-mode" name="paid_by" required><option value="">Bitte wählen</option><option value="vereinskonto" {% if values.get('paid_by') == 'vereinskonto' %}selected{% endif %}>Vereinskonto</option><option value="mitglied" {% if values.get('paid_by') == 'mitglied' %}selected{% endif %}>Private Auslage</option></select></div>
 <div class="form-field"><label class="form-field__label" for="correction-payer">Auslegende Person (nur private Auslage)</label><select class="form-field__select" id="correction-payer" name="payer_member_id"><option value="">Bitte wählen</option>{% for mid, name in members.items() %}<option value="{{ mid }}" {% if values.get('payer_member_id')|string == mid|string %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+{% if event.bill_paid_by and event.bill_paid_by.value == 'mitglied' %}
+<h2>Privaten Zahlungsstand klären</h2>
+<p>Die App kennt private Zahlungen nicht. Nur wenn nach Klärung noch keine privaten Zahlungen erfolgt sind, kann dieser unbezahlte Korrekturweg verwendet werden. Bei bereits erfolgten Zahlungen oder unklarem Stand muss zuerst der finanzielle Ausgleich geklärt werden.</p>
+<div class="form-field"><label><input type="checkbox" name="private_unpaid_confirmed" value="yes" {% if values.get('private_unpaid_confirmed') == 'yes' %}checked{% endif %} required> Ich habe geklärt, dass noch keine privaten Zahlungen erfolgt sind.</label></div>
+<div class="form-field"><label class="form-field__label" for="private-unpaid-note">Klärungsvermerk</label><textarea class="form-field__textarea" id="private-unpaid-note" name="private_unpaid_note" maxlength="1000" required>{{ values.get('private_unpaid_note', '') }}</textarea></div>
+{% endif %}
 <h2>Anwesenheit und Ess-Typen</h2><p>Für Anwesende ist ein Ess-Typ erforderlich. Keine Antwort wird nicht als Absage gespeichert.</p>
 {% for part in correction_parts %}
 <p>{{ part.member.display_name }}: ursprüngliche Antwort {{ 'Keine Antwort' if part.teilnahme is none else ('Zugesagt' if part.teilnahme else 'Abgesagt') }}</p>
@@ -33,17 +39,19 @@
 <p>Gesamtbetrag: {{ money(preview.old_total) }} → {{ money(preview.proposed.total) }}</p>
 <p>Empfänger der Anteile: {{ payee(preview.old_paid_by, preview.old_payer) }} → {{ payee(preview.proposed.paid_by, preview.proposed.payer) }}</p>
 <p>Grund: {{ preview.proposed.reason }}</p>
-<p>Alle bisherigen Forderungen sind unbezahlt. Alte Forderungen bleiben im Verlauf nachvollziehbar; neue offene Posten ersetzen sie. Die auslegende Person erhält keine Forderung gegen sich selbst.</p>
+{% if preview.old_paid_by == 'mitglied' %}<p>Die Organisation erklärt nach Klärung: keine privaten Zahlungen erfolgt. Vermerk: {{ preview.proposed.private_unpaid_note }}. Dies ist eine Erklärung, kein Banknachweis.</p>{% endif %}
+<p>{% if preview.old_paid_by == 'mitglied' %}Gemäss dieser Erklärung sind die bisherigen Beträge unbezahlt.{% else %}Für die bisherigen Forderungen sind keine Zahlungen erfasst.{% endif %} Alte Forderungen bleiben im Verlauf nachvollziehbar; neue offene Posten ersetzen sie. Die auslegende Person erhält keine Forderung gegen sich selbst.</p>
 {% for row in preview.rows %}<div class="info-row"><span class="info-row__label">{{ row.name }}</span><span class="info-row__value">Anwesenheit {{ 'anwesend' if row.before_attending else 'abwesend' }} → {{ 'anwesend' if row.after_attending else 'abwesend' }}; Ess-Typ {{ kind_label(row.before_type) }} → {{ kind_label(row.after_type) }}; Anteil {{ money(row.before) }} → {{ money(row.after) }}; offener Posten {{ money(row.before_claim) }} → {{ money(row.after_claim) }}</span></div>{% endfor %}
 {% if preview.ggl_rows %}<h3>GGL: bisher → neu</h3>{% for row in preview.ggl_rows %}<p>{{ row.name }}: Rang {{ row.before.rank if row.before.rank is not none else '–' }} → {{ row.after.rank if row.after.rank is not none else '–' }}, Punkte {{ row.before.points if row.before.points is not none else '–' }} → {{ row.after.points if row.after.points is not none else '–' }}, Differenz {{ money(row.before.diff_amount_rappen) if row.before.diff_amount_rappen is not none else '–' }} → {{ money(row.after.diff_amount_rappen) if row.after.diff_amount_rappen is not none else '–' }}</p>{% endfor %}{% endif %}
 <form method="POST" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="preview_token" value="{{ preview.token }}">
-{% for field in ['invoice', 'total', 'paid_by', 'payer_member_id', 'reason'] %}<input type="hidden" name="{{ field }}" value="{{ values.get(field, '') }}">{% endfor %}
+{% for field in ['invoice', 'total', 'paid_by', 'payer_member_id', 'reason', 'private_unpaid_confirmed', 'private_unpaid_note'] %}<input type="hidden" name="{{ field }}" value="{{ values.get(field, '') }}">{% endfor %}
 {% for pid, attending in preview.proposed.attendance.items() %}<input type="hidden" name="attendance_{{ pid }}" value="{{ 'present' if attending else 'absent' }}">{% endfor %}
 {% for pid, kind in preview.proposed.types.items() %}<input type="hidden" name="esstyp_{{ pid }}" value="{{ kind }}">{% endfor %}
 <div class="form-actions"><button type="submit" class="btn btn--primary" name="action" value="confirm">Diese Korrektur bestätigen</button><a class="btn btn--outline" href="{{ url_for('billbro.correction', event_id=event.id) }}">Vorschau verwerfen</a></div></form></section>
 {% endif %}
 <section aria-labelledby="correction-history"><h2 id="correction-history">Korrekturverlauf</h2>
 {% for entry in history %}<details class="disclosure"><summary>{{ entry.created_at.strftime('%d.%m.%Y %H:%M') }} – {{ entry.actor.display_name }} – {{ entry.reason }}</summary><div class="disclosure__content">
+{% if entry.after_json.get('private_unpaid_clarification') %}<p>{{ entry.after_json.private_unpaid_clarification.statement }} Klärungsvermerk: {{ entry.after_json.private_unpaid_clarification.note }} (Erklärung, kein Banknachweis.)</p>{% endif %}
 <p>Restaurantrechnung: {{ money(entry.before_json.event.rechnungsbetrag_rappen) }} → {{ money(entry.after_json.event.rechnungsbetrag_rappen) }}</p>
 <p>Gesamtbetrag: {{ money(entry.before_json.event.gesamtbetrag_rappen) }} → {{ money(entry.after_json.event.gesamtbetrag_rappen) }}</p>
 <p>Empfänger: {{ payee(entry.before_json.event.bill_paid_by, entry.before_json.event.bill_payer_member_id) }} → {{ payee(entry.after_json.event.bill_paid_by, entry.after_json.event.bill_payer_member_id) }}</p>

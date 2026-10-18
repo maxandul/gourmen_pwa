@@ -77,7 +77,7 @@ def test_payer_change_creates_no_self_claim_and_preserves_participation(app, cli
         assert event.bill_paid_by == BillPaidBy.MITGLIED and len(claims) == 2
         assert all(c.member_id != final_round[0] and c.creditor_member_id == final_round[0] for c in claims)
         assert len([p for p in Participation.query.all() if p.teilnahme]) == 3
-    token = preview(client, final_round)
+    token = preview(client, final_round, data(private_unpaid_confirmed='yes', private_unpaid_note='Synthetic clarification: no private payments'))
     assert confirm(client, final_round, token).status_code == 302
     with app.app_context():
         assert MemberClaim.query.count() == 3
@@ -207,6 +207,7 @@ def test_private_only_correction_not_bound_to_unrelated_closed_club_year(app, cl
     with app.app_context():
         db.session.add(FiscalYear(year=2026, start_date=date(2026,1,1), end_date=date(2026,12,31), status=FiscalYearStatus.CLOSED)); db.session.commit()
     form['total'] = '120'
+    form.update(private_unpaid_confirmed='yes', private_unpaid_note='Synthetic clarification: no private payments')
     assert confirm(client, final_round, preview(client, final_round, form)).status_code == 302
 
 
