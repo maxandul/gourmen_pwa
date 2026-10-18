@@ -399,12 +399,8 @@ def merch_order():
                     
                     if quantity > 0 and color and size:
                         # Find the variant
-                        variant = MerchVariant.query.filter_by(
-                            article_id=article.id,
-                            color=color,
-                            size=size,
-                            is_active=True
-                        ).first()
+                        from backend.services.merch_variants import MerchVariantService
+                        variant = MerchVariantService.find_active(article.id, color, size)
                         
                         if variant:
                             # Create order item
@@ -419,6 +415,9 @@ def merch_order():
                                 total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
                                 total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
                             )
+                            item.article = article
+                            item.variant = variant
+                            item.capture_description()
                             db.session.add(item)
                             
                             total_member_price += item.total_member_price_rappen
@@ -499,12 +498,8 @@ def merch_order_edit(order_id):
                     
                     if quantity > 0 and color and size:
                         # Find the variant
-                        variant = MerchVariant.query.filter_by(
-                            article_id=article.id,
-                            color=color,
-                            size=size,
-                            is_active=True
-                        ).first()
+                        from backend.services.merch_variants import MerchVariantService
+                        variant = MerchVariantService.find_active(article.id, color, size)
                         
                         if variant:
                             # Create new order item
@@ -519,6 +514,9 @@ def merch_order_edit(order_id):
                                 total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
                                 total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
                             )
+                            item.article = article
+                            item.variant = variant
+                            item.capture_description()
                             db.session.add(item)
                             
                             total_member_price += item.total_member_price_rappen

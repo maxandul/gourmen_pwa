@@ -18,6 +18,8 @@ class MerchOrderItem(db.Model):
     total_member_price_rappen = db.Column(db.Integer, nullable=False)  # Total price for member
     total_supplier_price_rappen = db.Column(db.Integer, nullable=False)  # Total price for supplier
     total_profit_rappen = db.Column(db.Integer, nullable=False)  # Total profit for this item
+    description_snapshot = db.Column(db.String(300), nullable=True)
+    description_snapshot_source = db.Column(db.String(20), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):
@@ -51,7 +53,15 @@ class MerchOrderItem(db.Model):
     @property
     def display_name(self):
         """Get display name for this item"""
-        return f"{self.article.name} {self.variant.color} {self.variant.size}"
+        if self.description_snapshot is not None:
+            suffix = ' (Altbestand)' if self.description_snapshot_source == 'legacy_catalogue' else ''
+            return self.description_snapshot + suffix
+        return f"{self.article.name} {self.variant.color} {self.variant.size} (aktuelle Bezeichnung)"
+
+    def capture_description(self, *, legacy=False):
+        self.description_snapshot = f"{self.article.name} {self.variant.color} {self.variant.size}"
+        self.description_snapshot_source = 'legacy_catalogue' if legacy else 'order'
+
     
     def calculate_totals(self):
         """Calculate totals for this item"""

@@ -46,7 +46,7 @@ def test_original_create_and_edit_keep_exact_prices(app,manager):
     assert manager.post(f'/admin/merch/articles/{aid}/edit',data=data(base_supplier_price_chf='20.01',base_member_price_chf='0')).status_code==302
     with app.app_context():
         article=db.session.get(MerchArticle,aid);assert (article.base_supplier_price_rappen,article.base_member_price_rappen)==(2001,0)
-        assert MerchVariant.query.one().member_price_rappen==0
+        assert MerchVariant.query.one().member_price_rappen==999  # Existing execution price is retained (U2-14).
 
 
 @pytest.mark.parametrize('mode',['create','edit'])

@@ -2,73 +2,52 @@
 
 Stand: 18.10.2026. **U1 ist insgesamt offen.**
 
-1. `AGENTS.md` und [README](README.md) lesen, danach den
-   [verbindlichen Umsetzungsplan](IMPLEMENTATION_PLAN.md). Dieser enthält die
-   aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
-2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
-   war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-14 – Varianten erhalten (A-050/A-054)**. U1z, U1-R02 und U1-R03 sind
-   lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
-   U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
-   bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
-4. Vor Codeänderungen relevante Anchor-Docs und Paketquellen lesen. Bestätigte
-   F1/F2/R13-Regeln gelten; nur konkret fehlende Entscheidungen erfragen.
-   Kein gleichzeitiger Gesamtumbau der Rollen und kein neuer Gesamtaudit.
-5. Isolierten [Testrunner](run_existing_tests.py) mit synthetischen Daten verwenden,
-   ohne dotenv und ausgehende Verbindungen. Versionierte Login-Identitäten aus
-   [U1v](U1V_SITZUNGS_GERAETEWIDERRUF.md) beachten. Tatsächliche Testergebnisse
-   berichten; PostgreSQL, reale Zustellung, Drive und Geräte nicht als geprüft ausgeben.
-6. Paket vollständig mit Regression und Dokumentation lokal sichern. Migrationen
-   separat committen. README als Nachweisregister, Plan als aktuelle Restfolge
-   pflegen. Genau ein nächstes Paket priorisieren; diese Übergabe kurz halten.
+1. AGENTS.md, [README](README.md) und den [Umsetzungsplan](IMPLEMENTATION_PLAN.md)
+   lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
+2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
+   war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
+3. Naechstes Paket: **U2-15 – Merch-Preisbindung (A-055)**. U1z bis R08 sowie
+   U2-01 bis U2-14 sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
+   nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
+5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
+   oder ausgehendes Netz. Versionierte Login-Identitaeten (U1v) verwenden.
+6. Jedes Paket mit Regression, Doku, Plan/Handoff und lokalen Commits schliessen;
+   Migrationen separat. Danach selbststaendig naechstes bereites Paket fortsetzen.
 
-Kein Push, Merge auf master, Deploy, Produktionsdatenzugriff oder Schlüsselwechsel.
-Keine fremden unversionierten Dateien anfassen. Beim Einstieg in die Konsolidierung
-waren dies `build_logs.txt`, `docs/GDD_FOOD_POKEMON.md`,
-`docs/GDD_FOOD_POKEMON_REVIEW.md`, `docs/capabilities/game.md`,
-`static/js/pwa.6af171c6.js` und `static/js/pwa.fa8699c7.js`; zusätzlich aktuellen
-Git-Status prüfen. Keine Chats oder Agenten automatisch starten.
+Kein Push, Merge, Deploy, Produktionszugriff, Schluesselwechsel oder automatisches
+Starten von Chats/Agenten. Fremde unversionierte Dateien bewahren:
+build_logs.txt, docs/GDD_FOOD_POKEMON.md, docs/GDD_FOOD_POKEMON_REVIEW.md,
+docs/capabilities/game.md, static/js/pwa.6af171c6.js, static/js/pwa.fa8699c7.js.
+Zusaetzlich jeweils aktuellen Status pruefen.
 
-U1a–U1y samt Prüfnachweisen: [README](README.md). Ältere Übergabe vollständig
-bewahrt in [Übergabeverlauf](AGENT_HANDOFF_HISTORY_20261016.md); dessen damalige
-Startanweisungen und offene Punkte sind keine aktuellen Arbeitsaufträge.
+## Bestaetigte Fachentscheidungen
 
-R04c-Altbestand am 18.10. bestaetigt: noch nicht klassifizierte Dateien in der App
-nur fuer Systemadmin. Direkte Drive-Freigaben bleiben bis separater Abnahme unveraendert.
+- Interne Einzelbewertungen: alle Mitglieder mit Eventzugriff.
+- Unklassifizierte Drive-Dateien: nur Systemadmin in der App; direkte Drive-Rechte
+  bleiben bis separat erlaubter Abnahme unveraendert.
+- Bestaetigter Eingangsueberschuss 3620, tatsaechliche Rueckzahlung 6710;
+  keine automatische Ueberweisung. U2-02c1/c2 lokal, Zahlungsjournal erhalten.
+- BillBro: rappengenau/summengleich, Restrappen nach groesstem Rechenrest,
+  Gleichstand nach Mitglied-ID. U2-12 implementiert Erstabschluss und
+  individuelle Anzeige; keine automatische Neuberechnung alter Abschluesse.
+- F1/F2/R13, F3/F4, G1–G3/K1 und weitere bestaetigte Entwuerfe gelten weiterhin.
 
-U2-02c1 ist lokal geprueft; Ruecknahmejournal und alte Buchungen bleiben erhalten.
-Fuer c2 ist die Fachentscheidung bestaetigt: ausdruecklich zur Rueckzahlung
-bestaetigter Eingangsueberschuss auf 3620, tatsaechlicher Ausgang auf 6710.
-Keine automatische Ueberweisung. Vertrag/Nachweise: U2_02C_ZUORDNUNGSKORREKTUR.md.
+## Aktueller lokaler Nachweis und Grenzen
 
-U2-02c2a lokal geprueft: bestaetigter Ueberschuss auf 3620; BankRefundConfirmation
-verknuepft Vormerkung und Buchung. U2-02c2b verknuepft den tatsaechlichen Ausgang auf 6710, mit Teilbetraegen,
-Jahreswechsel und beidseitigen Ruecknahmegrenzen; 64 Python-/19 Worker-Tests gruen.
+Breite Regression auf 623f5ba: **1212 bestanden, 16748 Warnungen, 727.76 s**.
+Danach U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
+U2-14: 61. Jeweils 19 Worker-Tests, Einzelvertraege im README.
+Migration U2-14 **e9d6f95** (u21420261018), Snapshotfelder ohne erfundene
+Altbezeichnungen; SQLite-Zyklus und Historie-Downgrade-Sperre geprueft.
+PWA zuletzt 3.16.33 / pwa.cdd0f152.js.
 
-U2-05 lokal geprueft (88 und anschliessend 23 Tests): historische inaktive
-Konten, Richtungssummen und Budgetvorschlag. Alte Prueffassungen erhalten.
+U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
+Bestellbearbeitung baut Positionen noch neu auf: A-055 ist naechster Auftrag.
+A-049/Runden-/Zuschussmodell sowie F3/F4-Korrekturwege bleiben Folgepakete.
+Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und
+Hosting-Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;
+unabhaengige lokale Arbeiten fortsetzen. Keine pauschale Produktionsfreigabe.
 
-U2-06 lokal geprueft: optionaler Audit-INSERT mit Savepoint, True/False-Ergebnis;
-Fachfehler weitergegeben. Erfolgscommit fuer Altaufrufer bleibt, A-046 separat.
-
-U2-07 lokal geprueft: Eventloeschung mit verpflichtendem Audit in einem Commit;
-Abhaengigkeiten und BillBro/GGL-Fachhistorie bleiben erhalten (65 Regressionen).
-
-U2-08 lokal geprueft (63 Python-/19 Worker-Tests): strikte BillBro-Betraege,
-Feldfehler ohne Teilmutation. A-031 am 18.10. bestaetigt: rappengenau/summengleich, Restrappen nach
-groesstem Rechenrest, Gleichstand Mitglied-ID; nach U2-11 als U2-12 umsetzen.
-
-U2-09 lokal geprueft (67 Regressionen): Undo vergleicht eigenen Nachzustand
-und bewahrt spaetere Fachwerte; technische Fehler erlauben sicheren Retry.
-
-U2-10 lokal geprueft (33 Tests): Organisationswechsel ohne implizite
-Teilnahmeaenderung oder Verlust von Schaetzungen/Anteilen/Zahlungsstand.
-
-U2-11 lokal geprueft: exakte nichtnegative Merch-Preise, 92 Python-/19 Worker-Tests.
-Gesamtlauf auf 623f5ba: 1212 bestanden; U1 bleibt offen. Keine Migration in U2-11.
-
-U2-12 lokal geprueft: summengleiche Einzelanteile, atomarer Erstabschluss,
-114 Python-/19 Worker-Tests. F3/F4-Korrekturwege bleiben eigenes Folgepaket.
-
-U2-13 lokal geprueft: 45 Tests; 3/30 Artikel jeweils 5 SQL-Abfragen statt
-10/64. GET mutiert keine Variante. Keine Migration, U1 bleibt offen.
+Aeltere U1-Uebergabe: [Verlauf](AGENT_HANDOFF_HISTORY_20261016.md).
+Datierte alte Naechstes-Absaetze sind Verlauf, keine aktuelle Warteschlange.

@@ -29,6 +29,10 @@
                 <form method="POST" class="form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+                    {% for field, message in price_errors.items() if field not in ['base_supplier_price_chf', 'base_member_price_chf'] %}
+                    <p class="form-field__error" role="alert">{{ message }}</p>
+                    {% endfor %}
+                    <p class="form-field__hint">Basispreise gelten für neue Varianten. Vorhandene Ausführungspreise und Bestellpositionen bleiben erhalten. Entfernte Farben oder Grössen werden deaktiviert.</p>
                     <div class="form-field">
                         <label for="name" class="form-field__label">Artikel-Name *</label>
                         <input type="text" 

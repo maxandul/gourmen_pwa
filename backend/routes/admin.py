@@ -1378,148 +1378,41 @@ def merch_article_detail(article_id):
 @login_required
 @merch_manager_required
 def create_merch_article():
-    """Create new merch article"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
-    
-    from backend.services.merch_prices import MerchPriceService, MerchPriceError
+    from backend.services.merch_variants import MerchVariantService
+    from backend.services.merch_prices import MerchPriceError
+    article = None
     if request.method == 'POST':
         try:
-            supplier_price, member_price = MerchPriceService.form_prices(request.form)
-            # Get selected colors and sizes
-            colors = request.form.getlist('colors')
-            sizes = request.form.getlist('sizes')
-            
-            if not colors:
-                flash('Bitte wähle mindestens eine Farbe aus.', 'error')
-                return render_template('admin/merch/article_form.html', article=None)
-            
-            if not sizes:
-                flash('Bitte wähle mindestens eine Größe aus.', 'error')
-                return render_template('admin/merch/article_form.html', article=None)
-            
-            # Create article
-            article = MerchArticle(
-                name=request.form.get('name'),
-                description=request.form.get('description'),
-                base_supplier_price_rappen=supplier_price,
-                base_member_price_rappen=member_price,
-                image_url=request.form.get('image_url') or None,
-                is_active=request.form.get('is_active') == 'on'
-            )
-            
-            db.session.add(article)
-            db.session.flush()  # Get article ID
-            
-            # Automatically create all variants (color × size combinations)
-            variant_count = 0
-            for color in colors:
-                for size in sizes:
-                    variant = MerchVariant(
-                        article_id=article.id,
-                        color=color,
-                        size=size,
-                        supplier_price_rappen=article.base_supplier_price_rappen,
-                        member_price_rappen=article.base_member_price_rappen,
-                        is_active=True
-                    )
-                    db.session.add(variant)
-                    variant_count += 1
-            
-            db.session.commit()
-            
-            flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich erstellt!', 'success')
+            article, count = MerchVariantService.save(request.form, current_user)
+            flash(f'Artikel "{article.name}" mit {count} aktiven Varianten gespeichert. Bestehende Ausführungspreise bleiben erhalten.', 'success')
             return redirect(url_for('admin.merch_article_detail', article_id=article.id))
-            
         except MerchPriceError as exc:
-            db.session.rollback()
-            return render_template('admin/merch/article_form.html', article=None,
+            return render_template('admin/merch/article_form.html', article=article,
                 price_errors=exc.errors, existing_colors=request.form.getlist('colors'),
                 existing_sizes=request.form.getlist('sizes')), 400
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Erstellen des Artikels: {str(e)}', 'error')
-    
     return render_template('admin/merch/article_form.html', article=None)
 
 @bp.route('/merch/articles/<int:article_id>/edit', methods=['GET', 'POST'])
 @login_required
 @merch_manager_required
 def edit_merch_article(article_id):
-    """Edit merch article"""
     from backend.models.merch_article import MerchArticle
     from backend.models.merch_variant import MerchVariant
-    
+    from backend.services.merch_variants import MerchVariantService
+    from backend.services.merch_prices import MerchPriceError
     article = MerchArticle.query.get_or_404(article_id)
-    
-    from backend.services.merch_prices import MerchPriceService, MerchPriceError
     if request.method == 'POST':
         try:
-            supplier_price, member_price = MerchPriceService.form_prices(request.form)
-            # Get selected colors and sizes
-            colors = request.form.getlist('colors')
-            sizes = request.form.getlist('sizes')
-            
-            if not colors:
-                flash('Bitte wähle mindestens eine Farbe aus.', 'error')
-                return render_template('admin/merch/article_form.html', article=article, 
-                                     existing_colors=[], existing_sizes=[])
-            
-            if not sizes:
-                flash('Bitte wähle mindestens eine Größe aus.', 'error')
-                return render_template('admin/merch/article_form.html', article=article,
-                                     existing_colors=colors, existing_sizes=[])
-            
-            # Update article
-            article.name = request.form.get('name')
-            article.description = request.form.get('description')
-            article.base_supplier_price_rappen = supplier_price
-            article.base_member_price_rappen = member_price
-            article.image_url = request.form.get('image_url') or None
-            article.is_active = request.form.get('is_active') == 'on'
-            article.updated_at = datetime.utcnow()
-            
-            # Delete existing variants
-            MerchVariant.query.filter_by(article_id=article.id).delete()
-            
-            # Create new variants with updated combinations
-            variant_count = 0
-            for color in colors:
-                for size in sizes:
-                    variant = MerchVariant(
-                        article_id=article.id,
-                        color=color.strip(),
-                        size=size.strip(),
-                        supplier_price_rappen=article.base_supplier_price_rappen,
-                        member_price_rappen=article.base_member_price_rappen,
-                        is_active=True
-                    )
-                    db.session.add(variant)
-                    variant_count += 1
-            
-            db.session.commit()
-            
-            flash(f'Artikel "{article.name}" mit {variant_count} Varianten erfolgreich aktualisiert!', 'success')
-            return redirect(url_for('member.merch', tab='shop'))
-            
+            article, count = MerchVariantService.save(request.form, current_user, article_id)
+            flash(f'Artikel "{article.name}" mit {count} aktiven Varianten gespeichert. Bestehende Ausführungspreise bleiben erhalten.', 'success')
+            return redirect(url_for('admin.merch_article_detail', article_id=article.id))
         except MerchPriceError as exc:
-            db.session.rollback()
             return render_template('admin/merch/article_form.html', article=article,
                 price_errors=exc.errors, existing_colors=request.form.getlist('colors'),
                 existing_sizes=request.form.getlist('sizes')), 400
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Aktualisieren des Artikels: {str(e)}', 'error')
-    
-    # GET request - load existing variants and extract unique colors/sizes
-    variants = MerchVariant.query.filter_by(article_id=article_id).all()
-    existing_colors = sorted(list(set([v.color for v in variants])))
-    existing_sizes = sorted(list(set([v.size for v in variants])))
-    
-    return render_template('admin/merch/article_form.html', 
-                         article=article,
-                         existing_colors=existing_colors,
-                         existing_sizes=existing_sizes)
+    variants = MerchVariant.query.filter_by(article_id=article_id, is_active=True).all()
+    return render_template('admin/merch/article_form.html', article=article,
+        existing_colors=sorted({v.color for v in variants}), existing_sizes=sorted({v.size for v in variants}))
 
 @bp.route('/merch/articles/<int:article_id>/variants/new', methods=['GET', 'POST'])
 @login_required

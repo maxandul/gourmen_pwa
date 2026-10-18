@@ -1033,3 +1033,12 @@ zwischen -100 und 100; technische Ressourcenbegrenzung vor Fraction-Konvertierun
 Anzeigeauswahlen duerfen persistente ORM-Relationen nicht ersetzen. Merch-GETs
 verwenden catalogue_variants/catalogue_colors nach Artikel-ID und einen
 getrennten existing_items-Kontext. Keine Dirty-/Delete-orphan-Seiteneffekte.
+
+Artikelpflege loescht keine Merch-Varianten. Auswahlvergleich mit Unicode NFC,
+vereinheitlichten Leerraeumen und casefold; Originalschreibweise behalten.
+Altduplikate sperren die Pflege und mehrdeutige aktive Bestellwahl, niemals
+.first() fuer eine mehrdeutige Ausfuehrung. Artikel-Zeilensperre fuer Pflege.
+Bestehende Ausfuehrungspreise erhalten; Basispreise nur fuer neue Kombinationen.
+MerchOrderItem.description_snapshot/source: order fuer neue Position, vor
+Katalogaenderung legacy_catalogue fuer bisher angezeigten Alttext. Legacy ist
+keine behauptete Originalbestellbezeichnung. Positionspreise bleiben erhalten.
