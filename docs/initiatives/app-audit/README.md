@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04c3. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R05. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R04c3 / F2/R13: Dokument-Loeschgrenzen | Lokal geprüft, Live-/PostgreSQL-Abnahme offen | Migration aa47d64 separat, 25 Python- und 19 Worker-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
 | U1-R04c2 / F2/R13: Dokumentzugriff | Lokal geprüft, externe Drive-Abnahme offen | 98 Python- und 19 Worker-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
 | U1-R04c1 / F2/R13: Dokumentpolicy-Grundlage | Lokal geprüft; Routenbindung offen | Migration 7d471a4 separat, 26 Python-Tests; [Nachweis](U1_R04C_DOKUMENTRECHTE.md) |
 | U1-R04b4 / F2: Merchbereichsrechte | Lokal geprüft, U1 offen | 80 Python- und 19 Worker-Tests; [Nachweis](U1_R04B4_MERCHRECHTE.md) |

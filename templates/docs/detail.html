@@ -120,6 +120,11 @@
         <label class="form-field__label" for="docs-delete-confirm">Tippe oder füge den Dateinamen hier ein, um zu bestätigen:</label>
         <input type="text" id="docs-delete-confirm" name="confirm_filename" class="form-field__input" autocomplete="off" required>
       </div>
+      <div class="form-field">
+        <label><input type="checkbox" name="retention_confirmed" required> Ich habe die Aufbewahrung geprueft; diese Datei muss nicht mehr aufbewahrt werden.</label>
+      </div>
+      <div class="form-field"><label class="form-field__label" for="retention_reason">Begruendung der Aufbewahrungspruefung</label>
+        <input class="form-field__input" id="retention_reason" name="retention_reason" maxlength="500" required></div>
     </div>
     <footer class="docs-action-modal__footer">
       <button type="button" class="btn btn--outline" data-docs-modal-close>Abbrechen</button>

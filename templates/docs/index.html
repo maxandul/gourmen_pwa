@@ -14,7 +14,7 @@
   </div>
 
   <div class="page-content docs-browser">
-    {% if current_user.is_admin() %}<a class="btn btn--outline" href="{{ url_for('docs.classify', drive_id=root_folder_id) }}">Root-Zuordnung</a>{% endif %}
+    {% if current_user.is_admin() %}<a class="btn btn--outline" href="{{ url_for('docs.classify', drive_id=root_folder_id) }}">Root-Zuordnung</a> <a class="btn btn--outline" href="{{ url_for('docs.deletion_requests') }}">Loeschauftraege</a>{% endif %}
     <div class="card card--filter tool-surface docs-browser__toolbar-card">
       <div class="card__body">
         <details id="docs-browser-toolbar" class="disclosure" {% if search_query %}open{% endif %}>

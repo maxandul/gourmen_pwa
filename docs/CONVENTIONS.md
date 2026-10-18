@@ -783,3 +783,15 @@ aendert aber nie dessen Lese-/Pflegepolicy. Wiederherstellung braucht Zielpflege
 Adminzuordnung ist CSRF-geschuetzt, validiert Drive-Zugehoerigkeit und Vorzustand.
 Alle Dokumentantworten private,no-store; keine neue UI-Klasse. Die externe
 Drive-Berechtigung ist eine separate, noch offene Abnahme.
+
+## Dokument-Loeschjournal (U1-R04c3)
+
+permanently_delete_document prueft aktiven Admin, explizite Klassifikation,
+Event-/Receipt-Referenzen, Archiv (auch Live-Parent), aktuellen Dateinamen sowie
+bestaetigte Aufbewahrungspruefung mit Begruendung. Kein allgemeines Loeschen von
+Belegen/Eventdokumenten. DocumentDeletionRequest wird vor externem Trash dauerhaft
+committet; eindeutige Drive-ID verhindert blindes Wiederholen. Abschlussjournal,
+DB-Entfernung und Erfolgs-Audit committen gemeinsam. Bei Remote-/Abschlussfehler
+bleibt pending erhalten; keine automatische Wiederholung. Adminansicht zeigt den
+unklaren Ausgang. PostgreSQL-/Live-Abnahme und Wiederherstellungsabgleich bleiben
+gesondert. Keine pauschale atomare Garantie ueber Drive und DB behaupten.

@@ -4,8 +4,8 @@ Authoritative Spezifikation: docs/capabilities/drive.md (Drive-Browser-Modell).
 
 Authentifiziert via Service-Account-Key aus `GOOGLE_SERVICE_ACCOUNT_KEY`
 (Base64-encoded JSON), arbeitet auf dem Shared Drive `GOOGLE_DRIVE_ID`.
-Alle Schreib-Operationen sind atomar (Drive + DB) oder werfen explizite
-Fehler.
+Drive und lokale DB bilden keine gemeinsame Transaktion. Kritische externe
+Loeschaktionen verwenden ein dauerhaftes lokales Intent-/Abschlussjournal.
 
 Strikte App-Regel: Routes rufen Services, Services rufen Models und externe
 APIs. Routes enthalten keine Drive-Aufrufe direkt.
@@ -1278,46 +1278,68 @@ class DriveStorageService:
         )
 
     @classmethod
-    def permanently_delete_document(
-        cls, document: Document, deleted_by: Member
-    ) -> None:
+    def permanently_delete_document(cls, document: Document, deleted_by: Member, *,
+                                    confirm_filename: str, retention_confirmed: bool, retention_reason: str) -> None:
+        from backend.models.accounting import Receipt
+        from backend.models.audit_event import AuditEvent
+        from backend.models.document_deletion import DocumentDeletionRequest
+        from backend.services.document_permissions import DocumentPermissionService as Policy
+        from sqlalchemy.exc import SQLAlchemyError
+        if not deleted_by or not deleted_by.id:
+            raise DriveValidationError('Nur Systemadmin darf endgueltig loeschen.')
+        actor = Member.query.filter_by(id=deleted_by.id).populate_existing().with_for_update().one()
+        if not actor.is_active or not actor.is_admin():
+            raise DriveValidationError('Nur Systemadmin darf endgueltig loeschen.')
+        document = Document.query.filter_by(id=document.id).populate_existing().with_for_update().one()
+        cls._require_document_permission(document, actor, write=True)
+        policy = Policy.policy(document.drive_file_id)
+        if (not policy or policy.is_folder or policy.access_level not in Policy.ACCESS_LEVELS
+                or policy.maintenance_scope not in Policy.MAINTENANCE_SCOPES):
+            raise DriveValidationError('Vor dem Loeschen muss die Datei zugeordnet sein.')
+        if document.event_id or Receipt.query.filter_by(drive_file_id=document.drive_file_id).first():
+            raise DriveValidationError('Verknuepfte Eventdokumente oder Belege duerfen hier nicht geloescht werden.')
+        reason = (retention_reason or '').strip()
+        if retention_confirmed is not True or not reason or len(reason) > 500:
+            raise DriveValidationError('Aufbewahrungspruefung mit Begruendung bestaetigen.')
+        if db.session.get(DocumentDeletionRequest, document.drive_file_id):
+            raise DriveValidationError('Loeschauftrag bereits vorhanden. Ausgang zuerst separat abklaeren.')
+        if not cls.document_is_under_archive(document):
+            raise DriveValidationError('Endgueltiges Loeschen ist nur im Archiv moeglich.')
         drive = cls._build_drive()
-        drive_name = cls.fetch_drive_filename(document)
-        snapshot = {
-            "id": document.id,
-            "drive_filename": drive_name,
-            "drive_file_id": document.drive_file_id,
-            "drive_parent_id": document.drive_parent_id,
-            "uploader_id": document.uploader_id,
-            "created_at": document.created_at.isoformat()
-            if document.created_at
-            else None,
-        }
-
+        meta = cls._drive_file_meta(drive, document.drive_file_id)
+        filename = meta.get('name') or 'Unbenannt'
+        live_parent = (meta.get('parents') or [None])[0]
+        archive_id = cls._archive_folder_id_required()
+        if not live_parent or not cls._folder_has_ancestor(drive, live_parent, archive_id):
+            raise DriveValidationError('Die Datei befindet sich nicht mehr im Archiv.')
+        if confirm_filename != filename:
+            raise DriveValidationError('Dateiname stimmt nicht ueberein.')
+        request_record = DocumentDeletionRequest(drive_file_id=document.drive_file_id,
+            document_id=document.id, actor_id=actor.id, filename=filename, reason=reason)
+        snapshot = {'id':document.id, 'drive_file_id':document.drive_file_id,
+                    'drive_parent_id':document.drive_parent_id, 'uploader_id':document.uploader_id,
+                    'classification':policy.snapshot()}
         try:
-            drive.files().update(
-                fileId=document.drive_file_id,
-                body={"trashed": True},
-                supportsAllDrives=True,
-            ).execute()
+            db.session.add(request_record)
+            db.session.commit()  # Durable intent before the external operation.
+        except SQLAlchemyError as exc:
+            db.session.rollback()
+            raise DriveError('Loeschauftrag konnte nicht gespeichert werden.') from exc
+        try:
+            drive.files().update(fileId=request_record.drive_file_id,
+                body={'trashed': True}, supportsAllDrives=True).execute()
+            db.session.delete(document)
+            request_record.status = 'completed'
+            request_record.completed_at = datetime.utcnow()
+            db.session.add(AuditEvent(actor_id=actor.id, action=AuditAction.DOCUMENT_PERMANENTLY_DELETED,
+                entity='document', entity_id=snapshot['id'],
+                extra_json={'snapshot':snapshot, 'retention_reviewed':True, 'retention_reason':reason}))
+            db.session.commit()
         except Exception as exc:
-            logger.error(
-                "Drive-Trash fehlgeschlagen fuer document %s: %s",
-                document.id,
-                exc,
-            )
-            raise
-
-        db.session.delete(document)
-        db.session.commit()
-
-        SecurityService.log_audit_event(
-            AuditAction.DOCUMENT_PERMANENTLY_DELETED,
-            entity="document",
-            entity_id=snapshot["id"],
-            actor_id=deleted_by.id if deleted_by else None,
-            extra_data={"snapshot": snapshot},
-        )
+            db.session.rollback()
+            # The durable pending record deliberately blocks a blind retry after an
+            # ambiguous remote response or failed local completion transaction.
+            raise DriveError('Loeschauftrag hat einen ungeklaerten Ausgang. Nicht erneut senden; separat abklaeren.') from exc
 
     @classmethod
     def rename_document(

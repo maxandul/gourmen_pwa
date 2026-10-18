@@ -484,12 +484,15 @@ def hard_delete(doc_id: int):
         return redirect(url_for("docs.detail", doc_id=doc_id))
 
     try:
-        DriveStorageService.permanently_delete_document(document, current_user)
+        DriveStorageService.permanently_delete_document(document, current_user,
+            confirm_filename=confirm,
+            retention_confirmed=request.form.get('retention_confirmed') == 'on',
+            retention_reason=request.form.get('retention_reason', ''))
     except DriveError as exc:
         current_app.logger.error(
             "Drive-Hard-Delete fehlgeschlagen: %s", exc, exc_info=True
         )
-        flash("Endgültiges Löschen fehlgeschlagen.", "error")
+        flash(str(exc), "error")
         return redirect(url_for("docs.detail", doc_id=doc_id))
 
     flash(
@@ -597,3 +600,13 @@ def classify(drive_id):
     return render_template('docs/classify.html', drive_id=drive_id, item_name=meta.get('name') or 'Dokument',
         is_folder=is_folder, policy=policy, expected_before=json.dumps(before), changes=changes,
         levels=Policy.ACCESS_LEVELS, scopes={scope:AreaPermissionService.SCOPES[scope] for scope in Policy.MAINTENANCE_SCOPES})
+
+
+@bp.route('/admin/deletions')
+@login_required
+def deletion_requests():
+    _require_feature()
+    _require_admin()
+    from backend.models.document_deletion import DocumentDeletionRequest
+    records = DocumentDeletionRequest.query.order_by(DocumentDeletionRequest.requested_at.desc()).all()
+    return render_template('docs/deletions.html', records=records)

@@ -8,3 +8,5 @@ from . import action_confirmation_use
 from . import member_area_grant
 
 from backend.models.document_policy import DocumentPolicy, DocumentPolicyChange
+
+from backend.models.document_deletion import DocumentDeletionRequest

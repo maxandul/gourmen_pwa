@@ -82,3 +82,37 @@ Worker: **19 bestanden**. `node --check` Folder-Picker und `git diff --check` sa
 PWA 3.16.15, Picker-Queryversion 3.16.15, keine neue UI-Klasse/Migration.
 Breite isolierte Bestandsregression gestartet; deren Ergebnis wird separat
 nachgetragen und ist noch keine Abschlussbehauptung. Naechstes Paket R04c3.
+
+## R04c3 Vertrag vor Umsetzung
+
+Endgueltiges Loeschen nur durch aktuellen aktiven Systemadmin, fuer klassifizierte
+Dateien im konfigurierten Archiv. Jede Eventzuordnung und jede Receipt-Referenz
+mit gleicher Drive-ID sperrt diesen allgemeinen Weg, auch ungebuchte Belege.
+Unklassifizierte Dateien bleiben gesperrt. Admin bestaetigt den aktuellen Dateinamen
+und ausdruecklich die abgeschlossene Aufbewahrungspruefung mit Begruendung. Es wird
+keine gesetzliche Frist erfunden und keine automatische Fristfreigabe abgeleitet.
+
+Vor externem Trash wird ein lokaler Loeschauftrag mit Actor, Zeit, Drive-ID,
+Dateiname und Begruendung dauerhaft gespeichert. Pro Drive-ID hoechstens ein
+Auftrag; ungeklärter Ausgang sperrt Wiederholung. Abschluss entfernt App-Zuordnung,
+protokolliert Erfolg und schliesst Auftrag in einer lokalen Transaktion ab.
+Remote- und DB-Operation sind keine gemeinsame atomare Transaktion: Fehler nach
+Remote-Aufruf bleiben als ungeklärter Auftrag zur separat autorisierten Abnahme.
+Wiederhergestellte Drive-Dateien werden nicht automatisch erneut geloescht; der
+allgemeine Sync-/Wiederherstellungsvertrag A-093 bleibt U2. Kein realer Trash-Aufruf.
+
+## R04c3 Nachweis 18.10.2026
+
+Migration **aa47d64** separat; isoliertes SQLite Upgrade/Downgrade/Upgrade und
+Eindeutigkeit bestanden. Service plus UI/CSRF und Adminjournal umgesetzt.
+Isolierter Runner mit test_document_deletion.py, test_document_deletion_migration.py
+und test_document_access.py: **25 bestanden, 855 Warnungen**. Vor Ergaenzung des
+Route-/CSRF-Tests 24 bestanden/819 Warnungen. Fehlerfaelle: verbotene Rolle,
+inaktiver Admin, unbekannte Policy, Event/Receipt-Referenz, fehlende Pruefung oder
+Begruendung, falscher Name/Live-Archivort, Wiederholung, initialer Commitfehler,
+Remote-Fehler und lokaler Abschlussfehler. Letztere behalten pending und sperren
+erneutes I/O; kein falscher Erfolgs-Audit. Alle Drive-Aufrufe nachgebildet.
+Worker: **19 bestanden**; `git diff --check` sauber. PWA 3.16.16, keine neue CSS-Klasse.
+Kein realer Loeschauftrag, PostgreSQL-Nachweis oder externe Drive-Abnahme.
+R04c lokal umgesetzt; U1 insgesamt offen. R04d bleibt mit U2/U3 gekoppelt;
+naechstes unabhaengiges Paket U1-R05 Linklebenszyklus-Restvertrag.

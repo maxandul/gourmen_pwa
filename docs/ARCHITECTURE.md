@@ -333,3 +333,9 @@ und deren Aenderungshistorie. DocumentPermissionService verbindet diese Regeln
 mit Event- und Belegrechten. Keine implizite Uebertragung auf externe Drive-
 Freigaben. R04c1 liefert die Grundlage; DocumentBrowserService bindet seit R04c2 die
 App-Einstiege an und filtert die Drive-Transportdaten vor der Darstellung.
+
+
+DocumentDeletionRequest haelt Loeschabsicht und Abschluss pro Drive-ID dauerhaft
+fest. Der externe Trash-Aufruf folgt erst nach gespeichertem Intent; bei unklarem
+Ausgang ist keine blinde Wiederholung erlaubt. Das ersetzt keine externe Abnahme
+oder allgemeine Drive-Sync-Recovery (U2/U5).
