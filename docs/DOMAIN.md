@@ -303,3 +303,10 @@ weiterhin mit erneuter Identitaetsbestaetigung und begrenzter Feldmenge.
 Ein Wechsel der Eventorganisation bedeutet keine Zu- oder Absage. Bestehende
 Teilnahmen, Schaetzungen und Anteile beider Mitglieder bleiben erhalten.
 Ein neues Organisationsmitglied ohne Teilnahme muss diese separat angeben.
+
+
+Unbezahlte BillBro-Korrektur (U2-17b1): Die Organisation kann Gesamtbetrag
+und Zahlweg mit Grund/Vorschau korrigieren. Alte und neue Forderungen bleiben
+in der Korrekturhistorie nachvollziehbar; nur die neuen Posten sind aktuell.
+Zahlungen, Buchungen oder abgeschlossene Posten verlangen den gesonderten
+Finanzkorrekturweg. Restaurantrechnung/Teilnahmen bleiben in b1 unveraendert.

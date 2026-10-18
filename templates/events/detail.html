@@ -506,17 +506,7 @@
                         </div>
                         {% if is_organizer %}
                         <div class="card__footer">
-                            <form method="POST" action="{{ url_for('billbro.undo_final', event_id=event.id) }}" class="form">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn--danger" onclick="return confirm('Finalisierung aufheben? Anteile und Gesamtbetrag werden wieder bearbeitbar.')">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 7v6a9 9 0 0 0 18 0V7" />
-                                        <path d="M12 4v9" />
-                                        <path d="m15 10-3 3-3-3" />
-                                    </svg>
-                                    Finalisierung aufheben
-                                </button>
-                            </form>
+                            <a class="btn btn--outline" href="{{ url_for('billbro.correction', event_id=event.id) }}">Korrektur vorbereiten / Verlauf</a>
                         </div>
                         {% endif %}
                     </div>
@@ -914,16 +904,7 @@
 
                     {% if is_organizer and has_final %}
                     <div class="page-actions page-actions--right">
-                        <form method="POST" action="{{ url_for('billbro.reset_bill', event_id=event.id) }}" class="form form--inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn--danger" onclick="return confirm('BillBro neu starten? Alle Beträge werden zurückgesetzt.')">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
-                                    <polyline points="21 3 21 9 15 9"/>
-                                </svg>
-                                Neu starten
-                            </button>
-                        </form>
+                        <a class="btn btn--outline" href="{{ url_for('billbro.correction', event_id=event.id) }}">Korrektur vorbereiten / Verlauf</a>
                     </div>
                     {% endif %}
                     {% endif %}

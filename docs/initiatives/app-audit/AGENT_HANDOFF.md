@@ -6,8 +6,8 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17b – unbezahlte BillBro-Korrektur (F3/F4)**. U1z bis R08 sowie
-   U2-01 bis U2-17a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+3. Naechstes Paket: **U2-17b2 – unbezahlte Rechnung/GGL-Korrektur**. U1z bis R08 sowie
+   U2-01 bis U2-17b1 sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
@@ -36,12 +36,13 @@ Zusaetzlich jeweils aktuellen Status pruefen.
 ## Aktueller lokaler Nachweis und Grenzen
 
 Breite Regression auf 68246e2: **1320 bestanden, 18268 Warnungen, 739.49 s**.
-Danach U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
+Vor diesem Gesamtlauf U2-11: 92 Tests; U2-12: 114 und erweitert 36; U2-13: 45 und erweitert 5;
 U2-14: 61. Danach U2-15: 80 Python-/23 JS-Tests. Einzelvertraege im README.
 Migration U2-14 **e9d6f95** (u21420261018), Snapshotfelder ohne erfundene
 Altbezeichnungen; SQLite-Zyklus und Historie-Downgrade-Sperre geprueft.
 U2-15-Nachkorrektur: 82 Python-/24 JS-Tests; Reihenfolge/Varianten-Schluessel
-und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-17a: 160 Python-Tests. PWA 3.16.36 / pwa.a03403de.js.
+und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-17a: 160 Python-Tests. U2-17b1: 139 Tests, nach Ergaenzung 41; Migration 3f16cb4 separat
+(u217b120261018). PWA 3.16.37 / pwa.c4809d76.js.
 
 U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
 U2-15 erhaelt Positionspreise/IDs, Nulloperationen schreiben nichts; Versions-
@@ -49,8 +50,9 @@ vergleich und Mengen-Erhalt im Edit-JS. Breiter Gesamttest bestanden; gezielte N
 U2-16a speichert Status/Forderung atomar und sperrt einfache Rueckschritte.
 Merch-Runden-/Zuschuss-/Korrekturmodell sowie F3/F4-Vorschau/Korrektur bleiben
 Folgepakete. U2-17a sperrt direkte Mutation bei Abschluss-/Forderungs-/
-Anteilshistorie; U2-17b muss den bestaetigten unbezahlten Korrekturweg liefern,
-nicht die Schutzsperre als fertigen F3/F4-Ablauf deklarieren.
+Anteilshistorie; U2-17b1 liefert Gesamtbetrag/Zahlweg mit Vorschau/Grund/Historie.
+B2 folgt fuer Rechnung/GGL, b3 fuer Teilnahme/Ess-Typ; bezahlte Korrekturen
+bleiben separat. F3/F4 daher noch nicht insgesamt abgeschlossen.
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und
 Hosting-Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;
 unabhaengige lokale Arbeiten fortsetzen. Keine pauschale Produktionsfreigabe.

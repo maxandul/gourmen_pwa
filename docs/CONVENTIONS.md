@@ -1072,3 +1072,14 @@ Erstabschluss verwendet dieselbe Historienpruefung. billbro_closed allein
 schliesst nur die Eingaberunde, nicht zwingend die finanzielle Abrechnung.
 Forderungen entstehen beim atomaren Erstabschluss, nicht nach einem bereits
 committeten Zahlwegwechsel. Bereinigung behaelt ihre strengere U2-09-Grenze.
+
+BillBro-Korrektur b1 ist ein eigener Prepare/Confirm-Weg. Vorschau schreibt
+nichts und bindet konkrete Eingabe/Akteur/auth_generation/Event/Ausgangsstand
+per URLSafeTimedSerializer, Zweck billbro-correction-v1, Ablauf 30 Minuten.
+Bestaetigung sperrt Event, betroffene Jahreszeilen und Posten und prueft erneut.
+Request-Hash in BillBroCorrection verhindert doppelte Anwendung. Alte Posten
+werden vor Ersatz vollstaendig als before_json gesichert; after_json beschreibt
+den neuen Stand. Historie und Fachwerte haben einen Commit. Referenzierte oder
+bezahlte/erlassene Posten niemals im unbezahlten Weg ersetzen. Kein Backfill.
+Manuelle Zahlung/Erlass und private Bestaetigung laden Posten mit Zeilensperre,
+damit sie keine gleichzeitig ersetzten Posten aus veraltetem ORM-Stand schreiben.

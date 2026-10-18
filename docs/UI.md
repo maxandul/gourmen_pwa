@@ -532,3 +532,14 @@ Die `/demo/design-system`-Route zeigt visuell alle Komponenten. Aktuell Stand pr
 - Component Registry initial aus Phase-0a des Redesigns (siehe `docs/initiatives/_archive/2025_redesign/REDESIGN.md`).
 - Cache-Buster-Workflow ursprünglich aus `UPDATE_CHECKLIST.md` (jetzt obsolet, Inhalt hier integriert).
 - Token-System aus `static/css/v2/tokens.css` (Stand 2025-01-29).
+
+
+### Bestehende Komponenten: BillBro-Korrektur (U2-17b1)
+
+Korrektur vorbereiten ersetzt die alten Finalisierung-aufheben/Reset-Aktionen
+im abgeschlossenen Event. Eigene Seite mit vorhandenen form-field/form-actions,
+info-row und disclosure-Klassen: Grund und neue Werte, ausdrueckliche Vorschau,
+separate Bestaetigung, Abbrechen und lesbarer Verlauf. Keine neue CSS-Klasse.
+Gesamtbetrag/Zahlweg sind b1; Rechnung/Teilnahme/GGL folgen getrennt. Keine
+Zahlung oder automatische Nachricht. PWA 3.16.37 / pwa.c4809d76.js.
+Funktionale Templatepruefung ersetzt keine reale Geraete-/Darstellungsabnahme.

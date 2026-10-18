@@ -7,6 +7,7 @@ from backend.models.rating import EventRating
 from backend.models.document import Document
 from backend.models.accounting import Booking, MemberClaim, Receipt
 from backend.models.audit_event import AuditEvent, AuditAction
+from backend.models.billbro_correction import BillBroCorrection
 
 
 class EventDeletionError(ValueError):
@@ -24,7 +25,7 @@ class EventDeletionService:
                 raise EventDeletionError('Vergangene Events können nicht gelöscht werden.')
             participants = Participation.query.filter_by(event_id=event.id).order_by(Participation.id).populate_existing().with_for_update().all()
             relations = ((EventRating, 'event_id'), (Document, 'event_id'), (Booking, 'event_id'),
-                         (MemberClaim, 'event_id'), (Receipt, 'suggested_event_id'))
+                         (MemberClaim, 'event_id'), (BillBroCorrection, 'event_id'), (Receipt, 'suggested_event_id'))
             if any(model.query.filter(getattr(model, field) == event.id).first() for model, field in relations):
                 raise EventDeletionError('Event bleibt erhalten: Bewertungen, Dokumente, Belege oder Buchhaltungsdaten sind verknüpft.')
             event_fields = ('rechnungsbetrag_rappen', 'gesamtbetrag_rappen', 'trinkgeld_rappen',

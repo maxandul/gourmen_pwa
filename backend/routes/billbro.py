@@ -913,3 +913,33 @@ def toggle_billbro_status(event_id):
 
     billbro_anchor = 'billbro-enter-bill' if event.billbro_closed else 'billbro-attendance'
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor=billbro_anchor))
+
+@bp.route('/<int:event_id>/correction', methods=['GET', 'POST'])
+@login_required
+def correction(event_id):
+    """Explicit unpaid correction: prepare, inspect, then confirm."""
+    from backend.services.billbro_correction import BillBroCorrectionService, CorrectionError
+    from backend.models.billbro_correction import BillBroCorrection
+    event = _get_visible_event_or_404(event_id)
+    if not AreaPermissionService.can_manage_event(current_user, event):
+        abort(403)
+    values = request.form if request.method == 'POST' else dict(
+        total=f'{(event.gesamtbetrag_rappen or 0) / 100:.2f}',
+        paid_by=event.bill_paid_by.value if event.bill_paid_by else '',
+        payer_member_id=str(event.bill_payer_member_id or ''), reason='')
+    preview = None
+    error = None
+    if request.method == 'POST':
+        try:
+            if request.form.get('action') == 'confirm':
+                _, changed = BillBroCorrectionService.confirm(event_id, current_user, request.form.get('preview_token'))
+                flash('Korrektur mit Historie gespeichert.' if changed else 'Diese Korrektur wurde bereits gespeichert.', 'success')
+                return redirect(url_for('billbro.correction', event_id=event_id))
+            preview = BillBroCorrectionService.preview(event_id, current_user, request.form)
+        except CorrectionError as exc:
+            db.session.rollback()
+            error = str(exc)
+    members = {p.member_id: p.member.display_name for p in event.participations}
+    history = BillBroCorrection.query.filter_by(event_id=event_id).order_by(BillBroCorrection.id.desc()).all()
+    return render_template('events/billbro_correction.html', event=event, values=values,
+                           preview=preview, error=error, members=members, history=history), 400 if error else 200

@@ -593,8 +593,9 @@ class AccountingService:
         return created
 
     @staticmethod
-    def get_claim(claim_id: int) -> MemberClaim:
-        claim = db.session.get(MemberClaim, claim_id)
+    def get_claim(claim_id: int, *, lock=False) -> MemberClaim:
+        claim = (MemberClaim.query.filter_by(id=claim_id).populate_existing().with_for_update().first()
+                 if lock else db.session.get(MemberClaim, claim_id))
         if claim is None:
             raise AccountingValidationError("Offener Posten nicht gefunden.")
         return claim
@@ -751,7 +752,7 @@ class AccountingService:
     @classmethod
     def settle_claim(cls, claim_id: int, *, waive: bool = False) -> MemberClaim:
         """Posten manuell abschliessen: beglichen oder erlassen."""
-        claim = cls.get_claim(claim_id)
+        claim = cls.get_claim(claim_id, lock=True)
         if not claim.is_open:
             raise AccountingValidationError("Dieser Posten ist bereits abgeschlossen.")
         if waive:
@@ -765,7 +766,7 @@ class AccountingService:
     @classmethod
     def confirm_private_payment(cls, claim_id: int, creditor: Member) -> MemberClaim:
         """Privatzahler bestätigt den Eingang eines Anteils (Spec 11.6)."""
-        claim = cls.get_claim(claim_id)
+        claim = cls.get_claim(claim_id, lock=True)
         if claim.creditor_member_id != creditor.id:
             raise AccountingValidationError(
                 "Nur das auslegende Mitglied kann Eingänge bestätigen."
