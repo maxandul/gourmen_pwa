@@ -103,6 +103,21 @@ def _sync_billbro_claims(event) -> None:
                 'success',
             )
 
+def _amount_error(event, field, message):
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify(error=message, errors={field or 'gesamtbetrag_manual': message}), 400
+    return render_template('events/billbro_amount_error.html', event=event, field=field, error=message,
+        value=request.form.get(field, '') if field else '', esstyp=request.form.get('esstyp', ''),
+        labels={'guess_amount': 'Schätzung (CHF)', 'rechnungsbetrag': 'Rechnungsbetrag (CHF)',
+                'gesamtbetrag_manual': 'Gesamtbetrag (CHF)'}), 400
+
+
+def _valid_total(event, total):
+    return (type(event.rechnungsbetrag_rappen) is int and
+            0 < event.rechnungsbetrag_rappen <= MoneyService.MAX_RAPPEN and
+            type(total) is int and event.rechnungsbetrag_rappen <= total <= MoneyService.MAX_RAPPEN)
+
+
 class BillBroForm(FlaskForm):
     esstyp = SelectField('Ess-Typ', choices=[
         ('', '-- Bitte wählen --'),
@@ -184,17 +199,12 @@ def compute(event_id):
         flash('Bitte wähle einen Ess-Typ.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
-    participation.esstyp = Esstyp(form.esstyp.data)
-    participation.responded_at = datetime.utcnow()
-
     guess_rappen = None
     if event.supports_ggl:
-        guess_rappen = MoneyService.to_rappen(form.guess_amount.data)
-        if guess_rappen is None:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'error': 'Ungültiger Betrag'}), 400
-            flash('Ungültiger Schätzbetrag', 'error')
-            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+        try:
+            guess_rappen = MoneyService.parse_positive_rappen(form.guess_amount.data)
+        except ValueError as exc:
+            return _amount_error(event, 'guess_amount', str(exc))
 
         existing_guess = Participation.query.filter_by(
             event_id=event_id,
@@ -218,6 +228,8 @@ def compute(event_id):
         participation.rank = None
         participation.points = None
     
+    participation.esstyp = Esstyp(form.esstyp.data)
+    participation.responded_at = datetime.utcnow()
     db.session.commit()
     
     SecurityService.log_audit_event(
@@ -262,19 +274,13 @@ def enter_bill(event_id):
         flash('Nur der Organisator kann den Rechnungsbetrag eingeben', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
-    rechnungsbetrag = request.form.get('rechnungsbetrag')
-    if not rechnungsbetrag:
-        flash('Rechnungsbetrag erforderlich', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
-    
-    # Convert to Rappen
-    rechnungsbetrag_rappen = MoneyService.to_rappen(rechnungsbetrag)
-    if rechnungsbetrag_rappen is None:
-        flash('Ungültiger Rechnungsbetrag', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
-    
+    try:
+        rechnungsbetrag_rappen = MoneyService.parse_positive_rappen(request.form.get('rechnungsbetrag'))
+    except ValueError as exc:
+        return _amount_error(event, 'rechnungsbetrag', str(exc))
+
     # Calculate tip (for display, but don't set gesamtbetrag yet)
-    tip_rappen = int(rechnungsbetrag_rappen * 0.07)  # 7% tip
+    tip_rappen = rechnungsbetrag_rappen * 7 // 100  # 7% tip
     
     # Update event with bill amount and suggested tip
     event.rechnungsbetrag_rappen = rechnungsbetrag_rappen
@@ -473,19 +479,21 @@ def set_total(event_id):
     gesamtbetrag_manual = request.form.get('gesamtbetrag_manual')
     if not gesamtbetrag_manual:
         # If no manual amount provided, use automatic calculation
-        auto_total = event.rechnungsbetrag_rappen + event.trinkgeld_rappen
+        auto_total = event.rechnungsbetrag_rappen + (event.trinkgeld_rappen or 0)
         gesamtbetrag_rappen = ((auto_total + 999) // 1000) * 1000  # Round to next 10 CHF
     else:
         # Use manual amount
-        gesamtbetrag_rappen = MoneyService.to_rappen(gesamtbetrag_manual)
-        if gesamtbetrag_rappen is None:
-            flash('Ungültiger Gesamtbetrag', 'error')
-            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+        try:
+            gesamtbetrag_rappen = MoneyService.parse_positive_rappen(gesamtbetrag_manual)
+        except ValueError as exc:
+            return _amount_error(event, 'gesamtbetrag_manual', str(exc))
         
         if gesamtbetrag_rappen < event.rechnungsbetrag_rappen:
-            flash('Gesamtbetrag kann nicht kleiner als Rechnungsbetrag sein', 'error')
-            return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
+            return _amount_error(event, 'gesamtbetrag_manual', 'Gesamtbetrag kann nicht kleiner als Rechnungsbetrag sein.')
     
+    if not _valid_total(event, gesamtbetrag_rappen):
+        return _amount_error(event, None, 'Gesamtbetrag liegt ausserhalb des gültigen Bereichs. Rechnung und Trinkgeld prüfen.')
+
     # Update event with final total
     event.gesamtbetrag_rappen = gesamtbetrag_rappen
     # Recalculate actual tip based on final total
@@ -566,9 +574,12 @@ def accept_suggested_total(event_id):
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Calculate suggested total (rounded to next 10 CHF)
-    auto_total = event.rechnungsbetrag_rappen + event.trinkgeld_rappen
+    auto_total = event.rechnungsbetrag_rappen + (event.trinkgeld_rappen or 0)
     gesamtbetrag_rappen = ((auto_total + 999) // 1000) * 1000
     
+    if not _valid_total(event, gesamtbetrag_rappen):
+        return _amount_error(event, None, 'Gesamtbetrag liegt ausserhalb des gültigen Bereichs. Rechnung und Trinkgeld prüfen.')
+
     # Update event with final total
     event.gesamtbetrag_rappen = gesamtbetrag_rappen
     # Recalculate actual tip based on final total
@@ -787,15 +798,17 @@ def record_guess(event_id, member_id):
     esstyp = request.form.get('esstyp')
     guess_amount = request.form.get('guess_amount')
     
-    if not esstyp or not guess_amount:
+    if not esstyp:
         flash('Ess-Typ und Schätzung erforderlich', 'error')
         return redirect(url_for('billbro.calculator', event_id=event_id))
     
     # Convert to Rappen
-    guess_rappen = MoneyService.to_rappen(guess_amount)
-    if guess_rappen is None:
-        flash('Ungültiger Betrag', 'error')
-        return redirect(url_for('billbro.calculator', event_id=event_id))
+    try:
+        guess_rappen = MoneyService.parse_positive_rappen(guess_amount)
+    except ValueError as exc:
+        return _amount_error(event, 'guess_amount', str(exc))
+    if esstyp not in {item.value for item in Esstyp}:
+        return _amount_error(event, 'guess_amount', 'Gültigen Ess-Typ auswählen und Schätzung erneut eingeben.')
 
     # Check for duplicate guesses (same event, different member)
     existing_guess = Participation.query.filter_by(

@@ -124,7 +124,10 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | U2-07 / A-046 | lokal geprüft | Eventloeschung samt Teilnahme und Audit atomar; referenzierte Historie erhalten und Fehler ohne Teilverlust. |
 
-| U2-08 / A-025 | **bereit / nächstes Paket** | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
+| U2-08 / A-025 | lokal geprüft | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
+
+| U2-09 / A-029 | **bereit / nächstes Paket** | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
+| A-031 / BillBro-Rundung | Fachentscheidung angefragt | Rappengenaue Summenverteilung versus 10-/5-Rappen-Rundung mit sichtbarer Differenz; Antwort abwarten, andere Pakete fortsetzen. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

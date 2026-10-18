@@ -1,8 +1,24 @@
 from decimal import Decimal, ROUND_UP
+import re
 
 class MoneyService:
     """Money service for Rappen↔CHF conversion"""
     
+    MAX_RAPPEN = 2_147_483_647
+
+    @staticmethod
+    def parse_positive_rappen(value):
+        """Strict user input, exact cents, optional Swiss thousands separators."""
+        text = str(value).strip() if value is not None else ''
+        if text.startswith('CHF '):
+            text = text[4:].strip()
+        if len(text) > 40 or not re.fullmatch(r"(?:[0-9]+|[0-9]{1,3}(?:['’ ][0-9]{3})+)(?:[.,][0-9]{1,2})?", text):
+            raise ValueError('Betrag in CHF mit höchstens zwei Nachkommastellen eingeben.')
+        amount = Decimal(text.replace("'", '').replace('’', '').replace(' ', '').replace(',', '.'))
+        if not 0 < amount <= Decimal(MoneyService.MAX_RAPPEN) / 100:
+            raise ValueError('Betrag muss grösser als 0 sein und in den unterstützten Wertebereich passen.')
+        return int(amount * 100)
+
     @staticmethod
     def to_franken(rappen):
         """Convert Rappen to CHF string format"""

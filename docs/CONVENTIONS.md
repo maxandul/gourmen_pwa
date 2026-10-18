@@ -1000,3 +1000,10 @@ Eventloeschung verwendet keinen optionalen Audit-Helfer: Event, einfache
 Teilnahmen und Audit werden atomar gespeichert. Referenzierte Dokumente,
 Bewertungen, Belege, Forderungen/Buchungen oder BillBro/GGL-Fachstand sperren
 den einfachen Loeschweg; Fehler bewahren saemtliche Ausgangsdaten.
+
+BillBro-Eingaben verwenden MoneyService.parse_positive_rappen: exakte positive
+Rappen, striktes Schweizer Zahlenformat, Integer-Grenze, keine stillschweigende
+Rundung. Vor Fachmutation pruefen; HTML-Fehler behalten korrigierbare Eingabe,
+AJAX liefert errors nach Feld. MoneyService.to_rappen bleibt Legacy fuer
+andere Aufrufer; neue Eingaben duerfen dessen permissive Konvertierung nicht
+als Validierung behandeln. Automatische Gesamtbetraege ebenfalls pruefen.
