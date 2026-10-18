@@ -117,6 +117,7 @@ Aktuelle Services:
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
 | `BillBroShareService` | Exakte gewichtete Restverteilung, gespeicherte Einzelanteile und atomarer Erstabschluss mit Forderungen (U2-12). |
 | `merch_catalogue.catalogue_context` | Gebuendelter lesender Artikel-/Variantenkontext ohne ORM-Relationsmutation (U2-13). |
+| `MerchOrderEditService` | Gebundene Positionspreise, unveraenderte Wiederholung, Versionsvergleich und atomare Mengenbearbeitung ohne Forderungskorrektur (U2-15). |
 | `MerchVariantService` | Normalisierte Auswahl, stabile IDs/Preise, Deaktivierung und gesicherte Bestellbezeichnungen bei Artikelpflege (U2-14). |
 | `MerchPriceService` | Exakte nichtnegative Katalogpreise vor Artikel-/Variantenmutation (U2-11). |
 | `MoneyService` | Beträge in Rappen rechnen, Rundung, Trinkgeld-Regeln |

@@ -1042,3 +1042,12 @@ Bestehende Ausfuehrungspreise erhalten; Basispreise nur fuer neue Kombinationen.
 MerchOrderItem.description_snapshot/source: order fuer neue Position, vor
 Katalogaenderung legacy_catalogue fuer bisher angezeigten Alttext. Legacy ist
 keine behauptete Originalbestellbezeichnung. Positionspreise bleiben erhalten.
+
+Merch-Bestellbearbeitung verwendet gebundene Positionspreise statt aktuelle
+Katalogpreise fuer vorhandene Ausfuehrungen. Mengenanpassung derselben
+Ausfuehrung ist keine definitive Preisfestlegung; neue Positionen verwenden
+die im Formular gezeigten Preise. Versionsfingerabdruck prueft Bestellung
+und Anzeige-Kontext vor Mutation. Nulloperationen schreiben nichts.
+Vorhandene Forderungen oder widerspruechliche Altbetraege sperren den einfachen
+Aenderungsweg. Historische/inaktive eigene Varianten im getrennten Kontext
+anzeigen und erhalten, nicht erhoehen. Fachkorrektur/Rundenmodell separat.

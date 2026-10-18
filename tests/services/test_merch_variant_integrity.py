@@ -128,7 +128,7 @@ def test_ambiguous_order_selection_rolls_back_all_items(app,client,catalogue,edi
         db.session.add(MerchVariant(article_id=aid,color=' activeblue ',size='m',supplier_price_rappen=9999,member_price_rappen=8888,is_active=True));db.session.commit()
     url=f'/member/merch/order/{catalogue[3]}/edit' if edit else '/member/merch/order'
     response=client.post(url,data={f'color_{aid}[]':['ActiveBlue'],f'size_{aid}[]':['M'],f'quantity_{aid}[]':['1']})
-    assert response.status_code==200 and 'nicht eindeutig' in response.text
+    assert response.status_code==(400 if edit else 200) and 'nicht eindeutig' in response.text
     with app.app_context():
         assert MerchOrder.query.count()==1 and MerchOrderItem.query.count()==1
         assert db.session.get(MerchOrderItem,catalogue[4]).variant_id==catalogue[2]

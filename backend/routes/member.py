@@ -462,96 +462,29 @@ def merch_order_detail(order_id):
 @bp.route('/merch/order/<int:order_id>/edit', methods=['GET', 'POST'])
 @login_required
 def merch_order_edit(order_id):
-    """Edit merch order (only if status is BESTELLT)"""
-    from backend.models.merch_article import MerchArticle
-    from backend.models.merch_variant import MerchVariant
     from backend.models.merch_order import MerchOrder, OrderStatus
-    from backend.models.merch_order_item import MerchOrderItem
-    
-    # Load the order and verify ownership + status
+    from backend.services.merch_order_edit import MerchOrderEditService, OrderEditError
     order = MerchOrder.query.filter_by(id=order_id, member_id=current_user.id).first_or_404()
-    
-    # Check if order can be edited
     if order.status != OrderStatus.BESTELLT:
         flash('Diese Bestellung kann nicht mehr bearbeitet werden.', 'error')
         return redirect(url_for('member.merch', tab='orders', order_id=order_id))
-    
+    error = None
     if request.method == 'POST':
         try:
-            # Delete old order items
-            MerchOrderItem.query.filter_by(order_id=order.id).delete()
-            
-            total_member_price = 0
-            total_supplier_price = 0
-            total_profit = 0
-            
-            # Process each article (now with multiple variants per article)
-            for article in MerchArticle.query.filter_by(is_active=True).all():
-                # Get arrays of colors, sizes, and quantities for this article
-                colors = request.form.getlist(f'color_{article.id}[]')
-                sizes = request.form.getlist(f'size_{article.id}[]')
-                quantities = request.form.getlist(f'quantity_{article.id}[]')
-                
-                # Process each variant row for this article
-                for color, size, quantity_str in zip(colors, sizes, quantities):
-                    quantity = int(quantity_str or 0)
-                    
-                    if quantity > 0 and color and size:
-                        # Find the variant
-                        from backend.services.merch_variants import MerchVariantService
-                        variant = MerchVariantService.find_active(article.id, color, size)
-                        
-                        if variant:
-                            # Create new order item
-                            item = MerchOrderItem(
-                                order_id=order.id,
-                                article_id=article.id,
-                                variant_id=variant.id,
-                                quantity=quantity,
-                                unit_member_price_rappen=variant.member_price_rappen,
-                                unit_supplier_price_rappen=variant.supplier_price_rappen,
-                                total_member_price_rappen=quantity * variant.member_price_rappen,
-                                total_supplier_price_rappen=quantity * variant.supplier_price_rappen,
-                                total_profit_rappen=quantity * (variant.member_price_rappen - variant.supplier_price_rappen)
-                            )
-                            item.article = article
-                            item.variant = variant
-                            item.capture_description()
-                            db.session.add(item)
-                            
-                            total_member_price += item.total_member_price_rappen
-                            total_supplier_price += item.total_supplier_price_rappen
-                            total_profit += item.total_profit_rappen
-            
-            # Update order totals
-            order.total_member_price_rappen = total_member_price
-            order.total_supplier_price_rappen = total_supplier_price
-            order.total_profit_rappen = total_profit
-            
-            db.session.commit()
-            flash('Bestellung erfolgreich aktualisiert!', 'success')
-            return redirect(url_for('member.merch', tab='orders', order_id=order.id))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Aktualisieren der Bestellung: {str(e)}', 'error')
-    
-    # GET request - show form with existing data
-    from backend.services.merch_catalogue import catalogue_context
-    
-    # Prepare existing order data (now supporting multiple items per article)
-    existing_items = {}  # article_id -> list of items
-    for item in order.order_items:
-        if item.article_id not in existing_items:
-            existing_items[item.article_id] = []
-        existing_items[item.article_id].append({
-            'color': item.variant.color,
-            'size': item.variant.size,
-            'quantity': item.quantity
-        })
-    
-    return render_template('member/merch/order_edit.html', **catalogue_context(),
-                           existing_items=existing_items, order=order)
+            changed = MerchOrderEditService.save(order_id, current_user, request.form)
+            flash('Bestellung gespeichert. Bestehende Stückpreise bleiben erhalten.' if changed else 'Bestellung unverändert; gespeicherte Preise bleiben erhalten.', 'success')
+            return redirect(url_for('member.merch', tab='orders', order_id=order_id))
+        except OrderEditError as exc:
+            error = str(exc)
+    try:
+        context = MerchOrderEditService.context(order)
+    except OrderEditError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('member.merch', tab='orders', order_id=order_id))
+    if error:
+        context['existing_items'] = MerchOrderEditService.posted_items(request.form)
+    return render_template('member/merch/order_edit.html', **context, order=order,
+                           edit_error=error), 400 if error else 200
 
 
 # ---------------------------------------------------------------------------

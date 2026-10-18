@@ -30,11 +30,26 @@
       const sizeSelect = row.querySelector('.size-select');
       const qtyInput = row.querySelector('.quantity-input');
       if (colorSelect && sizeSelect && qtyInput) {
+        const initialQuantity = qtyInput.value;
+        const initialSize = colorSelect.dataset.preselectSize || sizeSelect.value;
         // Falls Größe schon gesetzt, sicherstellen, dass Optionen korrekt sind
         handleColorChange(colorSelect, articleMap, true);
         if (colorSelect.value && sizeSelect.value) {
           handleSizeChange(sizeSelect, articleMap);
         }
+        // Initialization must retain saved values and rejected POST input.
+        if (initialSize && !sizeSelect.value) {
+          const option = document.createElement('option');
+          option.value = initialSize;
+          option.textContent = initialSize + ' (nicht verfügbar)';
+          sizeSelect.appendChild(option);
+          sizeSelect.value = initialSize;
+          sizeSelect.disabled = false;
+        }
+        if (colorSelect.value || initialSize || (initialQuantity && initialQuantity !== '0')) {
+          qtyInput.disabled = false;
+        }
+        qtyInput.value = initialQuantity;
       }
     });
 
