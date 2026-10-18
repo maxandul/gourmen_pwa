@@ -122,7 +122,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | U2-06 / A-137 | lokal geprüft | Audit-Schreibfehler isolieren, ORM-Sitzung nutzbar halten; gespeicherten Fachzustand und tatsaechliches Ergebnis korrekt erhalten. |
 
-| U2-07 / A-046 | **bereit / nächstes Paket** | Eventloeschung samt Teilnahme und Audit atomar; referenzierte Historie erhalten und Fehler ohne Teilverlust. |
+| U2-07 / A-046 | lokal geprüft | Eventloeschung samt Teilnahme und Audit atomar; referenzierte Historie erhalten und Fehler ohne Teilverlust. |
+
+| U2-08 / A-025 | **bereit / nächstes Paket** | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

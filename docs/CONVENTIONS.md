@@ -995,3 +995,8 @@ Fachaenderungen bleiben in der aeusseren Transaktion. Fach-Flush-/Commitfehler
 werden nicht als optionale Auditfehler verschluckt. Bestehender Erfolgscommit
 bleibt fuer Altaufrufer erhalten. Neue atomare Sicherheitsablaeufe verwenden
 weiterhin verpflichtende Audit-INSERTs innerhalb ihres eigenen Fachcommits.
+
+Eventloeschung verwendet keinen optionalen Audit-Helfer: Event, einfache
+Teilnahmen und Audit werden atomar gespeichert. Referenzierte Dokumente,
+Bewertungen, Belege, Forderungen/Buchungen oder BillBro/GGL-Fachstand sperren
+den einfachen Loeschweg; Fehler bewahren saemtliche Ausgangsdaten.

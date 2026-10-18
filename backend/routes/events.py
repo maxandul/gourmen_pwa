@@ -944,26 +944,13 @@ def delete(event_id):
         flash('Vergangene Events können nicht gelöscht werden', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
-    # Delete all participations for this event
-    participations = Participation.query.filter_by(event_id=event_id).all()
-    for participation in participations:
-        db.session.delete(participation)
-    
-    # Log audit event before deletion
-    from backend.services.security import SecurityService, AuditAction
-    SecurityService.log_audit_event(
-        AuditAction.EVENT_DELETE, 'event', event_id,
-        extra_data={
-            'event_title': event.restaurant or f"{event.event_typ.value if hasattr(event.event_typ, 'value') else str(event.event_typ)} am {event.display_date}",
-            'event_date': event.datum.isoformat(),
-            'deleted_by': current_user.display_name
-        }
-    )
-    
-    # Delete the event
-    db.session.delete(event)
-    db.session.commit()
-    
+    from backend.services.event_deletion import EventDeletionService, EventDeletionError
+    try:
+        EventDeletionService.delete(event_id, current_user)
+    except EventDeletionError as exc:
+        flash(str(exc), 'error')
+        return redirect(url_for('events.detail', event_id=event_id))
+
     flash('Event erfolgreich gelöscht', 'success')
     return redirect(url_for('events.index'))
 

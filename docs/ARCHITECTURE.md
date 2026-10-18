@@ -408,3 +408,7 @@ SecurityService.log_audit_event ist der optionale Legacy-Protokollhelfer mit
 Savepoint fuer seinen INSERT. Kein Audit-Outbox-/Zustellversprechen; betriebliche
 Fehlermeldung ohne SQL-Parameter oder sensible Nutzdaten. Recovery-/Onboarding-
 und Dokumentloeschservices behalten ihre strengere atomare Audit-Grenze.
+
+EventDeletionService prueft Event-/Teilnahmehistorie und fuehrt erlaubte
+Eventloeschung inklusive verbindlichem Audit in einem Commit aus. Keine
+Dokument-/Finanzkaskade und kein externer Drive-Zugriff.

@@ -75,7 +75,7 @@ def test_outer_commit_error_is_propagated_and_session_recovered(app,seed,monkeyp
         assert member.nachname=='Original' and AuditEvent.query.count()==0
 
 
-@pytest.mark.parametrize('flow',['login','rsvp','calendar','delete'])
+@pytest.mark.parametrize('flow',['login','rsvp','calendar'])
 def test_original_routes_survive_missing_optional_audit(app,client,seed,flow):
     if flow!='login':
         with client.session_transaction() as state:state['_user_id']=auth_id(client,seed[0]);state['_fresh']=True
