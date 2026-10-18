@@ -16,6 +16,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 | U2-04a | lokal geprüft | Budget/Jahressperren und Quelle/Ziel der Belegzuordnung; 103 Python- und 19 Worker-Tests bestanden, PostgreSQL/Browser offen. [Nachweis](U2_04_REVISIONSGRENZEN.md). |
 | U2-04b | lokal geprüft | Versionierte Prüffassungen, erhaltene Bestätigungen/Kommentare, begründete Wiederöffnung und Admin-Stellvertretung. 72 und erweitert 60 Python-Tests, 19 Worker-Tests bestanden; Migration separat. [Nachweis](U2_04_REVISIONSGRENZEN.md). |
 | U2-04c1 | lokal geprüft | Stabile Abschlusszahlen und PDF alter Fassungen; Vorjahresdifferenz sichtbar. 30 Python- und 19 Worker-Tests bestanden. [Nachweis](U2_04_REVISIONSGRENZEN.md). |
+| U2-04c2 | lokal geprüft | Wiederholbarer Bericht mit persistierten PDF-Bytes und fester Drive-ID; 50 Python- und 19 Worker-Tests bestanden. Migration separat; reale Drive-Abnahme offen. [Nachweis](U2_04_REVISIONSGRENZEN.md). |
 | U2-03a / A-064, A-065: CSV-Prüfung | Lokal geprüft, Identität separat | 71 Python-Tests; [Nachweis](U2_03_IMPORTPRUEFUNG.md) |
 | U2-02b2 / B01/F5: Mehrfachzuordnung | Lokal geprüft; Korrektur/Vollzug/extern offen | Migration b63c328 separat, 104 Python- und 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
 | U2-02b1 / A-061: Einzelposten-Zuordnung | Lokal geprüft; Sammel-/Restmodell in b2 | 75 Python-Tests, erweitert 43; 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |

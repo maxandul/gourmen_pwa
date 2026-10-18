@@ -16,6 +16,7 @@ from __future__ import annotations
 import base64
 import binascii
 import io
+import hashlib
 import json
 import logging
 import re
@@ -965,6 +966,49 @@ class DriveStorageService:
         )
         logger.info("Drive-Ordner «%s» unter %s angelegt", name, parent_id)
         return created["id"]
+
+    @classmethod
+    def reserve_file_id(cls):
+        """Reserve only; caller must persist this ID before creating any file."""
+        return cls._build_drive().files().generateIds(count=1, space='drive', type='files').execute()['ids'][0]
+
+    @classmethod
+    def upload_reserved_pdf(cls, payload, file_id, folder_id, filename_stem):
+        """Create at most one binary file; retry verifies exact persisted content."""
+        from googleapiclient.errors import HttpError
+        from googleapiclient.http import MediaIoBaseUpload
+        if not isinstance(payload, bytes) or not payload:
+            raise DriveValidationError('PDF-Inhalt fehlt.')
+        cls.validate_upload(len(payload), 'application/pdf', filename_stem)
+        drive = cls._build_drive()
+
+        def metadata():
+            try:
+                return drive.files().get(
+                    fileId=file_id, fields='id,mimeType,parents,trashed,md5Checksum',
+                    supportsAllDrives=True).execute()
+            except HttpError as exc:
+                if exc.resp.status == 404:
+                    return None
+                raise
+
+        meta = metadata()
+        if meta is None:
+            body = dict(id=file_id, name=sanitize_drive_filename(filename_stem, 'pdf'),
+                        parents=[folder_id], mimeType='application/pdf')
+            try:
+                cls._drive_create_file(drive, body, MediaIoBaseUpload(
+                    io.BytesIO(payload), mimetype='application/pdf', resumable=False))
+            except HttpError as exc:
+                if exc.resp.status != 409:
+                    raise
+            meta = metadata()
+        # Check binary checksum, not merely a caller-controlled app property.
+        if (not meta or meta.get('id') != file_id or meta.get('trashed')
+                or meta.get('mimeType') != 'application/pdf' or folder_id not in meta.get('parents', [])
+                or meta.get('md5Checksum') != hashlib.md5(payload).hexdigest()):
+            raise DriveValidationError('Berichtsdatei weicht ab. Bestehende Datei nicht ersetzen.')
+        return meta
 
     @classmethod
     def upload_bytes(

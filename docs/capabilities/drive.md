@@ -1007,3 +1007,14 @@ Konsequent: kein Eszett (ß), Umlaute (ä/ö/ü) verwenden.
 - *List-Folder-Performance bei grossen Folders*: Drive `files.list` mit Pagination unterstuetzt, aber wenn ein Folder >1000 Files hat, koennen mehrere API-Calls noetig sein. Im MVP nicht relevant; bei Bedarf serverseitiges Paging im Template einbauen.
 - *DRIVE_ARCHIVE_FOLDER_ID-Drift*: Wenn der Vorstand den `/Archiv/`-Folder in Drive umbenennt oder verschiebt, bleibt die Env-Variable trotzdem gueltig (Folder-ID ist stabil). Wenn der Folder ganz geloescht wird, bricht die Archivieren-Aktion — Health-Check beim App-Start, Fail-Fast mit Admin-Notice.
 - *Folder-Picker bei sehr tiefer Hierarchie*: Tree-View kann mobile unhandlich werden. Falls Tiefe >4 Ebenen, evtl. ein separater Modal-Pfad (Breadcrumb-basierte Navigation) statt Tree.
+
+
+## App-Audit U2-04c2: idempotenter Revisionsbericht
+
+Spezialisierter Berichtstransport reserviert per generateIds eine Datei-ID,
+die lokal vor Create persistiert wird. Bei Wiederholung prueft Get die ID,
+PDF-MIME, Parent, Papierkorbstatus und binaren MD5-Checksum. 404 fuehrt nur zum
+Create derselben ID, 409 zur erneuten Pruefung. Kein Rename-Collision-Fallback
+und kein Ueberschreiben/Loeschen bestehender Dateien. Lokale Discovery-Datei
+der installierten Google-Bibliothek bestaetigt Parameter/Checksum; echte
+Shared-Drive-Funktion und Berechtigungen bleiben extern abzunehmen.

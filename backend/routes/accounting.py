@@ -52,6 +52,8 @@ from backend.services.bank_import import BankImportService
 from backend.services.area_permissions import AreaPermissionService
 from backend.services.accounting_pdf import AccountingPdfService
 from backend.services.accounting_revision import AccountingRevisionService
+from backend.services.accounting_report import AccountingReportService
+from backend.models.accounting_revision import AccountingRevision
 from backend.services.drive_storage import (
     DriveError,
     DriveStorageService,
@@ -925,31 +927,12 @@ def year_approve(fiscal_year_id: int):
         flash(str(exc), 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
 
-    approved_version = fy.review_version
+    revision_id = fy.revision_approval.id
     try:
-        pdf_bytes = AccountingPdfService.generate_report(
-            fy, approval=fy.revision_approval
-        )
-        folder_id = AccountingService.get_receipt_folder_id(fy.year)
-        drive_meta = DriveStorageService.upload_bytes(
-            payload=pdf_bytes,
-            filename_stem=f'Revisorenbericht_{fy.year}_v{approved_version}',
-            drive_folder_id=folder_id,
-            mime_type='application/pdf',
-            extension='pdf',
-            actor=current_user,
-        )
-        AccountingService.set_approval_report(fy.id, drive_meta['id'], expected_version=approved_version)
-        flash(f'Jahr {fy.year} bestätigt. Revisorenbericht wurde in Drive abgelegt.', 'success')
-    except Exception:
-        current_app.logger.error(
-            'Revisorenbericht-Upload fehlgeschlagen (Jahr %s)', fy.year, exc_info=True
-        )
-        flash(
-            f'Jahr {fy.year} ist bestätigt, aber der Revisorenbericht konnte nicht '
-            'in Drive abgelegt werden. Bitte Admin informieren.',
-            'warning',
-        )
+        AccountingReportService.run(revision_id, current_user)
+        flash(f'Jahr {fy.year} bestätigt. Bericht dieser Fassung ist in Drive abgelegt.', 'success')
+    except AccountingError as exc:
+        flash(f'Jahr {fy.year} ist bestätigt. {exc}', 'warning')
     return redirect(url_for('accounting.index', year=fy.id, tab='abschluss'))
 
 
@@ -1251,3 +1234,18 @@ def revision_history(fiscal_year_id):
     fy = FiscalYear.query.get_or_404(fiscal_year_id)
     return render_template('accounting/revisions.html', fiscal_year=fy,
                            comments=AccountingService.get_comments_for_year(fy.id))
+
+
+@bp.route('/revision/<int:revision_id>/report', methods=['POST'])
+@login_required
+def revision_report(revision_id):
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    _validate_csrf_or_403()
+    revision = AccountingRevision.query.get_or_404(revision_id)
+    year_id = revision.fiscal_year_id
+    try:
+        AccountingReportService.run(revision_id, current_user)
+        flash('Bericht dieser Fassung ist in Drive abgelegt.', 'success')
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+    return redirect(url_for('accounting.revision_history', fiscal_year_id=year_id))

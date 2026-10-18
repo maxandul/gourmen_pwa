@@ -378,3 +378,12 @@ Journal-/Budget-/Belegreferenzen sowie Bestaetigung, Stellvertretung,
 Ruecknahmegrund und Berichtreferenz. Alte RevisionApproval-Zeilen bleiben
 unveraendert; FiscalYear.revision_approval liefert nur die aktuell gueltige
 Bestaetigung. Historie ist separat lesbar.
+
+
+### Berichts-Wiederaufnahme (U2-04c2)
+
+AccountingReportService trennt fachliche Bestaetigung von PDF-/Drive-Abschluss.
+AccountingRevision speichert exakte PDF-Bytes, reservierte Datei-/Ordner-ID,
+Versuchszahl, Zeitpunkt und Zustand. DriveStorageService.reserve_file_id und
+upload_reserved_pdf sind ein eigener idempotenter Transport fuer diese Berichte;
+generische Uploads bleiben unveraendert. Kein DB-Lock waehrend Remote-I/O.

@@ -29,6 +29,8 @@ def test_finance_read_navigation_and_write_boundaries(app,client,finance_actor,s
     assert ('/comment' in detail.get_data(as_text=True)) == (scope=='accounting_write')
     assert '/submit' not in client.get('/accounting/?tab=abschluss').get_data(as_text=True)
     assert client.get(f'/accounting/export/{fy}/csv').status_code==200
+    assert client.get(f'/accounting/year/{fy}/revisions').status_code==200
+    assert client.post('/accounting/revision/999/report').status_code==403
     assert '/accounting/' in client.get('/member/').get_data(as_text=True)
     assert client.get('/accounting/booking/new').status_code==(200 if scope=='accounting_write' else 403)
     assert client.get('/accounting/?tab=import').status_code==(200 if scope=='accounting_write' else 403)

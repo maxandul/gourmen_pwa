@@ -19,6 +19,15 @@
         {% if revision.approved_at %}<p>Bestätigt: {{ revision.reviewer_name }} · {{ revision.approved_at.strftime('%d.%m.%Y %H:%M') }}{% if revision.admin_substitute %} · Stellvertretend als Systemadmin{% endif %}</p>{% endif %}
         {% if revision.withdrawn_at %}<p>Zurückgenommen: {{ revision.withdrawer.display_name_with_spirit }} · {{ revision.withdrawn_at.strftime('%d.%m.%Y %H:%M') }} · {{ revision.withdrawal_reason }}</p>{% endif %}
         {% if revision.report_drive_id %}<p><a href="https://drive.google.com/file/d/{{ revision.report_drive_id }}/view" target="_blank" rel="noopener">Bericht dieser Fassung in Drive</a></p>{% endif %}
+        {% if revision.approved_at and not revision.report_drive_id %}
+        <p>Bericht: {{ {'pending':'Noch nicht erstellt', 'working':'Versuch läuft; bei Unterbruch nach fünf Minuten wiederholbar', 'failed':'Nicht bestätigt; erneut versuchen', 'complete':'Abgeschlossen'}[revision.report_state] }} · Versuche: {{ revision.report_attempt }}</p>
+        {% if current_user.is_admin() or current_user.has_funktion('SCHATZMEISTER') or current_user.has_funktion('RECHNUNGSPRUEFER') %}
+        <form method="POST" action="{{ url_for('accounting.revision_report', revision_id=revision.id) }}" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn--outline" type="submit">Bericht dieser Fassung erneut erstellen</button>
+        </form>
+        {% endif %}
+        {% endif %}
         {% if revision.snapshot %}
         <details class="disclosure"><summary>Gespeicherte Prüfunterlagen</summary><div class="disclosure__content">
             <h3>Journal</h3>

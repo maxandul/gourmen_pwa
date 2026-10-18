@@ -945,3 +945,15 @@ Wiederoeffnung. Differenz zum aktuellen Vorjahresjournal wird sichtbar; vor
 Bestaetigung ist dann Ruecknahme/neue Vorlage erforderlich. Bereits abgeschlossene
 Folgejahre werden nicht still umgeschrieben. Altabschluesse ohne Snapshot sind
 als solche gekennzeichnet; kein nachtraeglicher historischer Saldo erfunden.
+
+
+### Wiederholung versionsgebundener Berichte
+
+PDF-Bytes vor Upload dauerhaft speichern, Drive-ID vor Create persistieren.
+Wiederholung darf nie eine neue Datei-ID verwenden, wenn die alte bereits
+gespeichert ist. Vorhandene Datei muss binaren Inhalt, MIME, Parent und aktiven
+Zustand bestaetigen; keine stillen Ersatzdateien bei Abweichungen.
+Versuchsnummer sperrt Abschluss eines alten Workers; fuenf Minuten laufender
+Versuch, danach Wiederaufnahme mit derselben Datei-ID. Erfolg erst nach
+lokalem Abschlusscommit. Fehler/unklares Ergebnis erhalten Bestätigung und
+Wiederholungsdaten; keine geheime Payload oder Providerfehler in der UI.

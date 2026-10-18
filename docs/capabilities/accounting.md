@@ -821,3 +821,18 @@ Wiederoeffnung. Differenz zum aktuellen Vorjahresjournal wird sichtbar; vor
 Bestaetigung ist dann Ruecknahme/neue Vorlage erforderlich. Bereits abgeschlossene
 Folgejahre werden nicht still umgeschrieben. Altabschluesse ohne Snapshot sind
 als solche gekennzeichnet; kein nachtraeglicher historischer Saldo erfunden.
+
+
+## App-Audit U2-04c2: Bericht gezielt wiederholen
+
+Prueffassungen zeigen Berichtstatus/Versuchszahl und eine Wiederholungsaktion
+fuer Schatzmeister, Rechnungspruefer und Admin. Fachliche Bestaetigung bleibt
+bei PDF-/Drive-/DB-Fehler erhalten. Auch eine inzwischen zurueckgenommene
+bestaetigte Fassung kann ihren eigenen Bericht erhalten. Keine Berechtigung
+zur Revision durch reine Finanzdelegation.
+
+Persistierte PDF-Bytes und feste Drive-ID verhindern neue Dateien bei erneutem
+Versuch. Nach unklarem Erfolg wird die vorhandene Datei inhaltlich geprueft.
+Abweichende/verschobene/geloeschte Datei wird nicht ersetzt. Laufender Versuch
+ist fuenf Minuten geschuetzt; danach erneut versuchbar. Altbestandsberichte
+bleiben erhalten, ohne rekonstruierten PDF-Inhalt. Reale Drive-Abnahme offen.

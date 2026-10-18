@@ -86,3 +86,34 @@ geteilt. Keine neue chronologische Abschluss-Pflicht erfinden.
 Revisionszustaende und Finanzfreigaben. Echter lokaler PDF-Byteaufbau, keine
 Drive-Verbindung. 19 Worker-Tests bestanden; git diff --check sauber.
 PWA 3.16.24 / pwa.60a47c70.js. Keine Migration. PostgreSQL/Browser offen.
+
+## c2: Vertrag vor Code – wiederholbarer Bericht
+
+Bestaetigung und Bericht bleiben getrennt. Pro genehmigter Fassung werden
+PDF-Bytes und reservierte Drive-ID vor Upload dauerhaft gespeichert. Wiederholung
+verwendet dieselbe ID und dieselben Bytes, prueft vorhandene Datei vor Erstellung;
+keine automatische neue Datei nach unbekanntem Upload-Ausgang. Falsche/verschobene/
+geloeschte Remote-Datei oder abweichender Inhalt wird als Fehler sichtbar.
+
+Ein Versuch beansprucht die Fassung lokal mit Versuchszahl und Zeit; kein
+DB-Lock waehrend externer I/O. Laufender Versuch ist fuer fuenf Minuten gesperrt,
+danach mit neuer Versuchszahl wiederaufnehmbar. Alte Worker duerfen keine neue
+Versuchsversion ueberschreiben. Gleichzeitige Uploads nach Zeitablauf nutzen
+dieselbe vorher gespeicherte Drive-ID. Fehler vor und nach Upload sind lokal
+wiederholbar; Erfolg erst nach gespeichertem Abschluss. Lokale synthetische
+Transporte/Discovery-Spezifikation, keine Verbindung zu Drive.
+
+### Nachweise c2
+
+50 Python-Tests bestanden, 758 Warnungen, 15.74 s: Retry vor Upload, unbekannter
+Erfolg nach Remote-Erstellung, lokaler Abschlussfehler, gleichbleibende Bytes/ID,
+abgelaufene Versuche, Altworker, abweichende/verschobene/archivierte Datei,
+Originalroute nach Wiederoeffnung, Revisions-/Auswertungs- und Loeschregression.
+SQLite-Migration Upgrade/Downgrade/Upgrade samt Altbericht und verweigertem
+Verlust von Wiederholungsdaten enthalten. Windows-pyreadline meldete erst nach
+erfolgreichem pytest-Ende einen ignorierten Handlefehler.
+19 Worker-Tests bestanden; git diff --check sauber. PWA 3.16.25 / pwa.3b48ce85.js.
+Echte Shared-Drive-ID-Reservierung, Konfliktverhalten und Berechtigungen sowie
+PostgreSQL/Browser bleiben offen. Alle Transporttests synthetisch, Netz gesperrt.
+
+Ergaenzender Lauf mit Original-Finanzfreigabegrenzen: 14 bestanden, 334 Warnungen, 6.40 s.

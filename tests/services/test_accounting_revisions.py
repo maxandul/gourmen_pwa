@@ -156,7 +156,8 @@ def test_original_forms_stale_replay_and_admin_marker(app,client,setup,monkeypat
     monkeypatch.setattr(NotifierService,'send_push_notification',Mock(return_value=False))
     monkeypatch.setattr(AccountingPdfService,'generate_report',Mock(return_value=b'synthetic'))
     monkeypatch.setattr(AccountingService,'get_receipt_folder_id',Mock(return_value='synthetic'))
-    monkeypatch.setattr(DriveStorageService,'upload_bytes',Mock(return_value={'id':'synthetic-report'}))
+    monkeypatch.setattr(DriveStorageService,'reserve_file_id',Mock(return_value='synthetic-report'))
+    monkeypatch.setattr(DriveStorageService,'upload_reserved_pdf',Mock(return_value={'id':'synthetic-report'}))
     token=csrf(client,app);url=f'/accounting/year/{setup[1]}'
     assert client.post(url+'/submit',data={'csrf_token':token,'review_version':0}).status_code==302
     page=client.get(f'/accounting/?year={setup[1]}&tab=abschluss')

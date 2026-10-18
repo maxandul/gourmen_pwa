@@ -70,7 +70,7 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 1 / **U1z** | lokal geprüft | Cache-Nutzertrennung A-010; vollständiger Arbeitsvertrag im nächsten Abschnitt |
 | 2 / U1-R02 | lokal geprüft | A-026/A-037/A-042: Sichtbarkeit von Events, internen Bewertungen und Aggregaten konsistent machen. Eingabewechsel all/board, Board-Meeting-Regel, Listen/Detail/API/Kalender/Dashboard prüfen. Öffentliche Aggregate erlauben, interne Namen/Kommentare und geschützte Eventdetails nicht offenlegen. Bestehende Forderungen nicht durch unsichtbare Events verlieren. Quellen: FINDINGS, Rollenentscheidungen, Bewertungs- und Public-Entwurf. Lesergruppe am 18.10.2026 bestaetigt: alle Mitglieder mit Eventzugriff; [Nachweis](U1_R02_SICHTBARKEIT.md). |
 | 3 / U1-R03 | lokal geprüft | A-071: Beleg-/Dokumentauswahl und manipulierte Schreibanfragen nach denselben Rechten filtern. Keine fremden Beträge, Beschreibungen oder Board-Eventnamen über Optionslisten. R13-Belegrechte berücksichtigen; keine neuen Rollen einführen. |
-| 4 / U1-R04 | a–c lokal geprüft; R04d offen | F2/R13 zunächst als explizite Aktion-/Rolle-/Feldmatrix mit Ist-Zuordnung und Negativfällen konkretisieren. Danach getrennte Folgepakete für Delegationen, sensible Felder und Dokumentrechte nummerieren; je Paket serverseitige Durchsetzung und Tests. Vorstand ist nicht Admin; Bereichsrechte, Organisator, Revision und Admin-Stellvertretung gemäss bestätigten Regeln. Revisionszustände mit U2/U3 koordinieren. Kein Gesamtumbau in einem Paket. |
+| 4 / U1-R04 | a–d lokal geprüft; externe Abnahmen offen | F2/R13 zunächst als explizite Aktion-/Rolle-/Feldmatrix mit Ist-Zuordnung und Negativfällen konkretisieren. Danach getrennte Folgepakete für Delegationen, sensible Felder und Dokumentrechte nummerieren; je Paket serverseitige Durchsetzung und Tests. Vorstand ist nicht Admin; Bereichsrechte, Organisator, Revision und Admin-Stellvertretung gemäss bestätigten Regeln. Revisionszustände mit U2/U3 koordinieren. Kein Gesamtumbau in einem Paket. |
 | 4a / U1-R04a | lokal geprüft | Sechs Pass-/ID-Felder lesend fuer Reisekommissar mit Step-Up; Feld-/Rollen-/Fehlerregression. Vertrag: [Rechtematrix](U1_R04_RECHTEMATRIX.md). |
 | 4b1 / U1-R04b1 | lokal geprüft | Grundlage und erste travel_documents-Freigabe; [Nachweis](U1_R04B1_BEREICHSFREIGABEN.md), Migration ee39355 separat. |
 | 4b2 / U1-R04b2 | lokal geprüft | Finanz-Lese-/Bearbeitungsfreigaben mit Negativtests; Revisionseigenbestaetigung und Zustandsumbau bleiben R04d. |
@@ -80,7 +80,7 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 | 4c1 / U1-R04c1 | lokal geprüft | Datei-/Ordnerpolicy und Historie, gemeinsame Servicepruefung; Migration separat. Vertrag U1_R04C_DOKUMENTRECHTE.md. |
 | 4c2 / U1-R04c2 | lokal geprüft | Adminzuordnung und durchgaengige Route-/Service-/UI-Grenzen einschliesslich Altbestand und Archiv. |
 | 4c3 / U1-R04c3 | lokal geprüft | Referenz-/Aufbewahrungspruefung vor endgueltigem Loeschen; Abschlussregression, direkte Drive-Abnahme bleibt extern. |
-| 4d / U1-R04d | Zustandsvertrag lokal in U2-04b; Bericht c offen | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
+| 4d / U1-R04d | lokal in U2-04b/c; externe Abnahmen offen | Revisions-Pruefstand und begruendete Ruecknahme, Admin-Stellvertretung; keine reine Rollenlockerung. |
 | 5 / U1-R05 | a–c lokal geprüft, externe Abnahmen offen | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
 | 5a / U1-R05a | lokal geprüft | Hauptadressbindung der Reset-/Aktivierungslinks, Altlinks und Adresswechsel; Vertrag U1_R05_LINKRESTVERTRAG.md. |
 | 5b / U1-R05b | lokal geprüft | Einheitliche Hauptmailnormalisierung, Lookup und DB-Eindeutigkeit ohne Kontozusammenlegung. |
@@ -92,7 +92,7 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 ## Bereite Fortsetzung U2
 
 U1-R08 ist lokal abgeglichen ([Nachweis](U1_R08_ABGLEICH.md)). U1 bleibt offen;
-R04d wird mit dem Revisionszustand in U2/U3 umgesetzt. Externe Abnahmen bleiben
+R04d ist lokal mit dem Revisionszustand in U2-04b/c umgesetzt. Externe Abnahmen bleiben
 in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | Paket | Lokal | Begrenzter Auftrag |
@@ -103,17 +103,17 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-02b / A-061 | b1/b2 lokal geprüft | Richtung/Mitglied/Forderung und explizite Rest-/Aufrundungswahl nach F5/B01; keine automatische Aufrundung. |
 | U2-02b1 / Einzelposten | lokal geprüft | Gemeinsame Richtungs-/Konto-/Mitglied-/Eventpruefung, explizite Aufrundung, keine automatische Bankzahler-Aliasvergabe. |
 | U2-02b2 / B01/F5 | lokal geprüft | Persistierte Mehrfachzuordnung mit summenerhaltendem offenen Rest bzw. Rueckzahlungsbedarf; Zahlung fuer mehrere Forderungen/Mitglieder, keine zweite Bankbewegung. Schema/Migration separat; Einzelpostenweg integrieren, Historie nicht umdeuten. |
-| U2-02c / A-062 | Schutz lokal in b2; Korrektur geplant nach U2-04 | Importbuchungen nicht frei editierbar. Versionsgebundene Korrektur/Ruecknahme samt vorgemerkten Rueckzahlungen auf Revisions-/Historienmodell aufbauen; keine stille Altdatenreparatur. |
+| U2-02c / A-062 | **bereit / nächstes Paket** | Importbuchungen nicht frei editierbar. Versionsgebundene Korrektur/Ruecknahme samt vorgemerkten Rueckzahlungen auf Revisions-/Historienmodell aufbauen; keine stille Altdatenreparatur. |
 | U2-03 / A-063, A-064, A-065 | a/b lokal geprüft | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
 | U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
 | U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | in Teilpakete gegliedert | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
 | U2-04a / A-059, A-066 | lokal geprüft | Offenes Jahr fuer Budget und Quelle/Ziel der Belegzuordnung durchsetzen; gemeinsame Jahres-Sperrgrenze fuer betroffene Mutationen und Revision. Keine Historie loeschen. |
 | U2-04b / R04d, A-073, A-074 | lokal geprüft | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
-| U2-04c / A-069, A-070 | c1 lokal geprüft; c2 bereit | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
+| U2-04c / A-069, A-070 | c1/c2 lokal geprüft | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
 
 | U2-04c1 / A-069 | lokal geprüft | Eingefrorene Auswertungen/PDF, sichtbarer Vorjahresabgleich und erneute Vorlage bei Differenz. |
-| U2-04c2 / A-070 | **bereit / nächstes Paket** | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
+| U2-04c2 / A-070 | lokal geprüft | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
