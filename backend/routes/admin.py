@@ -648,6 +648,41 @@ def edit_member(member_id):
         calendar_feed_active_since=calendar_feed_active_since,
     )
 
+@bp.route('/members/<int:member_id>/area-permissions', methods=['GET', 'POST'])
+@login_required
+def member_area_permissions(member_id):
+    from flask import after_this_request
+    from sqlalchemy.exc import SQLAlchemyError
+    from backend.models.member_area_grant import MemberAreaGrant
+    from backend.services.area_permissions import AreaPermissionService
+
+    @after_this_request
+    def private_response(response):
+        response.headers['Cache-Control'] = 'no-store'
+        return response
+
+    if not current_user.is_admin() and (request.method != 'GET' or current_user.id != member_id):
+        abort(403)
+    member = Member.query.get_or_404(member_id)
+    form = FlaskForm()
+    if form.validate_on_submit():
+        try:
+            if AreaPermissionService.replace_grants(member, request.form.getlist('scopes'), request.form.get('action_password')):
+                db.session.commit()
+                flash('Bereichsfreigaben gespeichert. Das Mitglied muss sich erneut anmelden.', 'success')
+                return redirect(url_for('admin.member_area_permissions', member_id=member.id))
+        except ValueError as error:
+            db.session.rollback()
+            flash(str(error), 'error')
+        except SQLAlchemyError:
+            db.session.rollback()
+            flash('Bereichsfreigaben konnten nicht gespeichert werden.', 'error')
+    grants = MemberAreaGrant.query.filter_by(member_id=member.id).order_by(MemberAreaGrant.id.desc()).all()
+    return render_template('admin/member_area_permissions.html', member=member, form=form,
+                           scopes=AreaPermissionService.SCOPES, grants=grants,
+                           active_scopes={g.scope for g in grants if g.revoked_at is None})
+
+
 @bp.route('/members/<int:member_id>/travel-documents', methods=['GET'])
 @login_required
 def member_travel_documents(member_id):

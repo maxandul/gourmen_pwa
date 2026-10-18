@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from 'partials/_action_confirmation.html' import action_confirmation with context %}
+{% block title %}Zusätzliche Zugriffe - {{ member.display_name_with_spirit }}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back"><a href="{{ url_for('admin.members') if current_user.is_admin() else url_for('member.security') }}">Zurück</a></p>
+        <h1>Zusätzliche Zugriffe · {{ member.display_name_with_spirit }}</h1>
+    </div>
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Gezielte Bereichsfreigaben</h2></div>
+            <div class="card__body">
+                <p>Diese Freigaben ergänzen deine Vereinsfunktion. Sie vergeben keine Systemadminrechte. Änderungen erfordern eine erneute Anmeldung des betroffenen Mitglieds.</p>
+                {% if current_user.is_admin() %}
+                <form method="POST" class="form">
+                    {{ form.hidden_tag() }}
+                    {% for scope, label in scopes.items() %}
+                    <div class="form-field"><label><input type="checkbox" name="scopes" value="{{ scope }}"{% if scope in active_scopes %} checked{% endif %}> {{ label }}</label></div>
+                    {% endfor %}
+                    {{ action_confirmation('area_permissions', member, password=true) }}
+                    <div class="form-actions"><button type="submit" class="btn btn--primary">Freigaben speichern</button></div>
+                </form>
+                {% else %}
+                <ul>{% for scope in active_scopes %}<li>{{ scopes.get(scope, scope) }}</li>{% else %}<li>Keine zusätzlichen Freigaben.</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Verlauf</h2></div>
+            <div class="card__body">
+                <ul>{% for grant in grants %}<li>{{ scopes.get(grant.scope, grant.scope) }} · vergeben {{ grant.granted_at.strftime('%d.%m.%Y %H:%M') }} von {{ grant.grantor.display_name }}{% if grant.revoked_at %} · entzogen {{ grant.revoked_at.strftime('%d.%m.%Y %H:%M') }} von {{ grant.revoker.display_name }}{% else %} · aktiv{% endif %}</li>{% else %}<li>Noch keine Freigaben.</li>{% endfor %}</ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -712,3 +712,17 @@ Lesefehler bleiben ohne Mutation; Antworten inklusive Fehler/Step-Up-Redirect
 tragen private/no-store und no-referrer. Bestehende eigene/Admin-Editwege bleiben.
 Schatzmeister erhalten keinen Ersatz-Zugriff auf den Gesamtpayload: definierte
 sensible Zahlungsfelder existieren aktuell nicht.
+
+## Zusaetzliche Bereichsfreigaben (U1-R04b1)
+
+MemberAreaGrant speichert Vergabe und Widerruf mit Actor/Zeitpunkt. Partial-Unique-
+Index verhindert mehrere aktive Eintraege je Mitglied/Scope; neue Vergabe nach
+Entzug erzeugt neue Historie. Keine automatisch vergebenen Rechte in der Migration.
+AreaPermissionService erlaubt nur registrierte Scopes, aktive Konten und die
+jeweilige Funktionsrolle/Admin oder aktive Einzelvergabe. travel_documents ist
+zunaechst der einzige Scope; er hebt Step-Up/Feldprojektion nicht auf.
+Adminverwaltung nutzt action=area_permissions, Ziel-/Sitzungs-/Aktionsbindung,
+frisches Passwort und gleiche Mitgliedssperren wie U1w. Historie und rotierte
+Zugangsversion committen atomar; Fehler rollen beides zurueck. Kein Secret im
+Verlauf. Mitglieder lesen nur eigene Freigaben, nur Admin schreibt. Funktionsrechte
+bleiben unabhaengig bestehen; Entzug einer Zusatzfreigabe entzieht kein Vereinsamt.

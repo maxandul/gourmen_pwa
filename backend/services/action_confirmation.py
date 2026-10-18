@@ -16,7 +16,7 @@ from backend.services.security import SecurityService
 class ActionConfirmationService:
     MAX_AGE = 600
     ACTIONS = {'password_change', 'mfa_enroll', 'mfa_disable',
-               'admin_password', 'admin_mfa', 'permissions', 'member_create', 'onboarding_resend'}
+               'admin_password', 'admin_mfa', 'permissions', 'area_permissions', 'member_create', 'onboarding_resend'}
     RECEIPT_ACTIONS = {'member_create', 'onboarding_resend'}
 
     @staticmethod

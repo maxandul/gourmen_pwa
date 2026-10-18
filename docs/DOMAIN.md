@@ -282,3 +282,10 @@ Alle Mitglieder mit Eventzugriff duerfen Einzelbewertungen samt Namen und
 Kommentaren lesen. Teilnahme betrifft das Schreiben, nicht das Lesen.
 Oeffentlich bleiben nur freigegebene Aggregate aus publizierten all-Events;
 Board-Eventdetails werden auch ueber Statistiken/Teaser nicht veroeffentlicht.
+
+## Zusaetzliche Bereichsfreigabe
+
+Gezielte, durch Systemadmin vergebene und widerrufbare Zusatzberechtigung eines
+Mitglieds (F2). Ergaenzt Vereinsfunktion/Organisation, ist kein Systemadminstatus.
+Vergabe-/Entzugsverlauf bleibt erhalten. Erste Umsetzung: Reisedokumente lesen,
+weiterhin mit erneuter Identitaetsbestaetigung und begrenzter Feldmenge.

@@ -1,5 +1,6 @@
 """Purpose-limited sensitive field views, separate from full admin editing."""
 from flask_login import current_user
+from backend.services.area_permissions import AreaPermissionService
 from backend.models.member_sensitive import MemberSensitive
 from backend.services.security import SecurityService
 
@@ -16,8 +17,7 @@ class MemberSensitiveService:
 
     @staticmethod
     def can_read_travel(actor):
-        return bool(actor and actor.is_active and
-                    (actor.is_admin() or actor.has_funktion('REISEKOMMISSAR')))
+        return AreaPermissionService.has_scope(actor, 'travel_documents')
 
     @classmethod
     def read_travel(cls, actor, target_id):
