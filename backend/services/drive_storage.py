@@ -802,6 +802,13 @@ class DriveStorageService:
         mime_type: str | None = None,
     ) -> Document:
         """Laedt nach Drive hoch und legt den Document-Datensatz an."""
+        if event_id is not None:
+            from backend.models.event import Event
+            event = db.session.get(Event, event_id)
+            if (uploader is None or not uploader.is_active or event is None
+                    or not event.is_visible_to(uploader)):
+                raise DriveValidationError("Eventzuordnung nicht erlaubt.")
+
         try:
             from googleapiclient.errors import HttpError
             from googleapiclient.http import MediaIoBaseUpload

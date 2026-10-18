@@ -688,3 +688,16 @@ filtern vor Aggregation nach Event.apply_audience_filter; Teilnahmequoten nach
 der Sichtbarkeit des jeweiligen Mitglieds. Event-Edit setzt Formularinitialwerte
 nur bei GET. Eigene Forderungen bleiben bei Sichtbarkeitsverlust erhalten;
 Dashboard zeigt dann keine Eventmetadaten oder gesperrten Links.
+
+## Beleg-/Dokumentzuordnung (U1-R03)
+
+Eventoptionen in Dokument- und Belegformularen werden vor Limitierung ueber
+Event.apply_audience_filter gefiltert. Direkte Buchungszuordnung beim Belegupload
+nur fuer Schatzmeister/Admin und nur fuer offene Jahre mit sichtbarem Event;
+Mitglieder reichen ohne Buchungszuordnung ein. Query-Kontext ist ebenfalls geprueft.
+AccountingService prueft dieselben Grenzen vor Drive-I/O, DriveStorageService
+prueft Eventzuordnung vor Upload. Vorhandene Belege in Auswahl/Kontext/Download
+und Zuordnung folgen can_read_receipt: eigener Einreichender oder Finanz-/
+Revisionsrolle/Admin, zusaetzlich alle verknuepften Eventberechtigungen.
+Der eigene Vorgang/Status bleibt bestehen; das erteilt kein Leserecht auf ein
+inzwischen gesperrtes Eventdokument. Umfassende Ordner-/Drive-Rechte folgen U1-R04.

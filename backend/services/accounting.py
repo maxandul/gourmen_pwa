@@ -66,6 +66,40 @@ def _as_kind(kind) -> AccountKind:
 class AccountingService:
     """Business-Logik für Journal, Budget, Belege und Revisions-Workflow."""
 
+    @staticmethod
+    def can_link_receipt_booking(member: Member) -> bool:
+        return bool(member and member.is_active and
+                    (member.is_admin() or member.has_funktion('SCHATZMEISTER')))
+
+    @staticmethod
+    def can_read_receipt(receipt: Receipt, member: Member) -> bool:
+        from backend.models.event import Event
+        if not member or not member.is_active:
+            return False
+        if not (receipt.uploader_id == member.id or member.is_admin() or
+                member.has_funktion('SCHATZMEISTER') or member.has_funktion('RECHNUNGSPRUEFER')):
+            return False
+        event_ids = [receipt.suggested_event_id]
+        if receipt.booking:
+            event_ids.append(receipt.booking.event_id)
+        for event_id in event_ids:
+            if event_id is not None:
+                event = db.session.get(Event, event_id)
+                if event is None or not event.is_visible_to(member):
+                    return False
+        return True
+
+    @classmethod
+    def receipt_booking_choices_query(cls, member: Member):
+        from backend.models.event import Event
+        visible_events = Event.apply_audience_filter(db.session.query(Event.id), member)
+        query = Booking.query.join(FiscalYear, Booking.fiscal_year_id == FiscalYear.id).filter(
+            FiscalYear.status == FiscalYearStatus.OPEN,
+            db.or_(Booking.event_id.is_(None), Booking.event_id.in_(visible_events)))
+        if not cls.can_link_receipt_booking(member):
+            query = query.filter(db.false())
+        return query
+
     # -- Konten ---------------------------------------------------------
 
     @staticmethod
@@ -877,6 +911,15 @@ class AccountingService:
         `file` ist ein werkzeug FileStorage. Dateiname in Drive:
         `{YYYYMMDD}_{Kommentar-Prefix}_{OriginalDateiname}`.
         """
+        from backend.models.event import Event
+        if not uploader or not uploader.is_active:
+            raise AccountingValidationError("Keine Berechtigung zur Belegeinreichung.")
+        if suggested_event_id is not None:
+            event = db.session.get(Event, suggested_event_id)
+            if event is None or not event.is_visible_to(uploader):
+                raise AccountingValidationError("Eventzuordnung nicht erlaubt.")
+        if booking_id and cls.receipt_booking_choices_query(uploader).filter(Booking.id == booking_id).first() is None:
+            raise AccountingValidationError("Buchungszuordnung nicht erlaubt.")
         fy = cls.get_fiscal_year(fiscal_year_id)
         if fy.status == FiscalYearStatus.CLOSED:
             raise AccountingValidationError(
@@ -951,8 +994,11 @@ class AccountingService:
         return receipt
 
     @classmethod
-    def attach_receipt_to_booking(cls, receipt_id: int, booking_id: int) -> Receipt:
+    def attach_receipt_to_booking(cls, receipt_id: int, booking_id: int, actor: Member) -> Receipt:
         receipt = cls.get_receipt(receipt_id)
+        if (not cls.can_read_receipt(receipt, actor) or
+                cls.receipt_booking_choices_query(actor).filter(Booking.id == booking_id).first() is None):
+            raise AccountingValidationError("Belegzuordnung nicht erlaubt.")
         booking = db.session.get(Booking, booking_id)
         if booking is None:
             raise AccountingValidationError("Buchung nicht gefunden.")

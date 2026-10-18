@@ -160,10 +160,10 @@ def _build_stats_context(fy: FiscalYear, is_treasurer: bool) -> dict:
 
 def _events_for_year(fy: FiscalYear) -> list[Event]:
     return (
-        Event.query.filter(
+        Event.apply_audience_filter(Event.query.filter(
             Event.datum >= datetime(fy.year, 1, 1),
             Event.datum < datetime(fy.year + 1, 1, 1),
-        )
+        ), current_user)
         .order_by(Event.datum.desc())
         .all()
     )
@@ -343,7 +343,8 @@ def booking_detail(booking_id: int):
         form.event_id.data = booking.event_id or 0
         form.member_id.data = booking.member_id or 0
 
-    unbooked_receipts = AccountingService.get_inbox() if can_edit else []
+    unbooked_receipts = [r for r in AccountingService.get_inbox()
+                         if AccountingService.can_read_receipt(r, current_user)] if can_edit else []
 
     return render_template(
         'accounting/booking_detail.html',
@@ -403,7 +404,7 @@ def booking_attach_receipt(booking_id: int):
         flash('Kein Beleg gewählt.', 'error')
         return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
     try:
-        AccountingService.attach_receipt_to_booking(receipt_id, booking.id)
+        AccountingService.attach_receipt_to_booking(receipt_id, booking.id, current_user)
         flash('Beleg verknüpft.', 'success')
     except AccountingError as exc:
         flash(str(exc), 'error')
@@ -417,8 +418,7 @@ def booking_attach_receipt(booking_id: int):
 
 def _open_year_bookings() -> list[Booking]:
     return (
-        Booking.query.join(FiscalYear, Booking.fiscal_year_id == FiscalYear.id)
-        .filter(FiscalYear.status == FiscalYearStatus.OPEN)
+        AccountingService.receipt_booking_choices_query(current_user)
         .order_by(Booking.booking_date.desc(), Booking.id.desc())
         .limit(50)
         .all()
@@ -433,7 +433,7 @@ def _receipt_upload_form_with_choices(year: int) -> ReceiptUploadForm:
     ]
     cutoff = datetime(year - 1, 1, 1)
     events = (
-        Event.query.filter(Event.datum >= cutoff)
+        Event.apply_audience_filter(Event.query.filter(Event.datum >= cutoff), current_user)
         .order_by(Event.datum.desc())
         .limit(20)
         .all()
@@ -474,8 +474,11 @@ def receipt_upload():
     # Kontext: Aufruf aus einer Buchung (Schatzmeister erfasst Beleg direkt)
     context_booking_id = request.args.get('booking', type=int)
     context_booking = (
-        db.session.get(Booking, context_booking_id) if context_booking_id else None
+        AccountingService.receipt_booking_choices_query(current_user).filter(Booking.id == context_booking_id).first()
+        if context_booking_id else None
     )
+    if context_booking_id and context_booking is None:
+        abort(403)
     if request.method == 'GET' and context_booking is not None:
         form.booking_id.data = context_booking.id
 
@@ -516,9 +519,8 @@ def receipt_upload():
 @login_required
 def receipt_view(receipt_id: int):
     receipt = Receipt.query.get_or_404(receipt_id)
-    is_uploader = receipt.uploader_id == current_user.id
-    if not is_uploader:
-        _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    if not AccountingService.can_read_receipt(receipt, current_user):
+        abort(403)
     try:
         payload, mime, name = AccountingService.download_receipt(receipt)
     except DriveError:
@@ -553,6 +555,8 @@ def booking_new():
     )
     if receipt_id:
         receipt = db.session.get(Receipt, receipt_id)
+        if receipt is None or not AccountingService.can_read_receipt(receipt, current_user):
+            abort(403)
 
     form = _booking_form_with_choices(fy)
 
@@ -586,7 +590,7 @@ def booking_new():
                     created_by=current_user,
                 )
                 if receipt is not None and not receipt.is_booked:
-                    AccountingService.attach_receipt_to_booking(receipt.id, booking.id)
+                    AccountingService.attach_receipt_to_booking(receipt.id, booking.id, current_user)
                 flash('Buchung erfasst.', 'success')
                 return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
             except AccountingError as exc:

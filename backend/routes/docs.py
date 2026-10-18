@@ -110,7 +110,7 @@ def index():
         archive_folder_id=(current_app.config.get("DRIVE_ARCHIVE_FOLDER_ID") or "").strip(),
         max_file_size_mb=MAX_FILE_SIZE_BYTES // (1024 * 1024),
         allowed_mime_types=sorted(ALLOWED_MIME_TYPES),
-        events=Event.query.order_by(Event.datum.desc()).limit(50).all(),
+        events=Event.apply_audience_filter(Event.query, current_user).order_by(Event.datum.desc()).limit(50).all(),
     )
 
 
@@ -161,7 +161,7 @@ def folder_view(drive_folder_id: str):
         folder_drive_link=folder_drive_link,
         max_file_size_mb=MAX_FILE_SIZE_BYTES // (1024 * 1024),
         allowed_mime_types=sorted(ALLOWED_MIME_TYPES),
-        events=Event.query.order_by(Event.datum.desc()).limit(50).all(),
+        events=Event.apply_audience_filter(Event.query, current_user).order_by(Event.datum.desc()).limit(50).all(),
         docs_actions_next=url_for(
             "docs.folder_view", drive_folder_id=drive_folder_id
         ),
@@ -220,7 +220,7 @@ def detail(doc_id: int):
         history=history,
         sync_failed=sync_failed,
         in_archive=in_archive,
-        events=Event.query.order_by(Event.datum.desc()).limit(50).all(),
+        events=Event.apply_audience_filter(Event.query, current_user).order_by(Event.datum.desc()).limit(50).all(),
         docs_actions_next=url_for(
             "docs.folder_view", drive_folder_id=fresh.drive_parent_id
         ),
@@ -277,7 +277,13 @@ def upload():
         title = upload_file.filename.rsplit(".", 1)[0]
 
     event_raw = (request.form.get("event_id") or "").strip()
-    event_id = int(event_raw) if event_raw.isdigit() else None
+    if event_raw and not event_raw.isdigit():
+        abort(400)
+    event_id = int(event_raw) if event_raw else None
+    if event_id is not None:
+        event = db.session.get(Event, event_id)
+        if event is None or not event.is_visible_to(current_user):
+            abort(403)
 
     raw_bytes = upload_file.read()
     mime_type = upload_file.mimetype or "application/octet-stream"

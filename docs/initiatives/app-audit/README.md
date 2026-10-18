@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R03. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R03 / A-071: Beleg-/Dokumentauswahl | Lokal geprüft, 18.10.2026; U1 offen | 34 Tests bestanden; [Vertrag und Nachweise](U1_R03_BELEGAUSWAHL.md) |
 | U1-R02 / A-026, A-037, A-042: Sichtbarkeit | Lokal geprüft, 18.10.2026; U1 offen | 63 Tests bestanden; [Vertrag und Nachweise](U1_R02_SICHTBARKEIT.md) |
 | U1z / A-010: Cache-Nutzertrennung | Lokal geprüft, 18.10.2026; Browser/Geraete offen | `codex/app-audit-implementation-plan` über `5b6d28d`; [Vertrag und Nachweise](U1Z_CACHE_NUTZERTRENNUNG.md) |
 | U1y / A-139: Onboarding-Zustellung | Lokal umgesetzt und geprüft, 16.10.2026; U1 offen | `codex/u1y-onboarding-delivery` über `95c213a`, Migration `9405a7a` separat; 57 erste und 159 abschliessende Tests bestanden; [Vertrag und Nachweise](U1Y_ONBOARDING_ZUSTELLUNG.md) |
