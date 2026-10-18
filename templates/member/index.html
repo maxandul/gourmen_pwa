@@ -135,7 +135,7 @@
                             </svg>
                         </a>
                     </li>
-                    {% if current_user.is_admin() or current_user.has_funktion('SCHATZMEISTER') or current_user.has_funktion('RECHNUNGSPRUEFER') %}
+                    {% if can_read_accounting %}
                     <li>
                         <a href="{{ url_for('accounting.index') }}" class="settings-nav__row">
                             <span class="settings-nav__icon" aria-hidden="true">

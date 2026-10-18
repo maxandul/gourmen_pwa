@@ -30,6 +30,7 @@ from backend.models.accounting import (
 )
 from backend.models.member import Member
 from backend.services.drive_storage import DriveStorageService
+from backend.services.area_permissions import AreaPermissionService
 
 logger = logging.getLogger(__name__)
 
@@ -68,16 +69,14 @@ class AccountingService:
 
     @staticmethod
     def can_link_receipt_booking(member: Member) -> bool:
-        return bool(member and member.is_active and
-                    (member.is_admin() or member.has_funktion('SCHATZMEISTER')))
+        return AreaPermissionService.has_scope(member, 'accounting_write')
 
     @staticmethod
     def can_read_receipt(receipt: Receipt, member: Member) -> bool:
         from backend.models.event import Event
         if not member or not member.is_active:
             return False
-        if not (receipt.uploader_id == member.id or member.is_admin() or
-                member.has_funktion('SCHATZMEISTER') or member.has_funktion('RECHNUNGSPRUEFER')):
+        if not (receipt.uploader_id == member.id or AreaPermissionService.has_scope(member, 'accounting_read')):
             return False
         event_ids = [receipt.suggested_event_id]
         if receipt.booking:

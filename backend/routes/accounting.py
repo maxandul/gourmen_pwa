@@ -48,6 +48,7 @@ from backend.services.accounting import (
     AccountingValidationError,
 )
 from backend.services.bank_import import BankImportService
+from backend.services.area_permissions import AreaPermissionService
 from backend.services.accounting_pdf import AccountingPdfService
 from backend.services.drive_storage import (
     DriveError,
@@ -70,12 +71,23 @@ VALID_TABS = (
 
 
 def _require_funktion(*funktionen) -> None:
-    """Berechtigungs-Guard: Admin kommt immer durch (Capability 3.8)."""
-    if not current_user.is_authenticated:
+    """Native functions plus explicit scoped grants; revision transitions stay separate."""
+    if not current_user.is_authenticated or not current_user.is_active:
         abort(403)
-    if not current_user.is_admin() and not any(
-        current_user.has_funktion(f) for f in funktionen
-    ):
+    if current_user.is_admin() or any(current_user.has_funktion(f) for f in funktionen):
+        return
+    # Explicit endpoint sets fail closed for future routes, including revision actions.
+    read_endpoints = {'accounting.index', 'accounting.booking_detail',
+                      'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats'}
+    write_endpoints = {'accounting.booking_edit', 'accounting.booking_attach_receipt',
+                       'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
+                       'accounting.bank_import_upload', 'accounting.bank_import_review',
+                       'accounting.bank_review_all', 'accounting.bank_tx_book', 'accounting.bank_tx_ignore',
+                       'accounting.bank_import_delete', 'accounting.year_claims_create',
+                       'accounting.claim_settle', 'accounting.year_budget'}
+    scope = ('accounting_read' if request.endpoint in read_endpoints else
+             'accounting_write' if request.endpoint in write_endpoints else None)
+    if scope is None or not AreaPermissionService.has_scope(current_user, scope):
         abort(403)
 
 
@@ -92,7 +104,7 @@ def _validate_csrf_or_403() -> None:
 
 
 def _is_treasurer() -> bool:
-    return current_user.is_admin() or current_user.has_funktion('SCHATZMEISTER')
+    return AreaPermissionService.has_scope(current_user, 'accounting_write')
 
 
 def _is_reviewer() -> bool:
@@ -215,7 +227,7 @@ def index():
     active_tab = request.args.get('tab', 'uebersicht')
     if active_tab not in VALID_TABS:
         active_tab = 'uebersicht'
-    if active_tab == 'kontenplan' and not current_user.is_admin():
+    if active_tab == 'kontenplan' and not _is_treasurer():
         abort(403)
 
     is_treasurer = _is_treasurer()
@@ -281,7 +293,7 @@ def index():
     account_form = AccountForm()
     all_accounts = []
     next_fiscal_year = None
-    if current_user.is_admin():
+    if is_treasurer:
         all_accounts = Account.query.order_by(Account.sort_order, Account.code).all()
         max_year = max(fy.year for fy in fiscal_years) if fiscal_years else fy.year
         candidate = max_year + 1
@@ -314,6 +326,7 @@ def index():
         abschluss_phase=fy.abschluss_phase,
         is_treasurer=is_treasurer,
         is_reviewer=is_reviewer,
+        can_manage_revision=(current_user.is_admin() or current_user.has_funktion('SCHATZMEISTER')),
         bank_imports=bank_imports,
         pending_tx_count=pending_tx_count,
         import_form=import_form,
@@ -701,7 +714,7 @@ def export_pdf(fiscal_year_id: int):
 @bp.route('/accounts', methods=['GET', 'POST'])
 @login_required
 def accounts():
-    if not current_user.is_admin():
+    if not _is_treasurer():
         abort(403)
 
     year_id = request.args.get('year', type=int)
@@ -733,7 +746,7 @@ def accounts():
 @bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST'])
 @login_required
 def account_edit(account_id: int):
-    if not current_user.is_admin():
+    if not _is_treasurer():
         abort(403)
 
     account = Account.query.get_or_404(account_id)
@@ -831,7 +844,7 @@ def year_revoke(fiscal_year_id: int):
 @login_required
 def year_create():
     """Neues Geschäftsjahr anlegen (Admin)."""
-    if not current_user.is_admin():
+    if not _is_treasurer():
         abort(403)
     _validate_csrf_or_403()
     year = request.form.get('year', type=int)

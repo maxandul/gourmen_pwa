@@ -726,3 +726,14 @@ frisches Passwort und gleiche Mitgliedssperren wie U1w. Historie und rotierte
 Zugangsversion committen atomar; Fehler rollen beides zurueck. Kein Secret im
 Verlauf. Mitglieder lesen nur eigene Freigaben, nur Admin schreibt. Funktionsrechte
 bleiben unabhaengig bestehen; Entzug einer Zusatzfreigabe entzieht kein Vereinsamt.
+
+## Finanzbereichsfreigaben (U1-R04b2)
+
+accounting_write impliziert accounting_read. Schatzmeister hat write, Revisor read;
+gezielte Freigaben ergaenzen dies. Explizite Endpointmengen unterscheiden lesende
+Ansichten/Exporte und schreibende Buchungs-/Import-/Budget-/Beitragswege. Nicht
+aufgefuehrte Endpoints erhalten keine implizite Freigabe. Kontenplan/Jahresanlage
+sind fuer Finanzbearbeitung erreichbar. Revisionsstatuswechsel bleiben bis R04d
+bei ihren nativen Rollen, niemals durch einen allgemeinen Finanzscope freigeben.
+Read-only zeigt keine Kommentar-/Bearbeitungsformulare. Vereinsnavigation und
+Belegrechte nutzen denselben Scopepruefer; Eventrecht fuer Belege bleibt zusaetzlich.

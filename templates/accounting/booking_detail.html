@@ -197,10 +197,12 @@
                             {% if comment.resolved %}
                             <br><span class="chip chip--success">Erledigt</span>
                             {% else %}
-                            <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
+                            {% if is_treasurer or is_reviewer %}
+<form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
                             </form>
+{% endif %}
                             {% endif %}
                         </span>
                     </div>
@@ -209,7 +211,8 @@
                 <p class="text-secondary">Noch keine Kommentare zu dieser Buchung.</p>
                 {% endif %}
 
-                <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
+                {% if is_treasurer or is_reviewer %}
+<form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
                     {{ comment_form.hidden_tag() }}
                     <input type="hidden" name="booking_id" value="{{ booking.id }}">
                     <div class="form-field">
@@ -222,6 +225,7 @@
                         </button>
                     </div>
                 </form>
+{% endif %}
             </div>
         </div>
     </div>

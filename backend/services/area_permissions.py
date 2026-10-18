@@ -7,16 +7,22 @@ from backend.services.action_confirmation import ActionConfirmationService
 
 
 class AreaPermissionService:
-    SCOPES = {'travel_documents': 'Reisedokumente lesen'}
-    FUNCTIONS = {'travel_documents': 'REISEKOMMISSAR'}
+    SCOPES = {'travel_documents': 'Reisedokumente lesen',
+              'accounting_read': 'Buchhaltung lesen',
+              'accounting_write': 'Buchhaltung bearbeiten (ohne Revisionsabschluss)'}
+    FUNCTIONS = {'travel_documents': ('REISEKOMMISSAR',),
+                 'accounting_read': ('SCHATZMEISTER', 'RECHNUNGSPRUEFER'),
+                 'accounting_write': ('SCHATZMEISTER',)}
 
     @classmethod
     def has_scope(cls, member, scope):
         if scope not in cls.SCOPES or not member or not member.is_active:
             return False
-        if member.is_admin() or member.has_funktion(cls.FUNCTIONS.get(scope)):
+        if member.is_admin() or any(member.has_funktion(f) for f in cls.FUNCTIONS.get(scope, ())):
             return True
-        return MemberAreaGrant.query.filter_by(member_id=member.id, scope=scope, revoked_at=None).first() is not None
+        scopes = [scope, 'accounting_write'] if scope == 'accounting_read' else [scope]
+        return MemberAreaGrant.query.filter(MemberAreaGrant.member_id == member.id,
+            MemberAreaGrant.scope.in_(scopes), MemberAreaGrant.revoked_at.is_(None)).first() is not None
 
     @classmethod
     def replace_grants(cls, target, scopes, password):

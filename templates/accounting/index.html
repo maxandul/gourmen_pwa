@@ -82,7 +82,7 @@
                                 </a>
                             </nav>
                         </div>
-                        {% if current_user.is_admin() and next_fiscal_year %}
+                        {% if is_treasurer and next_fiscal_year %}
                         <form method="POST" action="{{ url_for('accounting.year_create') }}" class="form accounting-year-create"
                               onsubmit="return confirm('Geschäftsjahr {{ next_fiscal_year }} eröffnen? Der Budget-Vorschlag wird aus den Vorjahres-Zahlen berechnet.');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -145,7 +145,7 @@
                    role="tab" aria-selected="{{ 'true' if active_tab == 'statistik' else 'false' }}">
                     {{ lucide_icon('chart-line') }} Statistik
                 </a>
-                {% if current_user.is_admin() %}
+                {% if is_treasurer %}
                 <a href="{{ url_for('accounting.index', year=fiscal_year.id, tab='kontenplan', _anchor='gourmen-tabs') }}"
                    class="tabs__tab {{ 'tabs__tab--active' if active_tab == 'kontenplan' else '' }}"
                    role="tab" aria-selected="{{ 'true' if active_tab == 'kontenplan' else 'false' }}">
@@ -754,7 +754,7 @@
                         </p>
                     </div>
 
-                    {% if is_treasurer and abschluss_phase == 1 %}
+                    {% if can_manage_revision and abschluss_phase == 1 %}
                     <form method="POST" action="{{ url_for('accounting.year_submit', fiscal_year_id=fiscal_year.id) }}" class="form"
                           onsubmit="return confirm('Jahr {{ fiscal_year.year }} zur Prüfung freigeben? Buchungen und Belege sind danach gesperrt.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -766,7 +766,7 @@
                     </form>
                     {% endif %}
 
-                    {% if is_treasurer and abschluss_phase == 2 %}
+                    {% if can_manage_revision and abschluss_phase == 2 %}
                     <form method="POST" action="{{ url_for('accounting.year_withdraw', fiscal_year_id=fiscal_year.id) }}" class="form"
                           onsubmit="return confirm('Freigabe für {{ fiscal_year.year }} zurückziehen? Das Jahr wird wieder offen und Buchungen sind bearbeitbar.');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -848,10 +848,12 @@
                                         {% if comment.resolved %}
                                         <br><span class="chip chip--success">Erledigt</span>
                                         {% elif is_treasurer or is_reviewer %}
-                                        <form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
+                                        {% if is_treasurer or is_reviewer %}
+<form method="POST" action="{{ url_for('accounting.comment_resolve', comment_id=comment.id) }}" class="form">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn--outline btn--sm">Als erledigt markieren</button>
                                         </form>
+{% endif %}
                                         {% endif %}
                                     </span>
                                 </div>
@@ -860,7 +862,8 @@
                             <p class="text-secondary">Noch keine Kommentare.</p>
                             {% endif %}
 
-                            <form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
+                            {% if is_treasurer or is_reviewer %}
+<form method="POST" action="{{ url_for('accounting.year_comment', fiscal_year_id=fiscal_year.id) }}" class="form">
                                 {{ comment_form.hidden_tag() }}
                                 <div class="form-field">
                                     <label class="form-field__label" for="comment-text">Neuer Kommentar</label>
@@ -872,6 +875,7 @@
                                     </button>
                                 </div>
                             </form>
+{% endif %}
                         </div>
                     </div>
                 </div>
@@ -882,7 +886,7 @@
                 </div>
 
                 {# ---------------- Kontenplan (Admin) ---------------- #}
-                {% if current_user.is_admin() %}
+                {% if is_treasurer %}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'kontenplan' else '' }}" role="tabpanel">
                     {% include 'accounting/_tab_kontenplan.html' %}
                 </div>

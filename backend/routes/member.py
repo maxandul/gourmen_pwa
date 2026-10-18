@@ -88,7 +88,9 @@ class SensitiveDataForm(FlaskForm):
 @login_required
 def index():
     """Member main overview page (Verein-Hub)."""
-    return render_template('member/index.html')
+    from backend.services.area_permissions import AreaPermissionService
+    return render_template('member/index.html',
+                           can_read_accounting=AreaPermissionService.has_scope(current_user, 'accounting_read'))
 
 
 @bp.route('/receipts')

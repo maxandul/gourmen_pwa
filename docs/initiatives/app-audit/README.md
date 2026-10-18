@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04b2. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04b3. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R04b2 / F2: Finanzbereichsrechte | Lokal geprüft, U1 offen | 27 Python- und 19 Worker-Tests; [Nachweis](U1_R04B2_FINANZRECHTE.md) |
 | U1-R04b1 / F2: Bereichsfreigaben-Grundlage | Lokal geprüft, PostgreSQL/Browser offen | Migration ee39355 separat, 56 Python- und 19 Worker-Tests; [Nachweis](U1_R04B1_BEREICHSFREIGABEN.md) |
 | U1-R04a / R13: Reisedokumentansicht | Lokal geprüft, Browserabnahme offen | [Feldprojektion und Regression](U1_R04A_REISEDOKUMENTE.md); U1 offen |
 | U1-R04 / F2/R13: Aktion-/Rolle-/Feldmatrix | Matrix lokal geprüft, Durchsetzung offen | [Matrix und getrennte Folgepakete](U1_R04_RECHTEMATRIX.md); U1 offen |
