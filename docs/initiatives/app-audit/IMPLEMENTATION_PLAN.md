@@ -108,8 +108,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
 | U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | in Teilpakete gegliedert | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
-| U2-04a / A-059, A-066 | **bereit / nächstes Paket** | Offenes Jahr fuer Budget und Quelle/Ziel der Belegzuordnung durchsetzen; gemeinsame Jahres-Sperrgrenze fuer betroffene Mutationen und Revision. Keine Historie loeschen. |
-| U2-04b / R04d, A-073, A-074 | geplant | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
+| U2-04a / A-059, A-066 | lokal geprüft | Offenes Jahr fuer Budget und Quelle/Ziel der Belegzuordnung durchsetzen; gemeinsame Jahres-Sperrgrenze fuer betroffene Mutationen und Revision. Keine Historie loeschen. |
+| U2-04b / R04d, A-073, A-074 | **bereit / nächstes Paket** | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
 | U2-04c / A-069, A-070 | geplant | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,

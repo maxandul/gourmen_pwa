@@ -167,6 +167,18 @@ class AccountingService:
         return fy
 
     @staticmethod
+    def lock_fiscal_years(*year_ids):
+        ids = sorted(set(year_ids))
+        rows = FiscalYear.query.filter(FiscalYear.id.in_(ids)).order_by(FiscalYear.id).populate_existing().with_for_update().all()
+        if len(rows) != len(ids):
+            raise AccountingValidationError('Geschäftsjahr nicht gefunden.')
+        return {row.id: row for row in rows}
+
+    @classmethod
+    def lock_fiscal_year(cls, year_id):
+        return cls.lock_fiscal_years(year_id)[year_id]
+
+    @staticmethod
     def get_or_create_fiscal_year(year: int, *, commit=True) -> FiscalYear:
         fy = FiscalYear.query.filter_by(year=year).first()
         if fy is None:
@@ -189,7 +201,7 @@ class AccountingService:
 
     @classmethod
     def submit_for_review(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
-        fy = cls.get_fiscal_year(fiscal_year_id)
+        fy = cls.lock_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht offen und kann nicht freigegeben werden."
@@ -203,7 +215,7 @@ class AccountingService:
     @classmethod
     def withdraw_from_review(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
         """Freigabe zurückziehen: in_review → open (Schatzmeister/Admin)."""
-        fy = cls.get_fiscal_year(fiscal_year_id)
+        fy = cls.lock_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.IN_REVIEW:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht in Prüfung und kann nicht zurückgezogen werden."
@@ -219,7 +231,7 @@ class AccountingService:
     @classmethod
     def revoke_approval(cls, fiscal_year_id: int, by_member: Member) -> FiscalYear:
         """Abschluss rückgängig: closed → in_review (Revisor/Admin)."""
-        fy = cls.get_fiscal_year(fiscal_year_id)
+        fy = cls.lock_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.CLOSED:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht abgeschlossen und kann nicht geöffnet werden."
@@ -285,7 +297,7 @@ class AccountingService:
         (Route) via AccountingPdfService angestossen und via
         `set_approval_report` nachgetragen.
         """
-        fy = cls.get_fiscal_year(fiscal_year_id)
+        fy = cls.lock_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.IN_REVIEW:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht in Prüfung und kann nicht bestätigt werden."
@@ -319,16 +331,16 @@ class AccountingService:
     @classmethod
     def set_budget(cls, fiscal_year_id: int, account_id: int,
                    amount_rappen: int, by_member: Member) -> BudgetEntry:
-        fy = cls.get_fiscal_year(fiscal_year_id)
-        if fy.status == FiscalYearStatus.CLOSED:
+        fy = cls.lock_fiscal_year(fiscal_year_id)
+        if fy.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
-                f"Jahr {fy.year} ist abgeschlossen, Budget nicht mehr änderbar."
+                f"Jahr {fy.year} ist nicht offen, Budget nicht änderbar."
             )
         account = db.session.get(Account, account_id)
         if account is None:
             raise AccountingValidationError("Konto nicht gefunden.")
-        if amount_rappen < 0:
-            raise AccountingValidationError("Budget darf nicht negativ sein.")
+        if type(amount_rappen) is not int or not 0 <= amount_rappen <= 2_147_483_647:
+            raise AccountingValidationError("Budget benötigt ganze nichtnegative Rappen im unterstützten Bereich.")
         entry = BudgetEntry.query.filter_by(
             fiscal_year_id=fy.id, account_id=account.id
         ).first()
@@ -435,7 +447,7 @@ class AccountingService:
                        account_id: int, event_id: int | None,
                        member_id: int | None, created_by: Member,
                        payment_ref: str | None = None, *, commit=True) -> Booking:
-        fy = cls.get_fiscal_year(fiscal_year_id)
+        fy = cls.lock_fiscal_year(fiscal_year_id)
         if fy.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht offen – keine Buchungen möglich."
@@ -481,6 +493,8 @@ class AccountingService:
         booking = db.session.get(Booking, booking_id)
         if booking is None:
             raise AccountingValidationError("Buchung nicht gefunden.")
+        cls.lock_fiscal_year(booking.fiscal_year_id)
+        booking = Booking.query.filter_by(id=booking_id).populate_existing().with_for_update().one()
         if cls.is_import_booking(booking):
             raise AccountingValidationError('Importzuordnung bleibt erhalten; Korrektur benötigt den Zuordnungsablauf.')
         if booking.fiscal_year.status != FiscalYearStatus.OPEN:
@@ -974,7 +988,8 @@ class AccountingService:
             target_booking = db.session.get(Booking, booking_id)
             if target_booking is None:
                 raise AccountingValidationError("Buchung nicht gefunden.")
-            if target_booking.fiscal_year.status != FiscalYearStatus.OPEN:
+            years = cls.lock_fiscal_years(fy.id, target_booking.fiscal_year_id)
+            if any(year.status != FiscalYearStatus.OPEN for year in years.values()):
                 raise AccountingValidationError(
                     "Jahr ist nicht offen – Beleg kann nicht direkt verknüpft werden."
                 )
@@ -1025,16 +1040,22 @@ class AccountingService:
     @classmethod
     def attach_receipt_to_booking(cls, receipt_id: int, booking_id: int, actor: Member) -> Receipt:
         receipt = cls.get_receipt(receipt_id)
-        if (not cls.can_read_receipt(receipt, actor) or
-                cls.receipt_booking_choices_query(actor).filter(Booking.id == booking_id).first() is None):
-            raise AccountingValidationError("Belegzuordnung nicht erlaubt.")
+        old_booking_id = receipt.booking_id
         booking = db.session.get(Booking, booking_id)
         if booking is None:
-            raise AccountingValidationError("Buchung nicht gefunden.")
-        if booking.fiscal_year.status != FiscalYearStatus.OPEN:
-            raise AccountingValidationError(
-                "Jahr ist nicht offen – Beleg kann nicht verknüpft werden."
-            )
+            raise AccountingValidationError('Buchung nicht gefunden.')
+        year_ids = [booking.fiscal_year_id]
+        if receipt.booking:
+            year_ids.append(receipt.booking.fiscal_year_id)
+        years = cls.lock_fiscal_years(*year_ids)
+        receipt = Receipt.query.filter_by(id=receipt_id).populate_existing().with_for_update().one()
+        if receipt.booking_id != old_booking_id:
+            raise AccountingValidationError('Belegzuordnung wurde zwischenzeitlich geändert. Neu laden.')
+        if any(year.status != FiscalYearStatus.OPEN for year in years.values()):
+            raise AccountingValidationError('Quell- und Zieljahr müssen offen sein; Belegzuordnung bleibt erhalten.')
+        if (not cls.can_read_receipt(receipt, actor) or
+                cls.receipt_booking_choices_query(actor).filter(Booking.id == booking_id).first() is None):
+            raise AccountingValidationError('Belegzuordnung nicht erlaubt.')
         receipt.booking_id = booking.id
         db.session.commit()
         return receipt

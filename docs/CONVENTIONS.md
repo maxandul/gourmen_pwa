@@ -913,3 +913,13 @@ Datei oder altem H-Schluessel zur Klaerung ablehnen, nicht still deduplizieren.
 Bekannte Bankreferenz nur bei identischen Originaldaten/Details wiederverwenden.
 Importkopf, neues Jahr, Zeilen und Zaehlwerte gemeinsam committen oder rollback.
 Keine automatische Interpretation oder Reparatur historischer Identitaeten.
+
+
+## Jahres-Sperrgrenze (U2-04a)
+
+Budget nur OPEN; Quelle und Ziel einer Belegzuordnung muessen beide OPEN sein.
+Ungebundener Beleg benoetigt nur offenes Ziel. Betroffene Schreibwege sowie
+Revisionszustandswechsel laden das Jahr frisch unter FOR UPDATE. Mehrere Jahre
+in ID-Reihenfolge sperren, danach Beleg sperren und alten Zuordnungsstand vergleichen.
+Keine negative/gebrochene/nichtendliche Budgeteingabe; Null ist erlaubt.
+Diese Sperrgrenze ist noch keine versionsgebundene Revisionshistorie (U2-04b).

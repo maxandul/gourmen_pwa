@@ -6,6 +6,7 @@ alles läuft über AccountingService.
 """
 
 from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
 
 from flask import (
     Blueprint,
@@ -1224,8 +1225,10 @@ def year_budget(fiscal_year_id: int):
     account_id = request.form.get('account_id', type=int)
     amount_raw = (request.form.get('amount_chf') or '').strip().replace(',', '.')
     try:
-        amount_rappen = int(round(float(amount_raw or '0') * 100))
-    except ValueError:
+        from backend.forms.accounting import chf_to_rappen
+        amount = Decimal(amount_raw)
+        amount_rappen = 0 if amount.is_finite() and amount == 0 else chf_to_rappen(amount)
+    except (ValueError, InvalidOperation):
         flash('Ungültiger Betrag.', 'error')
         return redirect(url_for('accounting.index', year=fy.id, tab='budget'))
     try:

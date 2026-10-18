@@ -785,3 +785,13 @@ uebersprungen. Gesamter Import bleibt bei Fehler ohne Teilbestand; Fingerprint
 wird additiv gespeichert, historische Dateien werden nicht nachtraeglich gehasht.
 Diese Grenze beweist keine Bankidentitaet bei zwei vollstaendig identischen
 Dateien mit angeblich verschiedenen Bewegungen; solche Faelle manuell klaeren.
+
+
+## App-Audit U2-04a: Budget und Belegzuordnung in Revision
+
+Budgetpflege endet bereits bei IN_REVIEW, nicht erst bei CLOSED. Auch die
+Oberflaeche zeigt dann keine Bearbeitungsformulare. Belege koennen nur zwischen
+offenen Jahren umgehaengt werden; ein offenes Ziel hebt die Quellsperre nicht auf.
+Jahresdaten werden vor betroffenen Mutationen und Revisionswechseln frisch gesperrt.
+Budgetbetraege sind exakt in Rappen, Null erlaubt. Revisionshistorie, begruendete
+Ruecknahme und erhaltener Bericht folgen als U2-04b/c, weiterhin keine Gesamtfreigabe.

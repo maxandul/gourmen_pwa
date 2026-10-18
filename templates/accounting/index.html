@@ -653,7 +653,7 @@
 
                 {# ---------------- Budget ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'budget' else '' }}" role="tabpanel">
-                    {% set budget_editable = is_treasurer and not fiscal_year.is_closed %}
+                    {% set budget_editable = is_treasurer and fiscal_year.is_open %}
                     {% set budget_cols = 5 if budget_editable else 4 %}
                     {% if budget_groups %}
                     <div class="data-table-scroll-outer">
