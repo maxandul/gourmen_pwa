@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-02c – Korrektur/Ruecknahme von Importzuordnungen**. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U2-02c2 – Rueckzahlungsabgleich**. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
    U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
@@ -35,3 +35,8 @@ Startanweisungen und offene Punkte sind keine aktuellen Arbeitsaufträge.
 
 R04c-Altbestand am 18.10. bestaetigt: noch nicht klassifizierte Dateien in der App
 nur fuer Systemadmin. Direkte Drive-Freigaben bleiben bis separater Abnahme unveraendert.
+
+U2-02c1 ist lokal geprueft; Ruecknahmejournal und alte Buchungen bleiben erhalten.
+Fuer c2 ist die Fachentscheidung bestaetigt: ausdruecklich zur Rueckzahlung
+bestaetigter Eingangsueberschuss auf 3620, tatsaechlicher Ausgang auf 6710.
+Keine automatische Ueberweisung. Vertrag/Nachweise: U2_02C_ZUORDNUNGSKORREKTUR.md.

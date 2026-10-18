@@ -97,7 +97,7 @@ class AccountingRevisionService:
 
     @staticmethod
     def snapshot(fy):
-        bookings = Booking.query.filter_by(fiscal_year_id=fy.id).order_by(Booking.id).all()
+        bookings = Booking.query.filter_by(fiscal_year_id=fy.id, reversal_id=None).order_by(Booking.id).all()
         budgets = BudgetEntry.query.filter_by(fiscal_year_id=fy.id).order_by(BudgetEntry.account_id).all()
         account_ids = {b.account_id for b in bookings} | {b.account_id for b in budgets}
         accounts = Account.query.filter(Account.id.in_(account_ids)).order_by(Account.id).all()

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% macro chf(rappen) -%}{{ '%.2f'|format((rappen or 0) / 100) }}{%- endmacro %}
+{% block title %}Zuordnung zurücknehmen - Gourmen{% endblock %}
+{% block content %}
+<div class="container">
+    <p class="page-back"><a href="{{ url_for('accounting.payment_allocations',tx_id=tx.id) }}">Zur Zahlung</a></p>
+    <h1>Zuordnungen zurücknehmen</h1>
+    <p>Bankbewegung: {{ tx.booked_date.strftime('%d.%m.%Y') }} · CHF {{ chf(tx.amount_rappen) }} · {{ tx.buchungstext }}</p>
+    <p>Alle folgenden Zuordnungen werden gemeinsam zurückgenommen. Die ursprüngliche Bankbewegung bleibt erhalten. Danach sind CHF {{ chf(tx.amount_rappen) }} erneut zuzuordnen. Keine Rücküberweisung wird ausgelöst.</p>
+    <section class="card"><div class="card__body">
+    {% for row in state.active_rows %}
+        <p>{{ row.kind_display }} · CHF {{ chf(row.amount_rappen) }}{% if row.member %} · {{ row.member.display_name }}{% endif %}</p>
+        {% if row.kind == 'claim' %}<p>Forderungszahlung wird um CHF {{ chf(row.amount_rappen) }} vermindert; Zahlungen anderer Bankbewegungen bleiben erhalten.</p>{% endif %}
+        {% if row.booking %}<p>Die Buchung bleibt als zurückgenommener Verlauf erhalten und zählt nicht mehr zum Jahres-Ist. Ihre Belege bleiben erhalten.</p>{% endif %}
+    {% else %}<p>Keine aktiven Zuordnungen. Historischen Stand bei Bedarf gezielt abgleichen.</p>{% endfor %}
+    </div></section>
+    {% if state.active_rows %}
+    <form method="POST" class="form" action="{{ url_for('accounting.payment_reverse',tx_id=tx.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="version" value="{{ tx.allocation_version }}">
+        <div class="form-field"><label class="form-field__label" for="reversal-reason">Grund (Pflicht)</label><textarea class="form-field__textarea" id="reversal-reason" name="reason" required maxlength="2000">{{ request.form.get('reason','') }}</textarea></div>
+        <div class="form-actions"><button class="btn btn--danger" type="submit">Alle gezeigten Zuordnungen zurücknehmen</button><a class="btn btn--outline" href="{{ url_for('accounting.payment_allocations',tx_id=tx.id) }}">Abbrechen</a></div>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

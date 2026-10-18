@@ -16,10 +16,11 @@ class PaymentAllocationService:
     @classmethod
     def summary(cls,tx):
         rows=cls.rows(tx)
-        booked=sum(row.amount_rappen for row in rows if row.kind!='refund')
-        refund=sum(row.amount_rappen for row in rows if row.kind=='refund')
+        active_rows=[row for row in rows if row.reversal_id is None]
+        booked=sum(row.amount_rappen for row in active_rows if row.kind!='refund')
+        refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund')
         legacy=not rows and tx.status==BankTransactionStatus.BOOKED
-        return dict(rows=rows,booked=tx.amount_rappen if legacy else booked,refund=refund,
+        return dict(rows=rows,active_rows=active_rows,booked=tx.amount_rappen if legacy else booked,refund=refund,
                     remaining=0 if legacy else tx.amount_rappen-booked-refund,legacy=legacy)
 
     @staticmethod
@@ -74,7 +75,7 @@ class PaymentAllocationService:
                         raise BankImportError('Betrag überschreitet die offene Forderung.')
                     code=CLAIM_ACCOUNT_CODES.get(claim.claim_type)
                 else:
-                    if not any(row.kind=='claim' and row.claim_id==claim.id for row in state['rows']):
+                    if not any(row.kind=='claim' and row.claim_id==claim.id for row in state['active_rows']):
                         raise BankImportError('Aufrundung benötigt eine Forderungszuordnung dieser Bankbewegung.')
                     code=ROUNDING_ACCOUNT_CODES.get(claim.claim_type)
                 account=Account.query.filter_by(code=code).first() if code else None
@@ -104,7 +105,7 @@ class PaymentAllocationService:
             result=cls.summary(tx)
             if result['remaining']==0 and result['refund']==0:
                 tx.status=BankTransactionStatus.BOOKED
-                tx.booking_id=next(item.booking_id for item in result['rows'] if item.booking_id)
+                tx.booking_id=next(item.booking_id for item in result['active_rows'] if item.booking_id)
             db.session.commit()
             return row
         except AccountingValidationError:

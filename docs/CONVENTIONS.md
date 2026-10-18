@@ -957,3 +957,16 @@ Versuchsnummer sperrt Abschluss eines alten Workers; fuenf Minuten laufender
 Versuch, danach Wiederaufnahme mit derselben Datei-ID. Erfolg erst nach
 lokalem Abschlusscommit. Fehler/unklares Ergebnis erhalten Bestätigung und
 Wiederholungsdaten; keine geheime Payload oder Providerfehler in der UI.
+
+
+### Aktive Buchungen und erhaltene Ruecknahmen
+
+Booking.reversal_id / BankPaymentAllocation.reversal_id kennzeichnen erhaltene
+zurueckgenommene Zeilen. Journal, Summen, Budget/Ist, Zeitreihen, Vergleich,
+Beitragsauswertung, CSV und neue Revisionssnapshots zaehlen nur reversal_id NULL.
+Historienabfragen und bestehende Revisionen behalten alte Zeilen. Ruecknahme ist
+keine Gegenbewegung und darf keine fiktiven Einnahmen/Ausgaben erzeugen.
+Zuordnungsruecknahme immer ganze aktuelle Bankversion, Pflichtgrund, native oder
+gezielte Finanz-Schreibberechtigung; Quelle bleibt erhalten. Wiederzuordnung
+ueber Teilzuordnungsweg, nicht Alt-Einzelweg. Bankimport mit Historie niemals
+ignorieren/loeschen. Belege bleiben an der alten Buchung, Zielauswahl nur aktiv.

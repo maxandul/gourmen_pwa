@@ -10,6 +10,8 @@
 {% block title %}Buchung – Gourmen{% endblock %}
 
 {% block content %}
+{% if booking.reversal %}<div class="container"><p role="status">Zurückgenommene Importbuchung: {{ booking.reversal.reason }}. Diese Buchung bleibt im Verlauf erhalten und zählt nicht mehr zum Jahres-Ist.</p><a href="{{ url_for('accounting.payment_allocations',tx_id=booking.reversal.bank_transaction_id) }}">Aktuellen Zuordnungsstand öffnen</a></div>{% endif %}
+
 <div class="container">
     <div class="page-header">
         <p class="page-back">

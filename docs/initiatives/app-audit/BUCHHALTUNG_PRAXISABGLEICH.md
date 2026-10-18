@@ -347,6 +347,12 @@ G1–G3 und die nachfolgende K1-Zuordnung wurden separat bestätigt.
 
 ### Kontierungsvorlage K1: bestehende Posten, getrennte Rückflüsse
 
+Ergaenzung am 18.10.2026 ausdruecklich bestaetigt: Der zur Rueckzahlung
+bestimmte Ueberschuss eines Eingangs wird bei Bestaetigung auf 3620 erfasst
+(Beispiel CHF 90 erhalten, CHF 84 Forderung, CHF 6 Ueberschuss). Die spaetere
+tatsaechliche Rueckzahlung wird auf 6710 verbucht. Keine automatische Ueberweisung.
+
+
 Mit «ja» bestätigt: Rückzahlungsposten und ergänzende Nettoübersicht je Runde.
 Die detaillierten Teilzahlungsbeispiele bleiben Ausarbeitung dieser Regeln,
 keine separat vorgeführten Abläufe. Für den einfachen Bankarbeitsplatz

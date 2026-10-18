@@ -6,9 +6,10 @@
 {% if allocation.legacy %}<p class="text-secondary">Historisch verbucht, ohne neues Zuordnungsjournal.</p>{% endif %}
 {% for row in allocation.rows %}
 <div class="info-row">
-    <span class="info-row__label">{{ row.kind_display }}{% if row.member %} · {{ row.member.display_name }}{% endif %}</span>
+    <span class="info-row__label">{{ row.kind_display }}{% if row.reversal %} · Zurückgenommen{% endif %}{% if row.member %} · {{ row.member.display_name }}{% endif %}</span>
     <span class="info-row__value">CHF {{ chf(row.amount_rappen) }}
     {% if row.booking_id %}<a href="{{ url_for('accounting.booking_detail', booking_id=row.booking_id) }}">Buchung ansehen</a>{% endif %}
+    {% if row.reversal %}<br>Rücknahme: {{ row.reversal.reason }} · {{ row.reversal.actor.display_name }} · {{ row.reversal.created_at.strftime('%d.%m.%Y %H:%M') }}{% endif %}
     · {{ row.created_at.strftime('%d.%m.%Y') }} · {{ row.actor.display_name }}</span>
 </div>
 {% endfor %}
@@ -39,4 +40,8 @@
     </form>
     </div>
 </details>
+{% endif %}
+
+{% if can_allocate and allocation.active_rows %}
+<p><a href="{{ url_for('accounting.payment_reverse',tx_id=tx.id) }}">Zuordnungen prüfen und zurücknehmen</a></p>
 {% endif %}

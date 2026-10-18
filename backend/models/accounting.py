@@ -186,6 +186,8 @@ class Booking(db.Model):
         db.ForeignKey('fiscal_years.id', ondelete='RESTRICT'),
         nullable=False, index=True,
     )
+    reversal_id = db.Column(db.Integer, db.ForeignKey('bank_allocation_reversals.id', ondelete='RESTRICT'))
+    reversal = db.relationship('BankAllocationReversal')
     booking_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     amount_rappen = db.Column(db.Integer, nullable=False)
@@ -294,6 +296,8 @@ class Receipt(db.Model):
 
     @property
     def status_display(self):
+        if self.booking and self.booking.reversal_id:
+            return 'Zuordnung zurückgenommen'
         return 'Verbucht' if self.is_booked else 'Ausstehend'
 
     @property
@@ -597,16 +601,6 @@ class MemberClaim(db.Model):
     @property
     def open_chf(self):
         return self.open_rappen / 100
-
-    @property
-    def revision_approval(self):
-        if not self.is_closed:
-            return None
-        if self.review_version:
-            from backend.models.accounting_revision import AccountingRevision
-            return AccountingRevision.query.filter_by(
-                fiscal_year_id=self.id, version=self.review_version, state='approved').first()
-        return self.legacy_revision_approval
 
     @property
     def is_open(self):

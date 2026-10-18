@@ -836,3 +836,16 @@ Versuch. Nach unklarem Erfolg wird die vorhandene Datei inhaltlich geprueft.
 Abweichende/verschobene/geloeschte Datei wird nicht ersetzt. Laufender Versuch
 ist fuenf Minuten geschuetzt; danach erneut versuchbar. Altbestandsberichte
 bleiben erhalten, ohne rekonstruierten PDF-Inhalt. Reale Drive-Abnahme offen.
+
+
+## App-Audit U2-02c1: Zuordnungen begruendet zuruecknehmen
+
+Zuordnungsstand verlinkt eine Vorschau aller aktuellen Anteile. Mit Grund und
+aktueller Version gemeinsam zuruecknehmen: bankseitiger Originalbetrag bleibt
+zur erneuten Zuordnung offen, alte Buchungen und Belege bleiben lesbar.
+Forderungen verlieren nur die dieser Bewegung zugeordneten Zahlungsanteile.
+Die Ruecknahme steht mit Person/Zeit/Grund im Verlauf. Jahres-Ist/Export zaehlen
+nur aktive Buchungen; alte Prueffassungen und Berichte bleiben unveraendert.
+Neue Zuordnung anschliessend im bestehenden Teilbetragsformular. Vorgemerkte
+Erstattung war keine Zahlung und kann mit zurueckgenommen werden.
+Tatsaechlicher Erstattungsabgleich folgt c2; keine Bankueberweisung ausgeloest.

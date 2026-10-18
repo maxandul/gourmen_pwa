@@ -94,6 +94,7 @@ class AccountingService:
         visible_events = Event.apply_audience_filter(db.session.query(Event.id), member)
         query = Booking.query.join(FiscalYear, Booking.fiscal_year_id == FiscalYear.id).filter(
             FiscalYear.status == FiscalYearStatus.OPEN,
+            Booking.reversal_id.is_(None),
             db.or_(Booking.event_id.is_(None), Booking.event_id.in_(visible_events)))
         if not cls.can_link_receipt_booking(member):
             query = query.filter(db.false())
@@ -308,7 +309,7 @@ class AccountingService:
         }
         actual_rows = (
             db.session.query(Booking.account_id, db.func.sum(Booking.amount_rappen))
-            .filter(Booking.fiscal_year_id == fy.id)
+            .filter(Booking.fiscal_year_id == fy.id, Booking.reversal_id.is_(None))
             .group_by(Booking.account_id)
             .all()
         )
@@ -369,7 +370,7 @@ class AccountingService:
         rows = (
             db.session.query(Booking.direction, db.func.sum(Booking.amount_rappen))
             .join(FiscalYear, FiscalYear.id == Booking.fiscal_year_id)
-            .filter(FiscalYear.year < fy.year)
+            .filter(FiscalYear.year < fy.year, Booking.reversal_id.is_(None))
             .group_by(Booking.direction)
             .all()
         )
@@ -447,7 +448,7 @@ class AccountingService:
             raise AccountingValidationError("Buchung nicht gefunden.")
         cls.lock_fiscal_year(booking.fiscal_year_id)
         booking = Booking.query.filter_by(id=booking_id).populate_existing().with_for_update().one()
-        if cls.is_import_booking(booking):
+        if booking.reversal_id or cls.is_import_booking(booking):
             raise AccountingValidationError('Importzuordnung bleibt erhalten; Korrektur benötigt den Zuordnungsablauf.')
         if booking.fiscal_year.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
@@ -485,7 +486,7 @@ class AccountingService:
     @classmethod
     def get_journal(cls, fiscal_year_id: int, account_id: int | None = None,
                     direction=None) -> list[Booking]:
-        query = Booking.query.filter_by(fiscal_year_id=fiscal_year_id)
+        query = Booking.query.filter_by(fiscal_year_id=fiscal_year_id, reversal_id=None)
         if account_id:
             query = query.filter_by(account_id=account_id)
         if direction:
@@ -504,7 +505,7 @@ class AccountingService:
 
         sums = dict(
             db.session.query(Booking.direction, db.func.sum(Booking.amount_rappen))
-            .filter(Booking.fiscal_year_id == fy.id)
+            .filter(Booking.fiscal_year_id == fy.id, Booking.reversal_id.is_(None))
             .group_by(Booking.direction)
             .all()
         )
@@ -533,7 +534,7 @@ class AccountingService:
             'open_receipts': open_receipts,
             'budget_total_rappen': budget_total,
             'budget_used_pct': budget_used_pct,
-            'booking_count': Booking.query.filter_by(fiscal_year_id=fy.id).count(),
+            'booking_count': Booking.query.filter_by(fiscal_year_id=fy.id, reversal_id=None).count(),
         }
 
     # -- Offene Posten (MemberClaim, Spec Sektion 11.5) ---------------------
@@ -798,7 +799,7 @@ class AccountingService:
         if prev is not None:
             actual_rows = (
                 db.session.query(Booking.account_id, db.func.sum(Booking.amount_rappen))
-                .filter(Booking.fiscal_year_id == prev.id)
+                .filter(Booking.fiscal_year_id == prev.id, Booking.reversal_id.is_(None))
                 .group_by(Booking.account_id)
                 .all()
             )
@@ -822,7 +823,7 @@ class AccountingService:
         """Kumulierter Saldo pro Monat (Rappen) für die Linienkurve."""
         fy = cls.get_fiscal_year(fiscal_year_id)
         bookings = (
-            Booking.query.filter_by(fiscal_year_id=fy.id)
+            Booking.query.filter_by(fiscal_year_id=fy.id, reversal_id=None)
             .order_by(Booking.booking_date, Booking.id)
             .all()
         )
@@ -851,7 +852,7 @@ class AccountingService:
                 Booking.direction,
                 db.func.sum(Booking.amount_rappen),
             )
-            .outerjoin(Booking, Booking.fiscal_year_id == FiscalYear.id)
+            .outerjoin(Booking, db.and_(Booking.fiscal_year_id == FiscalYear.id, Booking.reversal_id.is_(None)))
             .group_by(FiscalYear.id, Booking.direction)
             .all()
         )
@@ -881,6 +882,7 @@ class AccountingService:
             Booking.query.join(Account, Account.id == Booking.account_id)
             .filter(
                 Booking.fiscal_year_id == fiscal_year_id,
+                Booking.reversal_id.is_(None),
                 Booking.direction == BookingDirection.IN,
                 Account.code.in_(cls.MEMBER_CONTRIBUTION_CODES),
             )
@@ -946,7 +948,8 @@ class AccountingService:
             if target_booking is None:
                 raise AccountingValidationError("Buchung nicht gefunden.")
             years = cls.lock_fiscal_years(fy.id, target_booking.fiscal_year_id)
-            if any(year.status != FiscalYearStatus.OPEN for year in years.values()):
+            target_booking = Booking.query.filter_by(id=booking_id).populate_existing().with_for_update().one()
+            if target_booking.reversal_id or any(year.status != FiscalYearStatus.OPEN for year in years.values()):
                 raise AccountingValidationError(
                     "Jahr ist nicht offen – Beleg kann nicht direkt verknüpft werden."
                 )
@@ -1058,7 +1061,7 @@ class AccountingService:
         """CSV (UTF-8 mit BOM, Semikolon) für Excel."""
         fy = cls.get_fiscal_year(fiscal_year_id)
         bookings = (
-            Booking.query.filter_by(fiscal_year_id=fy.id)
+            Booking.query.filter_by(fiscal_year_id=fy.id, reversal_id=None)
             .order_by(Booking.booking_date, Booking.id)
             .all()
         )

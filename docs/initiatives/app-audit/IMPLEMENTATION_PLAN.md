@@ -103,7 +103,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-02b / A-061 | b1/b2 lokal geprüft | Richtung/Mitglied/Forderung und explizite Rest-/Aufrundungswahl nach F5/B01; keine automatische Aufrundung. |
 | U2-02b1 / Einzelposten | lokal geprüft | Gemeinsame Richtungs-/Konto-/Mitglied-/Eventpruefung, explizite Aufrundung, keine automatische Bankzahler-Aliasvergabe. |
 | U2-02b2 / B01/F5 | lokal geprüft | Persistierte Mehrfachzuordnung mit summenerhaltendem offenen Rest bzw. Rueckzahlungsbedarf; Zahlung fuer mehrere Forderungen/Mitglieder, keine zweite Bankbewegung. Schema/Migration separat; Einzelpostenweg integrieren, Historie nicht umdeuten. |
-| U2-02c / A-062 | **bereit / nächstes Paket** | Importbuchungen nicht frei editierbar. Versionsgebundene Korrektur/Ruecknahme samt vorgemerkten Rueckzahlungen auf Revisions-/Historienmodell aufbauen; keine stille Altdatenreparatur. |
+| U2-02c / A-062 | c1 lokal geprüft; c2 bereit | Versionsgebundene Ruecknahme implementiert; Rueckzahlungsabgleich verbleibt. [Vertrag/Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
+| U2-02c1 | lokal geprüft | Atomare Ruecknahme mit Grund, Historie, Forderungsabgleich und aktiven Auswertungen. |
+| U2-02c2 | **bereit / nächstes Paket** | Bestaetigter Ueberschuss auf 3620, tatsaechliche Rueckzahlung auf 6710; Teilbetraege und Jahreswechsel ohne automatische Ueberweisung. |
 | U2-03 / A-063, A-064, A-065 | a/b lokal geprüft | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
 | U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
@@ -111,7 +113,6 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-04a / A-059, A-066 | lokal geprüft | Offenes Jahr fuer Budget und Quelle/Ziel der Belegzuordnung durchsetzen; gemeinsame Jahres-Sperrgrenze fuer betroffene Mutationen und Revision. Keine Historie loeschen. |
 | U2-04b / R04d, A-073, A-074 | lokal geprüft | Versionsgebundener Pruefstand, begruendete Ruecknahme/Wiederoeffnung, erhaltene Bestaetigungen/Kommentare, markierte Admin-Stellvertretung. |
 | U2-04c / A-069, A-070 | c1/c2 lokal geprüft | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
-
 | U2-04c1 / A-069 | lokal geprüft | Eingefrorene Auswertungen/PDF, sichtbarer Vorjahresabgleich und erneute Vorlage bei Differenz. |
 | U2-04c2 / A-070 | lokal geprüft | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
 

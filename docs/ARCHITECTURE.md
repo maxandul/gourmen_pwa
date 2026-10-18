@@ -387,3 +387,11 @@ AccountingRevision speichert exakte PDF-Bytes, reservierte Datei-/Ordner-ID,
 Versuchszahl, Zeitpunkt und Zustand. DriveStorageService.reserve_file_id und
 upload_reserved_pdf sind ein eigener idempotenter Transport fuer diese Berichte;
 generische Uploads bleiben unveraendert. Kein DB-Lock waehrend Remote-I/O.
+
+
+### Ruecknahme von Importzuordnungen (U2-02c1)
+
+BankAllocationReversal verbindet Grund, Person, Zeit und Bankversion mit
+erhaltenen Zuordnungen/Buchungen. AllocationReversalService nimmt den gesamten
+aktiven Zuordnungsstand atomar zurueck; Quellenbewegung und alte Zeilen werden
+nicht geloescht. Zahlungsjahr und betroffene Forderungen werden frisch gesperrt.

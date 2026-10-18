@@ -7,6 +7,8 @@ class BankPaymentAllocation(db.Model):
     __tablename__ = 'bank_payment_allocations'
     id = db.Column(db.Integer, primary_key=True)
     bank_transaction_id = db.Column(db.Integer, db.ForeignKey('bank_transactions.id',ondelete='RESTRICT'),nullable=False)
+    reversal_id = db.Column(db.Integer,db.ForeignKey('bank_allocation_reversals.id',ondelete='RESTRICT'))
+    reversal = db.relationship('BankAllocationReversal')
     version = db.Column(db.Integer,nullable=False)
     position = db.Column(db.Integer,nullable=False,default=0,server_default='0')
     kind = db.Column(db.String(16),nullable=False)
