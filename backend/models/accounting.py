@@ -396,7 +396,7 @@ class BankStatementImport(db.Model):
     @property
     def can_delete(self):
         """Löschbar nur solange keine Zeile verbucht ist."""
-        return self.booked_count == 0
+        return self.booked_count == 0 and not any(tx.payment_allocations for tx in self.transactions)
 
 
 class BankTransaction(db.Model):
@@ -420,6 +420,7 @@ class BankTransaction(db.Model):
         nullable=True, index=True,
     )
     line_key = db.Column(db.String(60), unique=True, nullable=False, index=True)
+    allocation_version = db.Column(db.Integer,nullable=False,default=0,server_default='0')
     booked_date = db.Column(db.Date, nullable=False)
     valuta = db.Column(db.Date)
     amount_rappen = db.Column(db.Integer, nullable=False)

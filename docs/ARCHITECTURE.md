@@ -355,3 +355,16 @@ AuthToken-Widerruf und Audit in einer Transaktion vor. Nur bestehende aktive
 Admins, Vorschau als Standard, verdeckte Passwortbestaetigung und explizite
 Zielbestaetigung. Hostingzugriff ist die externe Vertrauensgrenze, keine neue
 App-Authentisierung. Runbook/Pruefgrenzen: U1_R07_ADMIN_NOTFALL.md im App-Audit.
+
+
+## Bank-Zuordnungsjournal (U2-02b2)
+
+BankPaymentAllocation speichert neue Teilzuordnungen als eigenstaendige,
+append-only Evidenz mit Betrag, Art, Forderung/Journalbuchung, Operator und Zeit.
+BankTransaction.allocation_version bindet bestaetigte Teilauftraege an den
+angezeigten Stand. PaymentAllocationService teilt dieselbe Kopf-/Zeilen-/Jahr-/
+Forderungssperre und Commitgrenze wie BankImportService. Bestehender Einzelweg
+schreibt ebenfalls Journalzeilen; Altbestand wird nicht automatisch rueckbefuellt.
+Zuordnungsansicht zeigt gebuchte Anteile, Rest und vorgemerkte Rueckzahlung getrennt.
+Vormerkung ist keine Ausgabe/Bankanweisung und bleibt offen bis zum gesonderten
+Rueckfluss-/Korrekturablauf. Migration u202b220261018 separat, kein Live-Lauf.

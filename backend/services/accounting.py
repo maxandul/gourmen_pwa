@@ -468,11 +468,21 @@ class AccountingService:
             db.session.flush()
         return booking
 
+    @staticmethod
+    def is_import_booking(booking):
+        from backend.models.accounting import BankTransaction
+        from backend.models.bank_payment_allocation import BankPaymentAllocation
+        return bool(BankPaymentAllocation.query.filter_by(booking_id=booking.id).first()
+            or BankTransaction.query.filter(BankTransaction.booking_id==booking.id).first()
+            or (booking.payment_ref and BankTransaction.query.filter_by(line_key=booking.payment_ref).first()))
+
     @classmethod
     def update_booking(cls, booking_id: int, **kwargs) -> Booking:
         booking = db.session.get(Booking, booking_id)
         if booking is None:
             raise AccountingValidationError("Buchung nicht gefunden.")
+        if cls.is_import_booking(booking):
+            raise AccountingValidationError('Importzuordnung bleibt erhalten; Korrektur benötigt den Zuordnungsablauf.')
         if booking.fiscal_year.status != FiscalYearStatus.OPEN:
             raise AccountingValidationError(
                 "Jahr ist nicht offen – Buchung nicht mehr änderbar."

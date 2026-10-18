@@ -78,8 +78,8 @@ def _require_funktion(*funktionen) -> None:
         return
     # Explicit endpoint sets fail closed for future routes, including revision actions.
     read_endpoints = {'accounting.index', 'accounting.booking_detail',
-                      'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats'}
-    write_endpoints = {'accounting.booking_edit', 'accounting.booking_attach_receipt',
+                      'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations'}
+    write_endpoints = {'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
                        'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
                        'accounting.bank_import_upload', 'accounting.bank_import_review',
                        'accounting.bank_review_all', 'accounting.bank_tx_book', 'accounting.bank_tx_ignore',
@@ -354,7 +354,7 @@ def booking_detail(booking_id: int):
 def _render_booking_detail(booking, submitted_form=None):
     fy = booking.fiscal_year
 
-    can_edit = _is_treasurer() and fy.is_open
+    can_edit = _is_treasurer() and fy.is_open and not AccountingService.is_import_booking(booking)
     form = submitted_form if submitted_form is not None else (
         _booking_form_with_choices(fy, obj=booking) if can_edit else None)
     if form is not None and request.method == 'GET':
@@ -988,7 +988,17 @@ def _review_context(pending):
             )
             if claim is not None:
                 suggested_claims[tx.id] = claim.id
+    from backend.services.payment_allocations import PaymentAllocationService
+    allocation_summaries = {tx.id: PaymentAllocationService.summary(tx) for tx in pending}
+    allocation_claims = {claim.id: claim for claim in open_claims}
+    for summary in allocation_summaries.values():
+        for row in summary['rows']:
+            if row.claim:
+                allocation_claims[row.claim.id] = row.claim
     return {
+        'allocation_summaries': allocation_summaries,
+        'allocation_claims': list(allocation_claims.values()),
+        'can_allocate': _is_treasurer(),
         'accounts': accounts,
         'members': members,
         'open_claims': open_claims,
@@ -1056,6 +1066,38 @@ def _review_redirect(tx):
     if request.form.get('all') == '1':
         return redirect(url_for('accounting.bank_review_all'))
     return redirect(url_for('accounting.bank_import_review', import_id=tx.import_id))
+
+
+@bp.route('/import/tx/<int:tx_id>/allocations')
+@login_required
+def payment_allocations(tx_id):
+    _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
+    tx = BankImportService.get_transaction(tx_id)
+    return render_template('accounting/payment_allocations.html', tx=tx, **_review_context([tx]))
+
+
+@bp.route('/import/tx/<int:tx_id>/allocate', methods=['POST'])
+@login_required
+def payment_allocate(tx_id):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    from backend.forms.accounting import chf_to_rappen
+    from backend.services.payment_allocations import PaymentAllocationService
+    try:
+        PaymentAllocationService.allocate(tx_id,
+            expected_version=request.form.get('version', type=int),
+            kind=request.form.get('kind'), amount_rappen=chf_to_rappen(request.form.get('amount_chf')),
+            actor=current_user, account_id=request.form.get('account_id', type=int) or None,
+            claim_id=request.form.get('claim_id', type=int) or None,
+            member_id=request.form.get('member_id', type=int) or None,
+            event_id=request.form.get('event_id', type=int) or None)
+        flash('Zuordnung gespeichert. Rest und Rückzahlungsbedarf bleiben getrennt sichtbar.', 'success')
+    except (AccountingError, ValueError) as exc:
+        flash(str(exc), 'error')
+        tx = BankImportService.get_transaction(tx_id)
+        return render_template('accounting/payment_allocations.html', tx=tx,
+            submitted_allocation=request.form, **_review_context([tx])), 400
+    return redirect(url_for('accounting.payment_allocations', tx_id=tx_id))
 
 
 @bp.route('/import/tx/<int:tx_id>/book', methods=['POST'])

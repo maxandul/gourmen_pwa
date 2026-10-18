@@ -172,7 +172,7 @@ def test_delete_import_rejects_when_booked(app):
             event_id=None, claim_id=None, booked_by=treasurer,
         )
 
-        with pytest.raises(BankImportError, match='verbuchte'):
+        with pytest.raises(BankImportError, match='verbuchte|Zuordnungen'):
             BankImportService.delete_import(statement.id)
         assert BankTransaction.query.count() == 8
 

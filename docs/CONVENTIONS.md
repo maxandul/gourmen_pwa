@@ -879,3 +879,16 @@ Freiwilliger Ueberschuss bei Essen/Merch verlangt excess_action=rounding;
 Forderung nur um ihren Anteil erhoehen, Zusatzbetrag getrennt buchen. Ohne
 passende Wahl oder bei defer nichts buchen, Bewegung pending lassen. Persistierte
 Mehrfachzuordnung/offene Reste folgen in U2-02b2; kein automatisches Umdeuten.
+
+
+## Teilzuordnungen (U2-02b2)
+
+Pro Bankbewegung muss gelten: gebucht + Rueckzahlungsbedarf vorgemerkt + Rest =
+Originalbetrag. Positive Integer-Rappen, nie ueber Rest oder offene Forderung.
+Version aus angezeigtem Formular unter Sperre vergleichen, gemeinsam mit neuer
+Zuordnung/Buchung/Forderung committen. Wiederholung mit alter Version ablehnen;
+keine automatische Neuausfuehrung. Erfolgsjournal nicht nachtraeglich ueberschreiben.
+Bankzahler bleibt im Originalauszug, Forderungsschuldner steht in jeder Zuordnung;
+keine Aliasvergabe aus Sammel-/Fremdzahlung. Importbuchungen (auch historische
+ueber payment_ref/booking_id erkannte) nicht frei bearbeiten. Zuordnungen schuetzen
+vor Ignorieren/Importloeschen. Korrekturvertrag gesondert, keine stille Altdatenreparatur.

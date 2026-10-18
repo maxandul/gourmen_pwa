@@ -1,0 +1,42 @@
+{% set allocation = allocation_summaries[tx.id] %}
+{% set values = submitted_allocation|default({}) %}
+<div class="info-row"><span class="info-row__label">Bereits gebucht</span><span class="info-row__value">CHF {{ chf(allocation.booked) }}</span></div>
+<div class="info-row"><span class="info-row__label">Noch nicht zugeordnet</span><span class="info-row__value">CHF {{ chf(allocation.remaining) }}</span></div>
+<div class="info-row"><span class="info-row__label">Rückzahlungsbedarf (vorgemerkt)</span><span class="info-row__value">CHF {{ chf(allocation.refund) }}</span></div>
+{% if allocation.legacy %}<p class="text-secondary">Historisch verbucht, ohne neues Zuordnungsjournal.</p>{% endif %}
+{% for row in allocation.rows %}
+<div class="info-row">
+    <span class="info-row__label">{{ row.kind_display }}{% if row.member %} · {{ row.member.display_name }}{% endif %}</span>
+    <span class="info-row__value">CHF {{ chf(row.amount_rappen) }}
+    {% if row.booking_id %}<a href="{{ url_for('accounting.booking_detail', booking_id=row.booking_id) }}">Buchung ansehen</a>{% endif %}
+    · {{ row.created_at.strftime('%d.%m.%Y') }} · {{ row.actor.display_name }}</span>
+</div>
+{% endfor %}
+{% if allocation.refund %}<p class="text-secondary">Nur vorgemerkt: keine Rückzahlung ausgelöst. Die Bankbewegung bleibt bis zur Klärung offen.</p>{% endif %}
+{% if can_allocate and tx.is_pending and not tx.is_collective and allocation.remaining > 0 %}
+<details class="card">
+    <summary>Teilbetrag zuordnen</summary>
+    <div class="card__body">
+    <form method="POST" action="{{ url_for('accounting.payment_allocate',tx_id=tx.id) }}" class="form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="version" value="{{ tx.allocation_version }}">
+        <div class="form-field"><label class="form-field__label" for="part-{{ tx.id }}-amount">Teilbetrag (CHF)</label><input class="form-field__input" id="part-{{ tx.id }}-amount" name="amount_chf" value="{{ values.get('amount_chf', '') }}" type="number" step="0.01" min="0.01" max="{{ chf(allocation.remaining) }}" required></div>
+        <div class="form-field"><label class="form-field__label" for="part-{{ tx.id }}-kind">Zuordnung</label>
+        <select class="form-field__select" id="part-{{ tx.id }}-kind" name="kind" required>
+            <option value="">– wählen –</option>
+            {% if tx.is_income %}<option value="claim" {{ 'selected' if values.get('kind') == 'claim' else '' }}>Offene Forderung</option>{% endif %}
+            <option value="booking" {{ 'selected' if values.get('kind') == 'booking' else '' }}>Andere Buchung</option>
+            {% if tx.is_income %}<option value="rounding" {{ 'selected' if values.get('kind') == 'rounding' else '' }}>Freiwillige Aufrundung zu bereits zugeordnetem Essen/Merch</option><option value="refund" {{ 'selected' if values.get('kind') == 'refund' else '' }}>Rückzahlungsbedarf vormerken</option>{% endif %}
+        </select></div>
+        <div class="form-field"><label class="form-field__label" for="part-{{ tx.id }}-claim">Forderung (nur für Forderung/Aufrundung)</label>
+        <select class="form-field__select" id="part-{{ tx.id }}-claim" name="claim_id"><option value="">–</option>{% for claim in allocation_claims %}<option value="{{ claim.id }}" {{ 'selected' if values.get('claim_id') == claim.id|string else '' }}>{{ claim.member.display_name }} · {{ claim.claim_type.value }} · CHF {{ chf(claim.open_rappen) }} offen</option>{% endfor %}</select></div>
+        <div class="form-field"><label class="form-field__label" for="part-{{ tx.id }}-account">Konto (nur für andere Buchung)</label>
+        <select class="form-field__select" id="part-{{ tx.id }}-account" name="account_id"><option value="">– automatisch aus Forderung –</option>{% for account in accounts %}<option value="{{ account.id }}" {{ 'selected' if values.get('account_id') == account.id|string else '' }}>{{ account.code }} {{ account.name }}</option>{% endfor %}</select></div>
+        <div class="form-field"><label class="form-field__label" for="part-{{ tx.id }}-member">Mitglied (optional bei anderer Buchung/Rückzahlungsbedarf)</label>
+        <select class="form-field__select" id="part-{{ tx.id }}-member" name="member_id"><option value="">– aus Forderung übernehmen –</option>{% for member in members %}<option value="{{ member.id }}" {{ 'selected' if values.get('member_id') == member.id|string else '' }}>{{ member.display_name }}</option>{% endfor %}</select></div>
+        <p class="form-field__help">Nur dieser Teilbetrag wird gespeichert. Weitere Forderungen können danach zugeordnet werden. Der ursprüngliche Bankbetrag bleibt erhalten.</p>
+        <button class="btn btn--primary" type="submit">Teilzuordnung bestätigen</button>
+    </form>
+    </div>
+</details>
+{% endif %}

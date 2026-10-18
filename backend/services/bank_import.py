@@ -536,6 +536,11 @@ class BankImportService:
                 'Sammelbuchung wird über ihre Detail-Zeilen verbucht.'
             )
 
+        from backend.services.payment_allocations import PaymentAllocationService
+        if PaymentAllocationService.rows(tx):
+            raise BankImportError('Bereits teilweise zugeordnet. Bitte die Teilzuordnung verwenden.')
+        if Booking.query.filter_by(payment_ref=tx.line_key).first():
+            raise BankImportError('Historische Buchung ohne Zuordnungsjournal: zuerst gezielt abgleichen.')
         if excess_action not in (None, '', 'rounding', 'defer'):
             raise BankImportError('Ungültige Restzuordnung.')
         if excess_action == 'defer':
@@ -609,6 +614,7 @@ class BankImportService:
             payment_ref=tx.line_key, commit=False,
         )
 
+        rounding_booking = None
         if rounding_amount > 0:
             rounding_account_id = cls._account_id_by_code(
                 ROUNDING_ACCOUNT_CODES[claim.claim_type]
@@ -618,7 +624,7 @@ class BankImportService:
             rounding_account = db.session.get(Account, rounding_account_id)
             if not rounding_account.is_active or rounding_account.kind != AccountKind.INCOME:
                 raise BankImportError('Aufrundungs-Konto muss aktiv und ein Einnahmenkonto sein.')
-            AccountingService.create_booking(
+            rounding_booking = AccountingService.create_booking(
                 fiscal_year_id=fiscal_year.id,
                 booking_date=tx.booked_date,
                 description=f'{description} (Aufrundung)',
@@ -639,6 +645,12 @@ class BankImportService:
             if counterparty:
                 cls.learn_alias(member_id, counterparty)
 
+        tx.allocation_version += 1
+        PaymentAllocationService.record(tx,booking,'claim' if claim else 'booking',booked_by.id,
+            claim_id=claim.id if claim else None,member_id=member_id)
+        if rounding_booking:
+            PaymentAllocationService.record(tx,rounding_booking,'rounding',booked_by.id,
+                claim_id=claim.id,member_id=member_id,position=1)
         tx.status = BankTransactionStatus.BOOKED
         tx.booking_id = booking.id
         return booking
@@ -648,6 +660,9 @@ class BankImportService:
         tx = cls.get_transaction(tx_id, lock=True)
         if not tx.is_pending:
             raise BankImportError('Transaktion ist bereits verarbeitet.')
+        from backend.services.payment_allocations import PaymentAllocationService
+        if PaymentAllocationService.rows(tx):
+            raise BankImportError('Zugeordnete Bankbewegung kann nicht ignoriert werden.')
         tx.status = BankTransactionStatus.IGNORED
         db.session.commit()
         return tx
@@ -676,6 +691,10 @@ class BankImportService:
             tx for tx in transactions
             if tx.status == BankTransactionStatus.BOOKED
         ]
+        from backend.models.bank_payment_allocation import BankPaymentAllocation
+        allocated = BankPaymentAllocation.query.filter(BankPaymentAllocation.bank_transaction_id.in_([tx.id for tx in transactions])).first()
+        if allocated:
+            raise BankImportError('Import hat gespeicherte Zuordnungen und kann nicht gelöscht werden.')
         if booked:
             raise BankImportError(
                 f'Import «{statement.filename}» hat bereits {len(booked)} '

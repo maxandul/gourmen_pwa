@@ -45,3 +45,59 @@ PWA 3.16.20, Fingerprint b9083e99; keine neue UI-Klasse oder Migration.
 b2 mit persistierter Mehrfach-/Restzuordnung ist naechstes Paket. Echte
 PostgreSQL-Konkurrenz und Browserabnahme offen, keine historischen Zahlungsdaten
 korrigiert. U1 und die weitergehenden Geldflussablaeufe bleiben offen.
+
+
+## b2: technischer Vertrag vor Schema/Code
+
+Additives BankPaymentAllocation-Journal je Bankbewegung: Betrag, Art
+(Forderung, freie Buchung, freiwillige Aufrundung, vorgemerkter Rueckzahlungsbedarf),
+optionale Forderung, gebuchte Journalzeile, handelnde Person und Zeitpunkt.
+BankTransaction erhaelt allocation_version. Kein Altbestand wird nachtraeglich
+als zugeordnet interpretiert. Historisch verbuchte Bewegungen bleiben verbucht.
+
+Pro bestaetigtem Teilauftrag genau eine neue Version unter Kopf-/Zeilensperre;
+angezeigte Version muss noch gelten. Summe gebuchter Zuordnungen plus vorgemerkte
+Rueckzahlung plus nicht zugeordneter Rest entspricht immer dem Originalbetrag.
+Forderungsanteil darf ihren offenen Betrag nicht uebersteigen, weitere Forderung
+auch eines anderen Mitglieds in weiterem Schritt moeglich. Bankbewegung bleibt
+einmal vorhanden. Jede Buchung folgt deren Zahlungsjahr, Forderungsjahr bleibt.
+
+Rueckzahlungsbedarf ist eine Vormerkung, keine Ausgabe, keine Bankueberweisung
+und keine zusaetzliche Einnahmenbuchung. Er bleibt im offenen Abgleich sichtbar;
+Abwicklung/Korrektur folgt im separaten Korrektur-/Rueckflusspaket. Rest ohne
+Zuordnung bleibt ebenfalls offen. Erst volle gebuchte Verteilung ohne Vormerkung
+setzt die Bewegung auf verbucht. Journal zeigt nur tatsaechlich zugeordnete
+Anteile; offene/vorgemerkte Betraege werden im Abgleich gesondert ausgewiesen.
+
+Bestehender Einzelweg schreibt kuenftig dasselbe Journal; bei vorhandener
+Teilverteilung ist nur der versionsgebundene Teilweg zulaessig. Teilverteilte
+Bewegungen nicht ignorieren/loeschen, verbundene Buchungen nicht frei bearbeiten.
+Historische Teilbuchung ohne passenden Status/Journal wird nicht automatisch
+weiterverarbeitet; gezielte Korrektur ist U2-02c. Aendern/Ruecknehmen gespeicherter
+Zuordnungen bleibt bis zu diesem Korrekturvertrag gesperrt. Migration separat.
+
+
+## b2 Abschlussnachweis 18.10.2026
+
+Migration separat **b63c328**, additive Version/Zuordnungstabelle ohne Backfill.
+SQLite Upgrade/Downgrade/Upgrade erhaelt synthetischen Bestand; Downgrade mit
+benutztem Journal verweigert. Neue Modelle/Service/Formularansicht lokal geprueft.
+
+Erster isolierter Lauf 93 bestanden, 889 Warnungen, 33.84 s. Abschluss nach
+Eingabeerhalt, Rollen-/CSRF-Grenzen, Journal-Flushfehler und Ausgabesplit:
+**104 bestanden, 1198 Warnungen, 37.65 s**. Dateien: test_payment_allocation_migration,
+test_payment_allocations, test_bank_payment_assignment, test_bank_booking_atomicity,
+test_bank_import, test_booking_values, test_finance_area_permissions.
+Worker **19 bestanden**; `git diff --check` ohne Fehler. PWA 3.16.21,
+Fingerprint 2316d7b4. Keine neue UI-Klasse. Ignorierte Windows-pyreadline-Warnung
+beim Prozessende, Exitcode 0; kein dotenv, Netz oder echte Daten.
+
+Mehrere Schuldner, Teil-/Schlusszuordnung, Aufrundung, Rueckzahlungsbedarf,
+Summenerhalt, anderer Zahlungsjahrgang, veraltete Version/Replay, Original-POST,
+fehlendes CSRF/Leserrechte, DB-Commit-/echter Journal-Constraintfehler, historisch
+unklarer Teilbestand sowie Editier-/Ignorier-/Loeschsperre abgedeckt.
+
+A-062 ist damit vor weiterer Entkopplung geschuetzt, aber **Korrektur bleibt offen**.
+Korrektur/Ruecknahme und Vollzug vorgemerkter Rueckzahlung benoetigen den kommenden
+versionierten Revisions-/Korrekturvertrag; keine Zahlungs- oder Historienreparatur
+behauptet. PostgreSQL-Konkurrenz, reale Browser/Geraete und U1-Abnahmen offen.

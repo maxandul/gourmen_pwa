@@ -90,6 +90,9 @@
                 </div>
                 {% endif %}
 
+                {% include 'accounting/_payment_allocation.html' %}
+                <p><a href="{{ url_for('accounting.payment_allocations',tx_id=tx.id) }}">Zuordnungsstand öffnen</a></p>
+                {% if not allocation_summaries[tx.id].rows %}
                 <form method="POST" action="{{ url_for('accounting.bank_tx_book', tx_id=tx.id) }}" class="form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if not statement %}<input type="hidden" name="all" value="1">{% endif %}
@@ -165,6 +168,8 @@
                         </button>
                     </div>
                 </form>
+                {% endif %}
+                {% if not allocation_summaries[tx.id].rows %}
                 <form method="POST" action="{{ url_for('accounting.bank_tx_ignore', tx_id=tx.id) }}" class="form"
                       onsubmit="return confirm('Transaktion ignorieren? Sie wird nicht verbucht, bleibt aber im Import sichtbar.');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -175,6 +180,7 @@
                         </button>
                     </div>
                 </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

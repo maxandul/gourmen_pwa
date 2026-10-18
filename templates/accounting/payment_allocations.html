@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% macro chf(rappen) -%}{{ "%.2f"|format((rappen or 0) / 100) }}{%- endmacro %}
+{% block title %}Zahlung zuordnen - Gourmen{% endblock %}
+{% block content %}
+<div class="container"><div class="page-header"><p class="page-back"><a href="{{ url_for('accounting.bank_import_review',import_id=tx.import_id) }}">Zurück zum Kontoabgleich</a></p><h1>Zahlung zuordnen</h1></div>
+<div class="page-content"><div class="card"><div class="card__header"><h2 class="card__title">CHF {{ chf(tx.amount_rappen) }} · {{ tx.booked_date.strftime('%d.%m.%Y') }}</h2></div><div class="card__body"><p>{{ tx.buchungstext }}</p>{% include 'accounting/_payment_allocation.html' %}</div></div></div></div>
+{% endblock %}

@@ -744,3 +744,23 @@ als freiwillige Aufrundung fuer Essen/Merch; ohne passende Wahl bleibt die
 Bankbewegung unbearbeitet. Forderung erhaelt nur ihren Anteil, Rest steht in
 eigener Buchung. Aliase nur nach ausdruecklicher Bankzahler-Bestaetigung.
 Weitergehende Sammel-/Restzuordnung ist noch U2-02b2, keine Rueckzahlung ausgeloest.
+
+
+## App-Audit U2-02b2: Mehrfachzuordnung und offener Rest
+
+Ein Bankeingang kann nacheinander Forderungen mehrerer Mitglieder/Jahre tilgen;
+jede Zuordnung besitzt Betrag, Forderung, Buchung und sichtbare Historie. Auch
+Ausgaben lassen sich auf mehrere Sachposten aufteilen. Originalbankbewegung
+bleibt einmal bestehen. Optimistische Formularversion plus DB-Sperren verhindert
+blindes Wiederholen. Gebuchter Anteil und Rest werden getrennt gezeigt.
+Rueckzahlungsbedarf kann ohne Ausgabe vorgemerkt werden und bleibt im Abgleich
+offen; keine echte Bankzahlung oder automatische Einnahmenbuchung dafuer.
+
+`/accounting/import/tx/<id>/allocations` zeigt den ganzen Zuordnungsstand,
+Buchungsdetails verlinken zur Bankbewegung. Finanzleser sehen ihn, Finanzbearbeiter
+koennen neue positive Anteile bestaetigen. Abgelehnte Eingaben bleiben sichtbar.
+Neue Einzelverbuchungen nutzen dasselbe Journal. Historisch verbuchte Bewegungen
+bleiben ohne erfundenes Zuordnungsjournal; bestehende unklare Teilbuchungen werden
+fuer gezielten Abgleich gesperrt. Freies Editieren verbundener Importbuchungen,
+Ignorieren und Loeschen zugeordneter Bewegungen sind gesperrt. Korrektur und
+Rueckzahlungsvollzug folgen separat, ebenso PostgreSQL- und Browserabnahme.

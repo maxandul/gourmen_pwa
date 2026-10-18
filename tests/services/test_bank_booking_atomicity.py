@@ -67,7 +67,7 @@ def test_missing_second_account_retry_then_success_is_exactly_once(app,case):
             book(case)
         assert Booking.query.count() == 2
         assert db.session.get(MemberClaim,case[2]).paid_rappen == 2000
-        with pytest.raises(BankImportError,match='verbuchte'):
+        with pytest.raises(BankImportError,match='verbuchte|Zuordnungen'):
             BankImportService.delete_import(case[4])
 
 
