@@ -55,8 +55,8 @@ U2-07 lokal geprueft: Eventloeschung mit verpflichtendem Audit in einem Commit;
 Abhaengigkeiten und BillBro/GGL-Fachhistorie bleiben erhalten (65 Regressionen).
 
 U2-08 lokal geprueft (63 Python-/19 Worker-Tests): strikte BillBro-Betraege,
-Feldfehler ohne Teilmutation. A-031 Rundungsregel beim Nutzer angefragt;
-Antwort steht noch aus, unabhaengige Pakete weiterfuehren.
+Feldfehler ohne Teilmutation. A-031 am 18.10. bestaetigt: rappengenau/summengleich, Restrappen nach
+groesstem Rechenrest, Gleichstand Mitglied-ID; nach U2-11 als U2-12 umsetzen.
 
 U2-09 lokal geprueft (67 Regressionen): Undo vergleicht eigenen Nachzustand
 und bewahrt spaetere Fachwerte; technische Fehler erlauben sicheren Retry.

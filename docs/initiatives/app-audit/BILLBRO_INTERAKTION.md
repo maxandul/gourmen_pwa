@@ -170,3 +170,13 @@ F5 Teil- und Überzahlungen beim Bankimport ist inzwischen bestätigt; siehe
 [Entscheidungsstand](OBERFLAECHENENTWUERFE.md). F6 zu geschlossenen Geschäftsjahren
 ist ebenfalls bestätigt. Benachrichtigungen und die vollständige Korrekturoberfläche bleiben
 gesondert zu behandeln. Die laufende App bleibt unverändert.
+
+## Bestaetigte Rundungsregel vom 18.10.2026
+
+Der Auftraggeber hat ausdruecklich rappengenaue, summengleiche Verteilung
+bestaetigt. Gewichtete exakte Anteile zuerst auf ganze Rappen abrunden; die
+verbleibenden Rappen nach groesstem Rechenrest zuweisen, bei Gleichstand
+stabil nach Mitglied-ID. Beispiel CHF 100 auf drei gleiche Anteile:
+CHF 33.34 + CHF 33.33 + CHF 33.33. Kein zusaetzlicher Rundungsueberschuss
+und keine Aufrundung auf 5 oder 10 Rappen. Bestehende abgeschlossene
+Abrechnungen werden nicht automatisch neu berechnet.

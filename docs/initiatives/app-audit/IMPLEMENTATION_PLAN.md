@@ -127,7 +127,7 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-08 / A-025 | lokal geprüft | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
 
 | U2-09 / A-029 | lokal geprüft | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
-| A-031 / BillBro-Rundung | Fachentscheidung angefragt | Rappengenaue Summenverteilung versus 10-/5-Rappen-Rundung mit sichtbarer Differenz; Antwort abwarten, andere Pakete fortsetzen. |
+| U2-12 / A-031 | Fachregel bestaetigt; nach U2-11 | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
 
 | U2-10 / A-033 | lokal geprüft | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
 
