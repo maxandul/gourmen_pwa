@@ -723,6 +723,9 @@ def billbro_sync(event_id):
         guesses=ready,
         esstyp_ready=ready,
         supports_ggl=event.supports_ggl,
+        rounding_rule=event.rounding_rule,
+        own_share_rappen=next((event.billbro_stored_share(p) for p in event.participations
+                              if p.member_id == current_user.id and p.teilnahme), None),
         betrag_sparsam_rappen=event.betrag_sparsam_rappen,
         betrag_normal_rappen=event.betrag_normal_rappen,
         betrag_allin_rappen=event.betrag_allin_rappen,

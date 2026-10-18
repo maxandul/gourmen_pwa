@@ -449,13 +449,10 @@
                     {% endif %}
 
                     {% set share_label = '—' %}
-                    {% if has_final and participation and participation.esstyp %}
-                        {% if participation.esstyp.name == 'SPARSAM' and event.betrag_sparsam_rappen %}
-                            {% set share_label = "%.2f"|format(event.betrag_sparsam_rappen / 100) ~ ' CHF' %}
-                        {% elif participation.esstyp.name == 'NORMAL' and event.betrag_normal_rappen %}
-                            {% set share_label = "%.2f"|format(event.betrag_normal_rappen / 100) ~ ' CHF' %}
-                        {% elif participation.esstyp.name == 'ALLIN' and event.betrag_allin_rappen %}
-                            {% set share_label = "%.2f"|format(event.betrag_allin_rappen / 100) ~ ' CHF' %}
+                    {% if has_final and participation and participation.teilnahme %}
+                        {% set stored_share = event.billbro_stored_share(participation) %}
+                        {% if stored_share is not none %}
+                            {% set share_label = "%.2f"|format(stored_share / 100) ~ ' CHF' %}
                         {% endif %}
                     {% endif %}
                     {% set esstyp_label = participation.esstyp.value if participation and participation.esstyp else '—' %}
@@ -500,18 +497,12 @@
                                     <small>({{ "%.1f"|format((event.gesamtbetrag_rappen - event.rechnungsbetrag_rappen) / event.rechnungsbetrag_rappen * 100) }}%)</small>
                                 </span>
                             </div>
+                            {% for group in event.billbro_share_groups %}
                             <div class="info-row">
-                                <span class="info-row__label">Anteil Sparsam</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_sparsam_rappen / 100) if event.betrag_sparsam_rappen else "Nicht berechnet" }} CHF</span>
+                                <span class="info-row__label">Anteil {{ group.label }}</span>
+                                <span class="info-row__value">{% if group.minimum is not none %}{{ "%.2f"|format(group.minimum / 100) }}{% if group.maximum != group.minimum %} – {{ "%.2f"|format(group.maximum / 100) }}{% endif %} CHF{% else %}Keine berechneten Anteile{% endif %}</span>
                             </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Anteil Normal</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_normal_rappen / 100) if event.betrag_normal_rappen else "Nicht berechnet" }} CHF</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-row__label">Anteil All-In</span>
-                                <span class="info-row__value">{{ "%.2f"|format(event.betrag_allin_rappen / 100) if event.betrag_allin_rappen else "Nicht berechnet" }} CHF</span>
-                            </div>
+                            {% endfor %}
                         </div>
                         {% if is_organizer %}
                         <div class="card__footer">

@@ -1020,3 +1020,12 @@ bleiben eigene explizite Aktionen. Erfolgsmeldung muss dies korrekt benennen.
 MerchPriceService validiert beide Katalogpreise vor Mutation: exakte Rappen,
 Null erlaubt, Integer-Grenze und Mitgliederpreis hoechstens Einkaufspreis.
 Fehler behalten Formularwerte; historische Bestellpreise werden nicht korrigiert.
+
+BillBro-Erstabschluss: BillBroShareService verteilt mit exakten Bruechen und
+stabilem Mitglied-ID-Gleichstand; keine Rollenpauschale bei unterschiedlichen
+Restrappen. Gesamtsumme, Einzelanteile und erste Forderungen in einem Commit.
+AccountingService.create_claims_for_billbro(commit=False) speichert nicht selbst.
+Vorhandene Abschluesse/Forderungen sperren direkte Neuberechnung; F3/F4 separat.
+Gespeicherte Einzelanteile vor Kategorie-Fallback verwenden, null ist ein Betrag.
+Gewichte: positive endliche Dezimalzahl, maximal 40 Zeichen und Betragsexponent
+zwischen -100 und 100; technische Ressourcenbegrenzung vor Fraction-Konvertierung.

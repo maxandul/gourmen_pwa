@@ -645,7 +645,7 @@ class AccountingService:
         )
 
     @classmethod
-    def create_claims_for_billbro(cls, event) -> list[MemberClaim]:
+    def create_claims_for_billbro(cls, event, *, commit=True) -> list[MemberClaim]:
         """Essensanteil-Claims nach BillBro-Abschluss anlegen (Spec 11.6).
 
         Zahlweg Vereinskonto: Gläubiger Verein (creditor NULL).
@@ -703,7 +703,8 @@ class AccountingService:
                 ClaimStatus.OFFEN, ClaimStatus.TEILWEISE,
             ):
                 db.session.delete(claim)
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return created
 
     @classmethod

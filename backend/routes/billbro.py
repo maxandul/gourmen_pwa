@@ -10,6 +10,7 @@ from backend.models.event import BillPaidBy, Event
 from backend.models.participation import Participation, Esstyp
 from backend.services.accounting import AccountingService, AccountingError
 from backend.services.money import MoneyService
+from backend.services.billbro_shares import BillBroShareService, ShareError
 from backend.services.ggl_rules import GGLService
 from backend.services.security import SecurityService, AuditAction
 from backend.services.notifier import NotifierService
@@ -21,59 +22,6 @@ def _get_visible_event_or_404(event_id: int) -> Event:
         abort(403)
     return event
 
-
-def round_to_5_rappen(amount_rappen):
-    """Round amount to nearest 5 Rappen (Swiss currency rule)"""
-    return int(round(amount_rappen / 5) * 5)
-
-def calculate_weighted_shares(event, gesamtbetrag_rappen):
-    """Calculate weighted shares for BillBro participants"""
-    sparsam_count = 0
-    normal_count = 0
-    allin_count = 0
-    
-    for participation in event.participations:
-        if participation.teilnahme and participation.esstyp:
-            if participation.esstyp == Esstyp.SPARSAM:
-                sparsam_count += 1
-            elif participation.esstyp == Esstyp.NORMAL:
-                normal_count += 1
-            elif participation.esstyp == Esstyp.ALLIN:
-                allin_count += 1
-    
-    total_participants = sparsam_count + normal_count + allin_count
-    
-    if total_participants > 0:
-        # Calculate weighted total
-        weighted_total = (sparsam_count * event.billbro_sparsam_weight + 
-                         normal_count * event.billbro_normal_weight + 
-                         allin_count * event.billbro_allin_weight)
-        
-        # Calculate shares based on weights
-        if sparsam_count > 0:
-            event.betrag_sparsam_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_sparsam_weight / weighted_total)
-        else:
-            event.betrag_sparsam_rappen = None
-            
-        if normal_count > 0:
-            event.betrag_normal_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_normal_weight / weighted_total)
-        else:
-            event.betrag_normal_rappen = None
-            
-        if allin_count > 0:
-            event.betrag_allin_rappen = round_to_5_rappen(gesamtbetrag_rappen * event.billbro_allin_weight / weighted_total)
-        else:
-            event.betrag_allin_rappen = None
-        
-        # Update calculated shares for each participation
-        for participation in event.participations:
-            if participation.teilnahme and participation.esstyp:
-                if participation.esstyp == Esstyp.SPARSAM:
-                    participation.calculated_share_rappen = event.betrag_sparsam_rappen
-                elif participation.esstyp == Esstyp.NORMAL:
-                    participation.calculated_share_rappen = event.betrag_normal_rappen
-                elif participation.esstyp == Esstyp.ALLIN:
-                    participation.calculated_share_rappen = event.betrag_allin_rappen
 
 bp = Blueprint('billbro', __name__)
 
@@ -494,16 +442,11 @@ def set_total(event_id):
     if not _valid_total(event, gesamtbetrag_rappen):
         return _amount_error(event, None, 'Gesamtbetrag liegt ausserhalb des gültigen Bereichs. Rechnung und Trinkgeld prüfen.')
 
-    # Update event with final total
-    event.gesamtbetrag_rappen = gesamtbetrag_rappen
-    # Recalculate actual tip based on final total
-    event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
-    
-    # Calculate individual shares based on weights
-    calculate_weighted_shares(event, gesamtbetrag_rappen)
-    
-    db.session.commit()
-    
+    try:
+        BillBroShareService.finalize(event, gesamtbetrag_rappen, current_user)
+    except ShareError as exc:
+        return _amount_error(event, 'gesamtbetrag_manual' if request.form.get('gesamtbetrag_manual') else None, str(exc))
+
     # Log audit event
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
@@ -517,7 +460,6 @@ def set_total(event_id):
     
     is_manual = gesamtbetrag_manual is not None
     flash(f'Gesamtbetrag {"manuell " if is_manual else "automatisch "}festgelegt und Anteile berechnet', 'success')
-    _sync_billbro_claims(event)
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/undo_final', methods=['POST'])
@@ -580,16 +522,11 @@ def accept_suggested_total(event_id):
     if not _valid_total(event, gesamtbetrag_rappen):
         return _amount_error(event, None, 'Gesamtbetrag liegt ausserhalb des gültigen Bereichs. Rechnung und Trinkgeld prüfen.')
 
-    # Update event with final total
-    event.gesamtbetrag_rappen = gesamtbetrag_rappen
-    # Recalculate actual tip based on final total
-    event.trinkgeld_rappen = gesamtbetrag_rappen - event.rechnungsbetrag_rappen
-    
-    # Calculate individual shares based on weights
-    calculate_weighted_shares(event, gesamtbetrag_rappen)
-    
-    db.session.commit()
-    
+    try:
+        BillBroShareService.finalize(event, gesamtbetrag_rappen, current_user)
+    except ShareError as exc:
+        return _amount_error(event, 'gesamtbetrag_manual' if request.form.get('gesamtbetrag_manual') else None, str(exc))
+
     # Log audit event
     SecurityService.log_audit_event(
         AuditAction.BILLBRO_SET_TOTAL, 'event', event.id,
@@ -603,7 +540,6 @@ def accept_suggested_total(event_id):
     )
     
     flash('Vorgeschlagenen Gesamtbetrag akzeptiert und Anteile berechnet', 'success')
-    _sync_billbro_claims(event)
     return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-share'))
 
 @bp.route('/<int:event_id>/reset_bill', methods=['POST'])
@@ -685,47 +621,19 @@ def share_whatsapp(event_id):
     # Add individual shares with participant details
     message += f"\n💸 Anteile pro Person:\n"
 
-    # Get all participating members grouped by esstyp
-    sparsam_participants = []
-    normal_participants = []
-    allin_participants = []
+    for kind, key, label in BillBroShareService.GROUPS:
+        message += f"{label}:\n"
+        participants = sorted((p for p in event.participations if p.teilnahme and p.esstyp == kind), key=lambda p: p.member_id)
+        if not participants:
+            message += "  Keine Teilnehmenden\n"
+        for part in participants:
+            name = part.member.rufname or part.member.vorname
+            if part.member.spirit_animal:
+                name = f"{part.member.spirit_animal} {name}"
+            share = BillBroShareService.stored_share(event, part)
+            amount = f"{share / 100:.2f} CHF" if share is not None else 'Nicht berechnet'
+            message += f"  • {name}: {amount}\n"
 
-    for participation in event.participations:
-        if participation.teilnahme and participation.esstyp:
-            member_info = ""
-            if participation.member.spirit_animal:
-                member_info += f"{participation.member.spirit_animal} "
-            member_info += f"{participation.member.rufname or participation.member.vorname}"
-            
-            if participation.esstyp == Esstyp.SPARSAM:
-                sparsam_participants.append(member_info)
-            elif participation.esstyp == Esstyp.NORMAL:
-                normal_participants.append(member_info)
-            elif participation.esstyp == Esstyp.ALLIN:
-                allin_participants.append(member_info)
-
-    # Add shares with participant lists
-    if event.betrag_sparsam_rappen and sparsam_participants:
-        message += f"Sparsam: {event.betrag_sparsam_rappen / 100:.2f} CHF\n"
-        for participant in sparsam_participants:
-            message += f"  • {participant}\n"
-    else:
-        message += "Sparsam: Nicht berechnet\n"
-
-    if event.betrag_normal_rappen and normal_participants:
-        message += f"Normal: {event.betrag_normal_rappen / 100:.2f} CHF\n"
-        for participant in normal_participants:
-            message += f"  • {participant}\n"
-    else:
-        message += "Normal: Nicht berechnet\n"
-
-    if event.betrag_allin_rappen and allin_participants:
-        message += f"All-In: {event.betrag_allin_rappen / 100:.2f} CHF\n"
-        for participant in allin_participants:
-            message += f"  • {participant}\n"
-    else:
-        message += "All-In: Nicht berechnet\n"
-    
     # Encode for WhatsApp
     import urllib.parse
     encoded_message = urllib.parse.quote(message)

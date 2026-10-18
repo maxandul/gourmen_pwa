@@ -75,11 +75,18 @@ Gewichte sind pro Event in `Event.weights_used_json` konfigurierbar (Default: 0.
 2. Trinkgeld berechnen nach tip_rule (z.B. "7pct_round10" = 7% auf 10er gerundet)
 3. Gesamtbetrag = Rechnung + Trinkgeld
 4. Gewichte aller Teilnehmenden summieren (z.B. 3×0.7 + 5×1.0 + 2×1.3 = 9.7)
-5. Anteil pro Rolle = Gesamtbetrag × (Gewicht / Summe)
-6. Rundung nach rounding_rule (z.B. "ceil_10" = aufrunden auf 10er Rappen)
+5. Exakter Anteil pro Person = Gesamtbetrag × (Gewicht / Summe)
+6. Ganze Rappen abrunden, Rest nach groesstem Rechenrest verteilen
+7. Bei gleichem Rechenrest erhaelt die kleinere Mitglied-ID zuerst einen Rappen
 ```
 
-Resultat-Felder am Event: `betrag_sparsam_rappen`, `betrag_normal_rappen`, `betrag_allin_rappen`.
+Bestaetigt am 18.10.2026: Die Summe der individuellen Anteile entspricht exakt
+dem bestaetigten Gesamtbetrag (100 CHF / 3 = 33.34 + 33.33 + 33.33).
+Massgeblich ist `Participation.calculated_share_rappen`, auch bei null.
+Neue Abschluesse verwenden `rounding_rule=largest_remainder_rappen`.
+Die Eventfelder `betrag_sparsam_rappen`, `betrag_normal_rappen`,
+`betrag_allin_rappen` enthalten nur bei einheitlichen Kategorieanteilen einen Wert;
+sonst zeigt die UI die Spanne. Historische Abschluesse werden nicht neu berechnet.
 
 ### BillBro-Schätzspiel (nur Monatsessen / GGL)
 

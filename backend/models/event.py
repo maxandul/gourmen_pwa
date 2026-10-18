@@ -291,6 +291,15 @@ class Event(db.Model):
         from backend.models.member import Member
         return Member.query.count()
     
+    def billbro_stored_share(self, participation):
+        from backend.services.billbro_shares import BillBroShareService
+        return BillBroShareService.stored_share(self, participation)
+
+    @property
+    def billbro_share_groups(self):
+        from backend.services.billbro_shares import BillBroShareService
+        return BillBroShareService.groups(self)
+
     @property
     def billbro_sparsam_weight(self):
         """Get sparsam weight for BillBro calculations"""

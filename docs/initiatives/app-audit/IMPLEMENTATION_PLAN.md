@@ -117,21 +117,15 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-04c / A-069, A-070 | c1/c2 lokal geprüft | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
 | U2-04c1 / A-069 | lokal geprüft | Eingefrorene Auswertungen/PDF, sichtbarer Vorjahresabgleich und erneute Vorlage bei Differenz. |
 | U2-04c2 / A-070 | lokal geprüft | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
-
 | U2-05 / A-067, A-068 | lokal geprüft | Historische inaktive Konten erhalten und Kontosummen nach Richtung konsistent auswerten; eingefrorene Fassungen bewahren. |
-
 | U2-06 / A-137 | lokal geprüft | Audit-Schreibfehler isolieren, ORM-Sitzung nutzbar halten; gespeicherten Fachzustand und tatsaechliches Ergebnis korrekt erhalten. |
-
 | U2-07 / A-046 | lokal geprüft | Eventloeschung samt Teilnahme und Audit atomar; referenzierte Historie erhalten und Fehler ohne Teilverlust. |
-
 | U2-08 / A-025 | lokal geprüft | BillBro-Betragseingaben vor Mutation validieren: Format, Endlichkeit, Rappen und Wertebereich; Feldfehler statt Teilzustand. |
-
 | U2-09 / A-029 | lokal geprüft | Bereinigungs-Undo gegen spaetere Fachwerte und Mehrtab-Konflikte absichern; keine fremde Teilnahme loeschen. |
-| U2-12 / A-031 | **bereit / nächstes Paket** | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
-
 | U2-10 / A-033 | lokal geprüft | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
-
 | U2-11 / A-053 | lokal geprüft | Merch-Preise rappengetreu und nichtnegativ validieren; Fehler ohne Teilmutation, bestehende Ausfuehrungspreise bewahren. |
+| U2-12 / A-031 | lokal geprüft | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
+| U2-13 / A-051 | **bereit / nächstes Paket** | Merch-GETs ohne ORM-Relationsmutation; aktive Varianten als getrennten Anzeige-Kontext gebuendelt laden, historische/inaktive Bestellreferenzen bewahren. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
