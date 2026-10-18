@@ -40,12 +40,34 @@ def record(obj):
 class BillBroCorrectionService:
     @staticmethod
     def serializer():
-        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v3')
+        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-correction-v4')
 
     @staticmethod
     def require_actor(event, actor):
         if not event or not AreaPermissionService.can_manage_event(actor, event) or not event.is_visible_to(actor):
             raise CorrectionError('Keine Berechtigung für diese Abrechnungskorrektur.')
+
+    @staticmethod
+    def candidates(event, parts):
+        existing = {p.member_id for p in parts}
+        return parts + [SimpleNamespace(id=-m.id, member_id=m.id, member=m,
+            teilnahme=None, responded_at=None, billbro_attendance=None,
+            billbro_attending=False, esstyp=None, guess_bill_amount_rappen=None,
+            diff_amount_rappen=None, rank=None, points=None, calculated_share_rappen=None)
+            for m in event.eligible_members_query().order_by('id').all() if m.id not in existing]
+
+    @staticmethod
+    def projected_parts(parts, proposed):
+        return [SimpleNamespace(id=p.id, member_id=p.member_id,
+            teilnahme=proposed['attendance'][str(p.id)],
+            guess_bill_amount_rappen=p.guess_bill_amount_rappen,
+            esstyp=Esstyp(proposed['types'][str(p.id)]) if proposed['attendance'][str(p.id)] else p.esstyp)
+            for p in parts]
+
+    @staticmethod
+    def ggl_changes(event, parts, proposed):
+        return event.supports_ggl and (proposed['invoice'] != event.rechnungsbetrag_rappen or
+            any(proposed['attendance'][str(p.id)] != p.billbro_attending for p in parts))
 
     @classmethod
     def load(cls, event_id, actor, lock=False):
@@ -65,7 +87,9 @@ class BillBroCorrectionService:
                      years=[record(y) for y in years],
                      members=[dict(id=p.member_id, name=p.member.display_name, active=p.member.is_active) for p in parts],
                      history=[r.id for r in BillBroCorrection.query.filter_by(event_id=event.id).order_by(BillBroCorrection.id)])
-        return event, parts, claims, years, state
+        eligible = event.eligible_members_query().order_by('id').all()
+        state['eligible_members'] = [dict(id=m.id, name=m.display_name) for m in eligible]
+        return event, cls.candidates(event, parts), claims, years, state
 
     @staticmethod
     def proposal(form, previous_invoice, parts):
@@ -79,26 +103,34 @@ class BillBroCorrectionService:
             payer = int(form.get('payer_member_id') or 0) if mode == BillPaidBy.MITGLIED else None
         except (ValueError, TypeError):
             raise CorrectionError('Restaurantrechnung, Gesamtbetrag und Zahlweg gültig und rappengenau angeben.') from None
-        allowed = {f'esstyp_{p.id}' for p in parts if p.teilnahme}
-        if any(key.startswith('esstyp_') and key not in allowed for key in form):
-            raise CorrectionError('Ess-Typ-Auswahl enthält keine anwesende Person dieser Abrechnung.')
-        types = {}
+        allowed = {f'{prefix}_{p.id}' for p in parts for prefix in ('esstyp', 'attendance')}
+        if any(key.startswith(('esstyp_', 'attendance_')) and key not in allowed for key in form):
+            raise CorrectionError('Auswahl enthält keine Person dieser Abrechnung.')
+        types, attendance = {}, {}
         for part in parts:
-            if part.teilnahme:
+            raw = form.get(f'attendance_{part.id}', 'present' if part.billbro_attending else 'absent')
+            if raw not in ('present', 'absent'):
+                raise CorrectionError('Anwesenheit gültig wählen.')
+            attendance[str(part.id)] = raw == 'present'
+            if raw == 'present':
                 try:
                     types[str(part.id)] = Esstyp(form.get(f'esstyp_{part.id}', part.esstyp.value if part.esstyp else '')).value
                 except ValueError:
                     raise CorrectionError('Für jede anwesende Person einen gültigen Ess-Typ wählen.') from None
-        return dict(reason=reason, total=total, invoice=invoice, paid_by=mode.value, payer=payer, types=types)
+        return dict(reason=reason, total=total, invoice=invoice, paid_by=mode.value, payer=payer, types=types, attendance=attendance)
 
-    @staticmethod
-    def validate(event, parts, claims, years, proposed):
+    @classmethod
+    def validate(cls, event, parts, claims, years, proposed):
         if event.gesamtbetrag_rappen is None or not event.rechnungsbetrag_rappen:
             raise CorrectionError('Dieser Weg benötigt einen vollständigen bestehenden Abschluss.')
         if proposed['total'] < proposed['invoice']:
             raise CorrectionError('Gesamtbetrag darf die Restaurantrechnung nicht unterschreiten.')
-        attending = {p.member_id for p in parts if p.teilnahme}
-        if proposed['paid_by'] == BillPaidBy.MITGLIED.value and proposed['payer'] not in attending:
+        attending = {p.member_id for p in parts if p.billbro_attending}
+        new_attending = {p.member_id for p in parts if proposed['attendance'][str(p.id)]}
+        eligible = {m.id for m in event.eligible_members_query().all()}
+        if any(p.member_id not in eligible and not p.billbro_attending and proposed['attendance'][str(p.id)] for p in parts):
+            raise CorrectionError('Neue anwesende Person ist für dieses Event nicht auswählbar.')
+        if proposed['paid_by'] == BillPaidBy.MITGLIED.value and proposed['payer'] not in new_attending:
             raise CorrectionError('Auslegende Person muss am Essen teilnehmen.')
         if any(c.paid_rappen != 0 or c.status != ClaimStatus.OFFEN or c.settled_at is not None for c in claims):
             raise CorrectionError('Zahlungen oder abgeschlossene Posten benötigen den Finanzkorrekturweg.')
@@ -106,7 +138,7 @@ class BillBroCorrectionService:
             raise CorrectionError('Verbuchte Vorgänge benötigen den Finanzkorrekturweg; ihre Historie bleibt erhalten.')
         if (event.is_paid_by_club or proposed['paid_by'] == BillPaidBy.VEREINSKONTO.value or any(c.fiscal_year_id for c in claims)) and any(y.status != FiscalYearStatus.OPEN for y in years):
             raise CorrectionError('Betroffenes Geschäftsjahr ist in Revision oder abgeschlossen. Zuerst mit Grund wieder öffnen.')
-        old_shares = {p.member_id: BillBroShareService.stored_share(event, p) for p in parts if p.teilnahme}
+        old_shares = {p.member_id: BillBroShareService.stored_share(event, p) for p in parts if p.billbro_attending}
         if any(type(v) is not int or v < 0 for v in old_shares.values()):
             raise CorrectionError('Alte Einzelanteile sind unvollständig. Zuerst klären.')
         old_creditor = event.bill_payer_member_id if event.bill_paid_by == BillPaidBy.MITGLIED else None
@@ -117,18 +149,16 @@ class BillBroCorrectionService:
                 c.claim_type != ClaimType.ESSENSANTEIL or c.expected_rappen != expected.get(c.member_id) or
                 c.creditor_member_id != old_creditor or c.merch_order_id is not None for c in claims):
             raise CorrectionError('Bestehende Forderungen und Anteile stimmen nicht überein. Zuerst klären.')
-        if (event.rechnungsbetrag_rappen, event.gesamtbetrag_rappen, event.bill_paid_by.value if event.bill_paid_by else None, old_creditor) == (proposed['invoice'], proposed['total'], proposed['paid_by'], proposed['payer']) and proposed['types'] == {str(p.id): p.esstyp.value if p.esstyp else '' for p in parts if p.teilnahme}:
+        if (event.rechnungsbetrag_rappen, event.gesamtbetrag_rappen, event.bill_paid_by.value if event.bill_paid_by else None, old_creditor) == (proposed['invoice'], proposed['total'], proposed['paid_by'], proposed['payer']) and proposed['types'] == {str(p.id): p.esstyp.value if p.esstyp else '' for p in parts if p.billbro_attending} and proposed['attendance'] == {str(p.id): p.billbro_attending for p in parts}:
             raise CorrectionError('Keine Änderung gewählt.')
         try:
-            hypothetical = SimpleNamespace(weights_used_json=event.weights_used_json, participations=[
-                SimpleNamespace(teilnahme=p.teilnahme, member_id=p.member_id,
-                    esstyp=Esstyp(proposed['types'][str(p.id)]) if p.teilnahme else p.esstyp) for p in parts])
+            hypothetical = SimpleNamespace(weights_used_json=event.weights_used_json, participations=cls.projected_parts(parts, proposed))
             shares = BillBroShareService.calculate(hypothetical, proposed['total'])
         except ShareError as exc:
             raise CorrectionError(str(exc)) from None
-        if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen:
+        if cls.ggl_changes(event, parts, proposed):
             try:
-                GGLService.project_points(parts, proposed['invoice'])
+                GGLService.project_points(cls.projected_parts(parts, proposed), proposed['invoice'])
             except ValueError as exc:
                 raise CorrectionError(str(exc)) from None
         return old_shares, shares
@@ -140,12 +170,12 @@ class BillBroCorrectionService:
         old_shares, shares = cls.validate(event, parts, claims, years, proposed)
         token = cls.serializer().dumps(dict(actor=actor.id, generation=actor.auth_generation,
             event=event.id, before=digest(state), proposed=proposed, nonce=uuid4().hex))
-        ggl = GGLService.project_points(parts, proposed['invoice']) if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen else None
+        ggl = GGLService.project_points(cls.projected_parts(parts, proposed), proposed['invoice']) if cls.ggl_changes(event, parts, proposed) else None
         return dict(token=token, proposed=proposed, old_invoice=event.rechnungsbetrag_rappen, old_total=event.gesamtbetrag_rappen,
                     ggl_rows=[dict(name=p.member.display_name, before=dict(rank=p.rank, points=p.points, diff_amount_rappen=p.diff_amount_rappen), after=ggl[p.id]) for p in parts] if ggl is not None else [],
                     old_paid_by=event.bill_paid_by.value if event.bill_paid_by else None,
                     old_payer=event.bill_payer_member_id,
-                    rows=[dict(id=p.member_id, name=p.member.display_name, before_type=p.esstyp.value if p.esstyp else '–', after_type=proposed['types'].get(str(p.id), p.esstyp.value if p.esstyp else '–'), before=old_shares.get(p.member_id, 0), after=shares.get(p.member_id, 0),
+                    rows=[dict(id=p.member_id, name=p.member.display_name, before_attending=p.billbro_attending, after_attending=proposed['attendance'][str(p.id)], rsvp=p.teilnahme, before_type=p.esstyp.value if p.esstyp else '–', after_type=proposed['types'].get(str(p.id), p.esstyp.value if p.esstyp else '–'), before=old_shares.get(p.member_id, 0), after=shares.get(p.member_id, 0),
                                before_claim=next((c.expected_rappen for c in claims if c.member_id == p.member_id), 0),
                                after_claim=shares.get(p.member_id, 0) if p.member_id != proposed['payer'] else 0) for p in parts])
 
@@ -169,19 +199,28 @@ class BillBroCorrectionService:
                 raise CorrectionError('Stand wurde seit der Vorschau geändert. Neu vorbereiten; nichts wurde überschrieben.')
             proposed = payload['proposed']
             cls.validate(event, parts, claims, years, proposed)
-            if event.supports_ggl and proposed['invoice'] != event.rechnungsbetrag_rappen:
-                ggl = GGLService.project_points(parts, proposed['invoice'])
-                for part in parts:
-                    for field, value in ggl[part.id].items():
+            ggl = GGLService.project_points(cls.projected_parts(parts, proposed), proposed['invoice']) if cls.ggl_changes(event, parts, proposed) else None
+            for part in parts:
+                key = str(part.id)
+                old_id = part.id
+                if part.id < 0:
+                    if not proposed['attendance'][key]:
+                        continue
+                    part = Participation(event_id=event.id, member_id=part.member_id, teilnahme=None)
+                    db.session.add(part)
+                part.billbro_attendance = proposed['attendance'][key]
+                if part.billbro_attendance:
+                    part.esstyp = Esstyp(proposed['types'][key])
+                if ggl is not None:
+                    for field, value in ggl[old_id].items():
                         setattr(part, field, value)
+            db.session.flush()
+            db.session.expire(event, ['participations'])
             event.rechnungsbetrag_rappen = proposed['invoice']
             event.gesamtbetrag_rappen = proposed['total']
             event.trinkgeld_rappen = proposed['total'] - event.rechnungsbetrag_rappen
             event.bill_paid_by = BillPaidBy(proposed['paid_by'])
             event.bill_payer_member_id = proposed['payer']
-            for part in parts:
-                if part.teilnahme:
-                    part.esstyp = Esstyp(proposed['types'][str(part.id)])
             shares = BillBroShareService.apply(event, proposed['total'])
             creditor = proposed['payer']
             # Insert before deleting, so even SQLite cannot reuse an old claim identity.

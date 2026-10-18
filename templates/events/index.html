@@ -177,10 +177,10 @@
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=today_event.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <span class="chip-select-wrap">
-                                            <select name="teilnahme" class="chip-select {% if my_today_participation %}{% if my_today_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer heutiges Event">
-                                                <option value="" disabled {% if not my_today_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                            <select name="teilnahme" class="chip-select {% if my_today_participation and my_today_participation.teilnahme is not none %}{% if my_today_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer heutiges Event">
+                                                <option value="" disabled {% if not my_today_participation or my_today_participation.teilnahme is none %}selected{% endif %}>Zu-/Absagen</option>
                                                 <option value="true" {% if my_today_participation and my_today_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                                <option value="false" {% if my_today_participation and not my_today_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                                <option value="false" {% if my_today_participation and my_today_participation.teilnahme is sameas false %}selected{% endif %}>Abgesagt</option>
                                             </select>
                                         </span>
                                     </form>
@@ -286,10 +286,10 @@
                                     <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <span class="chip-select-wrap">
-                                            <select name="teilnahme" class="chip-select {% if my_participation %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme für {{ event.display_date }}">
-                                                <option value="" disabled {% if not my_participation %}selected{% endif %}>Zu-/Absagen</option>
+                                            <select name="teilnahme" class="chip-select {% if my_participation and my_participation.teilnahme is not none %}{% if my_participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme für {{ event.display_date }}">
+                                                <option value="" disabled {% if not my_participation or my_participation.teilnahme is none %}selected{% endif %}>Zu-/Absagen</option>
                                                 <option value="true" {% if my_participation and my_participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                                <option value="false" {% if my_participation and not my_participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                                <option value="false" {% if my_participation and my_participation.teilnahme is sameas false %}selected{% endif %}>Abgesagt</option>
                                             </select>
                                         </span>
                                     </form>
@@ -371,7 +371,7 @@
                             {% set overall = avg_ratings.get('overall', 0) %}
                             {% set rating_count = avg_ratings.get('count', 0) %}
                             {% set my_participation = event.participations|selectattr('member_id', 'equalto', current_user.id)|first if event.participations is defined else None %}
-                            {% set can_rate = ((my_participation and my_participation.teilnahme) or event.organisator_id == current_user.id) %}
+                            {% set can_rate = ((my_participation and my_participation.billbro_attending) or event.organisator_id == current_user.id) %}
                             {% set rating_value = overall|float %}
                             {% if rating_value < 1 %}{% set rating_value = 1 %}{% endif %}
                             {% if rating_value > 5 %}{% set rating_value = 5 %}{% endif %}

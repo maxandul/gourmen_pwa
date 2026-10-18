@@ -111,7 +111,7 @@ class RetroCleanupService:
             if event.organisator_id == member_id:
                 return event
             p = cls._get_participation(event.id, member_id)
-            if p and p.teilnahme:
+            if p and p.billbro_attending:
                 return event
         return None
 
@@ -131,7 +131,7 @@ class RetroCleanupService:
         if not getattr(event, "allow_ratings", True):
             return True
 
-        if participation.teilnahme:
+        if participation.billbro_attending:
             return has_rating
 
         return True

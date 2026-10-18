@@ -498,7 +498,7 @@ def cleanup():
 
     can_rate = (
         event.allow_ratings
-        and ((participation and participation.teilnahme) or event.organisator_id == current_user.id)
+        and ((participation and participation.billbro_attending) or event.organisator_id == current_user.id)
         and not has_rating
     )
     rating_form = EventRatingForm()
@@ -630,7 +630,7 @@ def detail(event_id):
 
     is_organizer = AreaPermissionService.can_manage_event(current_user, event)
     billbro_form = None
-    if (participation and participation.teilnahme) or is_organizer:
+    if (participation and participation.billbro_attending) or is_organizer:
         billbro_form = BillBroForm()
 
     ratings = event.get_ratings()
@@ -638,7 +638,7 @@ def detail(event_id):
     user_rating = next((r for r in ratings_sorted if r.participant_id == current_user.id), None)
     average_ratings = event.get_average_ratings()
     # Bewertungen nur wenn erlaubt und für bestätigte Teilnehmende oder den tatsächlichen Organisator
-    can_rate = (event.allow_ratings and ((participation and participation.teilnahme) or event.organisator_id == current_user.id))
+    can_rate = (event.allow_ratings and ((participation and participation.billbro_attending) or event.organisator_id == current_user.id))
     rating_edit_mode = request.args.get('edit_rating') == '1' if (user_rating and can_rate) else False
 
     # Navigation: vorheriges/nächstes Event (stabile Sortierung: datum, id)
@@ -698,22 +698,22 @@ def billbro_sync(event_id):
         event_id=event_id,
     ).first()
     is_organizer = AreaPermissionService.can_manage_event(current_user, event)
-    can_access = (participation and participation.teilnahme) or is_organizer
+    can_access = (participation and participation.billbro_attending) or is_organizer
     if not can_access:
         return jsonify({'error': 'forbidden'}), 403
 
-    attending = sum(1 for p in event.participations if p.teilnahme)
+    attending = sum(1 for p in event.participations if p.billbro_attending)
     if event.supports_ggl:
         ready = sum(
             1
             for p in event.participations
-            if p.teilnahme and p.guess_bill_amount_rappen is not None
+            if p.billbro_attending and p.guess_bill_amount_rappen is not None
         )
     else:
         ready = sum(
             1
             for p in event.participations
-            if p.teilnahme and p.esstyp is not None
+            if p.billbro_attending and p.esstyp is not None
         )
     resp = jsonify(
         billbro_closed=event.billbro_closed,
@@ -726,7 +726,7 @@ def billbro_sync(event_id):
         supports_ggl=event.supports_ggl,
         rounding_rule=event.rounding_rule,
         own_share_rappen=next((event.billbro_stored_share(p) for p in event.participations
-                              if p.member_id == current_user.id and p.teilnahme), None),
+                              if p.member_id == current_user.id and p.billbro_attending), None),
         betrag_sparsam_rappen=event.betrag_sparsam_rappen,
         betrag_normal_rappen=event.betrag_normal_rappen,
         betrag_allin_rappen=event.betrag_allin_rappen,

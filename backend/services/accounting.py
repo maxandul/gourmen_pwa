@@ -670,7 +670,7 @@ class AccountingService:
         created = []
         note = f'Essensanteil {event.display_date}'
         for participation in event.participations:
-            if not participation.teilnahme:
+            if not participation.billbro_attending:
                 continue
             share = participation.calculated_share_rappen
             if not share or share <= 0:

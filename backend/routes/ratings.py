@@ -39,7 +39,7 @@ def rate_event(event_id):
         member_id=current_user.id
     ).first()
     
-    if not ((participation and participation.teilnahme) or is_organizer):
+    if not ((participation and participation.billbro_attending) or is_organizer):
         flash('Bewertungen sind nur für Teilnehmende oder Organisatoren möglich.', 'error')
         if next_url:
             return redirect(next_url)

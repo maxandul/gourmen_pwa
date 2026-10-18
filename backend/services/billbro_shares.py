@@ -1,3 +1,4 @@
+from backend.models.participation import is_billbro_attending
 from backend.services.billbro_state import BillBroStateService
 """Exact, deterministic shares; stored historical results remain authoritative."""
 from decimal import Decimal, InvalidOperation
@@ -58,7 +59,7 @@ class BillBroShareService:
         keys = {kind: key for kind, key, _ in cls.GROUPS}
         members = []
         for part in event.participations:
-            if part.teilnahme:
+            if is_billbro_attending(part):
                 if part.esstyp not in keys:
                     raise ShareError('Für alle Anwesenden muss ein Ess-Typ vorliegen.')
                 members.append((part.member_id, config.get(keys[part.esstyp])))
@@ -68,9 +69,9 @@ class BillBroShareService:
     def apply(cls, event, total):
         shares = cls.calculate(event, total)
         for part in event.participations:
-            part.calculated_share_rappen = shares.get(part.member_id) if part.teilnahme else None
+            part.calculated_share_rappen = shares.get(part.member_id) if is_billbro_attending(part) else None
         for kind, key, _ in cls.GROUPS:
-            values = {shares[p.member_id] for p in event.participations if p.teilnahme and p.esstyp == kind}
+            values = {shares[p.member_id] for p in event.participations if is_billbro_attending(p) and p.esstyp == kind}
             setattr(event, f'betrag_{key}_rappen', next(iter(values)) if len(values) == 1 else None)
         event.rounding_rule = cls.RULE
         return shares
@@ -89,7 +90,7 @@ class BillBroShareService:
     def groups(cls, event):
         result = []
         for kind, key, label in cls.GROUPS:
-            values = [cls.stored_share(event, p) for p in event.participations if p.teilnahme and p.esstyp == kind]
+            values = [cls.stored_share(event, p) for p in event.participations if is_billbro_attending(p) and p.esstyp == kind]
             values = [value for value in values if value is not None]
             result.append(dict(label=label, minimum=min(values) if values else None,
                                maximum=max(values) if values else None))
@@ -113,6 +114,9 @@ class BillBroShareService:
             Participation.query.filter_by(event_id=event.id).populate_existing().with_for_update().all()
             if MemberClaim.query.filter_by(event_id=event.id).first():
                 raise ShareError('Vorhandene Forderungen benötigen zuerst eine nachvollziehbare Korrektur.')
+            for part in event.participations:
+                if part.billbro_attendance is None:
+                    part.billbro_attendance = part.billbro_attending
             cls.apply(event, total)
             event.gesamtbetrag_rappen = total
             event.trinkgeld_rappen = total - invoice

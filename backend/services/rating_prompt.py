@@ -30,7 +30,7 @@ def get_rating_prompt_event_for_member(member) -> Event | None:
     if (
         last_completed.allow_ratings
         and user_p
-        and user_p.teilnahme
+        and user_p.billbro_attending
         and not last_completed.has_rating_from_participant(member.id)
     ):
         return last_completed

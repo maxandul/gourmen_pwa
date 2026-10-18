@@ -319,7 +319,7 @@ def get_monatsessen_statistics(
         confirmed = 0
         for m in eligible:
             p = part_map.get((ev.id, m.id))
-            if p and p.teilnahme:
+            if p and p.billbro_attending:
                 confirmed += 1
         event_participation_rates.append(100.0 * confirmed / len(eligible))
     avg_ms_participation_pct = (
@@ -345,7 +345,7 @@ def get_monatsessen_statistics(
     share_rappen_values = [
         p.calculated_share_rappen
         for p in parts
-        if p.teilnahme and p.calculated_share_rappen is not None
+        if p.billbro_attending and p.calculated_share_rappen is not None
     ]
     avg_share_chf = (
         mean(share_rappen_values) / 100.0 if share_rappen_values else None
@@ -371,7 +371,7 @@ def get_monatsessen_statistics(
     user_confirmed = 0
     for e in eligible_for_user:
         p = part_map.get((e.id, current_member_id))
-        if p and p.teilnahme:
+        if p and p.billbro_attending:
             user_confirmed += 1
     user_participation_pct = (
         100.0 * user_confirmed / len(eligible_for_user) if eligible_for_user else 0.0
@@ -381,7 +381,7 @@ def get_monatsessen_statistics(
     user_share_rappen: list[int] = []
     for e in past_ms:
         p = part_map.get((e.id, current_member_id))
-        if not p or not p.teilnahme:
+        if not p or not p.billbro_attending:
             continue
         if p.esstyp is not None and p.esstyp in esstyp_counts:
             esstyp_counts[p.esstyp] += 1
@@ -404,7 +404,7 @@ def get_monatsessen_statistics(
             p.calculated_share_rappen
             for p in part_map.values()
             if p.event_id == ev.id
-            and p.teilnahme
+            and p.billbro_attending
             and p.calculated_share_rappen is not None
         ]
         if not vals:
@@ -461,7 +461,7 @@ def get_monatsessen_statistics(
         att = sum(
             1
             for e in el
-            if (part_map.get((e.id, m.id)) and part_map[(e.id, m.id)].teilnahme)
+            if (part_map.get((e.id, m.id)) and part_map[(e.id, m.id)].billbro_attending)
         )
         pct = 100.0 * att / len(el)
         member_chart.append(

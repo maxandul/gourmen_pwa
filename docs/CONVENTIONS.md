@@ -1097,3 +1097,26 @@ reine hypothetische Verteilung ueber getrennte Datenobjekte, keine ORM-Mutation
 in Vorschau. Bestaetigung aktualisiert Typen/Anteile/Posten/Historie atomar.
 RSVP/Anwesenheit und GGL bleiben bei reiner Typkorrektur unveraendert. Unbekannte
 oder abwesende Zielzeilen ablehnen; V2-Vorschauen neu vorbereiten.
+
+
+### BillBro-Anwesenheit und Antwort (U2-17b3b)
+
+Participation.teilnahme ist dreistufig (True/False/NULL fuer Zusage/Absage/keine
+Antwort); responded_at bleibt die urspruengliche Antwortzeit. Organisations-
+markierungen schreiben ausschliesslich billbro_attendance. billbro_attending
+ist die gemeinsame ORM-/SQL-Projektion: explizite Anwesenheit, sonst Legacy-
+Teilnahme, NULL als False. BillBro-Anteile, Forderungen, GGL und Essenstatistik
+verwenden diese Projektion; RSVP-Anzeigen verwenden weiterhin teilnahme.
+Rundenschluss/Erstabschluss halten die effektive Anwesenheit explizit fest.
+Gespeicherte Schätzungen/Ess-Typen bleiben bei Abwesenheit erhalten; aktive
+Anteile und GGL-Werte entfallen. Bereinigungs-Undo respektiert Anwesenheitsdaten.
+
+Korrekturvorschau v4 bindet auch aktuell berechtigte Mitglieder und Anwesenheit.
+Neue Anwesende erst bei Bestaetigung mit teilnahme=NULL anlegen; keine Vorschau-
+DML. Event-/Forderungs-/GGL-/Anwesenheitswerte und Historie atomar speichern.
+Vorherige Vorschautokens werden abgewiesen, bestehende Historien bleiben lesbar.
+
+Bewertungs-Schreibrecht und Bewertungsaufforderungen verwenden ebenfalls
+billbro_attending; die bestehende Organisator-Ausnahme bleibt bestehen.
+RSVP-Erinnerungen vor dem Event bleiben bei der urspruenglichen Antwort.
+Kein automatischer Versand wird durch Anwesenheitskorrekturen ausgeloest.

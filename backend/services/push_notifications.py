@@ -602,7 +602,7 @@ class PushNotificationService:
             # Alle Teilnehmer
             participants = Participation.query.filter_by(
                 event_id=event_id,
-                teilnahme=True
+                billbro_attending=True
             ).all()
             
             if not participants:

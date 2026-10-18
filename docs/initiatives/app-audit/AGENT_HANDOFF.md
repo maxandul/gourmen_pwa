@@ -6,8 +6,8 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17b3b – Anwesenheit/RSVP-Trennung** (nach Gesamttest). U1z bis R08 sowie
-   U2-01 bis U2-17b3a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+3. Naechstes Paket: **U2-17c1 – bezahlte Korrektur bei gleichem Zahlweg**. U1z bis R08 sowie
+   U2-01 bis U2-17b3b sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
@@ -46,7 +46,8 @@ U2-15-Nachkorrektur: 82 Python-/24 JS-Tests; Reihenfolge/Varianten-Schluessel
 und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-17a: 160 Python-Tests. U2-17b1: 139 Tests, nach Ergaenzung 41; Migration 3f16cb4 separat
 (u217b120261018). B2: 91 Tests, erweitert 14; Migration 37e081c
 (u217b220261018) fuer halbe GGL-Werte, fehlende Legacy-Punktespalte beruecksichtigt.
-B3a: 82 Tests. PWA 3.16.39 / pwa.7dd2c898.js.
+B3a: 82 Tests. B3b: 230 Tests, Anschluss 47/40, erweitert 23; 24 JS-Tests.
+Migration 3f09db1 (u217b3b20261018) separat. PWA 3.16.40 / pwa.3be7ee61.js.
 Gesamtlauf auf unveraendertem 02dd63f abgeschlossen; pyreadline3 meldete erst
 nach Testende einen ignorierten Windows-Handle-Fehler (Prozessstatus 0).
 
@@ -57,9 +58,9 @@ U2-16a speichert Status/Forderung atomar und sperrt einfache Rueckschritte.
 Merch-Runden-/Zuschuss-/Korrekturmodell sowie F3/F4-Vorschau/Korrektur bleiben
 Folgepakete. U2-17a sperrt direkte Mutation bei Abschluss-/Forderungs-/
 Anteilshistorie; U2-17b1 liefert Gesamtbetrag/Zahlweg mit Vorschau/Grund/Historie.
-B2 liefert Rechnung/GGL. B3a liefert Ess-Typ-Korrektur; b3b muss Anwesenheit von
-urspruenglichem RSVP trennen; bezahlte Korrekturen
-bleiben separat. F3/F4 daher noch nicht insgesamt abgeschlossen.
+B2 liefert Rechnung/GGL, B3a Ess-Typ-Korrektur, B3b getrennte Anwesenheit/RSVP
+mit Vorschau und Historie. C1 beginnt bezahlt bei gleichem Zahlweg;
+bezahlter Glaeubigerwechsel folgt getrennt. F3/F4 daher noch nicht insgesamt abgeschlossen.
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und
 Hosting-Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;
 unabhaengige lokale Arbeiten fortsetzen. Keine pauschale Produktionsfreigabe.

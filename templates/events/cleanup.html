@@ -120,7 +120,7 @@
                         <input type="hidden" name="status" value="no">
                         <button type="submit" class="btn btn--danger">Nicht dabei</button>
                     </form>
-                {% elif participation and not participation.teilnahme %}
+                {% elif participation and participation.teilnahme is sameas false %}
                     <form method="POST" action="{{ url_for('events.cleanup_rsvp', event_id=event.id) }}" class="form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="status" value="yes">

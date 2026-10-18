@@ -141,10 +141,10 @@
                                         <form method="POST" action="{{ url_for('events.rsvp', event_id=event.id) }}" class="status-form">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <span class="chip-select-wrap">
-                                                <select name="teilnahme" class="chip-select {% if participation %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer dieses Event">
-                                                    <option value="" disabled {% if not participation %}selected{% endif %}>Zu-/Absagen</option>
+                                                <select name="teilnahme" class="chip-select {% if participation and participation.teilnahme is not none %}{% if participation.teilnahme %}chip-select--yes{% else %}chip-select--no{% endif %}{% else %}chip-select--neutral{% endif %}" onchange="this.form.submit()" aria-label="Teilnahme fuer dieses Event">
+                                                    <option value="" disabled {% if not participation or participation.teilnahme is none %}selected{% endif %}>Zu-/Absagen</option>
                                                     <option value="true" {% if participation and participation.teilnahme %}selected{% endif %}>Zugesagt</option>
-                                                    <option value="false" {% if participation and not participation.teilnahme %}selected{% endif %}>Abgesagt</option>
+                                                    <option value="false" {% if participation and participation.teilnahme is sameas false %}selected{% endif %}>Abgesagt</option>
                                                 </select>
                                             </span>
                                         </form>
@@ -278,7 +278,7 @@
                                 <tr class="{% if member.id == current_user.id %}events-participants-table__row--current{% endif %}">
                                     <td class="events-participants-table__col-member">{{ member.display_name_with_spirit }}</td>
                                     <td class="events-participants-table__col-status">
-                                        {% if member_participation %}
+                                        {% if member_participation and member_participation.teilnahme is not none %}
                                             {% if member_participation.teilnahme %}
                                                 <span class="participation-status participation-status--confirmed">Zugesagt</span>
                                             {% else %}
@@ -301,7 +301,7 @@
                     {# Management rights are supplied by the shared server policy. #}
                     {% set has_bill = event.rechnungsbetrag_rappen is not none %}
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
-                    {% set can_access_billbro = (participation and participation.teilnahme) or is_organizer %}
+                    {% set can_access_billbro = (participation and participation.billbro_attending) or is_organizer %}
                     {% set supports_ggl = event.supports_ggl %}
                     {% if can_access_billbro %}
                     {% if not event.billbro_closed %}
@@ -313,7 +313,7 @@
                     {% else %}
                     {% set billbro_phase = 4 %}
                     {% endif %}
-                    {% set billbro_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
+                    {% set billbro_attending = event.participations|selectattr('billbro_attending','equalto',True)|list %}
                     {% if supports_ggl %}
                     {% set billbro_pending = billbro_attending|selectattr('guess_bill_amount_rappen','equalto',none)|list %}
                     {% set billbro_phase_labels = ['Schätzrunde', 'Rechnung', 'Gesamtbetrag', 'Abgeschlossen'] %}
@@ -427,7 +427,7 @@
                                         <label class="form-field__label" for="billbro-payer">Auslegendes Mitglied</label>
                                         <select name="payer_member_id" id="billbro-payer" class="form-field__select">
                                             <option value="">–</option>
-                                            {% for p in event.participations if p.teilnahme %}
+                                            {% for p in event.participations if p.billbro_attending %}
                                             <option value="{{ p.member_id }}" {{ 'selected' if event.bill_payer_member_id == p.member_id else '' }}>
                                                 {{ p.member.display_name_with_spirit }}
                                             </option>
@@ -449,7 +449,7 @@
                     {% endif %}
 
                     {% set share_label = '—' %}
-                    {% if has_final and participation and participation.teilnahme %}
+                    {% if has_final and participation and participation.billbro_attending %}
                         {% set stored_share = event.billbro_stored_share(participation) %}
                         {% if stored_share is not none %}
                             {% set share_label = "%.2f"|format(stored_share / 100) ~ ' CHF' %}
@@ -514,7 +514,7 @@
                     {# 2) Schätzungsrangliste (nur GGL / Monatsessen) #}
                     {% if supports_ggl and has_bill %}
                     {% set ranked = event.participations
-                            | selectattr('teilnahme','equalto', True)
+                            | selectattr('billbro_attending','equalto', True)
                             | rejectattr('guess_bill_amount_rappen', 'equalto', none)
                             | list %}
                     {% set ranked = ranked|sort(attribute='diff_amount_rappen') %}
@@ -673,7 +673,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    {% elif participation and participation.teilnahme %}
+                    {% elif participation and participation.billbro_attending %}
                     <div class="card{% if (not has_final) or has_bill %} mt-6{% endif %}" id="billbro-new-esstyp">
                         <div class="card__header">
                             <h2 class="card__title">Ess-Typ wählen</h2>
@@ -720,59 +720,19 @@
                         <p class="text-muted">Bestätige, wer wirklich anwesend ist, bevor du die Rechnung eingibst.</p>
                         <div class="card-section card-section--subtle">
                             <div class="card-section__body">
-                                    {# Zusagen zuerst #}
                                     {% for member in all_members %}
                                     {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
-                                    {% if member_participation and member_participation.teilnahme %}
-                                    <div class="info-row">
-                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
-                                        <div class="info-row__value info-row__value--actions">
-                                            {% if supports_ggl %}
-                                                {{ member_participation.display_guess if member_participation.has_guess else 'Wartet auf Schätzung' }}
-                                                {% if not member_participation.has_guess %}
-                                            <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" class="form">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                                <button type="submit" class="btn btn--outline btn--sm" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
-                                            </form>
-                                                {% endif %}
-                                            {% else %}
-                                                {{ member_participation.esstyp.value if member_participation.has_esstyp else 'Wartet auf Ess-Typ' }}
-                                                {% if not member_participation.has_esstyp %}
-                                            <form method="POST" action="{{ url_for('billbro.mark_absent', event_id=event.id, member_id=member.id) }}" class="form">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                                <button type="submit" class="btn btn--outline btn--sm" onclick="return confirm('{{ member.display_name_with_spirit }} ist nicht da?')">Nicht da</button>
-                                            </form>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    {% endfor %}
-
-                                    {# Abgesagt #}
-                                    {% for member in all_members %}
-                                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
-                                    {% if member_participation and not member_participation.teilnahme %}
-                                    <div class="info-row">
-                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
-                                        <div class="info-row__value info-row__value--actions">Abgesagt</div>
-                                    </div>
-                                    {% endif %}
-                                    {% endfor %}
-
-                                    {# Keine Antwort #}
-                                    {% for member in all_members %}
-                                    {% set member_participation = event.participations|selectattr('member_id', 'equalto', member.id)|first %}
-                                    {% if not member_participation %}
-                                    <div class="info-row">
-                                        <span class="info-row__label">{{ member.display_name_with_spirit }}</span>
-                                        <div class="info-row__value info-row__value--actions">Keine Antwort</div>
-                                    </div>
-                                    {% endif %}
+                                    {% set present = member_participation and member_participation.billbro_attending %}
+                                    <div class="info-row"><span class="info-row__label">{{ member.display_name_with_spirit }}</span>
+                                    <div class="info-row__value info-row__value--actions">
+                                    <span>{{ 'Anwesend' if present else 'Abwesend' }} · Antwort: {{ member_participation.rsvp_label if member_participation else 'Keine Antwort' }}</span>
+                                    {% if not has_final %}<form method="POST" action="{{ url_for('billbro.mark_absent' if present else 'billbro.mark_present', event_id=event.id, member_id=member.id) }}" class="form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn--outline btn--sm">{{ 'Nicht da' if present else 'Ist da' }}</button></form>{% endif %}
+                                    </div></div>
                                     {% endfor %}
                             </div>
                         </div>
-                        {% set total_attending = event.participations|selectattr('teilnahme','equalto',True)|list %}
+                        {% set total_attending = event.participations|selectattr('billbro_attending','equalto',True)|list %}
                         {% if supports_ggl %}
                         {% set pending_ready = total_attending|selectattr('guess_bill_amount_rappen','equalto',None)|list %}
                         {% else %}

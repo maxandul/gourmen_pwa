@@ -551,3 +551,10 @@ statt Listenposition; keine neue CSS-Klasse. PWA 3.16.38 / pwa.34b2a6b8.js.
 U2-17b3a ergaenzt vorhandene Ess-Typ-Selects je anwesender Person sowie alte/neue
 Typen in Vorschau und Verlauf. Ungueltige Eingaben korrigierbar erhalten und
 escapen; keine neue UI-Klasse. PWA 3.16.39 / pwa.7dd2c898.js.
+
+
+U2-17b3b zeigt Anwesenheit getrennt von urspruenglicher Antwort und erlaubt
+Anwesend/Abwesend sowie Ess-Typ in der Korrekturvorschau. Organisator-Check
+verwendet vorhandene info-row/form/button-Klassen; RSVP-Selects behalten
+Keine-Antwort-Zustand. Verlauf zeigt Anwesenheit/Antwort/Ess-Typ und GGL.
+Keine neue CSS-Klasse. PWA 3.16.40 / pwa.3be7ee61.js; reale Darstellungsabnahme offen.

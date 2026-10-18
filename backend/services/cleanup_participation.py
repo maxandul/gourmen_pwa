@@ -41,7 +41,7 @@ class CleanupParticipationService:
     @staticmethod
     def protected(event, row, member_id):
         event_fields = ('rechnungsbetrag_rappen', 'gesamtbetrag_rappen', 'trinkgeld_rappen', 'bill_paid_by')
-        row_fields = ('esstyp', 'guess_bill_amount_rappen', 'diff_amount_rappen', 'rank', 'points', 'calculated_share_rappen')
+        row_fields = ('billbro_attendance', 'esstyp', 'guess_bill_amount_rappen', 'diff_amount_rappen', 'rank', 'points', 'calculated_share_rappen')
         return (event.billbro_closed or any(getattr(event, field) is not None for field in event_fields)
             or (row and any(getattr(row, field) is not None for field in row_fields))
             or EventRating.query.filter_by(event_id=event.id, participant_id=member_id).first()

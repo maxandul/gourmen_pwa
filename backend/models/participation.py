@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import Enum
 from backend.extensions import db
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func
 
 class Esstyp(Enum):
     SPARSAM = 'SPARSAM'
@@ -18,7 +20,8 @@ class Participation(db.Model):
                         nullable=False, index=True)
     
     # Participation status
-    teilnahme = db.Column(db.Boolean, nullable=False)
+    teilnahme = db.Column(db.Boolean, nullable=True)
+    billbro_attendance = db.Column(db.Boolean, nullable=True)
     
     # BillBro data
     esstyp = db.Column(db.Enum(Esstyp))
@@ -41,6 +44,18 @@ class Participation(db.Model):
     def __repr__(self):
         return f'<Participation {self.member_id} at Event {self.event_id}>'
     
+    @hybrid_property
+    def billbro_attending(self):
+        return self.billbro_attendance if self.billbro_attendance is not None else bool(self.teilnahme)
+
+    @billbro_attending.expression
+    def billbro_attending(cls):
+        return func.coalesce(cls.billbro_attendance, cls.teilnahme, False)
+
+    @property
+    def rsvp_label(self):
+        return 'Keine Antwort' if self.teilnahme is None else ('Zugesagt' if self.teilnahme else 'Abgesagt')
+
     @property
     def has_guess(self):
         """Check if member has made a guess"""
@@ -54,7 +69,7 @@ class Participation(db.Model):
     @property
     def is_complete(self):
         """Check if participation is complete (attending + eating type + guess)"""
-        return (self.teilnahme and 
+        return (self.billbro_attending and
                 self.has_esstyp and 
                 self.has_guess)
     
@@ -80,4 +95,8 @@ class Participation(db.Model):
         if self.diff_amount_rappen is None:
             return None
         from backend.services.money import MoneyService
-        return MoneyService.to_franken(self.diff_amount_rappen) 
+        return MoneyService.to_franken(self.diff_amount_rappen)
+
+def is_billbro_attending(part):
+    """Also accept pure projection objects carrying the legacy boolean."""
+    return getattr(part, 'billbro_attending', bool(part.teilnahme))

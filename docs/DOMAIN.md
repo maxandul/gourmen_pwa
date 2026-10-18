@@ -324,3 +324,12 @@ GGL-Anschlusspruefung U2-17b2: Halbe Gesamtpunkte bleiben auch in persoenlichen
 Punkteabstaenden erhalten. Persoenliche Saisonansicht und Tabelle verwenden
 denselben berechneten Saisonrang; eine Listenposition ist bei Gleichstand
 kein zusaetzlicher Rang. Gespeicherte Eventergebnisse werden nicht neu berechnet.
+
+
+U2-17b3b trennt urspruengliche Zu-/Absage von tatsaechlicher BillBro-Anwesenheit.
+Keine Antwort ist ein eigener Zustand, auch wenn die Organisation Anwesenheit
+erfasst. Abwesende erhalten keinen Essensanteil und keine aktiven GGL-Punkte;
+ihre vorhandenen Eingaben bleiben erhalten. Unbezahlte Korrektur zeigt auch
+Anwesenheits- und GGL-Folgen vor Bestaetigung; bezahlte Korrektur bleibt separat.
+Legacy-Werte ohne explizite Anwesenheit werden weiter wie bisher ausgewertet;
+es wird keine unbekannte historische Antwort erfunden.

@@ -1,3 +1,4 @@
+from backend.models.participation import is_billbro_attending
 from collections import defaultdict
 from datetime import datetime
 
@@ -21,7 +22,7 @@ class GGLService:
         ranked = []
         for part in participations:
             guess = part.guess_bill_amount_rappen
-            if not part.teilnahme or guess is None:
+            if not is_billbro_attending(part) or guess is None:
                 continue
             if type(guess) is not int or guess < 0:
                 raise ValueError('Historische Schätzung ist ungültig. Zuerst klären.')
@@ -66,7 +67,7 @@ class GGLService:
         for event in events:
             participations = Participation.query.filter_by(
                 event_id=event.id,
-                teilnahme=True
+                billbro_attending=True
             ).filter(
                 Participation.guess_bill_amount_rappen.isnot(None)
             ).all()
@@ -152,7 +153,7 @@ class GGLService:
         # Get all events in the season where member participated
         participations = db.session.query(Participation).join(Event).filter(
             Participation.member_id == member_id,
-            Participation.teilnahme == True,
+            Participation.billbro_attending == True,
             Participation.guess_bill_amount_rappen.isnot(None),
             Event.season == season_year
         ).all()
@@ -231,7 +232,7 @@ class GGLService:
         for event in all_events:
             participations = Participation.query.filter_by(
                 event_id=event.id,
-                teilnahme=True
+                billbro_attending=True
             ).filter(
                 Participation.guess_bill_amount_rappen.isnot(None)
             ).all()
@@ -252,7 +253,7 @@ class GGLService:
         for event in events_with_points:
             participations = Participation.query.filter_by(
                 event_id=event.id,
-                teilnahme=True
+                billbro_attending=True
             ).filter(
                 Participation.guess_bill_amount_rappen.isnot(None)
             ).all()
@@ -280,7 +281,7 @@ class GGLService:
             # Get participations for this event
             participations = Participation.query.filter_by(
                 event_id=event.id,
-                teilnahme=True
+                billbro_attending=True
             ).filter(
                 Participation.guess_bill_amount_rappen.isnot(None)
             ).all()
@@ -474,7 +475,7 @@ class GGLService:
             .join(Event)
             .filter(
                 Event.season == season_year,
-                Participation.teilnahme.is_(True),
+                Participation.billbro_attending.is_(True),
                 Participation.guess_bill_amount_rappen.isnot(None),
                 Event.rechnungsbetrag_rappen.isnot(None),
             )
@@ -508,7 +509,7 @@ class GGLService:
             .join(Event)
             .filter(
                 Participation.member_id == member_id,
-                Participation.teilnahme.is_(True),
+                Participation.billbro_attending.is_(True),
                 Participation.guess_bill_amount_rappen.isnot(None),
                 Event.season == season_year,
             )

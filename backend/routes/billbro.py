@@ -105,7 +105,7 @@ def compute(event_id):
         event_id=event_id
     ).first()
     
-    if not participation or not participation.teilnahme:
+    if not participation or not participation.billbro_attending:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'error': 'Keine Teilnahme'}), 400
         flash('Keine Teilnahme', 'error')
@@ -216,7 +216,7 @@ def enter_bill(event_id):
     if event.supports_ggl:
         participations = Participation.query.filter_by(
             event_id=event_id,
-            teilnahme=True
+            billbro_attending=True
         ).filter(
             Participation.guess_bill_amount_rappen.isnot(None)
         ).all()
@@ -260,7 +260,7 @@ def set_payment(event_id):
     payer_member_id = request.form.get('payer_member_id', type=int)
     if paid_by == BillPaidBy.MITGLIED.value:
         payer_participates = any(
-            p.teilnahme and p.member_id == payer_member_id
+            p.billbro_attending and p.member_id == payer_member_id
             for p in event.participations
         )
         if not payer_member_id or not payer_participates:
@@ -314,8 +314,8 @@ def start_session(event_id):
         flash('Nur der Organisator kann BillBro starten', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
-    # Get all participating members (teilnahme=True)
-    participating_members = [p.member_id for p in event.participations if p.teilnahme]
+    # Get all participating members (billbro_attending=True)
+    participating_members = [p.member_id for p in event.participations if p.billbro_attending]
     
     if not participating_members:
         flash('Keine Teilnehmer gefunden', 'error')
@@ -359,7 +359,7 @@ def send_reminder(event_id):
     # Get participants who haven't guessed yet
     pending_participants = []
     for participation in event.participations:
-        if (participation.teilnahme and 
+        if (participation.billbro_attending and
             participation.guess_bill_amount_rappen is None):
             pending_participants.append(participation.member_id)
     
@@ -586,7 +586,7 @@ def share_whatsapp(event_id):
     if event.supports_ggl:
         participations = Participation.query.filter_by(
             event_id=event_id,
-            teilnahme=True
+            billbro_attending=True
         ).filter(
             Participation.guess_bill_amount_rappen.isnot(None)
         ).order_by(Participation.rank.asc()).all()
@@ -603,7 +603,7 @@ def share_whatsapp(event_id):
 
     for kind, key, label in BillBroShareService.GROUPS:
         message += f"{label}:\n"
-        participants = sorted((p for p in event.participations if p.teilnahme and p.esstyp == kind), key=lambda p: p.member_id)
+        participants = sorted((p for p in event.participations if p.billbro_attending and p.esstyp == kind), key=lambda p: p.member_id)
         if not participants:
             message += "  Keine Teilnehmenden\n"
         for part in participants:
@@ -634,7 +634,7 @@ def update_guess(event_id):
         event_id=event_id
     ).first()
     
-    if not participation or not participation.teilnahme:
+    if not participation or not participation.billbro_attending:
         flash('Du nimmst nicht an diesem Event teil.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
@@ -681,7 +681,7 @@ def record_guess(event_id, member_id):
         event_id=event_id
     ).first()
     
-    if not participation or not participation.teilnahme:
+    if not participation or not participation.billbro_attending:
         flash('Teilnehmer nicht gefunden', 'error')
         return redirect(url_for('billbro.calculator', event_id=event_id))
     
@@ -763,7 +763,7 @@ def export_pdf(event_id):
     # Get all participations with guesses
     participations = Participation.query.filter_by(
         event_id=event_id,
-        teilnahme=True
+        billbro_attending=True
     ).filter(
         Participation.guess_bill_amount_rappen.isnot(None)
     ).order_by(Participation.diff_amount_rappen.asc()).all()
@@ -773,104 +773,30 @@ def export_pdf(event_id):
     flash('PDF-Export noch nicht implementiert', 'info')
     return redirect(url_for('billbro.results', event_id=event_id))
 
+def _mark_attendance(event_id, member_id, attending):
+    from backend.services.billbro_attendance import BillBroAttendanceService, AttendanceError
+    try:
+        BillBroAttendanceService.mark(event_id, member_id, current_user, attending)
+    except AttendanceError as exc:
+        flash(str(exc), 'error')
+    else:
+        flash('Anwesenheit gespeichert. Die ursprüngliche Antwort bleibt erhalten.', 'success')
+    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
+
+
 @bp.route('/<int:event_id>/mark_absent/<int:member_id>', methods=['POST'])
 @login_required
 @before_billbro_finalization
 def mark_absent(event_id, member_id):
-    """Mark member as absent (organizer only)"""
-    event = _get_visible_event_or_404(event_id)
-    
-    # Check if user is organizer or admin
-    if not AreaPermissionService.can_manage_event(current_user, event):
-        flash('Nur der Organisator kann Teilnehmer abmelden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
-    
-    participation = Participation.query.filter_by(
-        member_id=member_id,
-        event_id=event_id
-    ).first()
-    
-    # Create participation record if it doesn't exist
-    if not participation:
-        from backend.models.member import Member
-        member = Member.query.get_or_404(member_id)
-        participation = Participation(
-            member_id=member_id,
-            event_id=event_id,
-            teilnahme=False
-        )
-        db.session.add(participation)
-    
-    # Mark as absent
-    participation.teilnahme = False
-    # Clear BillBro data when marking absent
-    participation.esstyp = None
-    participation.guess_bill_amount_rappen = None
-    participation.diff_amount_rappen = None
-    participation.rank = None
-    participation.calculated_share_rappen = None
-    participation.responded_at = None
-    
-    db.session.commit()
-    
-    # Log audit event
-    SecurityService.log_audit_event(
-        AuditAction.BILLBRO_MARK_ABSENT, 'participation', participation.id,
-        extra_data={
-            'event_id': event_id,
-            'member_id': member_id,
-            'member_name': participation.member.display_name
-        }
-    )
-    
-    flash(f'{participation.member.display_name} als nicht anwesend markiert', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
+    return _mark_attendance(event_id, member_id, False)
+
 
 @bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST'])
 @login_required
 @before_billbro_finalization
 def mark_present(event_id, member_id):
-    """Mark member as present again (organizer only)"""
-    event = _get_visible_event_or_404(event_id)
-    
-    # Check if user is organizer or admin
-    if not AreaPermissionService.can_manage_event(current_user, event):
-        flash('Nur der Organisator kann Teilnehmer anmelden', 'error')
-        return redirect(url_for('billbro.index', event_id=event_id))
-    
-    participation = Participation.query.filter_by(
-        member_id=member_id,
-        event_id=event_id
-    ).first()
-    
-    # Create participation record if it doesn't exist
-    if not participation:
-        from backend.models.member import Member
-        member = Member.query.get_or_404(member_id)
-        participation = Participation(
-            member_id=member_id,
-            event_id=event_id,
-            teilnahme=True
-        )
-        db.session.add(participation)
-    
-    # Mark as present
-    participation.teilnahme = True
-    
-    db.session.commit()
-    
-    # Log audit event
-    SecurityService.log_audit_event(
-        AuditAction.BILLBRO_MARK_PRESENT, 'participation', participation.id,
-        extra_data={
-            'event_id': event_id,
-            'member_id': member_id,
-            'member_name': participation.member.display_name
-        }
-    )
-    
-    flash(f'{participation.member.display_name} wieder angemeldet', 'success')
-    return redirect(url_for('events.detail', event_id=event_id, tab='billbro', _anchor='billbro-attendance'))
+    return _mark_attendance(event_id, member_id, True)
+
 
 @bp.route('/<int:event_id>/toggle_status', methods=['POST'])
 @login_required
@@ -893,7 +819,10 @@ def toggle_billbro_status(event_id):
         else:
             flash('BillBro wieder geöffnet - Teilnehmer können den Ess-Typ ändern', 'success')
     else:
-        # Close BillBro
+        # Record actual attendance without inventing an RSVP.
+        for part in event.participations:
+            if part.billbro_attendance is None:
+                part.billbro_attendance = part.billbro_attending
         event.billbro_closed = True
         if event.supports_ggl:
             flash('BillBro abgeschlossen - Schätzungen können nicht mehr geändert werden', 'success')
@@ -940,7 +869,8 @@ def correction(event_id):
         except CorrectionError as exc:
             db.session.rollback()
             error = str(exc)
-    members = {p.member_id: p.member.display_name for p in event.participations}
+    correction_parts = BillBroCorrectionService.candidates(event, list(event.participations))
+    members = {p.member_id: p.member.display_name for p in correction_parts}
     history = BillBroCorrection.query.filter_by(event_id=event_id).order_by(BillBroCorrection.id.desc()).all()
     return render_template('events/billbro_correction.html', event=event, values=values,
-                           preview=preview, error=error, members=members, history=history), 400 if error else 200
+                           preview=preview, error=error, members=members, history=history, correction_parts=correction_parts), 400 if error else 200

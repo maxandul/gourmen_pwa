@@ -234,3 +234,44 @@ B3b-Migration isoliert auf SQLite: 3 bestanden, 0.23 s; Altwerte erhalten,
 Upgrade/Downgrade/Upgrade und drei verlustbehaftete Downgrade-Faelle gesperrt.
 Ignorierter pyreadline3-Handlefehler nach Testende, Prozessstatus 0.
 Anwendungsintegration noch in Arbeit; keine Live-Migration.
+
+
+## b3b umgesetzt und lokal geprueft
+
+Migration **3f09db1**, Revision u217b3b20261018 nach u217b220261018 separat.
+Neue effektive Anwesenheitsprojektion in ORM und SQL, Originalantwort nullable.
+Organisationsmarkierung, Rundenschluss/Erstabschluss, Anteile/Forderungen, GGL,
+Essensstatistik, Bewertungs-Schreibrecht/-Aufforderungen und RSVP-Anzeigen
+konsistent angebunden. Keine neue Nachricht durch die Korrektur. Urspruengliche
+Antwortzeit, Ess-Typ und Schaetzung bleiben erhalten. Korrekturvorschau v4
+bindet Anwesenheit und berechtigte Kandidaten; neue Teilnahme erst bei Bestaetigung.
+Bezahlte Korrektur bleibt gesperrt. PWA 3.16.40 / pwa.3be7ee61.js.
+
+Tatsaechliche isolierte Regressionen ohne dotenv/Netz:
+- Bestehende BillBro-Korrektur/Anteile/Grenzen: **122 bestanden, 2855 Warnungen,
+  40.55 s**.
+- Neue Anwesenheitsfaelle zuerst 7 bestanden/4 Fixturefehler: synthetischem
+  Mitglied fehlte passwort_hash. Fixture ergaenzt; danach **11 bestanden,
+  435 Warnungen, 7.35 s**.
+- Erweiterter Lauf attendance, attendance_migration, correction,
+  invoice_correction, type_correction, shares, cleanup_undo, fractional_display,
+  finalization_boundary, amount_validation, event_visibility und
+  travel_area_permissions: **230 bestanden, 4999 Warnungen, 75.00 s**.
+- Nach Anschluss der Bewertungsrechte: attendance/event_visibility/cleanup_undo
+  **47 bestanden, 1329 Warnungen, 19.52 s**; rating_return_target
+  **40 bestanden, 426 Warnungen, 8.29 s**.
+- Abschliessend erweiterte Anwesenheitsfaelle inkl. Vorabschluss-Speicherfehler
+  und Board-Auswahl: **23 bestanden, 759 Warnungen, 11.93 s**.
+- Node Worker/Bestell-Edit: **24 bestanden**. git diff --check bereinigt.
+Ignorierte pyreadline3-Handlefehler traten teilweise erst nach erfolgreichen
+Tests auf; betroffene Prozesse endeten mit Status 0.
+
+Nachweise umfassen fehlende/positive/negative Originalantwort, neue Anwesende,
+GGL bei unveraenderter Rechnung, Summenerhalt und Forderungsersatz, neue Person
+nur nach Bestaetigung, Historie und Retry, veraltete Vorschau, Verlust der
+Auswahlberechtigung, ungueltige/fehlende Angaben, abwesender Auslegender,
+leere Runde, echte INSERT-/UPDATE-/Historienfehler mit vollstaendigem Rollback.
+Keine echte PostgreSQL-Sperrpruefung oder Browser-/Geraeteabnahme. U1 bleibt offen.
+Naechster begrenzter Auftrag: U2-17c1, bezahlte Korrektur bei unveraendertem
+Zahlweg/Glaeubiger vorbereiten; Zahlungs- und Erstattungshistorie vor Code
+gegen F3/K1 konkretisieren, keine automatische Auszahlung.
