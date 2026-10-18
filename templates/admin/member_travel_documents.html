@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Reisedokumente - {{ member.display_name_with_spirit }}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <p class="page-back"><a href="{{ url_for('admin.members') }}">Zurück zur Mitgliederliste</a></p>
+        <h1>Reisedokumente · {{ member.display_name_with_spirit }}</h1>
+    </div>
+    <div class="page-content">
+        <div class="card">
+            <div class="card__header"><h2 class="card__title">Pass und Identitätskarte</h2></div>
+            <div class="card__body">
+                <p>Diese Angaben sind nur für die Reiseorganisation bestimmt. Änderungen erfolgen durch das Mitglied oder den Systemadmin.</p>
+                <dl>
+                    {% for label, value in fields %}
+                    <dt>{{ label }}</dt><dd>{{ value or 'Nicht hinterlegt' }}</dd>
+                    {% endfor %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

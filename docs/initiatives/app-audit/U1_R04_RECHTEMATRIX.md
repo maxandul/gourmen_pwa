@@ -73,3 +73,6 @@ Nur Dokumentation. Quelleneinstiege in admin.py, member.py, events.py, accountin
 docs.py, MemberSensitive und Document gezielt abgeglichen. Keine neue App-Regression
 fuer diesen Dokumentationscommit ausgefuehrt; letzte Pakettests bleiben getrennt.
 Lokale Links und `git diff --check` beim Abschluss pruefen. Kein externer Nachweis.
+
+18.10.2026 Nutzerentscheidung zu R04c: Noch nicht zugeordnete Dateien in der App
+bis zur Klassifikation nur Systemadmin. Keine Aenderung direkter Drive-Freigaben.

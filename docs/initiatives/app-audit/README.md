@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04a. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R04b. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1-R04a / R13: Reisedokumentansicht | Lokal geprüft, Browserabnahme offen | [Feldprojektion und Regression](U1_R04A_REISEDOKUMENTE.md); U1 offen |
 | U1-R04 / F2/R13: Aktion-/Rolle-/Feldmatrix | Matrix lokal geprüft, Durchsetzung offen | [Matrix und getrennte Folgepakete](U1_R04_RECHTEMATRIX.md); U1 offen |
 | U1-R03 / A-071: Beleg-/Dokumentauswahl | Lokal geprüft, 18.10.2026; U1 offen | 34 Tests bestanden; [Vertrag und Nachweise](U1_R03_BELEGAUSWAHL.md) |
 | U1-R02 / A-026, A-037, A-042: Sichtbarkeit | Lokal geprüft, 18.10.2026; U1 offen | 63 Tests bestanden; [Vertrag und Nachweise](U1_R02_SICHTBARKEIT.md) |

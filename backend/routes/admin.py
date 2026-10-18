@@ -20,6 +20,7 @@ from backend.services.security import SecurityService, SensitiveDataReadError, A
 from backend.services.mail import MailService
 from backend.services.action_confirmation import ActionConfirmationService
 from backend.services.onboarding import OnboardingService
+from backend.services.member_sensitive import MemberSensitiveService
 from backend.models.drive_access_task import DriveAccessTask
 from backend.services.drive_access import DriveAccessService, OPEN_STATUSES
 
@@ -380,7 +381,8 @@ class EventForm(FlaskForm):
 def members():
     """Admin members list"""
     members = Member.query.order_by(Member.nachname, Member.vorname).all()
-    return render_template('admin/members.html', members=members)
+    return render_template('admin/members.html', members=members,
+                           can_read_travel=MemberSensitiveService.can_read_travel(current_user))
 
 
 
@@ -645,6 +647,32 @@ def edit_member(member_id):
         member=member,
         calendar_feed_active_since=calendar_feed_active_since,
     )
+
+@bp.route('/members/<int:member_id>/travel-documents', methods=['GET'])
+@login_required
+def member_travel_documents(member_id):
+    from flask import after_this_request
+
+    @after_this_request
+    def private_response(response):
+        response.headers['Cache-Control'] = 'private, no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        return response
+
+    if not MemberSensitiveService.can_read_travel(current_user):
+        abort(403)
+    if not SecurityService.check_step_up_access():
+        return redirect(url_for('auth.step_up', next=url_for('admin.member_travel_documents', member_id=member_id)))
+    member = Member.query.get_or_404(member_id)
+    try:
+        fields = MemberSensitiveService.read_travel(current_user, member_id)
+    except SensitiveDataReadError:
+        return render_template('errors/500.html'), 500
+    SecurityService.log_audit_event(AuditAction.READ_SENSITIVE_OTHERS,
+                                   'member_sensitive', member_id,
+                                   extra_data={'field_scope': 'travel_documents'})
+    return render_template('admin/member_travel_documents.html', member=member, fields=fields)
+
 
 @bp.route('/members/<int:member_id>/sensitive', methods=['GET', 'POST'])
 @login_required

@@ -701,3 +701,14 @@ und Zuordnung folgen can_read_receipt: eigener Einreichender oder Finanz-/
 Revisionsrolle/Admin, zusaetzlich alle verknuepften Eventberechtigungen.
 Der eigene Vorgang/Status bleibt bestehen; das erteilt kein Leserecht auf ein
 inzwischen gesperrtes Eventdokument. Umfassende Ordner-/Drive-Rechte folgen U1-R04.
+
+## Begrenzte sensible Reisedokumentansicht (U1-R04a)
+
+`admin.member_travel_documents` ist GET-only fuer aktive Reisekommissare/Admins
+nach sitzungsgebundenem Step-Up. `MemberSensitiveService` prueft Rolle und aktuelle
+Identitaet vor Entschluesselung und gibt nur sechs Pass-/ID-Felder ans Template.
+Keine Allergien, Fuehrerscheindaten oder unbekannten JSON-Felder in dieser Ansicht.
+Lesefehler bleiben ohne Mutation; Antworten inklusive Fehler/Step-Up-Redirect
+tragen private/no-store und no-referrer. Bestehende eigene/Admin-Editwege bleiben.
+Schatzmeister erhalten keinen Ersatz-Zugriff auf den Gesamtpayload: definierte
+sensible Zahlungsfelder existieren aktuell nicht.

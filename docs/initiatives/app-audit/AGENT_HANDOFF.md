@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U1-R04a – sensible Feldansicht** nach U1_R04_RECHTEMATRIX.md. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U1-R04b – Bereichsfreigaben** nach U1_R04_RECHTEMATRIX.md. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
 4. Vor Codeänderungen relevante Anchor-Docs und Paketquellen lesen. Bestätigte
@@ -31,3 +31,6 @@ Git-Status prüfen. Keine Chats oder Agenten automatisch starten.
 U1a–U1y samt Prüfnachweisen: [README](README.md). Ältere Übergabe vollständig
 bewahrt in [Übergabeverlauf](AGENT_HANDOFF_HISTORY_20261016.md); dessen damalige
 Startanweisungen und offene Punkte sind keine aktuellen Arbeitsaufträge.
+
+R04c-Altbestand am 18.10. bestaetigt: noch nicht klassifizierte Dateien in der App
+nur fuer Systemadmin. Direkte Drive-Freigaben bleiben bis separater Abnahme unveraendert.

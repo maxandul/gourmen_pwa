@@ -60,7 +60,7 @@
                             <th scope="col">Spirit Animal</th>
                             <th scope="col">Führerschein</th>
                             <th scope="col" class="admin-members-table__col-status">Status</th>
-                            {% if current_user.is_admin() %}
+                            {% if current_user.is_admin() or can_read_travel %}
                             <th scope="col"><span class="sr-only">Aktionen</span></th>
                             {% endif %}
                         </tr>
@@ -110,9 +110,10 @@
                                     {% if member.vorstandsmitglied %}<span class="chip chip--info">Vorstand</span>{% endif %}
                                 </div>
                             </td>
-                            {% if current_user.is_admin() %}
+                            {% if current_user.is_admin() or can_read_travel %}
                             <td class="admin-members-table__actions">
                                 <div class="admin-members-table__actions-inner">
+                                    {% if current_user.is_admin() %}
                                     <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" class="btn btn--outline btn--sm">
                                         {{ lucide_icon('pencil') }}
                                         Bearbeiten
@@ -125,6 +126,10 @@
                                         {{ lucide_icon('shield') }}
                                         Sicherheit
                                     </a>
+                                    {% endif %}
+                                    {% if can_read_travel %}
+                                    <a href="{{ url_for('admin.member_travel_documents', member_id=member.id) }}" class="btn btn--outline btn--sm">Reisedokumente</a>
+                                    {% endif %}
                                 </div>
                             </td>
                             {% endif %}

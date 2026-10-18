@@ -105,6 +105,7 @@ Aktuelle Services:
 
 | Service | Zweck |
 |---|---|
+| `MemberSensitiveService` | Zweckgebundene lesende Pass-/ID-Ansicht fuer Reisekommissar/Admin; Rollen- und Step-Up-Pruefung vor Entschluesselung, sechs Feldwerte statt Gesamtpayload (U1-R04a). |
 | `OnboardingService` | Aktivierungstoken mit Empfänger-/Zugangsversion-Snapshot vor Versand sichern, Versandresultat am Token festhalten und ausdrücklich bestätigte neue Einladung ermöglichen (U1y). Keine automatische Mail-Outbox. |
 | `ActionConfirmationService` | Frischer Passwortbeweis direkt bei Sicherheitsmutationen; signierter, sitzungs-/aktions-/zielgebundener Formularnachweis. Einmalverbrauch bestehender Ziele über U1v-Zielgeneration; Mitgliederanlage und erneute Einladung über atomar gespeicherten `ActionConfirmationUse` (U1x/U1y). |
 | `AuthenticationService` | Versionierte Flask-Login-Identitäten, Widerrufsprüfung bei Session/Remember-me, begrenztes TOTP-Gerätevertrauen und Erhalt der aktuellen Sitzung nach eigenem Passwortwechsel. |
