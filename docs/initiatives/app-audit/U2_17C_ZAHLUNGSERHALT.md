@@ -63,3 +63,40 @@ B02-Erinnerungsoberflaeche und Ersatz des noch vorhandenen Legacy-Privat-
 Eingangsbestaetigungswegs bleiben beauftragte Folgearbeit, keine neue
 Zahlungskontrolle durch c0. Bezahlte Vereinskorrektur und privater Ausgleich
 bleiben offen.
+
+
+## Vertrag vor Code: c1a bezahlten Vereinsentwurf vorbereiten
+
+C1 wird in Vorbereitung (c1a) und finanzielle Bestaetigung mit Rueckzahlungs-
+modell (c1b) getrennt. C1a speichert einen unveraenderlichen Entwurf; Event,
+Anteile, Forderungen, Zahlungen und Buchungen bleiben bis c1b unveraendert.
+Expliziter Hinweis in der UI: Entwurf ist keine Freigabe und noch nicht wirksam.
+
+Nur bestehender Vereinsglaeubiger bleibt Vereinsglaeubiger. Organisation darf
+vorbereiten, Grund/Vorher/Nachher einschliesslich gespeicherter Zahlung und
+abgeleitetem Mehrbetrag/Rueckzahlungsbedarf pruefen und Entwurf speichern.
+Bei Revision/geschlossenem Jahr Vorbereitung mit sichtbarer Sperrgrenze erlauben;
+keine Jahresoeffnung. Private Ausgangs-/Zielwege, Erlasse und inkonsistente
+Forderungen bleiben gesperrt. Kein Zahlungsstand aus externen Quellen erfinden.
+
+Signierte Vorschau bindet Akteur/Zugang, Vorschlag und Ausgangszustand samt
+Zahlungszuordnungen/Buchungen. Speichern unter Event-Sperre prueft diesen Stand
+neu; Tokenwiederholung erzeugt keinen zweiten Entwurf. Neuer Entwurf ersetzt
+keine Zahlung, sondern markiert einen aelteren offenen Entwurf als ueberholt.
+Zurueckziehen mit Grund erhaelt Entwurf/Autor/Zeit und veraendert keine Finanzen.
+Finanz-Leserecht plus Eventzugriff erlaubt lesende Einsicht; Organisation darf
+nur eigene verwaltbare Events vorbereiten. Noch keine Freigabeaktion in c1a.
+Eventloeschung muss Entwuerfe und explizite Anwesenheitsdaten bewahren.
+
+Separate additive Migration fuer BillBroCorrectionDraft. Kein historischer
+Backfill, Downgrade mit Entwurfshistorie verweigern. Tests fuer Vorschau ohne DML,
+bezahlte Beispiele (84->90 ergibt 6 offen; 84->78 ergibt 6 Rueckzahlungsbedarf),
+Erhalt aller Fachwerte/Bankzeilen, Rollback/Retry, alte Vorschau, nachtraegliche
+Zahlung/Zuordnungsruecknahme, Rollen/Sichtbarkeit, Zurueckziehen und Migrationszyklus.
+C1b danach fuer echte Finanzbestaetigung und abgleichbare Rueckzahlungen.
+
+
+C1a-Migration u217c1a20261018 nach u217b3b20261018: synthetischer SQLite-
+Upgrade/Downgrade/Upgrade und Historien-Downgrade-Sperre **1 bestanden,
+0.18 s**. Ignorierter pyreadline3-Handlefehler nach Testende, Prozessstatus 0.
+Anwendungsintegration noch in Arbeit; keine Live-Migration.
