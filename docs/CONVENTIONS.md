@@ -737,3 +737,13 @@ sind fuer Finanzbearbeitung erreichbar. Revisionsstatuswechsel bleiben bis R04d
 bei ihren nativen Rollen, niemals durch einen allgemeinen Finanzscope freigeben.
 Read-only zeigt keine Kommentar-/Bearbeitungsformulare. Vereinsnavigation und
 Belegrechte nutzen denselben Scopepruefer; Eventrecht fuer Belege bleibt zusaetzlich.
+
+## Reisebereichsfreigaben (U1-R04b3)
+
+travel_manage gilt fuer native Reisekommissare und gezielte Freigaben. Event-
+Verwaltung verwendet AreaPermissionService.can_manage_event mit aktiver Identitaet,
+Audience und Admin/Organisator/Reisebereich. Auch BillBro-Controls und Polling
+verwenden diese Pruefung. Ausflug-Anlage und Typwahl sind serverseitig begrenzt;
+Reiseberechtigte koennen Ausfluege auch nach Selbstzuweisung nicht umtypisieren.
+travel_documents bleibt ein separater Scope mit Step-Up. RSVP-Erinnerungen bleiben
+Organisator/Admin, Jahresplanung und Loeschung Admin. Keine neuen UI-Klassen.

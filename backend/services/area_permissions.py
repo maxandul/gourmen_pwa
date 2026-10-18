@@ -7,10 +7,10 @@ from backend.services.action_confirmation import ActionConfirmationService
 
 
 class AreaPermissionService:
-    SCOPES = {'travel_documents': 'Reisedokumente lesen',
+    SCOPES = {'travel_manage': 'Reisen verwalten', 'travel_documents': 'Reisedokumente lesen',
               'accounting_read': 'Buchhaltung lesen',
               'accounting_write': 'Buchhaltung bearbeiten (ohne Revisionsabschluss)'}
-    FUNCTIONS = {'travel_documents': ('REISEKOMMISSAR',),
+    FUNCTIONS = {'travel_manage': ('REISEKOMMISSAR',), 'travel_documents': ('REISEKOMMISSAR',),
                  'accounting_read': ('SCHATZMEISTER', 'RECHNUNGSPRUEFER'),
                  'accounting_write': ('SCHATZMEISTER',)}
 
@@ -23,6 +23,13 @@ class AreaPermissionService:
         scopes = [scope, 'accounting_write'] if scope == 'accounting_read' else [scope]
         return MemberAreaGrant.query.filter(MemberAreaGrant.member_id == member.id,
             MemberAreaGrant.scope.in_(scopes), MemberAreaGrant.revoked_at.is_(None)).first() is not None
+
+    @classmethod
+    def can_manage_event(cls, member, event):
+        from backend.models.event import EventType
+        return bool(member and member.is_active and event.is_visible_to(member) and (
+            member.is_admin() or event.organisator_id == member.id or (
+                event.event_typ == EventType.AUSFLUG and cls.has_scope(member, 'travel_manage'))))
 
     @classmethod
     def replace_grants(cls, target, scopes, password):

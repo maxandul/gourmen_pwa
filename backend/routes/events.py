@@ -1,3 +1,4 @@
+from backend.services.area_permissions import AreaPermissionService
 import json
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
@@ -397,6 +398,7 @@ def index():
     context['archiv_search_q'] = archiv_search_q
     context['archiv_filter_args'] = archiv_filter_args
 
+    context['can_create_event'] = AreaPermissionService.has_scope(current_user, 'travel_manage')
     return render_template('events/index.html', **context)
 
 @bp.route('/year-planning')
@@ -614,7 +616,7 @@ def enable_event_ratings(event_id):
     """Erlaubt Bewertungen für ein Event."""
     event = _get_visible_event_or_404(event_id)
 
-    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Keine Berechtigung.', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
 
@@ -629,7 +631,7 @@ def disable_event_ratings(event_id):
     """Verhindert Bewertungen für ein Event."""
     event = _get_visible_event_or_404(event_id)
 
-    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Keine Berechtigung.', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
 
@@ -663,7 +665,7 @@ def detail(event_id):
         .all()
     )
 
-    is_organizer = (current_user.is_admin() or event.organisator_id == current_user.id)
+    is_organizer = AreaPermissionService.can_manage_event(current_user, event)
     billbro_form = None
     if (participation and participation.teilnahme) or is_organizer:
         billbro_form = BillBroForm()
@@ -707,6 +709,7 @@ def detail(event_id):
     )
     
     return render_template('events/detail.html', 
+                         is_organizer=is_organizer,
                          event=event, 
                          participation=participation,
                          participations=participations,
@@ -731,7 +734,7 @@ def billbro_sync(event_id):
         member_id=current_user.id,
         event_id=event_id,
     ).first()
-    is_organizer = event.organisator_id == current_user.id
+    is_organizer = AreaPermissionService.can_manage_event(current_user, event)
     can_access = (participation and participation.teilnahme) or is_organizer
     if not can_access:
         return jsonify({'error': 'forbidden'}), 403
@@ -773,11 +776,16 @@ def edit(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check permissions
-    if not (current_user.is_admin() or event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Keine Berechtigung zum Bearbeiten dieses Events', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
     form = EventForm(obj=event)
+    if not current_user.is_admin() and event.event_typ == EventType.AUSFLUG and AreaPermissionService.has_scope(current_user, 'travel_manage'):
+        form.event_typ.choices = [('AUSFLUG', 'Ausflug')]
+        if request.method == 'GET':
+            form.event_typ.data = 'AUSFLUG'
+
     kuechen_suggestions = Event.suggested_kueche_labels()
     
     # Load organizer choices

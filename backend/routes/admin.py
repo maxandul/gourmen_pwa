@@ -1,3 +1,4 @@
+from backend.services.area_permissions import AreaPermissionService
 import json
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, abort
@@ -771,10 +772,16 @@ def member_sensitive(member_id):
 
 @bp.route('/events/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def create_event():
-    """Create new event"""
+    """Create an event within the actor's area."""
+    if not AreaPermissionService.has_scope(current_user, 'travel_manage'):
+        abort(403)
     form = EventForm()
+    if not current_user.is_admin():
+        form.event_typ.choices = [('AUSFLUG', 'Ausflug')]
+        if request.method == 'GET':
+            form.event_typ.data = 'AUSFLUG'
+
     kuechen_suggestions = Event.suggested_kueche_labels()
     
     # Populate organisator choices

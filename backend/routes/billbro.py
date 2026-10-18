@@ -1,3 +1,4 @@
+from backend.services.area_permissions import AreaPermissionService
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from flask_login import login_required, current_user
@@ -131,7 +132,7 @@ def index():
     ).first()
     
     # Allow organizer to access BillBro even if not participating
-    is_organizer = event.organisator_id == current_user.id
+    is_organizer = AreaPermissionService.can_manage_event(current_user, event)
     
     if not participation and not is_organizer:
         flash('Du nimmst nicht an diesem Event teil.', 'error')
@@ -257,7 +258,7 @@ def enter_bill(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den Rechnungsbetrag eingeben', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
@@ -314,7 +315,7 @@ def set_payment(event_id):
     """Zahlweg der Rechnung festlegen: Vereinskonto oder Mitglied (Organisator)."""
     event = _get_visible_event_or_404(event_id)
 
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den Zahlweg festlegen', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
@@ -377,7 +378,7 @@ def start_session(event_id):
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann BillBro starten', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
@@ -419,7 +420,7 @@ def send_reminder(event_id):
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann Erinnerungen senden', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
@@ -461,7 +462,7 @@ def set_total(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
@@ -517,7 +518,7 @@ def undo_final(event_id):
     """Reopen finalization to allow adjusting totals again (organizer only)."""
     event = _get_visible_event_or_404(event_id)
 
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann die Finalisierung aufheben', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
@@ -556,7 +557,7 @@ def accept_suggested_total(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den Gesamtbetrag festlegen', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
@@ -600,7 +601,7 @@ def reset_bill(event_id):
     """Reset bill and totals to start over (organizer only)."""
     event = _get_visible_event_or_404(event_id)
 
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den BillBro zurücksetzen', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
 
@@ -770,7 +771,7 @@ def record_guess(event_id, member_id):
         return redirect(url_for('events.detail', event_id=event_id, tab='billbro'))
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann Schätzungen eingeben', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -839,7 +840,7 @@ def calculator(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann den Rechner verwenden', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
@@ -852,7 +853,7 @@ def export_pdf(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check permissions (organizer or admin)
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Keine Berechtigung für PDF-Export', 'error')
         return redirect(url_for('events.detail', event_id=event_id))
     
@@ -876,7 +877,7 @@ def mark_absent(event_id, member_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann Teilnehmer abmelden', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -928,7 +929,7 @@ def mark_present(event_id, member_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann Teilnehmer anmelden', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     
@@ -973,7 +974,7 @@ def toggle_billbro_status(event_id):
     event = _get_visible_event_or_404(event_id)
     
     # Check if user is organizer or admin
-    if not (event.organisator_id == current_user.id):
+    if not AreaPermissionService.can_manage_event(current_user, event):
         flash('Nur der Organisator kann BillBro-Status ändern', 'error')
         return redirect(url_for('billbro.index', event_id=event_id))
     

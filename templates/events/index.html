@@ -39,7 +39,7 @@
                 <details id="events-index-filter-disclosure" class="disclosure">
                     <summary class="disclosure__summary">
                         {{ lucide_icon('chevron-down') }}
-                        {% if current_user.is_admin() %}
+                        {% if can_create_event %}
                         Filter &amp; Erfassen
                         {% else %}
                         Filter
@@ -92,7 +92,7 @@
                                 <a class="btn btn--outline" href="{{ events_filter_reset_url }}">Zurücksetzen</a>
                             </div>
                         </form>
-                        {% if current_user.is_admin() %}
+                        {% if can_create_event %}
                         <div class="events-index-capture" role="region" aria-labelledby="events-index-capture-heading">
                             <p class="section-subtitle" id="events-index-capture-heading">Events erfassen</p>
                             <nav class="tool-strip__actions" aria-label="Planung und Administration">
@@ -100,10 +100,12 @@
                                     {{ lucide_icon('square-plus') }}
                                     Einzelnes Event
                                 </a>
+                                {% if current_user.is_admin() %}
                                 <a href="{{ url_for('events.year_planning') }}" class="btn btn--primary events-index-capture__action">
                                     {{ lucide_icon('calendar-plus') }}
                                     Jahresplanung
                                 </a>
+                                {% endif %}
                             </nav>
                         </div>
                         {% endif %}

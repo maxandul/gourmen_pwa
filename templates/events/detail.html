@@ -46,7 +46,7 @@
     {% endif %}
 
     <div class="page-content">
-        {% if current_user.is_admin() or event.organisator_id == current_user.id %}
+        {% if is_organizer %}
         <div class="card card--filter tool-surface events-planning-strip">
             <div class="card__body">
                 <details id="event-detail-edit-disclosure" class="disclosure">
@@ -298,7 +298,7 @@
 
                 <!-- Tab: BillBro -->
                         <div class="tabs__panel {{ 'tabs__panel--active' if tab_param == 'billbro' else '' }}" id="tab-billbro" role="tabpanel" data-billbro-active="{{ '1' if tab_param == 'billbro' else '0' }}" data-billbro-sync-url="{{ url_for('events.billbro_sync', event_id=event.id) }}">
-                    {% set is_organizer = event.organisator_id == current_user.id %}
+                    {# Management rights are supplied by the shared server policy. #}
                     {% set has_bill = event.rechnungsbetrag_rappen is not none %}
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
                     {% set can_access_billbro = (participation and participation.teilnahme) or is_organizer %}
