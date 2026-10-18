@@ -399,3 +399,7 @@ nicht geloescht. Zahlungsjahr und betroffene Forderungen werden frisch gesperrt.
 Bestaetigte Rueckzahlungsueberschuesse: BankRefundConfirmation verknuepft die
 Vormerkung mit der Einnahmenbuchung auf 3620. RefundConfirmationService prueft
 Schreibrecht, aktuelle Bankversion und offenes Zahlungsjahr atomar.
+
+BankRefundPayment verknuepft eine Ausgangszuordnung mit BankRefundConfirmation.
+RefundPaymentService bucht den vorhandenen Ausgangsteilbetrag atomar auf 6710;
+die Vormerkung liefert das Mitglied, die Ausgangsbewegung Datum und Jahr.

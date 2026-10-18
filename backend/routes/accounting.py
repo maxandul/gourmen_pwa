@@ -83,7 +83,7 @@ def _require_funktion(*funktionen) -> None:
     # Explicit endpoint sets fail closed for future routes, including revision actions.
     read_endpoints = {'accounting.index', 'accounting.booking_detail',
                       'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations', 'accounting.revision_history'}
-    write_endpoints = {'accounting.refund_confirm', 'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
+    write_endpoints = {'accounting.refund_payment', 'accounting.refund_confirm', 'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
                        'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
                        'accounting.bank_import_upload', 'accounting.bank_import_review',
                        'accounting.bank_review_all', 'accounting.bank_tx_book', 'accounting.bank_tx_ignore',
@@ -984,7 +984,9 @@ def _review_context(pending):
         for row in summary['rows']:
             if row.claim:
                 allocation_claims[row.claim.id] = row.claim
+    from backend.services.refund_payment import RefundPaymentService
     return {
+        'refund_options': RefundPaymentService.available() if any(not tx.is_income and tx.is_pending for tx in pending) else [],
         'allocation_summaries': allocation_summaries,
         'allocation_claims': list(allocation_claims.values()),
         'can_allocate': _is_treasurer(),
@@ -1288,4 +1290,24 @@ def refund_confirm(tx_id, allocation_id):
         flash(str(exc), 'error')
         return str(exc), 400
     flash('Überschuss auf 3620 bestätigt. Rückzahlung weiterhin offen; keine Überweisung ausgelöst.', 'success')
+    return redirect(url_for('accounting.payment_allocations', tx_id=tx_id))
+
+
+@bp.route('/import/tx/<int:tx_id>/refund-payment', methods=['POST'])
+@login_required
+def refund_payment(tx_id):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    from backend.services.refund_payment import RefundPaymentService
+    from backend.forms.accounting import chf_to_rappen
+    try:
+        amount = chf_to_rappen(request.form.get('amount_chf', ''))
+        RefundPaymentService.allocate(tx_id, request.form.get('confirmation_id', type=int), current_user,
+            expected_version=request.form.get('version', type=int), amount_rappen=amount)
+    except (AccountingError, ValueError) as exc:
+        flash(str(exc), 'error')
+        tx = BankImportService.get_transaction(tx_id)
+        return render_template('accounting/payment_allocations.html', tx=tx,
+            submitted_refund=request.form, **_review_context([tx])), 400
+    flash('Bankausgang auf 6710 zugeordnet. Keine Überweisung ausgelöst.', 'success')
     return redirect(url_for('accounting.payment_allocations', tx_id=tx_id))

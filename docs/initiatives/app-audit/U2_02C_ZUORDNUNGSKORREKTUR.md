@@ -89,3 +89,32 @@ auf/ab/auf samt Historienverlustschutz. Zwei anfangs fehlerhafte Testannahmen
 zu einem nicht vorhandenen Statusattribut korrigiert; Wiederholung gruen.
 19 Worker-Tests bestanden, PWA 3.16.27. Keine reale Ueberweisung, kein Netz.
 PostgreSQL-Parallelitaet und Browserabnahme offen; c2b bleibt naechstes Paket.
+
+### c2b: Vertrag vor Code – tatsaechlichen Ausgang abgleichen
+
+Ein offener importierter Ausgang kann mit einem Teilbetrag einem bestaetigten
+aktiven Ueberschuss zugeordnet werden. Buchung auf aktivem Ausgabenkonto 6710,
+Mitglied aus dem Ueberschuss, Datum/Jahr aus der Ausgangsbewegung. Obergrenzen
+sind der freie Bankbetrag und der noch nicht erstattete Ueberschuss. Das
+Eingangsjahr darf bereits geschlossen sein; es wird dadurch nicht veraendert.
+Kein Erstattungsauftrag und keine Ueberweisung. Atomare Verknuepfung mit
+versionsgebundener Ausgangszuordnung, keine zusaetzliche Summenbuchung.
+
+Sperrfolge: Ausgangsimport/-bewegung, Zahlungsjahr, betroffene Bestaetigungen
+nach ID. Ruecknahmen sperren dieselben Bestaetigungen nach ihrem Zahlungsjahr.
+Eingangsruecknahme mit aktiver verknuepfter Auszahlung wird abgewiesen; erst
+Ausgangszuordnung begruendet zuruecknehmen. Ausgangsruecknahme erhoeht den
+offenen Bedarf wieder, ohne Geldfluss zu erfinden. Historie bleibt erhalten.
+
+### c2b: Lokaler Nachweis
+
+18.10.2026: 64 Tests fuer Ausgangsabgleich, Bestaetigung, Ruecknahme,
+Teilzuordnung und Finanzrechte bestanden (1060 Warnungen, 35.31 s).
+Enthalten: Teilbetraege, geschlossenes Eingangsjahr/offenes Ausgangsjahr,
+beidseitige Ruecknahmegrenzen, echter Commitfehler, Wiederholung, zweite
+Bankbewegung gegen denselben Rest, CSRF und erhaltene fehlerhafte Eingabe.
+Ein unvollstaendiger synthetischer Testdatensatz wurde nach dem ersten Lauf
+korrigiert; Wiederholung gruen. Migration auf/ab/auf samt Historienverlustschutz
+geprueft. 19 Worker-Tests bestanden, PWA 3.16.28, Diff-Pruefung sauber.
+PostgreSQL-Parallelitaet, reale Browser und produktive Migration bleiben offen.
+U2-02c ist damit lokal umgesetzt; U1 bleibt insgesamt offen.

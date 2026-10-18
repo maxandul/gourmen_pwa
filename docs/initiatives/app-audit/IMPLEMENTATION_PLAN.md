@@ -103,11 +103,11 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-02b / A-061 | b1/b2 lokal geprüft | Richtung/Mitglied/Forderung und explizite Rest-/Aufrundungswahl nach F5/B01; keine automatische Aufrundung. |
 | U2-02b1 / Einzelposten | lokal geprüft | Gemeinsame Richtungs-/Konto-/Mitglied-/Eventpruefung, explizite Aufrundung, keine automatische Bankzahler-Aliasvergabe. |
 | U2-02b2 / B01/F5 | lokal geprüft | Persistierte Mehrfachzuordnung mit summenerhaltendem offenen Rest bzw. Rueckzahlungsbedarf; Zahlung fuer mehrere Forderungen/Mitglieder, keine zweite Bankbewegung. Schema/Migration separat; Einzelpostenweg integrieren, Historie nicht umdeuten. |
-| U2-02c / A-062 | c1 lokal geprüft; c2 bereit | Versionsgebundene Ruecknahme implementiert; Rueckzahlungsabgleich verbleibt. [Vertrag/Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
+| U2-02c / A-062 | c1/c2 lokal geprüft | Versionsgebundene Ruecknahme und Rueckzahlungsabgleich implementiert. [Vertrag/Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
 | U2-02c1 | lokal geprüft | Atomare Ruecknahme mit Grund, Historie, Forderungsabgleich und aktiven Auswertungen. |
-| U2-02c2 | c2a lokal geprüft; c2b bereit | Eingang und tatsaechlichen Ausgang getrennt abgleichen. |
+| U2-02c2 | c2a/c2b lokal geprüft | Eingang und tatsaechlichen Ausgang getrennt abgleichen. |
 | U2-02c2a | lokal geprüft | Bestaetigter Ueberschuss auf 3620, mit Ruecknahme und offenem Rueckzahlungsbedarf. |
-| U2-02c2b | **bereit / nächstes Paket** | Tatsaechliche Rueckzahlung auf 6710; Teilbetraege, Ruecknahme und Jahreswechsel ohne automatische Ueberweisung. |
+| U2-02c2b | lokal geprüft | Tatsaechliche Rueckzahlung auf 6710; Teilbetraege, Ruecknahme und Jahreswechsel ohne automatische Ueberweisung. |
 | U2-03 / A-063, A-064, A-065 | a/b lokal geprüft | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
 | U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |
@@ -117,6 +117,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-04c / A-069, A-070 | c1/c2 lokal geprüft | Stabile Abschlusszahlen und versionsgebundener wiederholbarer Bericht, keine falsche Zustellgarantie. |
 | U2-04c1 / A-069 | lokal geprüft | Eingefrorene Auswertungen/PDF, sichtbarer Vorjahresabgleich und erneute Vorlage bei Differenz. |
 | U2-04c2 / A-070 | lokal geprüft | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
+
+| U2-05 / A-067, A-068 | **bereit / nächstes Paket** | Historische inaktive Konten erhalten und Kontosummen nach Richtung konsistent auswerten; eingefrorene Fassungen bewahren. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

@@ -4,6 +4,7 @@
 <div class="info-row"><span class="info-row__label">Noch nicht zugeordnet</span><span class="info-row__value">CHF {{ chf(allocation.remaining) }}</span></div>
 <div class="info-row"><span class="info-row__label">Rückzahlungsbedarf (vorgemerkt)</span><span class="info-row__value">CHF {{ chf(allocation.refund) }}</span></div>
 <div class="info-row"><span class="info-row__label">Bestätigter Überschuss · Rückzahlung offen</span><span class="info-row__value">CHF {{ chf(allocation.confirmed_refund) }}</span></div>
+<div class="info-row"><span class="info-row__label">Durch Bankausgang abgeglichen</span><span class="info-row__value">CHF {{ chf(allocation.refunded) }}</span></div>
 {% if allocation.legacy %}<p class="text-secondary">Historisch verbucht, ohne neues Zuordnungsjournal.</p>{% endif %}
 {% for row in allocation.rows %}
 <div class="info-row">
@@ -13,7 +14,11 @@
     {% if row.reversal %}<br>Rücknahme: {{ row.reversal.reason }} · {{ row.reversal.actor.display_name }} · {{ row.reversal.created_at.strftime('%d.%m.%Y %H:%M') }}{% endif %}
     · {{ row.created_at.strftime('%d.%m.%Y') }} · {{ row.actor.display_name }}</span>
 </div>
+{% if row.refund_payment %}<p><a href="{{ url_for('accounting.payment_allocations', tx_id=row.refund_payment.confirmation.allocation.bank_transaction_id) }}">Zugehörigen Überschuss ansehen</a> · Rückzahlung auf 6710</p>{% endif %}
 {% if row.refund_confirmation %}<p class="text-secondary">Überschuss auf 3620 bestätigt · {{ row.refund_confirmation.actor.display_name }} · {{ row.refund_confirmation.created_at.strftime('%d.%m.%Y %H:%M') }}. Keine Rückzahlung durch diese Bestätigung.</p>
+{% for payment in row.refund_confirmation.payments %}
+<p><a href="{{ url_for('accounting.payment_allocations', tx_id=payment.allocation.bank_transaction_id) }}">Bankausgang {{ payment.allocation.transaction.booked_date.strftime('%d.%m.%Y') }} · CHF {{ chf(payment.allocation.amount_rappen) }}</a>{% if payment.allocation.reversal_id %} · Zuordnung zurückgenommen{% endif %}</p>
+{% endfor %}
 {% elif can_allocate and row.kind == 'refund' and not row.reversal_id and row.member_id and tx.is_pending %}
 <form method="POST" action="{{ url_for('accounting.refund_confirm', tx_id=tx.id, allocation_id=row.id) }}" class="form">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="version" value="{{ tx.allocation_version }}">
@@ -53,4 +58,18 @@
 
 {% if can_allocate and allocation.active_rows %}
 <p><a href="{{ url_for('accounting.payment_reverse',tx_id=tx.id) }}">Zuordnungen prüfen und zurücknehmen</a></p>
+{% endif %}
+
+{% if can_allocate and not tx.is_income and tx.is_pending and not tx.is_collective and allocation.remaining > 0 and refund_options %}
+{% set refund_values = submitted_refund|default({}) %}
+<details class="card" {{ 'open' if submitted_refund is defined else '' }}><summary>Ausgang als Rückzahlung abgleichen</summary><div class="card__body">
+<form method="POST" action="{{ url_for('accounting.refund_payment', tx_id=tx.id) }}" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="version" value="{{ tx.allocation_version }}">
+<div class="form-field"><label class="form-field__label" for="refund-{{ tx.id }}-source">Bestätigter Überschuss</label>
+<select class="form-field__select" name="confirmation_id" id="refund-{{ tx.id }}-source" required><option value="">– wählen –</option>
+{% for option in refund_options %}<option value="{{ option.id }}" {{ 'selected' if refund_values.get('confirmation_id') == option.id|string else '' }}>{{ option.allocation.member.display_name }} · Eingang {{ option.booking.booking_date.strftime('%d.%m.%Y') }} · CHF {{ chf(option.open_rappen) }} offen</option>{% endfor %}</select></div>
+<div class="form-field"><label class="form-field__label" for="refund-{{ tx.id }}-amount">Ausgangsteilbetrag (CHF)</label><input class="form-field__input" type="number" name="amount_chf" id="refund-{{ tx.id }}-amount" step="0.01" min="0.01" max="{{ chf(allocation.remaining) }}" required value="{{ refund_values.get('amount_chf','') }}"></div>
+<p>Nur den tatsächlich erhaltenen Bankausgang auf 6710 zuordnen. Es wird keine Überweisung ausgelöst.</p>
+<button class="btn btn--primary" type="submit">Rückzahlung mit Bankausgang abgleichen</button>
+</form></div></details>
 {% endif %}

@@ -40,6 +40,13 @@ class AllocationReversalService:
                 raise BankImportError('Zahlungsjahr ist nicht offen. Zuerst begründet wiederöffnen.')
             if bookings:
                 Booking.query.filter(Booking.id.in_([b.id for b in bookings])).order_by(Booking.id).populate_existing().with_for_update().all()
+            from backend.models.bank_refund_confirmation import BankRefundConfirmation
+            confirmation_ids = {row.refund_confirmation.id for row in rows if row.refund_confirmation}
+            confirmation_ids.update(row.refund_payment.confirmation_id for row in rows if row.refund_payment)
+            confirmations = BankRefundConfirmation.query.filter(BankRefundConfirmation.id.in_(confirmation_ids)).order_by(BankRefundConfirmation.id).populate_existing().with_for_update().all()
+            source_ids = {row.refund_confirmation.id for row in rows if row.refund_confirmation}
+            if any(c.id in source_ids and c.paid_rappen for c in confirmations):
+                raise BankImportError('Verknüpfte Rückzahlung zuerst begründet zurücknehmen.')
             totals = defaultdict(int)
             for row in rows:
                 booking = row.effective_booking

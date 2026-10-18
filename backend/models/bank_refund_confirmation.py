@@ -13,3 +13,16 @@ class BankRefundConfirmation(db.Model):
     allocation = db.relationship('BankPaymentAllocation', backref=db.backref('refund_confirmation', uselist=False))
     booking = db.relationship('Booking', backref=db.backref('refund_confirmation', uselist=False))
     actor = db.relationship('Member')
+
+    @property
+    def paid_rappen(self):
+        from backend.models.bank_refund_payment import BankRefundPayment
+        from backend.models.bank_payment_allocation import BankPaymentAllocation
+        return sum(row.amount_rappen for row in BankPaymentAllocation.query.join(
+            BankRefundPayment, BankRefundPayment.allocation_id == BankPaymentAllocation.id).filter(
+                BankRefundPayment.confirmation_id == self.id,
+                BankPaymentAllocation.reversal_id.is_(None)).all())
+
+    @property
+    def open_rappen(self):
+        return 0 if self.allocation.reversal_id else self.allocation.amount_rappen - self.paid_rappen

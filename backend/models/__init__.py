@@ -18,3 +18,5 @@ from .accounting_revision import AccountingRevision
 from .bank_allocation_reversal import BankAllocationReversal
 
 from backend.models.bank_refund_confirmation import BankRefundConfirmation
+
+from backend.models.bank_refund_payment import BankRefundPayment

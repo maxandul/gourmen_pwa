@@ -21,7 +21,8 @@ class PaymentAllocationService:
         refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund' and not row.refund_confirmation)
         legacy=not rows and tx.status==BankTransactionStatus.BOOKED
         return dict(rows=rows,active_rows=active_rows,booked=tx.amount_rappen if legacy else booked,refund=refund,
-                    confirmed_refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund' and row.refund_confirmation),
+                    confirmed_refund=sum(row.refund_confirmation.open_rappen for row in active_rows if row.refund_confirmation),
+                    refunded=sum(row.refund_confirmation.paid_rappen for row in active_rows if row.refund_confirmation),
                     remaining=0 if legacy else tx.amount_rappen-booked-refund,legacy=legacy)
 
     @staticmethod
@@ -35,7 +36,7 @@ class PaymentAllocationService:
 
     @classmethod
     def allocate(cls,tx_id,*,expected_version,kind,amount_rappen,actor,account_id=None,claim_id=None,
-                 member_id=None,event_id=None):
+                 member_id=None,event_id=None,commit=True):
         from backend.services.bank_import import BankImportService,BankImportError,CLAIM_ACCOUNT_CODES,ROUNDING_ACCOUNT_CODES
         try:
             tx=BankImportService.get_transaction(tx_id,lock=True)
@@ -107,7 +108,8 @@ class PaymentAllocationService:
             if result['remaining']==0 and result['refund']==0:
                 tx.status=BankTransactionStatus.BOOKED
                 tx.booking_id=next(item.effective_booking.id for item in result['active_rows'] if item.effective_booking)
-            db.session.commit()
+            if commit:
+                db.session.commit()
             return row
         except AccountingValidationError:
             db.session.rollback()

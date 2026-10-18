@@ -854,3 +854,8 @@ Rueckzahlungsueberschuss: Eine Vormerkung mit Mitglied kann ausdruecklich auf
 3620 bestaetigt werden. Eingang und noch offener Rueckzahlungsbedarf sind getrennt
 sichtbar; keine automatische Ueberweisung. Tatsaechlicher Ausgangsabgleich auf
 6710 folgt in U2-02c2b.
+
+U2-02c2b ergaenzt den tatsaechlichen Ausgangsabgleich auf 6710: Teilzahlungen
+und Jahreswechsel, ausgehende Bankbewegung explizit waehlen, offene Betraege
+und beidseitige Historienlinks. Eingangszuordnung kann erst nach Ruecknahme
+aktiver verknuepfter Ausgangszuordnungen zurueckgenommen werden.

@@ -975,3 +975,9 @@ Bei Importzuordnungen bezeichnet effective_booking auch die gesondert bestaetigt
 3620-Ueberschussbuchung. Vormerkung und Bestaetigung bleiben getrennt erhalten;
 Ruecknahme muss beide aus aktiven Summen nehmen. Eine Bestaetigung belegt keinen
 Ausgang; Forderungszahlungen duerfen dadurch nicht erhoeht werden.
+
+Rueckzahlungsabgleich sperrt Ausgangsimport/-bewegung, Zahlungsjahr und dann
+Bestaetigungen nach ID. Ruecknahmen verwenden dieselbe Reihenfolge. Aktive
+Ausgangszuordnungen verhindern Eingangsruecknahme; nach Ausgangsruecknahme wird
+der Bedarf aus erhaltenen Journalzeilen erneut berechnet. Keine zweite
+Summenbuchung, keine Veraenderung eines bereits geschlossenen Eingangsjahrs.

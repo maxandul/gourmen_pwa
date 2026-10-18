@@ -19,6 +19,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 | U2-04c2 | lokal geprüft | Wiederholbarer Bericht mit persistierten PDF-Bytes und fester Drive-ID; 50 Python- und 19 Worker-Tests bestanden. Migration separat; reale Drive-Abnahme offen. [Nachweis](U2_04_REVISIONSGRENZEN.md). |
 | U2-02c1 | lokal geprüft | Versionierte atomare Ruecknahme mit Historie und Forderungsabgleich; 62, danach 44 und abschliessend 18 gezielte Python-Tests sowie 19 Worker-Tests bestanden. Migration separat. [Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
 | U2-02c2a | lokal geprüft | Ausdruecklich bestaetigter Ueberschuss auf 3620, getrennt vom offenen Rueckzahlungsbedarf; 46 Python- und 19 Worker-Tests bestanden. Migration separat. [Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
+| U2-02c2b | lokal geprüft | Tatsächlicher Ausgang auf 6710 mit Teilrückzahlung, Jahreswechsel und Rücknahmegrenzen; 64 Python- und 19 Worker-Tests bestanden. Migration separat. [Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
 | U2-03a / A-064, A-065: CSV-Prüfung | Lokal geprüft, Identität separat | 71 Python-Tests; [Nachweis](U2_03_IMPORTPRUEFUNG.md) |
 | U2-02b2 / B01/F5: Mehrfachzuordnung | Lokal geprüft; Korrektur/Vollzug/extern offen | Migration b63c328 separat, 104 Python- und 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
 | U2-02b1 / A-061: Einzelposten-Zuordnung | Lokal geprüft; Sammel-/Restmodell in b2 | 75 Python-Tests, erweitert 43; 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
