@@ -11,7 +11,7 @@
     {% for row in state.active_rows %}
         <p>{{ row.kind_display }} · CHF {{ chf(row.amount_rappen) }}{% if row.member %} · {{ row.member.display_name }}{% endif %}</p>
         {% if row.kind == 'claim' %}<p>Forderungszahlung wird um CHF {{ chf(row.amount_rappen) }} vermindert; Zahlungen anderer Bankbewegungen bleiben erhalten.</p>{% endif %}
-        {% if row.booking %}<p>Die Buchung bleibt als zurückgenommener Verlauf erhalten und zählt nicht mehr zum Jahres-Ist. Ihre Belege bleiben erhalten.</p>{% endif %}
+        {% if row.effective_booking %}<p>Die Buchung bleibt als zurückgenommener Verlauf erhalten und zählt nicht mehr zum Jahres-Ist. Ihre Belege bleiben erhalten.</p>{% endif %}
     {% else %}<p>Keine aktiven Zuordnungen. Historischen Stand bei Bedarf gezielt abgleichen.</p>{% endfor %}
     </div></section>
     {% if state.active_rows %}

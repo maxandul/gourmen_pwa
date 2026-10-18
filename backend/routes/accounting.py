@@ -83,7 +83,7 @@ def _require_funktion(*funktionen) -> None:
     # Explicit endpoint sets fail closed for future routes, including revision actions.
     read_endpoints = {'accounting.index', 'accounting.booking_detail',
                       'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations', 'accounting.revision_history'}
-    write_endpoints = {'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
+    write_endpoints = {'accounting.refund_confirm', 'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
                        'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
                        'accounting.bank_import_upload', 'accounting.bank_import_review',
                        'accounting.bank_review_all', 'accounting.bank_tx_book', 'accounting.bank_tx_ignore',
@@ -1273,3 +1273,19 @@ def payment_reverse(tx_id):
     tx = BankImportService.get_transaction(tx_id)
     return render_template('accounting/allocation_reverse.html', tx=tx,
         state=PaymentAllocationService.summary(tx)), (400 if request.method == 'POST' else 200)
+
+
+@bp.route('/import/tx/<int:tx_id>/refund/<int:allocation_id>/confirm', methods=['POST'])
+@login_required
+def refund_confirm(tx_id, allocation_id):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    from backend.services.refund_confirmation import RefundConfirmationService
+    try:
+        RefundConfirmationService.confirm(tx_id, allocation_id, current_user,
+            expected_version=request.form.get('version', type=int))
+    except AccountingError as exc:
+        flash(str(exc), 'error')
+        return str(exc), 400
+    flash('Überschuss auf 3620 bestätigt. Rückzahlung weiterhin offen; keine Überweisung ausgelöst.', 'success')
+    return redirect(url_for('accounting.payment_allocations', tx_id=tx_id))

@@ -67,3 +67,25 @@ Noch umzusetzen: bestaetigten Ueberschuss, offenen Rueckzahlungsbedarf und
 tatsaechliche Ausgangsbewegung getrennt verknuepfen; Teilbetraege, Wiederholung,
 Ruecknahme und Jahreswechsel pruefen. Die bestehende Vormerkung allein ist
 weiterhin keine Buchung und kein Nachweis einer Zahlung.
+
+### c2a: Vertrag vor Code – Eingang bestaetigen
+
+Eine bestehende aktive Vormerkung mit eindeutigem Mitglied kann ein
+Buchhaltungsberechtigter ausdruecklich auf 3620 bestaetigen. Person, Zeitpunkt,
+Vormerkung und neue Einnahmenbuchung werden atomar verknuepft. Kein automatischer
+Altbestandsabgleich. Zahlungsjahr muss offen und Konto 3620 aktiv/Einnahme sein.
+Die urspruengliche Vormerkung bleibt unveraendert; der bestaetigte Anteil zaehlt
+jetzt als gebuchter Eingang, aber weiterhin als offener Rueckzahlungsbedarf.
+Forderungszahlung wird dadurch nicht erhoeht. Version/CSRF verhindern Wiederholung.
+Ruecknahme nimmt auch diese Einnahmenbuchung aus aktiven Zahlen, erhaelt aber
+den Nachweis. c2b verknuepft erst danach den tatsaechlichen Ausgang auf 6710.
+
+### c2a: Lokaler Nachweis
+
+18.10.2026: 46 Tests fuer Bestaetigung, Ruecknahme und Teilzuordnung bestanden
+(552 Warnungen, 25.85 s), einschliesslich CHF 90/84/6, Commitfehler,
+Rollen/Jahressperre, Wiederholung, CSRF, Teilrest, Summen und Migration
+auf/ab/auf samt Historienverlustschutz. Zwei anfangs fehlerhafte Testannahmen
+zu einem nicht vorhandenen Statusattribut korrigiert; Wiederholung gruen.
+19 Worker-Tests bestanden, PWA 3.16.27. Keine reale Ueberweisung, kein Netz.
+PostgreSQL-Parallelitaet und Browserabnahme offen; c2b bleibt naechstes Paket.

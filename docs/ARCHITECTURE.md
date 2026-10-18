@@ -395,3 +395,7 @@ BankAllocationReversal verbindet Grund, Person, Zeit und Bankversion mit
 erhaltenen Zuordnungen/Buchungen. AllocationReversalService nimmt den gesamten
 aktiven Zuordnungsstand atomar zurueck; Quellenbewegung und alte Zeilen werden
 nicht geloescht. Zahlungsjahr und betroffene Forderungen werden frisch gesperrt.
+
+Bestaetigte Rueckzahlungsueberschuesse: BankRefundConfirmation verknuepft die
+Vormerkung mit der Einnahmenbuchung auf 3620. RefundConfirmationService prueft
+Schreibrecht, aktuelle Bankversion und offenes Zahlungsjahr atomar.

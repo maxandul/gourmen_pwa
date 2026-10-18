@@ -120,6 +120,9 @@
             </div>
         </div>
 
+        {% if booking.refund_confirmation %}
+        <p><a href="{{ url_for('accounting.payment_allocations',tx_id=booking.refund_confirmation.allocation.bank_transaction_id) }}">Bestätigten Überschuss und offenen Rückzahlungsbedarf ansehen</a></p>
+        {% endif %}
         {% if booking.payment_allocation %}
         <p><a href="{{ url_for('accounting.payment_allocations',tx_id=booking.payment_allocation.bank_transaction_id) }}">Bankbewegung und Zuordnungen ansehen</a></p>
         <p class="text-secondary">Diese Buchung gehört zu einer Bankzuordnung. Freies Bearbeiten ist gesperrt, damit Zahlungsstand und Journal zusammenbleiben.</p>

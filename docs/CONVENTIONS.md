@@ -970,3 +970,8 @@ Zuordnungsruecknahme immer ganze aktuelle Bankversion, Pflichtgrund, native oder
 gezielte Finanz-Schreibberechtigung; Quelle bleibt erhalten. Wiederzuordnung
 ueber Teilzuordnungsweg, nicht Alt-Einzelweg. Bankimport mit Historie niemals
 ignorieren/loeschen. Belege bleiben an der alten Buchung, Zielauswahl nur aktiv.
+
+Bei Importzuordnungen bezeichnet effective_booking auch die gesondert bestaetigte
+3620-Ueberschussbuchung. Vormerkung und Bestaetigung bleiben getrennt erhalten;
+Ruecknahme muss beide aus aktiven Summen nehmen. Eine Bestaetigung belegt keinen
+Ausgang; Forderungszahlungen duerfen dadurch nicht erhoeht werden.

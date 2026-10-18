@@ -30,7 +30,7 @@ class AllocationReversalService:
                 raise BankImportError('Keine eindeutigen aktiven Zuordnungen. Historischen Stand gezielt abgleichen.')
             if tx.status == BankTransactionStatus.BOOKED and (state['remaining'] or state['refund']):
                 raise BankImportError('Bankstatus passt nicht zur Zuordnung. Zuerst gezielt abgleichen.')
-            bookings = [row.booking for row in rows if row.booking_id]
+            bookings = [row.effective_booking for row in rows if row.effective_booking]
             # Refund-only reservations still belong to their payment year.
             fy = FiscalYear.query.filter_by(year=tx.booked_date.year).first()
             if fy is None:
@@ -42,7 +42,7 @@ class AllocationReversalService:
                 Booking.query.filter(Booking.id.in_([b.id for b in bookings])).order_by(Booking.id).populate_existing().with_for_update().all()
             totals = defaultdict(int)
             for row in rows:
-                booking = row.booking
+                booking = row.effective_booking
                 if booking and (booking.reversal_id or booking.amount_rappen != row.amount_rappen
                         or booking.direction != tx.direction or booking.payment_ref != tx.line_key
                         or booking.booking_date != tx.booked_date or booking.member_id != row.member_id
@@ -63,8 +63,8 @@ class AllocationReversalService:
             db.session.flush()
             for row in rows:
                 row.reversal_id = reversal.id
-                if row.booking:
-                    row.booking.reversal_id = reversal.id
+                if row.effective_booking:
+                    row.effective_booking.reversal_id = reversal.id
             for claim_id, amount in totals.items():
                 claim = claims[claim_id]
                 claim.paid_rappen -= amount

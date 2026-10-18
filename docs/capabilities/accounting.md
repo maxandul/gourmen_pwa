@@ -849,3 +849,8 @@ nur aktive Buchungen; alte Prueffassungen und Berichte bleiben unveraendert.
 Neue Zuordnung anschliessend im bestehenden Teilbetragsformular. Vorgemerkte
 Erstattung war keine Zahlung und kann mit zurueckgenommen werden.
 Tatsaechlicher Erstattungsabgleich folgt c2; keine Bankueberweisung ausgeloest.
+
+Rueckzahlungsueberschuss: Eine Vormerkung mit Mitglied kann ausdruecklich auf
+3620 bestaetigt werden. Eingang und noch offener Rueckzahlungsbedarf sind getrennt
+sichtbar; keine automatische Ueberweisung. Tatsaechlicher Ausgangsabgleich auf
+6710 folgt in U2-02c2b.

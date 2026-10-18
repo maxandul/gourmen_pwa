@@ -105,7 +105,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-02b2 / B01/F5 | lokal geprüft | Persistierte Mehrfachzuordnung mit summenerhaltendem offenen Rest bzw. Rueckzahlungsbedarf; Zahlung fuer mehrere Forderungen/Mitglieder, keine zweite Bankbewegung. Schema/Migration separat; Einzelpostenweg integrieren, Historie nicht umdeuten. |
 | U2-02c / A-062 | c1 lokal geprüft; c2 bereit | Versionsgebundene Ruecknahme implementiert; Rueckzahlungsabgleich verbleibt. [Vertrag/Nachweis](U2_02C_ZUORDNUNGSKORREKTUR.md). |
 | U2-02c1 | lokal geprüft | Atomare Ruecknahme mit Grund, Historie, Forderungsabgleich und aktiven Auswertungen. |
-| U2-02c2 | **bereit / nächstes Paket** | Bestaetigter Ueberschuss auf 3620, tatsaechliche Rueckzahlung auf 6710; Teilbetraege und Jahreswechsel ohne automatische Ueberweisung. |
+| U2-02c2 | c2a lokal geprüft; c2b bereit | Eingang und tatsaechlichen Ausgang getrennt abgleichen. |
+| U2-02c2a | lokal geprüft | Bestaetigter Ueberschuss auf 3620, mit Ruecknahme und offenem Rueckzahlungsbedarf. |
+| U2-02c2b | **bereit / nächstes Paket** | Tatsaechliche Rueckzahlung auf 6710; Teilbetraege, Ruecknahme und Jahreswechsel ohne automatische Ueberweisung. |
 | U2-03 / A-063, A-064, A-065 | a/b lokal geprüft | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
 | U2-03a / A-064, A-065 | lokal geprüft | Strikte Zahlen-/CSV-/Sammelpruefung ohne erfundene Betraege oder Teilimport. |
 | U2-03b / A-063 | lokal geprüft | Vollstaendige Referenzlos-Identitaet, gleiche Zeilen mehrfach erhalten, sicherer Wiederimport und explizite Altbestands-/Mehrdeutigkeitsgrenze. |

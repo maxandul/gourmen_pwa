@@ -32,5 +32,11 @@ class BankPaymentAllocation(db.Model):
 
     @property
     def kind_display(self):
+        if self.kind == "refund" and self.refund_confirmation:
+            return "Bestätigter Überschuss (3620)"
         return {'claim':'Forderung','booking':'Buchung','rounding':'Freiwillige Aufrundung',
                 'refund':'Rückzahlungsbedarf (vorgemerkt)'}[self.kind]
+
+    @property
+    def effective_booking(self):
+        return self.booking or (self.refund_confirmation.booking if self.refund_confirmation else None)

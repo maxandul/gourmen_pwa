@@ -17,10 +17,11 @@ class PaymentAllocationService:
     def summary(cls,tx):
         rows=cls.rows(tx)
         active_rows=[row for row in rows if row.reversal_id is None]
-        booked=sum(row.amount_rappen for row in active_rows if row.kind!='refund')
-        refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund')
+        booked=sum(row.amount_rappen for row in active_rows if row.kind!='refund' or row.refund_confirmation)
+        refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund' and not row.refund_confirmation)
         legacy=not rows and tx.status==BankTransactionStatus.BOOKED
         return dict(rows=rows,active_rows=active_rows,booked=tx.amount_rappen if legacy else booked,refund=refund,
+                    confirmed_refund=sum(row.amount_rappen for row in active_rows if row.kind=='refund' and row.refund_confirmation),
                     remaining=0 if legacy else tx.amount_rappen-booked-refund,legacy=legacy)
 
     @staticmethod
@@ -105,7 +106,7 @@ class PaymentAllocationService:
             result=cls.summary(tx)
             if result['remaining']==0 and result['refund']==0:
                 tx.status=BankTransactionStatus.BOOKED
-                tx.booking_id=next(item.booking_id for item in result['active_rows'] if item.booking_id)
+                tx.booking_id=next(item.effective_booking.id for item in result['active_rows'] if item.effective_booking)
             db.session.commit()
             return row
         except AccountingValidationError:
