@@ -202,3 +202,35 @@ fractional_migration: **23 bestanden, 705 Warnungen, 11.11 s**. Originale
 GGL-Seite mit halben Werten/Gleichstand gerendert. Keine Datenmutation,
 Migration oder Assetaenderung; kein neuer Gesamtlauf fuer diese drei kleinen
 Leselogik-Aenderungen. Naechstes Paket bleibt b3b Anwesenheit/RSVP-Trennung.
+
+
+## Vertrag vor Code: b3b Anwesenheit und RSVP
+
+Participation erhaelt eine nullable billbro_attendance (explizite tatsaechliche
+Anwesenheit). teilnahme wird nullable: NULL bedeutet fehlende urspruengliche
+Antwort, False ausdrueckliche Absage, True Zusage. Bestehende Werte und
+responded_at unveraendert; keine erfundene historische Antwort. Ohne explizite
+Anwesenheit gilt fuer Legacy-BillBro der bisherige Teilnahme-Wert, NULL als
+abwesend. Neue Organisationsmarkierung schreibt nur Anwesenheit, weder RSVP
+noch Antwortzeit noch die gespeicherte Schaetzung. Schema-Migration separat;
+Downgrade verweigert Verlust expliziter Anwesenheit oder fehlender Antwort.
+
+Alle BillBro-Anteile, Forderungen, auslegende Person und GGL verwenden effektive
+Anwesenheit; RSVP-Anzeigen bleiben dreistufig. Unbezahlte Anwesenheitskorrektur
+mit Grund/Vorschau, allen geaenderten Anteilen und GGL-Werten, Versionsbindung
+und Historie. Existierende Teilnahmen sowie aktuell berechtigte aktive Mitglieder
+auswaehlbar; keine fremden oder unberechtigten Mitglieder hinzufuegen. Erst bei
+Bestaetigung neue Participation ohne erfundene Antwort anlegen. Ess-Typ fuer
+neue Anwesende erforderlich, alte Schaetzungen nicht erfinden. Auslegende Person
+muss auch nach Korrektur anwesend sein. Bezahlte Korrektur bleibt gesperrt.
+Abwesenheit erhaelt bisherige Eingaben, aber keine aktiven Anteile/GGL-Punkte.
+
+Regression: Zusage/Absage/keine Antwort unabhaengig von Anwesenheit, Original-
+markierungen und Erstabschluss, Korrektur/Historie/Summenerhalt/GGL, neue Person,
+Rechte/Versionskonflikt/Retry/Fehlrollback, Migration mit Altwerten und verlustfreiem
+Downgrade. Browser/PostgreSQL bleiben externe Abnahmen.
+
+B3b-Migration isoliert auf SQLite: 3 bestanden, 0.23 s; Altwerte erhalten,
+Upgrade/Downgrade/Upgrade und drei verlustbehaftete Downgrade-Faelle gesperrt.
+Ignorierter pyreadline3-Handlefehler nach Testende, Prozessstatus 0.
+Anwendungsintegration noch in Arbeit; keine Live-Migration.
