@@ -773,3 +773,15 @@ vor allen DB-Schreibvorgängen abgewiesen, mit konkretem Datensatz/Feld. CHF-Det
 bleiben exakt; keine automatische Hochrechnung bei Differenz. Fremdwährungs-
 aufteilung verlangt passende Anzahl, einheitliche Währung und ausgewiesenen
 Originalgesamtbetrag. Bankreferenzlose Identität bleibt eigener Folgevertrag U2-03b.
+
+
+## App-Audit U2-03b: Mehrdeutige Referenzen
+
+Vollstaendige referenzlose Zeilen und ihre mehrfachen Vorkommen bleiben getrennt.
+Exakter Datei-Wiederimport erkennt vorhandene Zeilen, eine referenzlose Kollision
+mit anderer Datei oder altem Ersatzschluessel verlangt dagegen gezielten Abgleich.
+Abweichende Daten unter gleicher Bankreferenz werden ebenfalls nicht still
+uebersprungen. Gesamter Import bleibt bei Fehler ohne Teilbestand; Fingerprint
+wird additiv gespeichert, historische Dateien werden nicht nachtraeglich gehasht.
+Diese Grenze beweist keine Bankidentitaet bei zwei vollstaendig identischen
+Dateien mit angeblich verschiedenen Bewegungen; solche Faelle manuell klaeren.

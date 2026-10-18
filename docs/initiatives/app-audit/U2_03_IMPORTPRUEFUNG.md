@@ -34,3 +34,45 @@ fehlender/falscher Fremdwaehrungsgesamtbetrag und valide exakte Verteilung
 abgedeckt. Kein dotenv/Netz, synthetische Daten. `git diff --check` ohne Fehler.
 Keine Migration oder UI-Aenderung. Referenzidentitaet b bleibt offen; keine
 PostgreSQL-/echte Bankexport-Abnahme.
+
+
+## b: Identitaetsvertrag vor Code
+
+Jeder neue Import speichert einen SHA-256-Dateifingerprint (keine Dateiinhalte
+zusätzlich). Referenzlose Hauptzeilen erhalten eine neue H2-Identitaet aus allen
+vorhandenen Originalspalten und ihrem Vorkommen innerhalb derselben Datei.
+Unterschiedliche Zahlungszwecke/Details und auch mehrfach identische legitime
+Zeilen bleiben getrennt. Detailidentitaeten bleiben an ihren Sammelkopf gebunden.
+
+Exakt dieselbe Datei darf erneut als Duplikat erkannt werden. Eine referenzlose
+Kollision aus anderer Datei oder mit altem H-Ersatzschluessel bleibt mehrdeutig:
+Datei ohne Teilimport mit Klartextgrund ablehnen, keine Zeile still verwerfen oder
+automatisch doppelt anlegen. Der Nutzer muss den konkreten Bestand abgleichen;
+keine Bankidentitaet aus bloss gleichem Datum/Betrag behaupten. Identische Dateien
+sind derselbe Importbeleg; falls zwei echte Bewegungen sogar in vollstaendig
+identischen Dateien stehen, ist eine manuelle Klaerung statt automatischer
+Unterscheidung erforderlich. Keine heuristische Altdatenreparatur.
+
+Vorhandene Bankreferenz nur bei identischem gespeicherten Originaldatensatz und
+identischen Details als Duplikat behandeln; Widerspruch verlangt Klaerung.
+Neue Importzeilen, Importkopf/Zaehlwerte und gegebenenfalls neues Jahr in einer
+Transaktion, Fehler rollt alles zurueck. Unique line_key bleibt letzte DB-Grenze;
+PostgreSQL-Konkurrenz separat. Additive Fingerprint-Migration ohne Backfill separat.
+
+
+## b Abschlussnachweis 18.10.2026
+
+Migration separat **b8e38ec**, ohne Backfill; Upgrade/Downgrade/Upgrade bewahrt
+Legacy-Import, Downgrade verweigert benutzte Fingerprints. Isolierter Runner:
+test_import_fingerprint_migration, test_bank_import_identity,
+test_bank_csv_validation, test_bank_import, test_bank_booking_atomicity,
+test_payment_allocations: **78 bestanden, 590 Warnungen, 21.03 s**.
+
+Unterschiedlicher Zahlungszweck, zweimal identische Zeile, exakter Wiederimport,
+Kollision mit anderer Datei/Altkey, widerspruechliche Bankreferenz, echter
+Flushfehler beim zweiten Insert und Commitfehler ohne Teiljahr/-kopf/-zeilen
+abgedeckt. Nach Fehler erfolgreich genau einmal importierbar. Keine UI-Aenderung.
+`git diff --check` ohne Fehler. Synthetische SQLite-Daten, kein dotenv/Netz.
+Echte Bankexportvarianten und PostgreSQL-Konkurrenz offen; keine historischen
+Dubletten oder verlorenen Zahlungen repariert. Mehrdeutige Datei ist bewusst
+abgewiesen und nicht als erfolgreich dedupliziert gemeldet.

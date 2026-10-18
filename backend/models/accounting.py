@@ -361,6 +361,8 @@ class BankStatementImport(db.Model):
         db.ForeignKey('fiscal_years.id', ondelete='RESTRICT'),
         nullable=False, index=True,
     )
+    source_fingerprint = db.Column(db.String(64))
+    __table_args__ = (db.Index('ix_bank_import_source_fingerprint','source_fingerprint'),)
     filename = db.Column(db.String(255), nullable=False)
     imported_by = db.Column(
         db.Integer,

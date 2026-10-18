@@ -902,3 +902,14 @@ mit Datensatz/Feld, keine Teilimporte oder still uebersprungenen Detailzeilen.
 Sammelanzahl und CHF-Summe muessen exakt stimmen. Fremdwaehrung nur einheitlich
 und mit passendem Originalgesamtbetrag im Kopf; erst danach Integer-Verteilung
 mit deterministischem Rest. Fehlende Details nie auf den Bankbetrag hochrechnen.
+
+
+## Importidentitaet (U2-03b)
+
+Neue Bankimporte speichern source_fingerprint (SHA-256 der Datei). Referenzlose
+Zeilen: H2-Hash aller Originalspalten/Details plus Vorkommensnummer in der Datei;
+identische Zeilen innerhalb einer Datei bleiben erhalten. Kollision aus anderer
+Datei oder altem H-Schluessel zur Klaerung ablehnen, nicht still deduplizieren.
+Bekannte Bankreferenz nur bei identischen Originaldaten/Details wiederverwenden.
+Importkopf, neues Jahr, Zeilen und Zaehlwerte gemeinsam committen oder rollback.
+Keine automatische Interpretation oder Reparatur historischer Identitaeten.

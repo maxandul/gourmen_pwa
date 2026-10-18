@@ -13,6 +13,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import json
 import logging
 import re
 from datetime import date, datetime, timedelta
@@ -324,59 +325,79 @@ class BankImportService:
         bestimmt; der Import hängt am Jahr der neuesten Zeile.
         """
         filename = (file.filename or '').strip() or 'kontoauszug.csv'
-        parsed = cls.parse_csv(file.read())
+        payload = file.read()
+        parsed = cls.parse_csv(payload)
         if not parsed:
             raise BankImportError('Keine Transaktionen in der Datei gefunden.')
+        fingerprint = hashlib.sha256(payload).hexdigest()
+        try:
+            return cls._store_statement(parsed, filename, fingerprint, imported_by)
+        except AccountingValidationError:
+            db.session.rollback()
+            raise
+        except Exception:
+            db.session.rollback()
+            raise BankImportError('Import nicht bestätigt. Bestehenden Importstand vor Wiederholung prüfen.') from None
 
+    @classmethod
+    def _store_statement(cls, parsed, filename, fingerprint, imported_by):
         newest = max(p.booked_date for p in parsed)
-        fiscal_year = AccountingService.get_or_create_fiscal_year(newest.year)
-
-        statement = BankStatementImport(
-            fiscal_year_id=fiscal_year.id,
-            filename=filename,
-            imported_by=imported_by.id,
-        )
+        fiscal_year = AccountingService.get_or_create_fiscal_year(newest.year,commit=False)
+        statement = BankStatementImport(fiscal_year_id=fiscal_year.id,filename=filename,
+                                        imported_by=imported_by.id,source_fingerprint=fingerprint)
         db.session.add(statement)
         db.session.flush()
-
         row_count, new_count, duplicate_count = 0, 0, 0
+        occurrences = {}
         for parent_row in parsed:
             row_count += 1 + len(parent_row.detail_rows)
-            line_key = parent_row.zkb_ref or cls._content_key(parent_row)
-            if BankTransaction.query.filter_by(line_key=line_key).first():
+            if parent_row.zkb_ref:
+                line_key = parent_row.zkb_ref
+                if len(line_key)>50:
+                    raise BankImportError('Bankreferenz ist zu lang für das unterstützte Exportformat.')
+            else:
+                base = cls._content_key(parent_row)
+                occurrences[base] = occurrences.get(base,0)+1
+                line_key = f'{base}#{occurrences[base]}'
+                if len(line_key)>50:
+                    raise BankImportError('Zu viele identische referenzlose Zeilen; Import gezielt aufteilen.')
+                legacy = BankTransaction.query.filter_by(line_key=cls._legacy_content_key(parent_row)).first()
+                if legacy:
+                    raise BankImportError('Referenzlose Zahlung überschneidet alten Ersatzschlüssel. Bestand zuerst gezielt abgleichen.')
+            existing = BankTransaction.query.filter_by(line_key=line_key).first()
+            if existing:
+                if (not parent_row.zkb_ref
+                        and existing.statement_import.source_fingerprint!=fingerprint):
+                    raise BankImportError('Referenzlose Zahlung aus anderer Datei ist mehrdeutig. Bestand zuerst gezielt abgleichen.')
+                details = sorted(existing.detail_lines,key=lambda item:item.line_key)
+                expected = {f'{line_key}#{index}': row.raw for index,row in enumerate(parent_row.detail_rows,start=1)}
+                if existing.raw_json!=parent_row.raw or {row.line_key:row.raw_json for row in details}!=expected:
+                    raise BankImportError('Bekannte Bankreferenz enthält abweichende Daten. Bestand zuerst gezielt abgleichen.')
                 duplicate_count += 1 + len(parent_row.detail_rows)
                 continue
-
-            parent_tx = cls._create_transaction(
-                statement, parent_row, line_key=line_key, parent=None,
-            )
+            parent_tx = cls._create_transaction(statement,parent_row,line_key=line_key,parent=None)
             new_count += 1
             if parent_row.detail_rows:
-                # Parent wird durch seine Detail-Zeilen repräsentiert
                 parent_tx.status = BankTransactionStatus.IGNORED
                 db.session.flush()
-                for index, detail_row in enumerate(parent_row.detail_rows, start=1):
-                    cls._create_transaction(
-                        statement, detail_row,
-                        line_key=f'{line_key}#{index}', parent=parent_tx,
-                    )
+                for index,detail_row in enumerate(parent_row.detail_rows,start=1):
+                    cls._create_transaction(statement,detail_row,line_key=f'{line_key}#{index}',parent=parent_tx)
                     new_count += 1
-
-        statement.row_count = row_count
-        statement.new_count = new_count
-        statement.duplicate_count = duplicate_count
+        statement.row_count,statement.new_count,statement.duplicate_count = row_count,new_count,duplicate_count
         db.session.commit()
-        logger.info(
-            'Kontoauszug %s importiert: %s Zeilen, %s neu, %s Duplikate',
-            filename, row_count, new_count, duplicate_count,
-        )
+        logger.info('Kontoauszug importiert: %s Zeilen, %s neu, %s Duplikate',row_count,new_count,duplicate_count)
         return statement
 
     @staticmethod
     def _content_key(row: ParsedRow) -> str:
-        """Deterministischer Dedup-Schlüssel für Zeilen ohne ZKB-Referenz."""
+        # Preserve every original field, including purpose/details and true repetitions.
+        basis = json.dumps([row.raw,[item.raw for item in row.detail_rows]],ensure_ascii=False,separators=(',',':'))
+        return 'H2'+hashlib.sha256(basis.encode('utf-8')).hexdigest()[:40]
+
+    @staticmethod
+    def _legacy_content_key(row: ParsedRow) -> str:
         basis = f'{row.booked_date}|{row.amount_rappen}|{row.direction.value}|{row.buchungstext}'
-        return 'H' + hashlib.sha1(basis.encode('utf-8')).hexdigest()[:32]
+        return 'H'+hashlib.sha1(basis.encode('utf-8')).hexdigest()[:32]
 
     @classmethod
     def _create_transaction(cls, statement: BankStatementImport, row: ParsedRow,
