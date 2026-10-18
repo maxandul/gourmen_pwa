@@ -3,7 +3,7 @@
  * Verbesserte Version mit modernen Features
  */
 
-const PWA_VERSION = '3.16.7';
+const PWA_VERSION = '3.16.8';
 
 /** Wie lange nach manuellem Schliessen (X) bis Install-/Push-Banner erneut erscheinen. */
 const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -211,7 +211,7 @@ class PWA {
                 });
             }
             if (typeof caches !== 'undefined' && caches.keys) {
-                caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+                caches.keys().then((keys) => keys.filter((key) => /^gourmen-(?:static-|dynamic-)?v\d+\.\d+\.\d+$/.test(key)).forEach((key) => caches.delete(key)));
             }
             return;
         }
@@ -1593,7 +1593,7 @@ class PWA {
             const cacheNames = await caches.keys();
             console.log(`🗑️ Lösche ${cacheNames.length} Caches...`);
             
-            for (let cacheName of cacheNames) {
+            for (let cacheName of cacheNames.filter((name) => /^gourmen-(?:static-|dynamic-)?v\d+\.\d+\.\d+$/.test(name))) {
                 console.log('🗑️ Lösche Cache:', cacheName);
                 await caches.delete(cacheName);
             }

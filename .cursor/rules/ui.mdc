@@ -41,7 +41,7 @@ Vollständige Spezifikation: `docs/UI.md` – **vor jeder UI-Änderung lesen**.
 
 Nach jeder Änderung an Templates / CSS / JS / SW:
 
-- [ ] `static/sw.js`: `CACHE_NAME`, `STATIC_CACHE`, `DYNAMIC_CACHE` Versions-Suffix bumpen
+- [ ] `static/sw.js`: `VERSION` fuer `CACHE_NAME` und `STATIC_CACHE` bumpen (kein dynamischer Cache seit U1z)
 - [ ] `templates/base.html`: `?v=X.Y.Z`-Parameter aller Script/CSS-Tags bumpen
 - [ ] `static/js/pwa.js`: `textContent = '<version>'` bumpen
 

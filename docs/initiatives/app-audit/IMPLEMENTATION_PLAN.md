@@ -1,9 +1,9 @@
 # Verbindlicher Umsetzungsplan für Agenten
 
-Stand: 16.10.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
+Stand: 18.10.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
 Dieser Plan konsolidiert vorhandene Entscheidungen und Nachweise; er ist kein neuer Audit.
-Die aktuelle Beauftragung umfasst die Dokumentationskonsolidierung. Die Priorisierung
-unten ist der Einstieg für den nächsten lokalen Umsetzungsauftrag, keine Produktionsfreigabe.
+Die aktuelle Beauftragung umfasst die fortlaufende lokale Umsetzung bereiter Pakete
+mit Tests, Dokumentation und lokalen Commits. Keine Produktionsfreigabe.
 
 ## Zuständigkeit der Dokumente
 
@@ -66,8 +66,8 @@ Restarbeit; ihre Feinabgrenzung erfolgt anhand der genannten Quellen vor Codeän
 
 | Reihenfolge / ID | Lokal | Umfang und Abschlusskriterium |
 |---|---|---|
-| 1 / **U1z** | **bereit / nächstes Paket** | Cache-Nutzertrennung A-010; vollständiger Arbeitsvertrag im nächsten Abschnitt |
-| 2 / U1-R02 | geplant | A-026/A-037/A-042: Sichtbarkeit von Events, internen Bewertungen und Aggregaten konsistent machen. Eingabewechsel all/board, Board-Meeting-Regel, Listen/Detail/API/Kalender/Dashboard prüfen. Öffentliche Aggregate erlauben, interne Namen/Kommentare und geschützte Eventdetails nicht offenlegen. Bestehende Forderungen nicht durch unsichtbare Events verlieren. Quellen: FINDINGS, Rollenentscheidungen, Bewertungs- und Public-Entwurf. Falls interne Lesergruppe dort nicht eindeutig ist, nur diese Entscheidung klären. |
+| 1 / **U1z** | lokal geprüft | Cache-Nutzertrennung A-010; vollständiger Arbeitsvertrag im nächsten Abschnitt |
+| 2 / U1-R02 | **bereit / nächstes Paket** | A-026/A-037/A-042: Sichtbarkeit von Events, internen Bewertungen und Aggregaten konsistent machen. Eingabewechsel all/board, Board-Meeting-Regel, Listen/Detail/API/Kalender/Dashboard prüfen. Öffentliche Aggregate erlauben, interne Namen/Kommentare und geschützte Eventdetails nicht offenlegen. Bestehende Forderungen nicht durch unsichtbare Events verlieren. Quellen: FINDINGS, Rollenentscheidungen, Bewertungs- und Public-Entwurf. Falls interne Lesergruppe dort nicht eindeutig ist, nur diese Entscheidung klären. |
 | 3 / U1-R03 | geplant | A-071: Beleg-/Dokumentauswahl und manipulierte Schreibanfragen nach denselben Rechten filtern. Keine fremden Beträge, Beschreibungen oder Board-Eventnamen über Optionslisten. R13-Belegrechte berücksichtigen; keine neuen Rollen einführen. |
 | 4 / U1-R04 | geplant | F2/R13 zunächst als explizite Aktion-/Rolle-/Feldmatrix mit Ist-Zuordnung und Negativfällen konkretisieren. Danach getrennte Folgepakete für Delegationen, sensible Felder und Dokumentrechte nummerieren; je Paket serverseitige Durchsetzung und Tests. Vorstand ist nicht Admin; Bereichsrechte, Organisator, Revision und Admin-Stellvertretung gemäss bestätigten Regeln. Revisionszustände mit U2/U3 koordinieren. Kein Gesamtumbau in einem Paket. |
 | 5 / U1-R05 | geplant | F1-Restvertrag für Linkzwecke, Adresse/Aktion, Ablauf, Ersatz, Einmalverbrauch und Kontolebenszyklus gegen U1o/q/r/v/y abgleichen. Nur nicht abgedeckte Wege umsetzen, Altlinks ausdrücklich behandeln. A-084-Mailnormalisierung als verbleibende Randbedingung prüfen, keine neue Kontozusammenlegung erfinden. U1w/x/y-Bestätigungen und versionierte Login-Identitäten erhalten. |
@@ -118,7 +118,7 @@ Alle 26 primär U1 zugeordneten Befunde aus dem historischen Paketregister:
 
 | Befund | Lokaler Nachweis oder verbleibender Auftrag |
 |---|---|
-| A-010 | Offen → U1z |
+| A-010 | Lokal: [U1z](U1Z_CACHE_NUTZERTRENNUNG.md); Browser/Geraete offen |
 | A-026 | Offen → U1-R02 |
 | A-035 | Lokal: [U1g](U1G_LOGIN_RUECKKEHR.md), [U1h](U1H_STEP_UP_RUECKKEHR.md), [U1i](U1I_BEWERTUNG_RUECKKEHR.md), [U1j](U1J_MERCH_DOKUMENT_RUECKKEHR.md) |
 | A-037 | Offen → U1-R02 |

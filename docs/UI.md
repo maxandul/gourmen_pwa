@@ -465,7 +465,7 @@ python scripts/update_pwa_version.py 3.6.1
 
 Das Skript aktualisiert:
 
-- `static/sw.js`: `const VERSION = '...'` (daraus leiten sich `CACHE_NAME` / `STATIC_CACHE` / `DYNAMIC_CACHE` ab)
+- `static/sw.js`: `const VERSION = '...'` (daraus leiten sich `CACHE_NAME` / `STATIC_CACHE`; dynamische Caches entfallen seit U1z ab)
 - `static/js/pwa.js`: `const PWA_VERSION = '...'`
 - `templates/base.html`: alle `?v=...` Querystrings
 
@@ -479,14 +479,14 @@ Das aktualisiert `static/asset-manifest.json` und schreibt die gehashten Kopien 
 
 - `templates/partials/_head_stylesheets.html` (CSS)
 - `templates/partials/_head_deferred_scripts.html` (`pwa.js`)
-- `static/sw.js` (`STATIC_ASSETS` und der Pfad zur `offline.<hash>.html` in `networkOnlyHtml`/`networkFirst`)
+- `static/sw.js` (`STATIC_ASSETS` und der Pfad zur `offline.<hash>.html` in `networkOnly`)
 - `templates/offline.html`, `static/offline.html`
 
 ### C) Update kommt automatisch beim User an
 
 Dank `skipWaiting()` + `clients.claim()` + `controllerchange`-Reload-Guard (siehe `docs/ARCHITECTURE.md` → „Service-Worker Caching-Strategie") braucht der User **keinen** manuellen Cache-Clear. Innerhalb von max. 5 Minuten (oder beim nächsten Tab-Fokus) installiert sich der neue SW, claimt die Page und reloadet einmal.
 
-HTML wird vom SW grundsätzlich nicht mehr gecacht (`networkOnlyHtml`-Strategie) – Template-Änderungen sind also auch ohne Hash-Änderung sofort sichtbar, sobald der neue SW aktiv ist. Trotzdem die Version bumpen, damit der neue SW überhaupt erkannt wird und seinen Activate-Lifecycle durchläuft.
+HTML wird vom SW grundsätzlich nicht mehr gecacht (`networkOnly`-Strategie) – Template-Änderungen sind also auch ohne Hash-Änderung sofort sichtbar, sobald der neue SW aktiv ist. Trotzdem die Version bumpen, damit der neue SW überhaupt erkannt wird und seinen Activate-Lifecycle durchläuft.
 
 ### Wann bumpen
 

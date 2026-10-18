@@ -1,8 +1,8 @@
 # App-Audit und Zielbild fuer Refactoring / Redesign
 
-## Aktuelle Arbeitssteuerung (16.10.2026)
+## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1z (Cache-Nutzertrennung). Die Konsolidierung auf `codex/app-audit-implementation-plan` enthält ausschliesslich Dokumentation.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U1-R02. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (16.10.2026)
 
@@ -11,6 +11,7 @@ bleiben als Verlauf erhalten; daraus folgt keine Freigabe weiterer Pakete.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U1z / A-010: Cache-Nutzertrennung | Lokal geprüft, 18.10.2026; Browser/Geraete offen | `codex/app-audit-implementation-plan` über `5b6d28d`; [Vertrag und Nachweise](U1Z_CACHE_NUTZERTRENNUNG.md) |
 | U1y / A-139: Onboarding-Zustellung | Lokal umgesetzt und geprüft, 16.10.2026; U1 offen | `codex/u1y-onboarding-delivery` über `95c213a`, Migration `9405a7a` separat; 57 erste und 159 abschliessende Tests bestanden; [Vertrag und Nachweise](U1Y_ONBOARDING_ZUSTELLUNG.md) |
 | U1x / F1: Mitgliederanlage und initiale Rechte | Lokal umgesetzt und geprüft, 16.10.2026; U1 bleibt offen | `codex/u1x-member-creation-confirmation` über `536242d`; Migration `2c288ba` separat, abschliessend 63 Tests bestanden; [Vertrag und Nachweise](U1X_MITGLIEDERANLAGE.md) |
 | U1w / F1: Aktionsgebundene Identitätsbestätigung | Lokal umgesetzt und geprüft, 14.10.2026; U1 bleibt offen | `codex/u1w-action-confirmation` über `74077f0`; 703 im Gesamtlauf bestanden, einziger Testfehler korrigiert; abschliessend 56 gezielte Tests bestanden; [Vertrag und Nachweise](U1W_AKTIONSBESTAETIGUNG.md) |

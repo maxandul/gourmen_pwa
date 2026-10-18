@@ -1,17 +1,16 @@
 # Agenteneinstieg: App-Audit-Umsetzung
 
-Stand: 16.10.2026. **U1 ist insgesamt offen.**
+Stand: 18.10.2026. **U1 ist insgesamt offen.**
 
 1. `AGENTS.md` und [README](README.md) lesen, danach den
    [verbindlichen Umsetzungsplan](IMPLEMENTATION_PLAN.md). Dieser enthält die
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
-2. Tatsächlichen Branch, HEAD und lokale Änderungen prüfen. App-Basis ist
-   `3b85caa` (U1y), separate Migration `9405a7a`; die Dokumentationskonsolidierung
-   folgt auf `codex/app-audit-implementation-plan`. Bestehende Kette erhalten,
-   nicht von master beginnen und nicht auf einen alten Übergabe-Commit zurücksetzen.
-3. Nächster lokaler Umsetzungsschritt: **U1z – Cache-Nutzertrennung (A-010)**.
-   Vertrag, Quellen und Abnahmekriterien stehen im Plan. Diese Übergabe entstand
-   in einem reinen Dokumentationsauftrag; U1z wurde hier noch nicht implementiert.
+2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
+   war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
+3. Naechstes Paket: **U1-R02 – Event-/Bewertungssichtbarkeit**. U1z ist lokal
+   geprueft; Nachweis und offene Browserabnahmen in U1Z_CACHE_NUTZERTRENNUNG.md.
+   Die interne Lesergruppe fuer Einzelbewertungen wurde gezielt zur Entscheidung
+   vorgelegt; unabhaengige Event-Sichtbarkeitsarbeit kann weiterlaufen.
 4. Vor Codeänderungen relevante Anchor-Docs und Paketquellen lesen. Bestätigte
    F1/F2/R13-Regeln gelten; nur konkret fehlende Entscheidungen erfragen.
    Kein gleichzeitiger Gesamtumbau der Rollen und kein neuer Gesamtaudit.

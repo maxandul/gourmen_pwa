@@ -669,3 +669,11 @@ an Zielgeneration und angezeigte Adresse gebunden. Nur aktives Konto mit aktuell
 Ausgabesnapshot derselben Zugangsversion darf erneut eingeladen werden. Nach
 Aktivierung/Passwortwechsel/Sicherheitswiderruf bestehende Recoverywege verwenden.
 Normale Profilbearbeitung erhält dadurch keine zusätzliche Passwortabfrage.
+
+## Service-Worker-Cache (U1z)
+
+Private APIs, Dokumentdownloads, Tokenlinks und sonstige dynamische Antworten
+sind network-only mit no-store; keine nutzerbezogenen Offline-Fachdaten.
+Statische Zulassung und Antwortpruefung gelten auch beim Installieren und Lesen.
+Keine globalen Cache-Lookups, keine pauschale Loeschung fremder Origin-Caches.
+Details und Grenzen: ARCHITECTURE.md und U1Z_CACHE_NUTZERTRENNUNG.md im App-Audit.

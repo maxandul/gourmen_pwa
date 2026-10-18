@@ -3,12 +3,11 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.16.7';
+const VERSION = '3.16.8';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
-const DYNAMIC_CACHE = `gourmen-dynamic-v${VERSION}`;
-// Aktive Caches dieser SW-Version - alles andere wird beim Activate gelöscht
-const ACTIVE_CACHES = new Set([STATIC_CACHE, DYNAMIC_CACHE, CACHE_NAME]);
+// Nur bekannte eigene Cache-Familien entfernen; fremde Origin-Caches erhalten.
+const APP_CACHE_NAME = /^gourmen-(?:static-|dynamic-)?v\d+\.\d+\.\d+$/;
 
 // Assets die gecacht werden sollen (nur wirklich statische Dateien!)
 // JavaScript-Dateien NICHT hier, damit Updates sofort ankommen
@@ -37,14 +36,6 @@ const STATIC_ASSETS = [
 
 const STATIC_ASSET_SET = new Set(STATIC_ASSETS);
 
-// API-Endpunkte die gecacht werden sollen
-const API_CACHE = [
-    '/api/events',
-    '/api/members',
-    '/api/ggl/stats',
-    '/api/billbro/status'
-];
-
 // Install Event - Cache static assets
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Installing version', VERSION);
@@ -61,11 +52,11 @@ self.addEventListener('install', (event) => {
             const cachePromises = STATIC_ASSETS.map(async (url) => {
                 try {
                     const response = await fetch(url, {
-                        cache: 'no-cache',
+                        cache: 'no-store',
                         credentials: 'same-origin'
                     });
 
-                    if (response.ok) {
+                    if (isCacheableResponse(response)) {
                         await cache.put(url, response);
                     } else {
                         console.warn('Service Worker: Failed to cache (HTTP error):', url, response.status);
@@ -86,29 +77,22 @@ self.addEventListener('activate', (event) => {
     console.log('Service Worker: Activating version', VERSION);
 
     event.waitUntil((async () => {
-        // 1) Alle alten/fremden Caches loeschen (auch Dynamic-Caches frueherer Versionen,
-        //    die potenziell veraltete HTML-Antworten enthalten koennten).
+        // Alte eigene Caches entfernen, insbesondere private dynamische Altantworten.
         const cacheNames = await caches.keys();
         await Promise.all(
             cacheNames
-                .filter((name) => !ACTIVE_CACHES.has(name))
+                .filter((name) => APP_CACHE_NAME.test(name) && name !== STATIC_CACHE)
                 .map((name) => {
                     console.log('Service Worker: Deleting old cache:', name);
                     return caches.delete(name);
                 })
         );
 
-        // 2) Eigenen Dynamic-Cache fuer diese Version komplett zuruecksetzen,
-        //    damit garantiert keine HTML-Reste aus der vorherigen Session uebrig sind.
-        await caches.delete(DYNAMIC_CACHE);
-
-        // 3) Navigation Preload aktivieren (falls verfuegbar) -> schnellere HTML-Antworten.
+        // Kein Preload-Pfad mit abweichender HTTP-Cache-Semantik.
         if (self.registration.navigationPreload) {
             try {
-                await self.registration.navigationPreload.enable();
-            } catch (e) {
-                console.warn('Service Worker: navigationPreload.enable() failed:', e);
-            }
+                await self.registration.navigationPreload.disable();
+            } catch (_) { /* Preload-Antworten werden ohnehin nicht verwendet. */ }
         }
 
         // 4) Sofort die Kontrolle uebernehmen, damit alle offenen Tabs den neuen SW
@@ -128,36 +112,15 @@ self.addEventListener('activate', (event) => {
     })());
 });
 
-// Fetch Event - HTML strikt vom Netz, Static-Assets cache-first, API network-first
+// Private Antworten werden weder gespeichert noch aus Alt-Caches gelesen.
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
-
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-        return;
-    }
-
-    if (request.method !== 'GET') {
-        return;
-    }
-
-    if (isNavigationRequest(request)) {
-        // HTML/Navigation: NIE aus dem SW-Cache. Frisches HTML vom Server,
-        // Offline-Fallback ist die offline.html aus STATIC_CACHE.
-        event.respondWith(networkOnlyHtml(event));
-    } else if (isStaticAsset(request)) {
-        // Gehashte Dateien sind unveraenderlich -> reines cache-first.
-        // Nicht gehashte (z. B. js/v2/*.js?v=x) -> stale-while-revalidate:
-        // sofort aus dem Cache rendern, Update still im Hintergrund holen.
-        event.respondWith(
-            isImmutableAsset(request)
-                ? cacheFirst(request, STATIC_CACHE)
-                : staleWhileRevalidate(request, STATIC_CACHE)
-        );
-    } else if (isApiRequest(request)) {
-        event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+    if (!['http:', 'https:'].includes(url.protocol) || request.method !== 'GET') return;
+    if (isStaticAsset(request)) {
+        event.respondWith(staticResponse(event));
     } else {
-        event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+        event.respondWith(networkOnly(request));
     }
 });
 
@@ -252,192 +215,86 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-// Network-Only Strategy fuer HTML/Navigation:
-// - Versucht zuerst Navigation Preload Response (falls aktiv)
-// - Sonst frischer fetch() mit cache: 'no-store' (umgeht Browser-HTTP-Cache)
-// - Keine Cache-Schreibe -> nichts veraltet, Updates kommen sofort an
-// - Offline-Fallback: offline.html aus STATIC_CACHE
-async function networkOnlyHtml(event) {
-    const request = event.request;
-    try {
-        if (event.preloadResponse) {
-            const preload = await event.preloadResponse;
-            if (preload) return preload;
-        }
-
-        return await fetch(request, {
-            cache: 'no-store',
-            credentials: 'same-origin'
-        });
-    } catch (error) {
-        console.log('Service Worker: HTML offline -> offline.html', error && error.message);
-        const offlineResponse = await caches.match('/static/offline.1fe76e29.html');
-        if (offlineResponse) return offlineResponse;
-        return new Response('Offline - Keine Verbindung', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-        });
-    }
+// Public ist eine explizite Zulassung, private/no-store haben immer Vorrang.
+function isCacheableResponse(response) {
+    const directives = (response.headers.get('Cache-Control') || '')
+        .toLowerCase().split(',').map(value => value.trim().split('=')[0]);
+    return response.status === 200 && !response.redirected &&
+        directives.includes('public') &&
+        !directives.includes('private') && !directives.includes('no-store') &&
+        !response.headers.has('Content-Disposition');
 }
 
-// Stale-While-Revalidate: liefert sofort die gecachte Antwort (falls vorhanden)
-// und aktualisiert den Cache parallel im Hintergrund. Fuer Static-Assets ohne
-// Content-Hash - der Nutzer wartet nie aufs Netz, bekommt aber beim naechsten
-// Aufruf die neue Version.
-async function staleWhileRevalidate(request, cacheName) {
-    const cachedResponse = await caches.match(request);
-
-    const networkPromise = fetch(request, { credentials: 'same-origin' })
-        .then(async (networkResponse) => {
-            if (networkResponse && networkResponse.ok) {
-                try {
-                    const cache = await caches.open(cacheName);
-                    await cache.put(request, networkResponse.clone());
-                } catch (_) {
-                    // Caching-Fehler duerfen die Auslieferung nie blockieren
-                }
-            }
-            return networkResponse;
-        })
-        .catch(() => null);
-
-    if (cachedResponse) return cachedResponse;
-
-    const networkResponse = await networkPromise;
-    if (networkResponse) return networkResponse;
-
-    return new Response('', { status: 504, statusText: 'Gateway Timeout' });
-}
-
-// Cache First Strategy
-async function cacheFirst(request, cacheName) {
-    try {
-        // Only handle HTTP(S)
-        const reqUrl = new URL(request.url);
-        if (reqUrl.protocol !== 'http:' && reqUrl.protocol !== 'https:') {
-            return fetch(request);
-        }
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) {
-            return cachedResponse;
-        }
-        
-        const networkResponse = await fetch(request);
-        if (networkResponse.ok) {
-            const cache = await caches.open(cacheName);
-            try {
-                await cache.put(request, networkResponse.clone());
-            } catch (_) {
-                // Ignore caching failures for unsupported schemes
-            }
-        }
-        
-        return networkResponse;
-    } catch (error) {
-        console.log('Cache First failed:', error);
-        return new Response('Offline - Keine Verbindung', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' }
-        });
-    }
-}
-
-// Network First Strategy
-async function networkFirst(request, cacheName) {
-    try {
-        // Apple Safari kompatible Fetch-Optionen
-        const fetchOptions = {
-            cache: 'no-cache',
-            credentials: 'same-origin',
-            headers: {
-                'Cache-Control': 'no-cache'
-            }
-        };
-        
-        const networkResponse = await fetch(request, fetchOptions);
-        
-        if (networkResponse.ok) {
-            const cache = await caches.open(cacheName);
-            // Klone Response für Cache, da Safari manchmal Probleme mit bereits gelesenen Responses hat
-            const responseClone = networkResponse.clone();
-            try {
-                await cache.put(request, responseClone);
-            } catch (cacheError) {
-                console.warn('Service Worker: Could not cache response:', cacheError);
-            }
-        }
-        
-        return networkResponse;
-    } catch (error) {
-        console.log('Network failed, trying cache:', error);
-        
-        // Prüfe zuerst im Cache
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) {
-            console.log('Service Worker: Serving from cache:', request.url);
-            return cachedResponse;
-        }
-        
-        // Fallback: Return a simple offline message
-        // Attempt to return the offline fallback page if cached
-        const offlineResponse = await caches.match('/static/offline.1fe76e29.html');
-        if (offlineResponse) {
-            return offlineResponse;
-        }
-        // Fallback to plain text if offline page is not available
-        return new Response('Offline - Keine Verbindung', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache'
-            }
-        });
-    }
-}
-
-// Erkennt HTML-/Navigation-Requests (Page-Loads, GET text/html).
-// Bewusst breit gefasst: request.mode === 'navigate' deckt Top-Level-Navigationen ab,
-// der Accept-Header faengt eingebettete HTML-Fetches (z.B. via fetch()) zusaetzlich.
-function isNavigationRequest(request) {
-    if (request.mode === 'navigate') return true;
-    const accept = request.headers.get('accept') || '';
-    return accept.includes('text/html');
-}
-
-// Erkennt Static-Assets unter /static/.
-//
-// Frueher matchte diese Funktion NUR die rund 20 hartcodierten Pfade aus
-// STATIC_ASSETS. Alles andere - insbesondere das Icon-Sprite (418 KB) und
-// die per @import nachgeladenen CSS-Dateien - fiel in den networkFirst-Zweig
-// und wurde damit bei jedem Seitenaufruf mit erzwungenem no-cache neu vom Netz
-// geholt. Hinter einem scannenden Firmenproxy hat das regelmaessig die
-// render-blockierenden Stylesheets zerrissen (Seite ohne Layout).
 const STATIC_ASSET_EXTENSIONS = /\.(css|js|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|json|map)$/i;
-
-// Fingerprinted = Content-Hash im Dateinamen (z. B. main-v2.fa47ba3e.css).
-// Diese Dateien sind unveraenderlich: eine Aenderung erzeugt einen neuen Namen.
 const FINGERPRINTED = /\.[0-9a-f]{8}\.[a-z0-9]+$/i;
-
 function isStaticAsset(request) {
     const url = new URL(request.url);
-    if (url.origin !== self.location.origin) return false;
-    if (STATIC_ASSET_SET.has(url.pathname)) return true;
-    return url.pathname.startsWith('/static/') && STATIC_ASSET_EXTENSIONS.test(url.pathname);
+    return url.origin === self.location.origin &&
+        !request.headers.has('Authorization') && !request.headers.has('Range') &&
+        [...url.searchParams.keys()].every(key => key === 'v') &&
+        (STATIC_ASSET_SET.has(url.pathname) ||
+         (url.pathname.startsWith('/static/') && STATIC_ASSET_EXTENSIONS.test(url.pathname)));
 }
 
-function isImmutableAsset(request) {
-    const url = new URL(request.url);
-    return STATIC_ASSET_SET.has(url.pathname) || FINGERPRINTED.test(url.pathname);
+function offlineFailure(request) {
+    const json = new URL(request.url).pathname.startsWith('/api/') ||
+        (request.headers.get('Accept') || '').includes('application/json');
+    return new Response(json ? JSON.stringify({error: 'offline', message: 'Keine Verbindung'}) :
+        'Offline - Keine Verbindung', {status: 503, headers: {
+            'Content-Type': json ? 'application/json' : 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-store'
+        }});
 }
 
-// Check if request is for API
-function isApiRequest(request) {
+async function cachedStatic(request) {
+    try {
+        const cache = await caches.open(STATIC_CACHE);
+        const response = await cache.match(request);
+        if (response && isCacheableResponse(response)) return response;
+    } catch (_) { /* Cache ist optional. */ }
+    return null;
+}
+
+async function fetchStatic(request) {
+    const response = await fetch(request, {cache: 'no-store', credentials: 'same-origin'});
+    try {
+        const cache = await caches.open(STATIC_CACHE);
+        if (isCacheableResponse(response)) {
+            await cache.put(request, response.clone());
+        } else {
+            await cache.delete(request);
+        }
+    } catch (_) { /* Speicherfehler duerfen Online-Antworten nicht verhindern. */ }
+    return response;
+}
+
+async function staticResponse(event) {
+    const request = event.request;
     const url = new URL(request.url);
-    return url.pathname.startsWith('/api/') ||
-           API_CACHE.includes(url.pathname);
+    const immutable = STATIC_ASSET_SET.has(url.pathname) || FINGERPRINTED.test(url.pathname);
+    // Hintergrundarbeit vor dem ersten await an die Worker-Lebenszeit binden.
+    const network = immutable ? null : fetchStatic(request).catch(() => null);
+    if (network) event.waitUntil(network);
+    const cached = await cachedStatic(request);
+    if (cached) return cached;
+    try {
+        return (await (network || fetchStatic(request))) || offlineFailure(request);
+    } catch (_) {
+        return offlineFailure(request);
+    }
+}
+
+async function networkOnly(request) {
+    try {
+        return await fetch(request, {cache: 'no-store', credentials: 'same-origin'});
+    } catch (_) {
+        // Kein Request/Token oder Netzwerkfehlertext in Logs.
+        if (request.mode === 'navigate' || (request.headers.get('Accept') || '').includes('text/html')) {
+            const offline = await cachedStatic('/static/offline.1fe76e29.html');
+            if (offline) return offline;
+        }
+        return offlineFailure(request);
+    }
 }
 
 // Check for updates

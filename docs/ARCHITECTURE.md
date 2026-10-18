@@ -219,18 +219,23 @@ entfernt. Die MFA-Anfrage kann es nicht mit einem eigenen Query-Parameter ersetz
 
 | Request-Typ | Strategie | Cache | Begründung |
 |---|---|---|---|
-| **HTML / Navigation** (`request.mode === 'navigate'` oder `Accept: text/html`) | `networkOnlyHtml` mit `cache: 'no-store'`, optional Navigation Preload | **kein** SW-Cache | HTML ist fluechtig + version-gebunden; aus dem Cache zurueckgespielte Seiten waren die Hauptursache fuer „Updates kommen nicht an". |
-| **Static Assets** (gehashte Filenames in `STATIC_ASSETS`) | `cacheFirst(STATIC_CACHE)` | versioniert (`gourmen-static-v<X>`) | Hash im Filename → Inhalt unveränderlich, sofortiger Hit. |
-| **API / sonstige GETs** | `networkFirst(DYNAMIC_CACHE)` | versioniert (`gourmen-dynamic-v<X>`) | Frische Daten bevorzugt, Offline-Fallback aus Cache. |
-| **Offline-Fallback** | `caches.match('/static/offline.<hash>.html')` | STATIC_CACHE | Wird nur bei Netzwerkfehler ausgeliefert. |
+| **HTML / Navigation** | Netz mit `cache: 'no-store'` | kein | Bei Netzfehler nur neutrale statische Offline-Seite |
+| **Zugelassene Static Assets** | Fingerprint: cache-first; sonst stale-while-revalidate mit `event.waitUntil` | aktueller STATIC_CACHE | Same-Origin, statische Pfade/Endungen, Query nur `v`, keine Authorization/Range |
+| **API / sonstige GETs** | network-only mit `cache: 'no-store'` | kein | Keine privaten Offline-Antworten, kein dynamischer Cache |
+| **Offline-Fallback** | aktueller STATIC_CACHE, kein globales `caches.match` | STATIC_CACHE | JSON/503 fuer APIs, Text/503 fuer andere GETs; HTML kann neutrale Offline-Seite zeigen |
+
+Lesen und Schreiben verlangen HTTP 200, explizites `public`, kein `private` oder
+`no-store`, keine Weiterleitung oder Content-Disposition. Installation verwendet
+dieselbe Antwortpruefung. Logout/Kontowechsel verlassen sich nicht auf einen
+asynchronen Cache-Clear. Regression: `tests/js/sw_cache_isolation.test.cjs`.
 
 ### Update-Pfad (skipWaiting + clients.claim)
 
 1. **Install** des neuen SW: `self.skipWaiting()` synchron im Install-Handler → kein `waiting`-State.
 2. **Activate** des neuen SW:
-   - alle Caches mit nicht-aktivem Namen werden geloescht;
-   - der eigene `DYNAMIC_CACHE` wird zusaetzlich frisch geleert (gegen HTML-Reste aus Vorversionen);
-   - `navigationPreload.enable()` (falls verfuegbar);
+   - nur alte eigene Cache-Namen `gourmen-(static-|dynamic-)?vX.Y.Z` werden geloescht;
+   - dynamische Alt-Caches werden entfernt; es wird kein neuer dynamischer Cache angelegt;
+   - `navigationPreload.disable()` (falls verfuegbar); Antworten daraus werden nicht verwendet;
    - `self.clients.claim()` → der neue SW kontrolliert sofort alle offenen Tabs;
    - alle Clients erhalten `postMessage({ type: 'SW_ACTIVATED', ... })`.
 3. **Client** (`static/js/pwa.js`):
