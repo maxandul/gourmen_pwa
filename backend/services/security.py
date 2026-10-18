@@ -354,31 +354,35 @@ class SecurityService:
     
     @staticmethod
     def log_audit_event(action, entity, entity_id=None, field=None, extra_data=None, actor_id=None):
-        """Log an audit event"""
+        """Optional legacy audit: isolate its insert; never hide a business failure."""
+        from flask_login import current_user
+        resolved_actor_id = actor_id
+        if resolved_actor_id is None:
+            resolved_actor_id = current_user.id if current_user.is_authenticated else None
+        if resolved_actor_id is None and entity == 'member' and entity_id is not None:
+            resolved_actor_id = entity_id
+        audit_event = AuditEvent(
+            actor_id=resolved_actor_id, action=action, entity=entity, entity_id=entity_id,
+            field=field, ip=request.remote_addr if request else None, extra_json=extra_data)
+
+        # begin_nested flushes pre-existing business changes first. Failures there
+        # belong to the caller and must not be misreported as optional audit loss.
+        savepoint = db.session.begin_nested()
         try:
-            from flask_login import current_user
-            resolved_actor_id = actor_id
-            if resolved_actor_id is None:
-                resolved_actor_id = current_user.id if current_user.is_authenticated else None
-            if resolved_actor_id is None and entity == 'member' and entity_id is not None:
-                # Public auth flows have no logged-in user; in that case the member itself is actor.
-                resolved_actor_id = entity_id
-            
-            audit_event = AuditEvent(
-                actor_id=resolved_actor_id,
-                action=action,
-                entity=entity,
-                entity_id=entity_id,
-                field=field,
-                ip=request.remote_addr if request else None,
-                extra_json=extra_data
-            )
-            
-            db.session.add(audit_event)
+            with savepoint:
+                db.session.add(audit_event)
+                db.session.flush()
+        except Exception:
+            current_app.logger.error('Optional audit insert failed; audit entry not recorded.')
+            return False
+        try:
+            # Preserve the legacy successful-call boundary for existing callers.
             db.session.commit()
-        except Exception as e:
-            # Don't let audit logging break the main functionality
-            current_app.logger.error(f"Failed to log audit event: {e}")
+        except Exception:
+            db.session.rollback()
+            raise
+        return True
+
     
 def require_step_up(f):
     """Decorator to require step-up authentication"""

@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-06 – Audit-Schreibfehler (A-137)**. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U2-07 – Atomare Eventloeschung (A-046)**. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
    U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
@@ -47,3 +47,6 @@ Jahreswechsel und beidseitigen Ruecknahmegrenzen; 64 Python-/19 Worker-Tests gru
 
 U2-05 lokal geprueft (88 und anschliessend 23 Tests): historische inaktive
 Konten, Richtungssummen und Budgetvorschlag. Alte Prueffassungen erhalten.
+
+U2-06 lokal geprueft: optionaler Audit-INSERT mit Savepoint, True/False-Ergebnis;
+Fachfehler weitergegeben. Erfolgscommit fuer Altaufrufer bleibt, A-046 separat.

@@ -988,3 +988,10 @@ Art und Namen trennen. Neue Prueffassungen markieren account_actual_mode als
 direction_net; alte Fassungen bleiben unveraendert. Neue und bearbeitete
 Buchungen verlangen ein aktives richtungsgleiches Konto. K1-Rueckfluesse
 getrennt auf 3620/6710; keine automatische Altdatenumbuchung.
+
+Optionaler Legacy-Audit-Helfer: eigener INSERT innerhalb eines Savepoints;
+Auditfehler ergibt False und ein inhaltsfreies Betriebslog. Fremde offene
+Fachaenderungen bleiben in der aeusseren Transaktion. Fach-Flush-/Commitfehler
+werden nicht als optionale Auditfehler verschluckt. Bestehender Erfolgscommit
+bleibt fuer Altaufrufer erhalten. Neue atomare Sicherheitsablaeufe verwenden
+weiterhin verpflichtende Audit-INSERTs innerhalb ihres eigenen Fachcommits.

@@ -403,3 +403,8 @@ Schreibrecht, aktuelle Bankversion und offenes Zahlungsjahr atomar.
 BankRefundPayment verknuepft eine Ausgangszuordnung mit BankRefundConfirmation.
 RefundPaymentService bucht den vorhandenen Ausgangsteilbetrag atomar auf 6710;
 die Vormerkung liefert das Mitglied, die Ausgangsbewegung Datum und Jahr.
+
+SecurityService.log_audit_event ist der optionale Legacy-Protokollhelfer mit
+Savepoint fuer seinen INSERT. Kein Audit-Outbox-/Zustellversprechen; betriebliche
+Fehlermeldung ohne SQL-Parameter oder sensible Nutzdaten. Recovery-/Onboarding-
+und Dokumentloeschservices behalten ihre strengere atomare Audit-Grenze.

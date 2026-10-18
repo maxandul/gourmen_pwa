@@ -120,7 +120,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | U2-05 / A-067, A-068 | lokal geprüft | Historische inaktive Konten erhalten und Kontosummen nach Richtung konsistent auswerten; eingefrorene Fassungen bewahren. |
 
-| U2-06 / A-137 | **bereit / nächstes Paket** | Audit-Schreibfehler isolieren, ORM-Sitzung nutzbar halten; gespeicherten Fachzustand und tatsaechliches Ergebnis korrekt erhalten. |
+| U2-06 / A-137 | lokal geprüft | Audit-Schreibfehler isolieren, ORM-Sitzung nutzbar halten; gespeicherten Fachzustand und tatsaechliches Ergebnis korrekt erhalten. |
+
+| U2-07 / A-046 | **bereit / nächstes Paket** | Eventloeschung samt Teilnahme und Audit atomar; referenzierte Historie erhalten und Fehler ohne Teilverlust. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
