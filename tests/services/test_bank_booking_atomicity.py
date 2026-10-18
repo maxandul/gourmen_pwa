@@ -34,7 +34,7 @@ def case(app):
 def book(case):
     uid, account_id, claim_id, tx_id, _ = case
     return BankImportService.book_transaction(tx_id,account_id=account_id,claim_id=claim_id,
-                                             booked_by=db.session.get(Member,uid))
+                                             booked_by=db.session.get(Member,uid), excess_action="rounding", learn_payer_alias=True)
 
 
 def rounding_account():
@@ -62,11 +62,11 @@ def test_missing_second_account_retry_then_success_is_exactly_once(app,case):
         assert result.id == db.session.get(BankTransaction,case[3]).booking_id
         assert sorted(b.amount_rappen for b in Booking.query.all()) == [500,2000]
         assert sum(b.amount_rappen for b in Booking.query.all()) == 2500
-        assert db.session.get(MemberClaim,case[2]).paid_rappen == 2500
+        assert db.session.get(MemberClaim,case[2]).paid_rappen == 2000
         with pytest.raises(BankImportError,match='bereits verarbeitet'):
             book(case)
         assert Booking.query.count() == 2
-        assert db.session.get(MemberClaim,case[2]).paid_rappen == 2500
+        assert db.session.get(MemberClaim,case[2]).paid_rappen == 2000
         with pytest.raises(BankImportError,match='verbuchte'):
             BankImportService.delete_import(case[4])
 
@@ -116,7 +116,7 @@ def test_repeated_original_post_does_not_leave_partial_bookings(app,client,case)
     csrf=URLSafeTimedSerializer(app.secret_key,salt='wtf-csrf-token').dumps('synthetic-csrf')
     for _ in range(2):
         response=client.post(f'/accounting/import/tx/{case[3]}/book',
-            data={'account_id':case[1],'claim_id':case[2],'csrf_token':csrf})
+            data={'account_id':case[1],'claim_id':case[2],'csrf_token':csrf,'excess_action':'rounding'})
         assert response.status_code==302
         with app.app_context():
             unchanged(case)

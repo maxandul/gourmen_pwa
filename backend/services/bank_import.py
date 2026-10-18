@@ -20,6 +20,7 @@ from datetime import date, datetime, timedelta
 from backend.extensions import db
 from backend.models.accounting import (
     Account,
+    AccountKind,
     BankStatementImport,
     BankTransaction,
     BankTransactionStatus,
@@ -502,16 +503,17 @@ class BankImportService:
                          member_id: int | None = None,
                          event_id: int | None = None,
                          claim_id: int | None = None,
-                         booked_by: Member) -> Booking:
+                         booked_by: Member, excess_action=None, learn_payer_alias=False) -> Booking:
         """Bestätigte Transaktion verbuchen.
 
         Erzeugt eine Booking (payment_ref = line_key), schreibt eine
-        zugeordnete Claim fort und verbucht Überzahlungen als
-        ausserordentliche Einnahme (Spec 11.5).
+        zugeordnete Claim nur um ihren Anteil fort. Überzahlungen erfordern
+        eine ausdrückliche Restzuordnung; ohne sie bleibt die Bewegung offen.
         """
         try:
             booking = cls._stage_transaction(tx_id, account_id=account_id, member_id=member_id,
-                event_id=event_id, claim_id=claim_id, booked_by=booked_by)
+                event_id=event_id, claim_id=claim_id, booked_by=booked_by,
+                excess_action=excess_action, learn_payer_alias=learn_payer_alias)
             db.session.commit()
             return booking
         except AccountingValidationError:
@@ -524,7 +526,8 @@ class BankImportService:
             ) from None
 
     @classmethod
-    def _stage_transaction(cls, tx_id, *, account_id, member_id, event_id, claim_id, booked_by):
+    def _stage_transaction(cls, tx_id, *, account_id, member_id, event_id, claim_id, booked_by,
+                           excess_action, learn_payer_alias):
         tx = cls.get_transaction(tx_id, lock=True)
         if not tx.is_pending:
             raise BankImportError('Transaktion ist bereits verarbeitet.')
@@ -532,6 +535,19 @@ class BankImportService:
             raise BankImportError(
                 'Sammelbuchung wird über ihre Detail-Zeilen verbucht.'
             )
+
+        if excess_action not in (None, '', 'rounding', 'defer'):
+            raise BankImportError('Ungültige Restzuordnung.')
+        if excess_action == 'defer':
+            raise BankImportError('Keine Buchung: Bankbewegung bleibt zur Klärung offen.')
+        account = db.session.get(Account, account_id)
+        expected_kind = AccountKind.INCOME if tx.direction == BookingDirection.IN else AccountKind.EXPENSE
+        if not account or not account.is_active or account.kind != expected_kind:
+            raise BankImportError('Konto muss aktiv sein und zur Zahlungsrichtung passen.')
+        if member_id is not None and db.session.get(Member, member_id) is None:
+            raise BankImportError('Mitglied nicht gefunden.')
+        if event_id is not None and db.session.get(Event, event_id) is None:
+            raise BankImportError('Event nicht gefunden.')
 
         fiscal_year = AccountingService.get_or_create_fiscal_year(tx.booked_date.year, commit=False)
         fiscal_year = FiscalYear.query.filter_by(id=fiscal_year.id).populate_existing().with_for_update().one()
@@ -542,6 +558,8 @@ class BankImportService:
 
         claim = None
         if claim_id:
+            if tx.direction != BookingDirection.IN:
+                raise BankImportError('Nur Zahlungseingänge können einen offenen Posten begleichen.')
             claim = MemberClaim.query.filter_by(id=claim_id).populate_existing().with_for_update().first()
             if claim is None:
                 raise BankImportError('Offener Posten nicht gefunden.')
@@ -551,18 +569,32 @@ class BankImportService:
                 )
             if not claim.is_open:
                 raise BankImportError('Dieser Posten ist bereits beglichen.')
-            if member_id is None:
-                member_id = claim.member_id
+            if member_id is not None and member_id != claim.member_id:
+                raise BankImportError('Gewähltes Mitglied passt nicht zum offenen Posten.')
+            if event_id is not None and event_id != claim.event_id:
+                raise BankImportError('Gewählter Event passt nicht zum offenen Posten.')
+            if account.code != CLAIM_ACCOUNT_CODES.get(claim.claim_type):
+                raise BankImportError('Konto passt nicht zur Art des offenen Postens.')
+            member_id = claim.member_id
+            event_id = claim.event_id
 
         description = cls._booking_description(tx)
         main_amount = tx.amount_rappen
         rounding_amount = 0
-        if claim is not None and tx.direction == BookingDirection.IN:
+        if claim is not None:
+            if claim.open_rappen <= 0:
+                raise BankImportError('Dieser Posten hat keinen offenen Betrag.')
             overpay = tx.amount_rappen - claim.open_rappen
-            rounding_code = ROUNDING_ACCOUNT_CODES.get(claim.claim_type)
-            if overpay > 0 and rounding_code:
+            if overpay > 0:
+                rounding_code = ROUNDING_ACCOUNT_CODES.get(claim.claim_type)
+                if excess_action != 'rounding' or not rounding_code:
+                    raise BankImportError('Überzahlung zuerst ausdrücklich zuordnen oder später klären.')
                 main_amount = claim.open_rappen
                 rounding_amount = overpay
+        if excess_action == 'rounding' and not rounding_amount:
+            raise BankImportError('Keine passende Überzahlung für eine freiwillige Aufrundung vorhanden.')
+        if learn_payer_alias and (member_id is None or tx.direction != BookingDirection.IN):
+            raise BankImportError('Bankzahler-Zuordnung benötigt einen Eingang und ein Mitglied.')
 
         booking = AccountingService.create_booking(
             fiscal_year_id=fiscal_year.id,
@@ -583,6 +615,9 @@ class BankImportService:
             )
             if rounding_account_id is None:
                 raise BankImportError('Aufrundungs-Konto fehlt im Kontenplan.')
+            rounding_account = db.session.get(Account, rounding_account_id)
+            if not rounding_account.is_active or rounding_account.kind != AccountKind.INCOME:
+                raise BankImportError('Aufrundungs-Konto muss aktiv und ein Einnahmenkonto sein.')
             AccountingService.create_booking(
                 fiscal_year_id=fiscal_year.id,
                 booking_date=tx.booked_date,
@@ -597,9 +632,9 @@ class BankImportService:
             )
 
         if claim is not None:
-            claim.register_payment(tx.amount_rappen)
+            claim.register_payment(main_amount)
 
-        if member_id and tx.direction == BookingDirection.IN:
+        if learn_payer_alias and member_id and tx.direction == BookingDirection.IN:
             counterparty = cls.extract_counterparty(tx)
             if counterparty:
                 cls.learn_alias(member_id, counterparty)

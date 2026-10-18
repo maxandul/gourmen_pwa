@@ -734,3 +734,13 @@ Importkopfsperre und frischen Zeilenstand. Reale PostgreSQL-Konkurrenz bleibt of
 Die bislang automatische Ueberzahlungsbehandlung wird im naechsten Teilpaket
 U2-02b durch die bestaetigte explizite F5-Auswahl ersetzt; keine Gesamtfreigabe
 von Importlogik oder historischen Zahlungsdaten durch diesen Transaktionsnachweis.
+
+
+## App-Audit U2-02b1: Einzelposten-Zuordnung (ersetzt automatische Aufrundung)
+
+Nur Eingaenge tilgen Einnahmeforderungen. Konto, Schuldner und Event werden
+serverseitig gemeinsam validiert. Ueberzahlung benoetigt ausdrueckliche Wahl
+als freiwillige Aufrundung fuer Essen/Merch; ohne passende Wahl bleibt die
+Bankbewegung unbearbeitet. Forderung erhaelt nur ihren Anteil, Rest steht in
+eigener Buchung. Aliase nur nach ausdruecklicher Bankzahler-Bestaetigung.
+Weitergehende Sammel-/Restzuordnung ist noch U2-02b2, keine Rueckzahlung ausgeloest.

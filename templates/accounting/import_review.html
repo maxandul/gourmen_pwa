@@ -106,7 +106,7 @@
                             </select>
                         </div>
                         <div class="form-field">
-                            <label class="form-field__label" for="tx-{{ tx.id }}-member">Mitglied (optional)</label>
+                            <label class="form-field__label" for="tx-{{ tx.id }}-member">Zugeordnetes Mitglied (optional)</label>
                             <select name="member_id" id="tx-{{ tx.id }}-member" class="form-field__select">
                                 <option value="0">–</option>
                                 {% for member in members %}
@@ -128,7 +128,24 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <span class="form-field__help">Bei Zuordnung wird der Posten fortgeschrieben; Überzahlungen landen automatisch auf dem Aufrundungs-Konto.</span>
+                        <span class="form-field__help">Mitglied und Event müssen zum Posten passen. Der Bankzahler kann eine andere Person sein.</span>
+                    </div>
+                    {% endif %}
+                    {% if tx.is_income %}
+                    <div class="form-field">
+                        <label class="form-field__label" for="tx-{{ tx.id }}-excess">Rest bei Überzahlung</label>
+                        <select name="excess_action" id="tx-{{ tx.id }}-excess" class="form-field__select">
+                            <option value="">– zuerst prüfen –</option>
+                            <option value="rounding">Freiwillige Aufrundung (Essen oder Merch)</option>
+                            <option value="defer">Weitere Forderung oder Rückzahlung: später klären</option>
+                        </select>
+                        <span class="form-field__help">Ohne passende Restzuordnung wird nichts verbucht. Später klären lässt die Bankbewegung offen.</span>
+                    </div>
+                    <div class="form-field">
+                        <label for="tx-{{ tx.id }}-payer">
+                            <input type="checkbox" name="learn_payer_alias" id="tx-{{ tx.id }}-payer" value="1">
+                            Der Bankzahler ist das zugeordnete Mitglied; Namen für künftige Vorschläge merken.
+                        </label>
                     </div>
                     {% endif %}
                     <div class="form-field">

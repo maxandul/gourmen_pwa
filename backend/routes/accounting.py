@@ -1076,6 +1076,8 @@ def bank_tx_book(tx_id: int):
             event_id=request.form.get('event_id', type=int) or None,
             claim_id=request.form.get('claim_id', type=int) or None,
             booked_by=current_user,
+            excess_action=request.form.get("excess_action") or None,
+            learn_payer_alias=request.form.get("learn_payer_alias") == "1",
         )
         flash(f'Verbucht: {booking.description} (CHF {booking.amount_rappen / 100:.2f}).', 'success')
     except AccountingError as exc:

@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-02b. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-02b2. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (18.10.2026)
 
@@ -12,6 +12,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U2-02b1 / A-061: Einzelposten-Zuordnung | Lokal geprüft; Sammel-/Restmodell folgt | 75 Python-Tests, erweitert 43; 19 Worker-Tests; [Nachweis](U2_02B_ZAHLUNGSZUORDNUNG.md) |
 | U2-02a / A-060: atomare Importverbuchung | Lokal geprüft, PostgreSQL offen | 61 Python-Tests; [Nachweis](U2_02_IMPORTTRANSAKTION.md) |
 | U2-01 / A-057, A-058: Buchungswerte | Lokal geprüft, Browser/PostgreSQL offen | 71 Python- und 19 Worker-Tests; [Nachweis](U2_01_BUCHUNGSWERTE.md) |
 | U1-R08 / lokaler Abschlussabgleich | U1 weiterhin offen | Gesamtsuite 903 bestanden/1 alte Erwartung; korrigiert und 34 betroffene Tests bestanden; [Abgleich](U1_R08_ABGLEICH.md) |

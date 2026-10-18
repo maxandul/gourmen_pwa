@@ -867,3 +867,15 @@ Jahr und Forderung frisch sperren. Status-/Loeschwege teilen Kopf-/Zeilensperren
 Wiederholung einer bereits verarbeiteten Zeile schreibt keine Zahlung erneut fort.
 Keine Eindeutigkeit allein auf payment_ref, da echte Aufteilung mehrere Buchungen
 benoetigt. SQLite-Nachweis ersetzt keinen PostgreSQL-Konkurrenztest.
+
+
+## Einzelposten und Bankzahler (U2-02b1)
+
+Forderungstilgung nur durch Eingang; aktives Konto zur Richtung und Forderungsart,
+Mitglied/Event konsistent zur Forderung. Zugeordnetes Mitglied ist Schuldner,
+nicht automatisch Bankzahler. Banknamen nur nach explizitem learn_payer_alias
+uebernehmen, damit Fremdzahlungen keine falschen Alias-Zuordnungen erzeugen.
+Freiwilliger Ueberschuss bei Essen/Merch verlangt excess_action=rounding;
+Forderung nur um ihren Anteil erhoehen, Zusatzbetrag getrennt buchen. Ohne
+passende Wahl oder bei defer nichts buchen, Bewegung pending lassen. Persistierte
+Mehrfachzuordnung/offene Reste folgen in U2-02b2; kein automatisches Umdeuten.

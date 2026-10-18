@@ -215,7 +215,7 @@ def test_book_transaction_applies_claim_and_learns_alias(app):
 
         booking = BankImportService.book_transaction(
             tx.id, account_id=account.id, member_id=max_muster.id,
-            claim_id=claim.id, booked_by=treasurer,
+            claim_id=claim.id, booked_by=treasurer, learn_payer_alias=True,
         )
         assert booking.amount_rappen == 7000
         assert booking.payment_ref == 'TESTREF00000002'
@@ -248,7 +248,7 @@ def test_book_transaction_overpay_creates_rounding_booking(app):
 
         BankImportService.book_transaction(
             tx.id, account_id=share_account.id, member_id=roman.id,
-            claim_id=claim.id, booked_by=treasurer,
+            claim_id=claim.id, booked_by=treasurer, excess_action="rounding",
         )
 
         bookings = Booking.query.order_by(Booking.id).all()
@@ -260,7 +260,7 @@ def test_book_transaction_overpay_creates_rounding_booking(app):
 
         db.session.refresh(claim)
         assert claim.status == ClaimStatus.BEGLICHEN
-        assert claim.paid_rappen == 11200
+        assert claim.paid_rappen == 11000
 
 
 def _make_event(organizer: Member, when):
