@@ -859,3 +859,9 @@ U2-02c2b ergaenzt den tatsaechlichen Ausgangsabgleich auf 6710: Teilzahlungen
 und Jahreswechsel, ausgehende Bankbewegung explizit waehlen, offene Betraege
 und beidseitige Historienlinks. Eingangszuordnung kann erst nach Ruecknahme
 aktiver verknuepfter Ausgangszuordnungen zurueckgenommen werden.
+
+U2-05: Inaktive historische Konten bleiben in Budget/Ist und Gruppen sichtbar.
+Historische gegenlaeufige Buchungen werden im Live-Ist saldiert; neue
+Buchungen muessen zur Kontoart passen. Budgetvorschlag nutzt denselben
+Vorjahres-Ist wie die Jahresansicht. Alte Prueffassungen behalten ihren
+gesicherten Berechnungsstand; Korrektur durch neue begruendete Vorlage.

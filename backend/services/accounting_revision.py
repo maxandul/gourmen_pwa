@@ -70,7 +70,9 @@ class AccountingRevisionService:
         rows = []
         for data in snapshot['accounts']:
             account = SimpleNamespace(**{**data, 'kind': AccountKind(data['kind'])})
-            actual = sum(b['amount_rappen'] for b in snapshot['bookings'] if b['account_id'] == account.id)
+            actual = sum(b['amount_rappen'] * (1 if snapshot.get('account_actual_mode') != 'direction_net' or
+                b['direction'] == ('in' if account.kind == AccountKind.INCOME else 'out') else -1)
+                for b in snapshot['bookings'] if b['account_id'] == account.id)
             budget = budgets.get(account.id, 0)
             rows.append(dict(account=account, actual_rappen=actual, budget_rappen=budget, deviation_rappen=actual-budget))
         return rows
@@ -102,6 +104,7 @@ class AccountingRevisionService:
         account_ids = {b.account_id for b in bookings} | {b.account_id for b in budgets}
         accounts = Account.query.filter(Account.id.in_(account_ids)).order_by(Account.id).all()
         return {
+            'account_actual_mode': 'direction_net',
             'year': fy.year, 'start_date': fy.start_date.isoformat(), 'end_date': fy.end_date.isoformat(),
             'opening_balance_rappen': AccountingService.get_opening_balance(fy.id),
             'open_receipts': Receipt.query.filter(Receipt.booking_id.is_(None)).count(),

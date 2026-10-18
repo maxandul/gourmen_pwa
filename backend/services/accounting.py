@@ -295,30 +295,32 @@ class AccountingService:
 
     @classmethod
     def get_budget_vs_actual(cls, fiscal_year_id: int) -> list[dict]:
-        """Pro aktivem Konto: Budget (Soll), Ist und Abweichung in Rappen."""
+        """Active and historically used accounts, with direction-aware net actuals."""
         fy = cls.get_fiscal_year(fiscal_year_id)
         from backend.services.accounting_revision import AccountingRevisionService
         snapshot = AccountingRevisionService.active_snapshot(fy)
         if snapshot is not None:
             return AccountingRevisionService.budget_rows(snapshot)
-        accounts = cls.get_active_accounts()
-
         budget_by_account = {
             e.account_id: e.amount_rappen
             for e in BudgetEntry.query.filter_by(fiscal_year_id=fy.id).all()
         }
         actual_rows = (
-            db.session.query(Booking.account_id, db.func.sum(Booking.amount_rappen))
+            db.session.query(Booking.account_id, Booking.direction, db.func.sum(Booking.amount_rappen))
             .filter(Booking.fiscal_year_id == fy.id, Booking.reversal_id.is_(None))
-            .group_by(Booking.account_id)
+            .group_by(Booking.account_id, Booking.direction)
             .all()
         )
-        actual_by_account = {account_id: total for account_id, total in actual_rows}
+        actual_by_account = {}
+        for account_id, direction, total in actual_rows:
+            actual_by_account[account_id] = actual_by_account.get(account_id, 0) + (total if direction == BookingDirection.IN else -total)
+        used_ids = set(budget_by_account) | set(actual_by_account)
+        accounts = Account.query.filter(db.or_(Account.is_active.is_(True), Account.id.in_(used_ids))).order_by(Account.sort_order, Account.code).all()
 
         rows = []
         for account in accounts:
             budget = budget_by_account.get(account.id, 0)
-            actual = actual_by_account.get(account.id, 0) or 0
+            actual = (actual_by_account.get(account.id, 0) or 0) * (1 if account.kind == AccountKind.INCOME else -1)
             rows.append({
                 'account': account,
                 'budget_rappen': budget,
@@ -338,7 +340,8 @@ class AccountingService:
         by_name: dict[str, dict] = {}
         for row in cls.get_budget_vs_actual(fiscal_year_id):
             group_name = row['account'].group_name or 'Ohne Gruppe'
-            group = by_name.get(group_name)
+            key = (row['account'].kind, group_name)
+            group = by_name.get(key)
             if group is None:
                 group = {
                     'name': group_name,
@@ -347,7 +350,7 @@ class AccountingService:
                     'budget_rappen': 0,
                     'actual_rappen': 0,
                 }
-                by_name[group_name] = group
+                by_name[key] = group
                 groups.append(group)
             group['rows'].append(row)
             group['budget_rappen'] += row['budget_rappen']
@@ -394,6 +397,14 @@ class AccountingService:
         if type(amount) is not int or not 0 < amount <= 2_147_483_647:
             raise AccountingValidationError("Betrag muss positive ganze Rappen im unterstützten Bereich enthalten.")
 
+    @staticmethod
+    def validate_booking_account(account, direction):
+        if not account or not account.is_active:
+            raise AccountingValidationError('Aktives Konto erforderlich.')
+        kind = AccountKind.INCOME if _as_direction(direction) == BookingDirection.IN else AccountKind.EXPENSE
+        if account.kind != kind:
+            raise AccountingValidationError('Richtung passt nicht zur Kontoart. Rückflüsse getrennt auf 3620/6710 erfassen.')
+
     @classmethod
     def create_booking(cls, fiscal_year_id: int, booking_date: date,
                        description: str, amount_rappen: int, direction,
@@ -414,6 +425,7 @@ class AccountingService:
         if account is None:
             raise AccountingValidationError("Konto nicht gefunden.")
 
+        cls.validate_booking_account(account, direction)
         booking = Booking(
             fiscal_year_id=fy.id,
             booking_date=booking_date,
@@ -473,6 +485,8 @@ class AccountingService:
             if account is None:
                 raise AccountingValidationError("Konto nicht gefunden.")
             changes['account_id'] = account.id
+        cls.validate_booking_account(db.session.get(Account, changes.get('account_id', booking.account_id)),
+                                     changes.get('direction', booking.direction))
         for field in ('event_id', 'member_id'):
             if field in kwargs:
                 changes[field] = kwargs[field]
@@ -797,14 +811,8 @@ class AccountingService:
 
         proposals: dict[int, int] = {}
         if prev is not None:
-            actual_rows = (
-                db.session.query(Booking.account_id, db.func.sum(Booking.amount_rappen))
-                .filter(Booking.fiscal_year_id == prev.id, Booking.reversal_id.is_(None))
-                .group_by(Booking.account_id)
-                .all()
-            )
-            for account_id, total in actual_rows:
-                proposals[account_id] = round((total or 0) / 1000) * 1000
+            for row in cls.get_budget_vs_actual(prev.id):
+                proposals[row['account'].id] = round(row['actual_rappen'] / 1000) * 1000
 
         contribution_account = Account.query.filter_by(code='3000').first()
         if contribution_account is not None and fy.membership_fee_rappen:

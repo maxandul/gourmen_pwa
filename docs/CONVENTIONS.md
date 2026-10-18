@@ -981,3 +981,10 @@ Bestaetigungen nach ID. Ruecknahmen verwenden dieselbe Reihenfolge. Aktive
 Ausgangszuordnungen verhindern Eingangsruecknahme; nach Ausgangsruecknahme wird
 der Bedarf aus erhaltenen Journalzeilen erneut berechnet. Keine zweite
 Summenbuchung, keine Veraenderung eines bereits geschlossenen Eingangsjahrs.
+
+Kontoauswertungen: aktive sowie im Jahr bebuchte/budgetierte inaktive Konten
+aufnehmen. Live-Ist nach Kontoart saldieren (IN-OUT bzw. OUT-IN), Gruppen nach
+Art und Namen trennen. Neue Prueffassungen markieren account_actual_mode als
+direction_net; alte Fassungen bleiben unveraendert. Neue und bearbeitete
+Buchungen verlangen ein aktives richtungsgleiches Konto. K1-Rueckfluesse
+getrennt auf 3620/6710; keine automatische Altdatenumbuchung.

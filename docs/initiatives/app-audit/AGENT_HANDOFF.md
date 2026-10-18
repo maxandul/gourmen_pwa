@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-05 – Historische Konten und Richtungssummen (A-067/A-068)**. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U2-06 – Audit-Schreibfehler (A-137)**. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
    U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
@@ -44,3 +44,6 @@ Keine automatische Ueberweisung. Vertrag/Nachweise: U2_02C_ZUORDNUNGSKORREKTUR.m
 U2-02c2a lokal geprueft: bestaetigter Ueberschuss auf 3620; BankRefundConfirmation
 verknuepft Vormerkung und Buchung. U2-02c2b verknuepft den tatsaechlichen Ausgang auf 6710, mit Teilbetraegen,
 Jahreswechsel und beidseitigen Ruecknahmegrenzen; 64 Python-/19 Worker-Tests gruen.
+
+U2-05 lokal geprueft (88 und anschliessend 23 Tests): historische inaktive
+Konten, Richtungssummen und Budgetvorschlag. Alte Prueffassungen erhalten.

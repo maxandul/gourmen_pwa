@@ -118,7 +118,9 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-04c1 / A-069 | lokal geprüft | Eingefrorene Auswertungen/PDF, sichtbarer Vorjahresabgleich und erneute Vorlage bei Differenz. |
 | U2-04c2 / A-070 | lokal geprüft | Persistierter versionsgebundener Berichtsauftrag und sichere Wiederholung ohne Doppelupload. |
 
-| U2-05 / A-067, A-068 | **bereit / nächstes Paket** | Historische inaktive Konten erhalten und Kontosummen nach Richtung konsistent auswerten; eingefrorene Fassungen bewahren. |
+| U2-05 / A-067, A-068 | lokal geprüft | Historische inaktive Konten erhalten und Kontosummen nach Richtung konsistent auswerten; eingefrorene Fassungen bewahren. |
+
+| U2-06 / A-137 | **bereit / nächstes Paket** | Audit-Schreibfehler isolieren, ORM-Sitzung nutzbar halten; gespeicherten Fachzustand und tatsaechliches Ergebnis korrekt erhalten. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
