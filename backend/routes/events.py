@@ -783,7 +783,7 @@ def edit(event_id):
     # Load organizer choices
     active_members = Member.query.filter_by(is_active=True).order_by(Member.nachname, Member.vorname).all()
     form.organisator_id.choices = [(m.id, m.display_name) for m in active_members]
-    if event.audience:
+    if request.method == 'GET' and event.audience:
         form.audience.data = event.audience_value
     
     if form.validate_on_submit():

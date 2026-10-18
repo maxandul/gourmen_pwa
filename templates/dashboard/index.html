@@ -132,8 +132,8 @@
                 {{ dashboard_info_tile(
                     'Letzter Anteil',
                     latest_bill_participation.display_share if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'CHF TBD',
-                    latest_bill_event.display_date if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'TBD',
-                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None,
+                    (latest_bill_event.display_date if latest_bill_event.is_visible_to(current_user) else 'Geschuetztes Event') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'TBD',
+                    url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_event.is_visible_to(current_user) and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None,
                     'dashboard-info-tile__line--hint'
                 ) }}
 
@@ -173,7 +173,7 @@
                     <div class="info-row">
                         <span class="info-row__label">
                             {{ claim.type_display }}
-                            {% if claim.event %}<br><span class="text-secondary">{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}</span>
+                            {% if claim.event %}<br><span class="text-secondary">{% if claim.event.is_visible_to(current_user) %}{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}{% else %}Geschuetztes Event{% endif %}</span>
                             {% elif claim.fiscal_year %}<br><span class="text-secondary">{{ claim.fiscal_year.year }}</span>{% endif %}
                         </span>
                         <span class="info-row__value">
@@ -208,7 +208,7 @@
                     <div class="info-row">
                         <span class="info-row__label">
                             {{ claim.member.display_name_with_spirit }}
-                            {% if claim.event %}<br><span class="text-secondary">{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}</span>{% endif %}
+                            {% if claim.event %}<br><span class="text-secondary">{% if claim.event.is_visible_to(current_user) %}{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}{% else %}Geschuetztes Event{% endif %}</span>{% endif %}
                         </span>
                         <span class="info-row__value">
                             CHF {{ "%.2f"|format(claim.open_rappen / 100) }}

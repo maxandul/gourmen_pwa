@@ -8,7 +8,8 @@ from typing import Any
 
 from sqlalchemy import and_, func, or_
 
-from backend.models.event import Event, EventType
+from backend.models.event import Event, EventType, EventAudience
+from backend.extensions import db
 from backend.models.member import Member
 from backend.models.participation import Participation, Esstyp
 from backend.models.rating import EventRating
@@ -20,7 +21,7 @@ _SHORT_MONTHS_DE = (
 
 
 def _member_eligible_for_event(member: Member, event: Event) -> bool:
-    if not member.is_active:
+    if not member.is_active or not event.is_visible_to(member):
         return False
     if member.beitritt and event.datum.date() < member.beitritt:
         return False
@@ -77,6 +78,7 @@ def get_landing_extras(now: datetime) -> dict[str, Any]:
     last_ev = (
         Event.query.filter(
             Event.published.is_(True),
+            Event.audience == EventAudience.ALL,
             Event.event_typ == EventType.MONATSESSEN,
             Event.datum < now,
             or_(
@@ -92,6 +94,7 @@ def get_landing_extras(now: datetime) -> dict[str, Any]:
     next_ms = (
         Event.query.filter(
             Event.published.is_(True),
+            Event.audience == EventAudience.ALL,
             Event.event_typ == EventType.MONATSESSEN,
             Event.datum >= now,
         )
@@ -136,6 +139,7 @@ def get_landing_restaurant_table(
     past_ms: list[Event] = (
         Event.query.filter(
             Event.published.is_(True),
+            Event.audience == EventAudience.ALL,
             Event.event_typ == EventType.MONATSESSEN,
             Event.allow_ratings.is_(True),
             func.date(Event.datum) <= today,
@@ -265,7 +269,10 @@ def get_monatsessen_statistics(
     if organizer_id is not None:
         q = q.filter(Event.organisator_id == organizer_id)
 
-    past_ms: list[Event] = q.all()
+    viewer = db.session.get(Member, current_member_id)
+    if viewer is None or not viewer.is_active:
+        return None
+    past_ms: list[Event] = Event.apply_audience_filter(q, viewer).all()
     if not past_ms:
         return None
 

@@ -275,3 +275,10 @@ Default `BESTELLT`, weitere Werte je nach Workflow (`AUSGELIEFERT` etc. – im C
 - **Keine automatische Beitrags-Einforderung**: Mitgliederbeiträge entstehen als offene Posten (`MemberClaim`) und werden über den ZKB-Import abgeglichen; es gibt aber kein aktives Mahnwesen und keine Payment-Integration (TWINT kommt erst in Phase 6)
 - **Keine externen Auth-Provider**: Login ist Eigenbau (Email + Passwort + 2FA)
 - **Keine native App**: nur PWA (installierbar, aber HTML/JS unter der Haube)
+
+## Bewertungs-Leserecht (U1-R02, 18.10.2026)
+
+Alle Mitglieder mit Eventzugriff duerfen Einzelbewertungen samt Namen und
+Kommentaren lesen. Teilnahme betrifft das Schreiben, nicht das Lesen.
+Oeffentlich bleiben nur freigegebene Aggregate aus publizierten all-Events;
+Board-Eventdetails werden auch ueber Statistiken/Teaser nicht veroeffentlicht.

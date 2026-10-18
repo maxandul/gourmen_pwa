@@ -92,21 +92,10 @@ def rate_event(event_id):
 def view_ratings(event_id):
     """View all ratings for an event"""
     event = _get_visible_event_or_404(event_id)
-    is_organizer = event.organisator_id == current_user.id
 
     if not event.allow_ratings:
         flash('Bewertungen sind für dieses Event deaktiviert.', 'error')
         return redirect(url_for('events.detail', event_id=event_id, tab='info'))
-    
-    # Check if user participated in this event or is admin
-    participation = Participation.query.filter_by(
-        event_id=event_id, 
-        member_id=current_user.id
-    ).first()
-    
-    if not ((participation and participation.teilnahme) or is_organizer):
-        flash('Du hast keine Berechtigung, die Bewertungen zu sehen.', 'error')
-        return redirect(url_for('events.detail', event_id=event_id, tab='ratings', _anchor='event-ratings-all'))
     
     return redirect(url_for('events.detail', event_id=event_id, tab='ratings'))
 
@@ -115,20 +104,11 @@ def view_ratings(event_id):
 def get_ratings_api(event_id):
     """API endpoint to get ratings for an event"""
     event = _get_visible_event_or_404(event_id)
-    is_organizer = event.organisator_id == current_user.id
 
     if not event.allow_ratings:
         return jsonify({'error': 'Bewertungen deaktiviert'}), 403
     
-    # Check if user participated in this event or is admin
-    participation = Participation.query.filter_by(
-        event_id=event_id, 
-        member_id=current_user.id
-    ).first()
-    
-    if not ((participation and participation.teilnahme) or is_organizer):
-        return jsonify({'error': 'Keine Berechtigung'}), 403
-    
+    # Lesen folgt der Event-Sichtbarkeit, unabhaengig von Teilnahme.
     ratings = event.get_ratings()
     average_ratings = event.get_average_ratings()
     

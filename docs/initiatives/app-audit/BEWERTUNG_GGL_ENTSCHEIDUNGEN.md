@@ -85,3 +85,9 @@ und später deaktivierte Mitglieder separat abgleichen.
   Nachgewiesene Erfassungsfehler darf der Systemadmin gezielt korrigieren;
   Änderung und Auswirkungen auf Event-/Saisonwerte nachvollziehbar zeigen.
   Keine automatische Änderung bezahlter BillBro-Anteile aus einer Tippkorrektur.
+
+## Praezisierung interne Lesergruppe, 18.10.2026
+
+Nutzerentscheidung fuer U1-R02: Alle Mitglieder mit Zugriff auf das Event duerfen
+Namen und Kommentare einzelner Bewertungen lesen. Einheitlich fuer HTML/API;
+Teilnahme bleibt ein davon getrenntes Schreibkriterium.

@@ -677,3 +677,14 @@ sind network-only mit no-store; keine nutzerbezogenen Offline-Fachdaten.
 Statische Zulassung und Antwortpruefung gelten auch beim Installieren und Lesen.
 Keine globalen Cache-Lookups, keine pauschale Loeschung fremder Origin-Caches.
 Details und Grenzen: ARCHITECTURE.md und U1Z_CACHE_NUTZERTRENNUNG.md im App-Audit.
+
+## Event-/Bewertungssichtbarkeit (U1-R02)
+
+Einzelbewertungen mit Namen/Kommentaren sind fuer alle angemeldeten Mitglieder
+mit Eventzugriff lesbar (bestaetigt 18.10.2026); Teilnahme ist kein Lesekriterium.
+Schreibberechtigung bleibt separat. Oeffentliche Restaurantaggregate/Teaser
+beruecksichtigen nur publizierte all-Events. Interne Monatsessenstatistiken
+filtern vor Aggregation nach Event.apply_audience_filter; Teilnahmequoten nach
+der Sichtbarkeit des jeweiligen Mitglieds. Event-Edit setzt Formularinitialwerte
+nur bei GET. Eigene Forderungen bleiben bei Sichtbarkeitsverlust erhalten;
+Dashboard zeigt dann keine Eventmetadaten oder gesperrten Links.
