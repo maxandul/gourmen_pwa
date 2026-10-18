@@ -26,12 +26,11 @@ class OnboardingService:
 
     @staticmethod
     def matches(member, row):
-        """Legacy tokens retain their previous rules; new snapshots must match."""
-        if row.issued_generation is None and row.recipient_email is None:
-            return True
+        """Unbound legacy invitations require a newly issued link."""
         return bool(member and member.is_active
                     and row.issued_generation == member.auth_generation
-                    and row.recipient_email == member.email)
+                    and row.recipient_email
+                    and SecurityService.normalized_primary_email(row.recipient_email) == SecurityService.normalized_primary_email(member.email))
 
     @staticmethod
     def prepare(member, *, replace=False):

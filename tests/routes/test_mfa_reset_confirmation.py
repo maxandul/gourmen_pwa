@@ -26,7 +26,7 @@ def reset_case(app):
         db.session.add(MemberMFA(member_id=user.id, is_totp_enabled=True,
                                 totp_secret_encrypted='synthetic-encrypted-payload'))
         db.session.add(MFABackupCode(member_id=user.id, code_hash='synthetic-hash'))
-        token = AuthToken(member_id=user.id, purpose=AuthTokenPurpose.MFA_RESET,
+        token = AuthToken(member_id=user.id, purpose=AuthTokenPurpose.MFA_RESET, recipient_email=user.email,
                          token_hash=hashlib.sha256(TOKEN.encode()).hexdigest(),
                          expires_at=datetime.utcnow() + timedelta(hours=1))
         db.session.add(token)

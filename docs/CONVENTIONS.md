@@ -795,3 +795,16 @@ DB-Entfernung und Erfolgs-Audit committen gemeinsam. Bei Remote-/Abschlussfehler
 bleibt pending erhalten; keine automatische Wiederholung. Adminansicht zeigt den
 unklaren Ausgang. PostgreSQL-/Live-Abnahme und Wiederherstellungsabgleich bleiben
 gesondert. Keine pauschale atomare Garantie ueber Drive und DB behaupten.
+
+## Hauptadressbindung von Zugangstoken (U1-R05a)
+
+Passwort-/MFA-Reset und Aktivierung verlangen recipient_email passend zur
+aktuellen Hauptadresse (getrimmt/kleingeschrieben verglichen). Ungebundene Altlinks
+werden abgelehnt; keine nachtraegliche Snapshot-Erfindung. Aktivierung behaelt
+zusaetzlich issued_generation. Ablauf-/used-Pruefung und Zwecktrennung bleiben.
+Primary-Mailaenderungen verwenden unter Mitgliedssperre update_primary_email;
+Adresswechsel und Widerruf aller offenen Passwort-/Aktivierungs-/MFA-Links werden
+zusammen committet. Damit wirkt auch ein Wechsel zurueck nicht reaktivierend.
+Linkseiten no-store/no-referrer. Legacy-Aktivierung ohne Einladungssnapshot kann
+nicht automatisch erneut eingeladen werden: vorhandener Passwort-Recoveryweg
+bzw. bestaetigter Admin-Recoveryweg, keine stille neue Einladung/2FA-Umgehung.

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, TextAreaField, DateField, BooleanField, HiddenField
@@ -237,11 +237,14 @@ def profile():
                 for error in errors:
                     flash(f'{field}: {error}', 'error')
         else:
+            locked_member = SecurityService.lock_credential_member(current_user.id)
+            if not locked_member or not locked_member.is_active:
+                abort(403)
             # Personal data
             current_user.vorname = form.vorname.data
             current_user.nachname = form.nachname.data
             current_user.rufname = form.rufname.data
-            current_user.email = form.email.data
+            SecurityService.update_primary_email(current_user, form.email.data)
             current_user.telefon = form.telefon.data
             current_user.geburtsdatum = form.geburtsdatum.data
             current_user.nationalitaet = form.nationalitaet.data

@@ -41,7 +41,7 @@ def mfa_case(app, monkeypatch):
         db.session.add(MFABackupCode(member_id=uid, code_hash='synthetic-old-backup'))
         for raw in OLD_LINKS:
             db.session.add(AuthToken(member_id=uid, token_hash=hashlib.sha256(raw.encode()).hexdigest(),
-                                    purpose=AuthTokenPurpose.MFA_RESET,
+                                    purpose=AuthTokenPurpose.MFA_RESET, recipient_email=member.email,
                                     expires_at=datetime.utcnow() + timedelta(hours=1)))
         from backend.routes.auth import _issue_auth_token
         for purpose in (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.ONBOARDING,

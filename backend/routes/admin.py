@@ -602,7 +602,7 @@ def edit_member(member_id):
         member.vorname = form.vorname.data
         member.nachname = form.nachname.data
         member.rufname = form.rufname.data or None
-        member.email = form.email.data
+        SecurityService.update_primary_email(member, form.email.data)
         member.telefon = form.telefon.data or None
         
         # Personal data

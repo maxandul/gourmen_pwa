@@ -51,6 +51,18 @@ class SecurityService:
         return Member.query.filter_by(id=member_id).populate_existing().with_for_update().first()
 
     @staticmethod
+    def normalized_primary_email(value):
+        return (value or '').strip().lower()
+
+    @staticmethod
+    def update_primary_email(member, value):
+        """Caller holds member lock; address and link revocation share its commit."""
+        if SecurityService.normalized_primary_email(member.email) != SecurityService.normalized_primary_email(value):
+            SecurityService.invalidate_password_links(member.id)
+            SecurityService.invalidate_mfa_reset_links(member.id)
+        member.email = value
+
+    @staticmethod
     def invalidate_password_links(member_id, *, purpose=None):
         """Revoke password links in the caller's transaction, never commit here."""
         from backend.models.auth_token import AuthToken, AuthTokenPurpose

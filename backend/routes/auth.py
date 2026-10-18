@@ -31,8 +31,10 @@ def action_confirmation_context():
 def protect_confirmation_responses(response):
     if request.endpoint in {'auth.change_password', 'auth.enroll_2fa', 'auth.disable_2fa',
                             'admin.reset_member_password', 'admin.reset_member_2fa',
-                            'admin.edit_member', 'admin.create_member', 'admin.onboarding'}:
+                            'admin.edit_member', 'admin.create_member', 'admin.onboarding',
+                            'auth.reset_password', 'auth.reset_2fa', 'auth.activate'}:
         response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
     return response
 
 
@@ -101,6 +103,7 @@ def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: tim
     elif purpose == AuthTokenPurpose.MFA_RESET:
         SecurityService.lock_credential_member(member_id)
         SecurityService.invalidate_mfa_reset_links(member_id)
+    member = db.session.get(Member, member_id)
     token = secrets.token_urlsafe(32)
     token_hash = _hash_auth_token(token)
     token_row = AuthToken(
@@ -109,6 +112,8 @@ def _issue_auth_token(member_id: int, purpose: AuthTokenPurpose, expires_in: tim
         purpose=purpose,
         expires_at=datetime.utcnow() + expires_in,
         request_ip=request_ip,
+        recipient_email=member.email if member else None,
+        issued_generation=member.auth_generation if member and purpose == AuthTokenPurpose.ONBOARDING else None,
     )
     db.session.add(token_row)
     return token
@@ -124,13 +129,18 @@ def _resolve_auth_token(raw_token: str, purpose: AuthTokenPurpose, *, lock=False
         auth_token = AuthToken.query.filter_by(token_hash=token_hash, purpose=purpose).populate_existing().first()
     if not auth_token:
         return None, "missing"
-    if purpose == AuthTokenPurpose.ONBOARDING and not OnboardingService.matches(
-            db.session.get(Member, auth_token.member_id), auth_token):
-        return None, "missing"
     if auth_token.used_at is not None:
         return None, "used"
     if auth_token.expires_at < datetime.utcnow():
         return None, "expired"
+    member = db.session.get(Member, auth_token.member_id)
+    if not member or not member.is_active:
+        return None, "missing"
+    if purpose in (AuthTokenPurpose.PASSWORD_RESET, AuthTokenPurpose.MFA_RESET, AuthTokenPurpose.ONBOARDING):
+        if not auth_token.recipient_email or SecurityService.normalized_primary_email(auth_token.recipient_email) != SecurityService.normalized_primary_email(member.email):
+            return None, "missing"
+    if purpose == AuthTokenPurpose.ONBOARDING and not OnboardingService.matches(member, auth_token):
+        return None, "missing"
     return auth_token, None
 
 @bp.route('/login', methods=['GET', 'POST'])
