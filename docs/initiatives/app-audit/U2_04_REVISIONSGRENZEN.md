@@ -117,3 +117,14 @@ Echte Shared-Drive-ID-Reservierung, Konfliktverhalten und Berechtigungen sowie
 PostgreSQL/Browser bleiben offen. Alle Transporttests synthetisch, Netz gesperrt.
 
 Ergaenzender Lauf mit Original-Finanzfreigabegrenzen: 14 bestanden, 334 Warnungen, 6.40 s.
+
+## Breite Regression nach U2-04
+
+Vollstaendiger isolierter Runner, Anwendungsstand 8656282:
+**1073 bestanden, 14099 Warnungen, 662.96 s (11:02 Minuten)**.
+Keine fehlgeschlagenen Tests; kein dotenv, ausgehende Sockets gesperrt.
+Warnungen vorwiegend bestehende Deprecations; ignorierter pyreadline-Handlefehler
+erst nach erfolgreichem Testende. Waehrend dieses Laufs nur nicht eingebundene
+neue Dateien fuer U2-02c vorbereitet; gepruefter Anwendungscode unveraendert.
+Kein PostgreSQL-, Browser-, Mail-, Hosting- oder realer Drive-Nachweis.
+U1 bleibt insgesamt offen.

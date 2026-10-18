@@ -615,3 +615,9 @@ deaktiviert neue 2FA und entfernt deren Backup-Codes; verbrauchter Link bleibt
 nach dritter Einrichtung gesperrt. A-141 erweitert, weiterhin 141 Befunde.
 MFA_RESET_LINK_LIFECYCLE_CHECKS.json / AUTH_REVIEW.md. Keine echten Mails,
 Konten oder Produktionsschluessel beruehrt; Parallelitaet/Produktion offen.
+
+### Breite lokale Regression nach U2-04 (18.10.2026)
+
+Anwendungsstand 8656282: isolierter Gesamtlauf **1073 bestanden, 14099 Warnungen,
+662.96 s**. Kein dotenv oder Netz; kein Produktions-/PostgreSQL-/Geraetenachweis.
+Details und Paketgrenzen: [U2-04](U2_04_REVISIONSGRENZEN.md). U1 bleibt offen.
