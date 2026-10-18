@@ -730,6 +730,11 @@
 
                 {# ---------------- Abschluss ---------------- #}
                 <div class="tabs__panel {{ 'tabs__panel--active' if active_tab == 'abschluss' else '' }}" role="tabpanel">
+                    {% if opening_difference %}
+                    <p role="alert">Vorjahreskorrektur: Der aktuelle Übertrag weicht um {{ opening_difference }} Rp von dieser Prüffassung ab. Gespeicherte Abschlusszahlen bleiben erhalten. Zur Korrektur begründet wiederöffnen und erneut vorlegen.</p>
+                    {% elif opening_difference is none and fiscal_year.is_closed %}
+                    <p>Altabschluss ohne gespeicherten Prüfstand: Zahlen werden aus dem vorhandenen Journal berechnet.</p>
+                    {% endif %}
                     <p><a href="{{ url_for('accounting.revision_history', fiscal_year_id=fiscal_year.id) }}">Prüffassungen und Verlauf</a> · Aktuelle Fassung {{ fiscal_year.review_version }}</p>
                     <div class="billbro-workflow-block">
                         <ol class="billbro-workflow" aria-label="Jahresabschluss-Ablauf">

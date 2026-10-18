@@ -51,9 +51,16 @@ class AccountingPdfService:
         """
         from backend.services.accounting import AccountingService
 
-        summary = AccountingService.get_year_summary(fiscal_year.id)
-        opening_balance = AccountingService.get_opening_balance(fiscal_year.id)
-        groups = AccountingService.get_budget_grouped(fiscal_year.id)
+        from backend.services.accounting_revision import AccountingRevisionService
+        snapshot = getattr(approval, 'snapshot', None) if approval is not None else AccountingRevisionService.active_snapshot(fiscal_year)
+        if snapshot is not None:
+            summary = AccountingRevisionService.summary(snapshot)
+            opening_balance = snapshot['opening_balance_rappen']
+            groups = AccountingRevisionService.groups(snapshot)
+        else:
+            summary = AccountingService.get_year_summary(fiscal_year.id)
+            opening_balance = AccountingService.get_opening_balance(fiscal_year.id)
+            groups = AccountingService.get_budget_grouped(fiscal_year.id)
 
         buffer = BytesIO()
         doc = SimpleDocTemplate(
@@ -102,7 +109,9 @@ class AccountingPdfService:
     @staticmethod
     def _title(fiscal_year, approval) -> str:
         kind = 'Revisorenbericht' if approval is not None else 'Jahresabschluss'
-        return f'{kind} {fiscal_year.year}'
+        version = getattr(approval, 'version', None)
+        suffix = f' – Fassung {version}' if version else ''
+        return f'{kind} {fiscal_year.year}{suffix}'
 
     @staticmethod
     def _summary_table(opening_balance: int, summary: dict) -> Table:

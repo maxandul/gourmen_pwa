@@ -1,9 +1,10 @@
 """Versionsgebundene Revision; alle lokalen Zustandswechsel sind atomar."""
 from datetime import datetime
 from functools import wraps
+from types import SimpleNamespace
 
 from backend.extensions import db
-from backend.models.accounting import Account, Booking, BudgetEntry, FiscalYearStatus, Receipt, RevisionComment
+from backend.models.accounting import Account, AccountKind, Booking, BudgetEntry, FiscalYearStatus, Receipt, RevisionComment
 from backend.models.accounting_revision import AccountingRevision
 from backend.services.accounting import AccountingService, AccountingValidationError
 from backend.services.area_permissions import AreaPermissionService
@@ -47,6 +48,53 @@ class AccountingRevisionService:
     def current(fy):
         return AccountingRevision.query.filter_by(fiscal_year_id=fy.id, version=fy.review_version).first()
 
+    @classmethod
+    def active_snapshot(cls, fy):
+        revision = cls.current(fy) if not fy.is_open else None
+        return revision.snapshot if revision else None
+
+    @staticmethod
+    def summary(snapshot):
+        rows = snapshot['bookings']
+        income = sum(b['amount_rappen'] for b in rows if b['direction'] == 'in')
+        expense = sum(b['amount_rappen'] for b in rows if b['direction'] == 'out')
+        expense_ids = {a['id'] for a in snapshot['accounts'] if a['kind'] == 'expense'}
+        budget = sum(b['amount_rappen'] for b in snapshot['budget'] if b['account_id'] in expense_ids)
+        return dict(income_rappen=income, expense_rappen=expense, result_rappen=income-expense,
+                    open_receipts=snapshot.get('open_receipts', 0), booking_count=len(rows),
+                    budget_total_rappen=budget, budget_used_pct=round(expense/budget*100) if budget else None)
+
+    @staticmethod
+    def budget_rows(snapshot):
+        budgets = {b['account_id']: b['amount_rappen'] for b in snapshot['budget']}
+        rows = []
+        for data in snapshot['accounts']:
+            account = SimpleNamespace(**{**data, 'kind': AccountKind(data['kind'])})
+            actual = sum(b['amount_rappen'] for b in snapshot['bookings'] if b['account_id'] == account.id)
+            budget = budgets.get(account.id, 0)
+            rows.append(dict(account=account, actual_rappen=actual, budget_rappen=budget, deviation_rappen=actual-budget))
+        return rows
+
+    @staticmethod
+    def groups(snapshot):
+        groups = {}
+        for row in AccountingRevisionService.budget_rows(snapshot):
+            account = row['account']
+            key = (account.kind, account.group_name or 'Ohne Gruppe')
+            group = groups.setdefault(key, dict(name=key[1], kind=account.kind, rows=[], budget_rappen=0, actual_rappen=0))
+            group['rows'].append(row)
+            group['budget_rappen'] += row['budget_rappen']
+            group['actual_rappen'] += row['actual_rappen']
+            group['deviation_rappen'] = group['actual_rappen'] - group['budget_rappen']
+        return list(groups.values())
+
+    @classmethod
+    def opening_difference(cls, fy):
+        snapshot = cls.active_snapshot(fy)
+        if snapshot is None:
+            return None
+        return AccountingService.get_live_opening_balance(fy.id) - snapshot['opening_balance_rappen']
+
     @staticmethod
     def snapshot(fy):
         bookings = Booking.query.filter_by(fiscal_year_id=fy.id).order_by(Booking.id).all()
@@ -56,6 +104,7 @@ class AccountingRevisionService:
         return {
             'year': fy.year, 'start_date': fy.start_date.isoformat(), 'end_date': fy.end_date.isoformat(),
             'opening_balance_rappen': AccountingService.get_opening_balance(fy.id),
+            'open_receipts': Receipt.query.filter(Receipt.booking_id.is_(None)).count(),
             'bookings': [dict(id=b.id, date=b.booking_date.isoformat(), description=b.description,
                               amount_rappen=b.amount_rappen, direction=b.direction.value,
                               account_id=b.account_id, member_id=b.member_id, event_id=b.event_id,
@@ -115,6 +164,8 @@ class AccountingRevisionService:
         revision = cls.current(fy)
         if not fy.is_in_review or revision is None or revision.snapshot is None or revision.state != 'in_review':
             raise AccountingValidationError('Keine aktuelle Prüffassung. Altstand zurücknehmen und neu vorlegen.')
+        if cls.opening_difference(fy):
+            raise AccountingValidationError('Vorjahressaldo geändert. Zur Bearbeitung zurücknehmen und neu vorlegen.')
         if any(c.blocking and not c.resolved for c in AccountingService.get_comments_for_year(fy.id)):
             raise AccountingValidationError('Offene Beanstandungen verhindern die Bestätigung.')
         revision.state = 'approved'

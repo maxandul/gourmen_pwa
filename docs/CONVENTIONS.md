@@ -936,3 +936,12 @@ explizit, alte Kommentare bleiben Hinweise. Erledigung haelt Person/Zeit fest,
 offene Beanstandungen sperren auch eine erneute Vorlage beim Bestaetigen.
 Keine Bestaetigung oder Berichtreferenz loeschen/ueberschreiben. Berichtresultate
 an die bestaetigte Version binden, auch wenn inzwischen wiedergeoeffnet wurde.
+
+### U2-04c1: Auswertungen eingefrorener Fassungen
+
+IN_REVIEW/CLOSED verwenden die eingereichten Summen, Kontobezeichnungen und
+Anfangssalden; PDF einer alten Bestaetigung verwendet deren Fassung auch nach
+Wiederoeffnung. Differenz zum aktuellen Vorjahresjournal wird sichtbar; vor
+Bestaetigung ist dann Ruecknahme/neue Vorlage erforderlich. Bereits abgeschlossene
+Folgejahre werden nicht still umgeschrieben. Altabschluesse ohne Snapshot sind
+als solche gekennzeichnet; kein nachtraeglicher historischer Saldo erfunden.

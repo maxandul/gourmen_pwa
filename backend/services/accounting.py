@@ -296,6 +296,10 @@ class AccountingService:
     def get_budget_vs_actual(cls, fiscal_year_id: int) -> list[dict]:
         """Pro aktivem Konto: Budget (Soll), Ist und Abweichung in Rappen."""
         fy = cls.get_fiscal_year(fiscal_year_id)
+        from backend.services.accounting_revision import AccountingRevisionService
+        snapshot = AccountingRevisionService.active_snapshot(fy)
+        if snapshot is not None:
+            return AccountingRevisionService.budget_rows(snapshot)
         accounts = cls.get_active_accounts()
 
         budget_by_account = {
@@ -325,6 +329,10 @@ class AccountingService:
     @classmethod
     def get_budget_grouped(cls, fiscal_year_id: int) -> list[dict]:
         """Budget-vs-Ist-Zeilen nach Kontengruppe gruppiert (Reihenfolge erhalten)."""
+        from backend.services.accounting_revision import AccountingRevisionService
+        snapshot = AccountingRevisionService.active_snapshot(cls.get_fiscal_year(fiscal_year_id))
+        if snapshot is not None:
+            return AccountingRevisionService.groups(snapshot)
         groups: list[dict] = []
         by_name: dict[str, dict] = {}
         for row in cls.get_budget_vs_actual(fiscal_year_id):
@@ -349,7 +357,14 @@ class AccountingService:
 
     @classmethod
     def get_opening_balance(cls, fiscal_year_id: int) -> int:
-        """Sparkapital zu Jahresbeginn: kumuliertes Ergebnis aller Vorjahre (Rappen)."""
+        from backend.services.accounting_revision import AccountingRevisionService
+        snapshot = AccountingRevisionService.active_snapshot(cls.get_fiscal_year(fiscal_year_id))
+        if snapshot is not None:
+            return snapshot['opening_balance_rappen']
+        return cls.get_live_opening_balance(fiscal_year_id)
+
+    @classmethod
+    def get_live_opening_balance(cls, fiscal_year_id: int) -> int:
         fy = cls.get_fiscal_year(fiscal_year_id)
         rows = (
             db.session.query(Booking.direction, db.func.sum(Booking.amount_rappen))
@@ -481,6 +496,11 @@ class AccountingService:
     def get_year_summary(cls, fiscal_year_id: int) -> dict:
         """Einnahmen, Ausgaben, Jahresergebnis und KPI-Werte in Rappen."""
         fy = cls.get_fiscal_year(fiscal_year_id)
+
+        from backend.services.accounting_revision import AccountingRevisionService
+        snapshot = AccountingRevisionService.active_snapshot(fy)
+        if snapshot is not None:
+            return AccountingRevisionService.summary(snapshot)
 
         sums = dict(
             db.session.query(Booking.direction, db.func.sum(Booking.amount_rappen))

@@ -66,3 +66,23 @@ mit Altkommentar sowie verweigertem Historienverlust im Test enthalten.
 19 Worker-Tests bestanden, git diff --check sauber. PWA 3.16.23 / pwa.f5ad7d83.js.
 Keine neuen CSS-Klassen. PostgreSQL-Parallelitaet, reale Drive-Dateiinhalte
 und Browser/visuelle Abnahme offen. Berichtsberechnung und Retry bleiben c.
+
+## c1: Vertrag vor Code – stabile Auswertungen
+
+A-069: In Pruefung/abgeschlossen Zahlen und Kontobezeichnungen aus der
+eingereichten Fassung lesen, ebenso PDF der konkreten Bestaetigung. Offene
+Jahre weiterhin live. Vorjahresbuchungen veraendern gespeicherte Anfangs-/Endsalden
+nicht. Eine sichtbare Differenz zur aktuellen Vorjahressumme verlangt Abgleich;
+Bestaetigung einer solchen abweichenden Fassung ist gesperrt, Ruecknahme und
+erneute Vorlage folgen R13/F6. Keine automatische Wiederöffnung geschlossener
+Folgejahre und keine erfundene historische Saldenkorrektur. Alt-Abschluesse ohne
+Snapshot bleiben ausdruecklich als Altstand gekennzeichnet.
+c wird in c1 (Auswertungen, ohne Migration) und c2 (Berichtsauftrag/Retry)
+geteilt. Keine neue chronologische Abschluss-Pflicht erfinden.
+
+### Nachweise c1
+
+30 Tests bestanden, 459 Warnungen, 13.30 s: eingefrorene Auswertungen/PDF,
+Revisionszustaende und Finanzfreigaben. Echter lokaler PDF-Byteaufbau, keine
+Drive-Verbindung. 19 Worker-Tests bestanden; git diff --check sauber.
+PWA 3.16.24 / pwa.60a47c70.js. Keine Migration. PostgreSQL/Browser offen.

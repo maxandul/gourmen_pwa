@@ -51,6 +51,7 @@ from backend.services.accounting import (
 from backend.services.bank_import import BankImportService
 from backend.services.area_permissions import AreaPermissionService
 from backend.services.accounting_pdf import AccountingPdfService
+from backend.services.accounting_revision import AccountingRevisionService
 from backend.services.drive_storage import (
     DriveError,
     DriveStorageService,
@@ -330,6 +331,7 @@ def index():
         is_treasurer=is_treasurer,
         is_reviewer=is_reviewer,
         can_manage_revision=(current_user.is_admin() or current_user.has_funktion('SCHATZMEISTER')),
+        opening_difference=AccountingRevisionService.opening_difference(fy),
         bank_imports=bank_imports,
         pending_tx_count=pending_tx_count,
         import_form=import_form,
