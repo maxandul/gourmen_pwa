@@ -36,8 +36,8 @@
                                 <div class="form-field">
                                     <label class="form-field__label" for="status">Neuer Status</label>
                                     <select name="status" id="status" class="form-field__select">
-                                        <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Offen</option>
-                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Bestellt</option>
+                                        <option value="BESTELLT" {% if order.status.value != 'BESTELLT' %}disabled{% endif %} {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Offen</option>
+                                        <option value="WIRD_GELIEFERT" {% if order.status.value == 'GELIEFERT' %}disabled{% endif %} {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Bestellt</option>
                                         <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
                                     </select>
                                 </div>
@@ -56,6 +56,7 @@
         </div>
         {% endif %}
 
+        <p class="form-field__help">Rückschritte benötigen einen eigenen Korrekturweg. Geliefert bedeutet nicht bezahlt; bestehende Zahlungen bleiben erhalten.</p>
         <!-- Bestellübersicht & Zusammenfassung kombiniert -->
         <div class="card">
             <div class="card__header">

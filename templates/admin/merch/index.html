@@ -126,8 +126,8 @@
                                         <input type="hidden" name="next" value="{{ next_url }}">
                                         <span class="chip-select-wrap">
                                             <select name="status" class="chip-select chip-select--{{ order.status.value|lower }}" onchange="this.form.submit()">
-                                                <option value="BESTELLT" {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Offen</option>
-                                                <option value="WIRD_GELIEFERT" {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Bestellt</option>
+                                                <option value="BESTELLT" {% if order.status.value != 'BESTELLT' %}disabled{% endif %} {% if order.status.value == 'BESTELLT' %}selected{% endif %}>Offen</option>
+                                                <option value="WIRD_GELIEFERT" {% if order.status.value == 'GELIEFERT' %}disabled{% endif %} {% if order.status.value == 'WIRD_GELIEFERT' %}selected{% endif %}>Bestellt</option>
                                                 <option value="GELIEFERT" {% if order.status.value == 'GELIEFERT' %}selected{% endif %}>Geliefert</option>
                                             </select>
                                         </span>

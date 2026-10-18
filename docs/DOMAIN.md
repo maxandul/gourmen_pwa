@@ -264,7 +264,10 @@ Preis-Felder unterscheiden zwischen `supplier_price_rappen` (was der Verein an d
 
 ### `MerchOrder.status`
 
-Default `BESTELLT`, weitere Werte je nach Workflow (`AUSGELIEFERT` etc. – im Code nachschauen).
+Bestehender Ablauf: `BESTELLT` (Anzeige Offen), `WIRD_GELIEFERT` (Bestellt),
+`GELIEFERT` (Geliefert). Vorwaertswechsel speichern Forderung und Status atomar;
+einfache Rueckschritte sind gesperrt. Geliefert behauptet keine Zahlung und
+keinen Rundenschluss; das vollstaendige Runden-/Korrekturmodell folgt separat.
 
 ### `Event.published`, `Event.allow_ratings`, `Event.billbro_closed`
 

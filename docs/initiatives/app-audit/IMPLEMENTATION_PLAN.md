@@ -128,7 +128,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-13 / A-051 | lokal geprüft | Merch-GETs ohne ORM-Relationsmutation; aktive Varianten als getrennten Anzeige-Kontext gebuendelt laden, historische/inaktive Bestellreferenzen bewahren. |
 | U2-14 / A-050, A-054 | lokal geprüft | Varianten stabil pflegen statt loeschen, Auswahl normalisieren, mehrdeutigen Altbestand erhalten und explizit sperren; Bestellreferenzen und historische Eigenschaften bewahren. |
 | U2-15 / A-055 | lokal geprüft | Bestehende Positionspreise beim Bestellbearbeiten erhalten; unveraenderte Wiederholung ohne Neuverpreisung, Aenderungen und finanzielle Grenzen explizit pruefen. |
-| U2-16a / A-049 | **bereit / nächstes Paket** | Breite Regression auf 68246e2 bestanden (1320 Tests); gemeinsame atomare Merch-Status-/Forderungstransaktion; bestehende Zahlungen erhalten, einfache Rueckschritte gegen Finanzstand absichern. Runden-/Korrekturmodell anschliessend getrennt. |
+| U2-16a / A-049 | lokal geprüft | Gemeinsame atomare Status-/Forderungstransaktion, Zahlungserhalt und gesperrte einfache Rueckschritte; 119 Tests. Runden-/Korrekturmodell bleibt separat. |
+| U2-17a / A-023, A-024 | **bereit / nächstes Paket** | BillBro-Abschluss gegen einfache nachtraegliche Teilnahme-/Zahlwegmutation absichern; vorhandene Zahlungen/Anteile erhalten. F3/F4-Vorschau und begruendete Korrektur getrennt anschliessen; bestaetigte Regeln nicht durch permanente Komplettsperre ersetzen. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

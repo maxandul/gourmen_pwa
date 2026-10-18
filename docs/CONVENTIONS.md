@@ -1055,3 +1055,10 @@ anzeigen und erhalten, nicht erhoehen. Fachkorrektur/Rundenmodell separat.
 Versionsfingerabdruecke sortieren projizierte Varianten nach ID, unabhaengig
 von ORM-Relationsreihenfolge. Farb-/Groessenpaare im JS als JSON-Paar
 schluesseln; Trennzeichen in freien Bezeichnungen sind nicht eindeutig.
+
+Merch-Statuswechsel verwenden MerchOrderStatusService: Bestellzeile sperren,
+Positionen/Summen und bestehende Forderungen pruefen, Status/Lieferzeitpunkt/
+Forderung mit genau einem Commit. create_claim_for_merch_order(commit=False)
+ueberlaesst den Commit dem Aufrufer. Wiederholter gleicher Status schreibt nichts,
+Rueckschritte brauchen einen gesonderten Korrekturablauf. Kein stiller Altbestand-
+Abgleich; bereits gebuchte Zahlungen oder erlassene Posten werden nicht ersetzt.

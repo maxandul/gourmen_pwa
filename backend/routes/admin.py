@@ -1280,86 +1280,27 @@ def merch_order_detail(order_id):
 @login_required
 @merch_manager_required
 def update_order_status(order_id):
-    """Update order status"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    
-    print(f"DEBUG: Route reached - Order ID: {order_id}, Method: {request.method}")
-    next_url = SecurityService.local_return_target(request.form.get('next'))
-    
-    if request.method == 'POST':
-        try:
-            order = MerchOrder.query.get_or_404(order_id)
-            new_status = request.form.get('status')
-            
-            print(f"DEBUG: Order ID: {order_id}, New Status: {new_status}")
-            print(f"DEBUG: Request method: {request.method}")
-            print(f"DEBUG: Request form: {dict(request.form)}")
-            
-            if new_status in [status.value for status in OrderStatus]:
-                old_status = order.status.value
-                order.status = OrderStatus(new_status)
-                
-                if new_status == OrderStatus.GELIEFERT.value:
-                    order.delivered_at = datetime.utcnow()
-                
-                db.session.commit()
+    """Both legacy endpoints share the same atomic status operation."""
+    from backend.models.merch_order import MerchOrder
+    from backend.services.merch_order_status import MerchOrderStatusService, MerchStatusError
 
-                # Offener Posten für die Mitglieder-Zahlung (Phase 4b, idempotent)
-                if new_status in (OrderStatus.WIRD_GELIEFERT.value, OrderStatus.GELIEFERT.value):
-                    from backend.services.accounting import AccountingService
-                    AccountingService.create_claim_for_merch_order(order)
-                
-                flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
-            else:
-                flash('Ungültiger Status', 'error')
-                
-        except Exception as e:
-            print(f"DEBUG: Error in update_order_status: {str(e)}")
-            flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
-        
-        if next_url:
-            return redirect(next_url)
-        return redirect(url_for('admin.merch_order_detail', order_id=order_id))
-    
-    # GET request - just redirect back
+    MerchOrder.query.get_or_404(order_id)
+    if request.method == 'POST':
+        next_url = SecurityService.local_return_target(request.form.get('next'))
+        try:
+            changed = MerchOrderStatusService.change(order_id, current_user, request.form.get('status'))
+            flash('Bestellstatus und Forderung gespeichert.' if changed else 'Bestellstatus ist unverändert.', 'success')
+        except MerchStatusError as exc:
+            flash(str(exc), 'error')
+        return redirect(next_url or url_for('admin.merch_order_detail', order_id=order_id))
     return redirect(url_for('admin.merch_order_detail', order_id=order_id))
 
 @bp.route('/merch/orders/<int:order_id>/status-update', methods=['POST'])
 @login_required
 @merch_manager_required
 def update_order_status_alt(order_id):
-    """Alternative update order status route"""
-    from backend.models.merch_order import MerchOrder, OrderStatus
-    
-    try:
-        order = MerchOrder.query.get_or_404(order_id)
-        new_status = request.form.get('status')
-        
-        print(f"DEBUG ALT: Order ID: {order_id}, New Status: {new_status}")
-        
-        if new_status in [status.value for status in OrderStatus]:
-            old_status = order.status.value
-            order.status = OrderStatus(new_status)
-            
-            if new_status == OrderStatus.GELIEFERT.value:
-                order.delivered_at = datetime.utcnow()
-            
-            db.session.commit()
-
-            # Offener Posten für die Mitglieder-Zahlung (Phase 4b, idempotent)
-            if new_status in (OrderStatus.WIRD_GELIEFERT.value, OrderStatus.GELIEFERT.value):
-                from backend.services.accounting import AccountingService
-                AccountingService.create_claim_for_merch_order(order)
-            
-            flash(f'Bestellstatus von {old_status} zu {new_status} geändert', 'success')
-        else:
-            flash('Ungültiger Status', 'error')
-            
-    except Exception as e:
-        print(f"DEBUG ALT: Error in update_order_status: {str(e)}")
-        flash(f'Fehler beim Aktualisieren des Status: {str(e)}', 'error')
-    
-    return redirect(url_for('admin.merch_order_detail', order_id=order_id))
+    """Compatibility endpoint, with the same permissions and transaction."""
+    return update_order_status(order_id)
 
 @bp.route('/merch/articles/<int:article_id>')
 @login_required

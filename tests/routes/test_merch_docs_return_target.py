@@ -83,17 +83,33 @@ def test_document_return_paths(app, client, records, monkeypatch, action, outcom
 def test_merch_return_paths(app, client, records, monkeypatch, outcome, target):
     _, _, order_id, token = records
     from backend.services.accounting import AccountingService
+    from backend.models.merch_article import MerchArticle
+    from backend.models.merch_variant import MerchVariant
+    from backend.models.merch_order_item import MerchOrderItem
+    with app.app_context():
+        article = MerchArticle(name='Synthetic return', base_supplier_price_rappen=100, base_member_price_rappen=100)
+        db.session.add(article); db.session.flush()
+        variant = MerchVariant(article_id=article.id, color='Blue', size='M', supplier_price_rappen=100, member_price_rappen=100)
+        db.session.add(variant); db.session.flush()
+        item = MerchOrderItem(order_id=order_id, article_id=article.id, variant_id=variant.id,
+                              quantity=1, unit_member_price_rappen=100, unit_supplier_price_rappen=100)
+        item.calculate_totals(); db.session.add(item); db.session.commit()
     claim = Mock(side_effect=RuntimeError('Synthetic service error'))
     monkeypatch.setattr(AccountingService, 'create_claim_for_merch_order', claim)
-    status = {'success': 'BESTELLT', 'invalid': 'INVALID', 'service_error': 'GELIEFERT'}[outcome]
+    status = {'success': 'WIRD_GELIEFERT', 'invalid': 'INVALID', 'service_error': 'GELIEFERT'}[outcome]
     response = client.post(f'/admin/merch/orders/{order_id}/status',
                            data={'status': status, 'next': target, 'csrf_token': token})
     assert response.status_code == 302
     expected = target if target.startswith('/admin/') else f'/admin/merch/orders/{order_id}'
     assert response.location == expected
     with app.app_context():
-        expected_status = 'WIRD_GELIEFERT' if outcome == 'invalid' else status
+        expected_status = 'WIRD_GELIEFERT'  # No-op, invalid or failed transition all preserve the original.
         assert db.session.get(MerchOrder, order_id).status.value == expected_status
+    if outcome == 'service_error':
+        claim.assert_called_once()
+        assert claim.call_args.kwargs == {'commit': False}
+    else:
+        claim.assert_not_called()
 
 
 @pytest.mark.parametrize('action', ['rename', 'move', 'archive', 'restore'])

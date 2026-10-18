@@ -727,7 +727,7 @@ class AccountingService:
         return deleted
 
     @classmethod
-    def create_claim_for_merch_order(cls, order) -> MemberClaim | None:
+    def create_claim_for_merch_order(cls, order, *, commit: bool = True) -> MemberClaim | None:
         """Merch-Claim über den Mitglieder-Preis anlegen (Spec 11.8, idempotent)."""
         existing = MemberClaim.query.filter_by(
             merch_order_id=order.id, claim_type=ClaimType.MERCH,
@@ -744,7 +744,8 @@ class AccountingService:
             note=f'Merch-Bestellung {order.order_number}',
         )
         db.session.add(claim)
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return claim
 
     @classmethod
