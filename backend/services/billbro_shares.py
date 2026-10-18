@@ -1,3 +1,4 @@
+from backend.services.billbro_state import BillBroStateService
 """Exact, deterministic shares; stored historical results remain authoritative."""
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
@@ -103,7 +104,7 @@ class BillBroShareService:
             event = Event.query.filter_by(id=event.id).populate_existing().with_for_update().one()
             if not AreaPermissionService.can_manage_event(actor, event) or not event.is_visible_to(actor):
                 raise ShareError('Keine Berechtigung für diesen Abschluss.')
-            if event.gesamtbetrag_rappen is not None:
+            if BillBroStateService.requires_correction(event):
                 raise ShareError('Bereits abgeschlossen. Änderungen benötigen eine nachvollziehbare Korrektur.')
             if (invoice, tip) != (event.rechnungsbetrag_rappen, event.trinkgeld_rappen):
                 raise ShareError('Rechnung wurde inzwischen geändert. Bitte neu prüfen.')

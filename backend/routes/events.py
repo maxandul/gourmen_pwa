@@ -1,3 +1,4 @@
+from backend.routes.billbro_guard import before_billbro_finalization
 from backend.services.area_permissions import AreaPermissionService
 import json
 from datetime import datetime, date, timedelta
@@ -898,6 +899,7 @@ def delete(event_id):
 
 @bp.route('/<int:event_id>/rsvp', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def rsvp(event_id):
     """RSVP for event - simple toggle"""
     event = _get_visible_event_or_404(event_id)

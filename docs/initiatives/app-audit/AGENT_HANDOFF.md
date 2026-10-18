@@ -6,8 +6,8 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan ist die aktuelle Reihenfolge, README das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder neu von master.
-3. Naechstes Paket: **U2-17a – BillBro-Abschlussgrenzen (A-023/A-024)**. U1z bis R08 sowie
-   U2-01 bis U2-16a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
+3. Naechstes Paket: **U2-17b – unbezahlte BillBro-Korrektur (F3/F4)**. U1z bis R08 sowie
+   U2-01 bis U2-17a sind im dokumentierten Umfang lokal geprueft. U1 bleibt offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Bestaetigte Regeln
    nicht erneut abstimmen; fehlende konkrete Fachentscheidung gezielt isolieren.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
@@ -41,14 +41,16 @@ U2-14: 61. Danach U2-15: 80 Python-/23 JS-Tests. Einzelvertraege im README.
 Migration U2-14 **e9d6f95** (u21420261018), Snapshotfelder ohne erfundene
 Altbezeichnungen; SQLite-Zyklus und Historie-Downgrade-Sperre geprueft.
 U2-15-Nachkorrektur: 82 Python-/24 JS-Tests; Reihenfolge/Varianten-Schluessel
-und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests. PWA 3.16.36 / pwa.a03403de.js.
+und unvollstaendige Fehlereingaben. Danach U2-16a: 119 Python-/24 JS-Tests; U2-17a: 160 Python-Tests. PWA 3.16.36 / pwa.a03403de.js.
 
 U2-14 erhaelt Varianten-IDs/Preise und Bestellbezeichnungen, sperrt Altduplikate.
 U2-15 erhaelt Positionspreise/IDs, Nulloperationen schreiben nichts; Versions-
 vergleich und Mengen-Erhalt im Edit-JS. Breiter Gesamttest bestanden; gezielte Nachkorrektur separat geprueft.
 U2-16a speichert Status/Forderung atomar und sperrt einfache Rueckschritte.
 Merch-Runden-/Zuschuss-/Korrekturmodell sowie F3/F4-Vorschau/Korrektur bleiben
-Folgepakete; U2-17a sichert zuerst die noch offenen direkten Mutationswege.
+Folgepakete. U2-17a sperrt direkte Mutation bei Abschluss-/Forderungs-/
+Anteilshistorie; U2-17b muss den bestaetigten unbezahlten Korrekturweg liefern,
+nicht die Schutzsperre als fertigen F3/F4-Ablauf deklarieren.
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und
 Hosting-Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;
 unabhaengige lokale Arbeiten fortsetzen. Keine pauschale Produktionsfreigabe.

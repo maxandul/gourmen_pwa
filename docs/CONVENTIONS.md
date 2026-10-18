@@ -1062,3 +1062,13 @@ Forderung mit genau einem Commit. create_claim_for_merch_order(commit=False)
 ueberlaesst den Commit dem Aufrufer. Wiederholter gleicher Status schreibt nichts,
 Rueckschritte brauchen einen gesonderten Korrekturablauf. Kein stiller Altbestand-
 Abgleich; bereits gebuchte Zahlungen oder erlassene Posten werden nicht ersetzt.
+
+BillBroStateService erkennt finalen Gesamtbetrag, gespeicherte Rollen-/Einzel-
+anteile oder Essensforderungen als Korrekturstand. Direkte RSVP-/BillBro-
+Mutationen verwenden before_billbro_finalization nach login_required:
+Eventzeile sperren/neu laden, Sichtbarkeit pruefen, bei Historie ohne DML
+abbrechen. HTML zeigt Korrekturhinweis, AJAX 409 mit correction_required.
+Erstabschluss verwendet dieselbe Historienpruefung. billbro_closed allein
+schliesst nur die Eingaberunde, nicht zwingend die finanzielle Abrechnung.
+Forderungen entstehen beim atomaren Erstabschluss, nicht nach einem bereits
+committeten Zahlwegwechsel. Bereinigung behaelt ihre strengere U2-09-Grenze.

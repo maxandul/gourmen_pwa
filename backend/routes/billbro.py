@@ -1,3 +1,4 @@
+from backend.routes.billbro_guard import before_billbro_finalization
 from backend.services.area_permissions import AreaPermissionService
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
@@ -8,7 +9,7 @@ from wtforms.validators import DataRequired, Optional
 from backend.extensions import db
 from backend.models.event import BillPaidBy, Event
 from backend.models.participation import Participation, Esstyp
-from backend.services.accounting import AccountingService, AccountingError
+from backend.services.accounting import AccountingService
 from backend.services.money import MoneyService
 from backend.services.billbro_shares import BillBroShareService, ShareError
 from backend.services.ggl_rules import GGLService
@@ -25,31 +26,6 @@ def _get_visible_event_or_404(event_id: int) -> Event:
 
 bp = Blueprint('billbro', __name__)
 
-
-def _sync_billbro_claims(event) -> None:
-    """Essensanteil-Claims anlegen, sobald Anteile und Zahlweg feststehen.
-
-    Idempotent; wird bei Finalisierung und beim Setzen des Zahlwegs gerufen.
-    """
-    if event.bill_paid_by is None or not event.gesamtbetrag_rappen:
-        return
-    try:
-        created = AccountingService.create_claims_for_billbro(event)
-    except AccountingError as exc:
-        flash(str(exc), 'error')
-        return
-    if created:
-        if event.is_paid_by_club:
-            flash(
-                f'{len(created)} offene Posten angelegt – die Anteile gehen aufs Vereinskonto.',
-                'success',
-            )
-        else:
-            payer = event.bill_payer.display_name if event.bill_payer else 'das Mitglied'
-            flash(
-                f'{len(created)} offene Posten angelegt – die Anteile gehen direkt an {payer}.',
-                'success',
-            )
 
 def _amount_error(event, field, message):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -119,6 +95,7 @@ def index():
 
 @bp.route('/<int:event_id>/compute', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def compute(event_id):
     """Save Esstyp (and optional GGL guess for Monatsessen)."""
     event = _get_visible_event_or_404(event_id)
@@ -213,6 +190,7 @@ def compute(event_id):
 
 @bp.route('/<int:event_id>/enter_bill', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def enter_bill(event_id):
     """Enter actual bill amount (organizer only)"""
     event = _get_visible_event_or_404(event_id)
@@ -265,6 +243,7 @@ def enter_bill(event_id):
 
 @bp.route('/<int:event_id>/set_payment', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def set_payment(event_id):
     """Zahlweg der Rechnung festlegen: Vereinskonto oder Mitglied (Organisator)."""
     event = _get_visible_event_or_404(event_id)
@@ -315,7 +294,6 @@ def set_payment(event_id):
             'die Anteile gehen direkt an ihn.',
             'success',
         )
-    _sync_billbro_claims(event)
     return redirect(url_for(
         'events.detail', event_id=event_id, tab='billbro', _anchor='billbro-payment',
     ))
@@ -464,6 +442,7 @@ def set_total(event_id):
 
 @bp.route('/<int:event_id>/undo_final', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def undo_final(event_id):
     """Reopen finalization to allow adjusting totals again (organizer only)."""
     event = _get_visible_event_or_404(event_id)
@@ -544,6 +523,7 @@ def accept_suggested_total(event_id):
 
 @bp.route('/<int:event_id>/reset_bill', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def reset_bill(event_id):
     """Reset bill and totals to start over (organizer only)."""
     event = _get_visible_event_or_404(event_id)
@@ -643,6 +623,7 @@ def share_whatsapp(event_id):
 
 @bp.route('/<int:event_id>/update_guess', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def update_guess(event_id):
     """Reset Esstyp / GGL guess so the member can re-enter."""
     event = _get_visible_event_or_404(event_id)
@@ -681,6 +662,7 @@ def update_guess(event_id):
 
 @bp.route('/<int:event_id>/record_guess/<int:member_id>', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def record_guess(event_id, member_id):
     """Record guess for specific member (organizer only)"""
     event = _get_visible_event_or_404(event_id)
@@ -793,6 +775,7 @@ def export_pdf(event_id):
 
 @bp.route('/<int:event_id>/mark_absent/<int:member_id>', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def mark_absent(event_id, member_id):
     """Mark member as absent (organizer only)"""
     event = _get_visible_event_or_404(event_id)
@@ -845,6 +828,7 @@ def mark_absent(event_id, member_id):
 
 @bp.route('/<int:event_id>/mark_present/<int:member_id>', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def mark_present(event_id, member_id):
     """Mark member as present again (organizer only)"""
     event = _get_visible_event_or_404(event_id)
@@ -890,6 +874,7 @@ def mark_present(event_id, member_id):
 
 @bp.route('/<int:event_id>/toggle_status', methods=['POST'])
 @login_required
+@before_billbro_finalization
 def toggle_billbro_status(event_id):
     """Toggle BillBro status (close/reopen) - organizer only"""
     event = _get_visible_event_or_404(event_id)

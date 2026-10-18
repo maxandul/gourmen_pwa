@@ -115,6 +115,7 @@ Aktuelle Services:
 | `GoogleEmailVerificationService` | Adressgebundene Google-Bestätigungslinks, Ersetzung und einmaliger Verbrauch; feste Adress-Snapshots für Mail/Invite. Regeln in `CONVENTIONS.md`. |
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
+| `BillBroStateService` | Erkennt Abschluss-/Anteils-/Forderungshistorie; gemeinsamer Route-Guard sperrt direkte Mutationen nach Abschluss (U2-17a). |
 | `BillBroShareService` | Exakte gewichtete Restverteilung, gespeicherte Einzelanteile und atomarer Erstabschluss mit Forderungen (U2-12). |
 | `merch_catalogue.catalogue_context` | Gebuendelter lesender Artikel-/Variantenkontext ohne ORM-Relationsmutation (U2-13). |
 | `MerchOrderStatusService` | Gemeinsame atomare Vorwaertswechsel mit Forderung und stabilem Lieferzeitpunkt, keine implizite Finanzkorrektur (U2-16a). |
