@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (18.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-01. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-02a. Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (18.10.2026)
 
@@ -12,6 +12,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U2-01 / A-057, A-058: Buchungswerte | Lokal geprüft, Browser/PostgreSQL offen | 71 Python- und 19 Worker-Tests; [Nachweis](U2_01_BUCHUNGSWERTE.md) |
 | U1-R08 / lokaler Abschlussabgleich | U1 weiterhin offen | Gesamtsuite 903 bestanden/1 alte Erwartung; korrigiert und 34 betroffene Tests bestanden; [Abgleich](U1_R08_ABGLEICH.md) |
 | U1-R07 / F1: Admin-Notfallweg | Lokal geprüft, Hostingnachweis offen | 53 Python-Tests; nach erweiterter Wiederherstellung 15 erneut; [Nachweis](U1_R07_ADMIN_NOTFALL.md) |
 | U1-R06 / A-121: Backup-QR entfernt | Lokal geprüft, Browserabnahme offen | 26 Python- und 19 Worker-Tests; [Nachweis](U1_R06_BACKUP_QR.md) |

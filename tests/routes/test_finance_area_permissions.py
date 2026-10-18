@@ -34,7 +34,7 @@ def test_finance_read_navigation_and_write_boundaries(app,client,finance_actor,s
     assert client.get('/accounting/?tab=import').status_code==(200 if scope=='accounting_write' else 403)
     # Invalid form for permitted writer; reader must fail before form handling.
     response=client.post(f'/accounting/booking/{bookings[0]}/edit',data={})
-    assert response.status_code==(302 if scope=='accounting_write' else 403)
+    assert response.status_code==(400 if scope=='accounting_write' else 403)
     for action in ['submit','withdraw','approve','revoke']:
         assert client.post(f'/accounting/year/{fy}/{action}').status_code==403
     assert client.get(f'/admin/members/{members[0]}/sensitive').status_code==403

@@ -413,6 +413,19 @@ class AccountingService:
 
     # -- Buchungen ----------------------------------------------------------
 
+    @staticmethod
+    def validate_booking_date(fy, booking_date):
+        if (type(booking_date) is not date or booking_date.year != fy.year
+                or not fy.start_date <= booking_date <= fy.end_date):
+            raise AccountingValidationError(
+                f"Buchungsdatum muss im Geschäftsjahr {fy.year} liegen."
+            )
+
+    @staticmethod
+    def validate_booking_amount(amount):
+        if type(amount) is not int or not 0 < amount <= 2_147_483_647:
+            raise AccountingValidationError("Betrag muss positive ganze Rappen im unterstützten Bereich enthalten.")
+
     @classmethod
     def create_booking(cls, fiscal_year_id: int, booking_date: date,
                        description: str, amount_rappen: int, direction,
@@ -424,11 +437,11 @@ class AccountingService:
             raise AccountingValidationError(
                 f"Jahr {fy.year} ist nicht offen – keine Buchungen möglich."
             )
+        cls.validate_booking_date(fy, booking_date)
+        cls.validate_booking_amount(amount_rappen)
         description = (description or '').strip()
         if not description:
             raise AccountingValidationError("Beschreibung ist erforderlich.")
-        if not isinstance(amount_rappen, int) or amount_rappen <= 0:
-            raise AccountingValidationError("Betrag muss grösser als 0 sein.")
         account = db.session.get(Account, account_id)
         if account is None:
             raise AccountingValidationError("Konto nicht gefunden.")
@@ -458,31 +471,32 @@ class AccountingService:
             raise AccountingValidationError(
                 "Jahr ist nicht offen – Buchung nicht mehr änderbar."
             )
+        changes = {}
         if 'booking_date' in kwargs:
-            booking.booking_date = kwargs['booking_date']
+            cls.validate_booking_date(booking.fiscal_year, kwargs['booking_date'])
+            changes['booking_date'] = kwargs['booking_date']
         if 'description' in kwargs:
             description = (kwargs['description'] or '').strip()
             if not description:
                 raise AccountingValidationError("Beschreibung ist erforderlich.")
-            booking.description = description
+            changes['description'] = description
         if 'amount_rappen' in kwargs:
-            amount = kwargs['amount_rappen']
-            if not isinstance(amount, int) or amount <= 0:
-                raise AccountingValidationError("Betrag muss grösser als 0 sein.")
-            booking.amount_rappen = amount
+            cls.validate_booking_amount(kwargs['amount_rappen'])
+            changes['amount_rappen'] = kwargs['amount_rappen']
         if 'direction' in kwargs:
-            booking.direction = _as_direction(kwargs['direction'])
+            changes['direction'] = _as_direction(kwargs['direction'])
         if 'account_id' in kwargs:
             account = db.session.get(Account, kwargs['account_id'])
             if account is None:
                 raise AccountingValidationError("Konto nicht gefunden.")
-            booking.account_id = account.id
-        if 'event_id' in kwargs:
-            booking.event_id = kwargs['event_id']
-        if 'member_id' in kwargs:
-            booking.member_id = kwargs['member_id']
+            changes['account_id'] = account.id
+        for field in ('event_id', 'member_id'):
+            if field in kwargs:
+                changes[field] = kwargs[field]
         if 'payment_ref' in kwargs:
-            booking.payment_ref = (kwargs['payment_ref'] or '').strip() or None
+            changes['payment_ref'] = (kwargs['payment_ref'] or '').strip() or None
+        for field, value in changes.items():
+            setattr(booking, field, value)
         db.session.commit()
         return booking
 

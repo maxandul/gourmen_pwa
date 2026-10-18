@@ -149,6 +149,14 @@ updated_at      : DateTime
 
 **Beträge immer in Rappen als Integer.** Niemals Float. Anzeige mit Division durch 100, Runden nur beim Display.
 
+App-Audit U2-01: Anlage und Bearbeitung validieren rappengetreue positive Werte
+(bis 2147483647 Rappen entsprechend der vorhandenen Integer-Spalte) und Datum
+innerhalb des gewaehlten Jahres. Keine Fuenf-Rappen-Rundung im Buchungsformular;
+ungueltige Eingaben bleiben mit Feldfehler sichtbar. Bankimport nutzt dieselbe
+Servicegrenze und waehlt das Jahr des Bankbuchungsdatums. Historische Werte bleiben
+erhalten. Importatomaritaet und Revisionshistorie sind separate Folgepakete.
+
+
 ### 4.4 `Receipt` (Beleg)
 
 ```python

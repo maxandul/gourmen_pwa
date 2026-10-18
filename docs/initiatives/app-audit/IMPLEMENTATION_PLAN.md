@@ -97,8 +97,11 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | Paket | Lokal | Begrenzter Auftrag |
 |---|---|---|
-| U2-01 / A-057, A-058 | **bereit / nächstes Paket** | Rappengetreue Buchungseingaben; Datum/Jahr zentral fuer Anlage/Bearbeitung/Import pruefen, verstaendliche Feldfehler. B01, BUCHHALTUNG_PRAXISABGLEICH.md, BUCHHALTUNG_PROZESSE_ENTWURF.md und Accounting-Capability lesen. Keine historischen Werte verschieben. |
-| U2-02 / A-060, A-061, A-062 | geplant | Atomare Importverbuchung, Richtung/Mitglied/Forderung, konsistente Korrektur mit erhaltenem Zahlungsstand; Summenerhalt und Wiederholung. Vor Code fein abgrenzen. |
+| U2-01 / A-057, A-058 | lokal geprüft | Rappengetreue Buchungseingaben; Datum/Jahr zentral fuer Anlage/Bearbeitung/Import pruefen, verstaendliche Feldfehler. B01, BUCHHALTUNG_PRAXISABGLEICH.md, BUCHHALTUNG_PROZESSE_ENTWURF.md und Accounting-Capability lesen. Keine historischen Werte verschieben. |
+| U2-02 / A-060, A-061, A-062 | in Teilpakete aufgeteilt | Atomare Importverbuchung, Richtung/Mitglied/Forderung, konsistente Korrektur mit erhaltenem Zahlungsstand; Summenerhalt und Wiederholung. Vor Code fein abgrenzen. |
+| U2-02a / A-060 | **bereit / nächstes Paket** | Eine Transaktion fuer Haupt-/Aufrundungsbuchung, Forderung, Alias und Bankstatus; Fehler und Wiederholung ohne Teilbuchung. Zeilensperren lokal vorbereiten, PostgreSQL-Nachweis extern. |
+| U2-02b / A-061 | geplant | Richtung/Mitglied/Forderung und explizite Rest-/Aufrundungswahl nach F5/B01; keine automatische Aufrundung. |
+| U2-02c / A-062 | geplant | Importbuchungen vor entkoppelter Bearbeitung schuetzen und konsistente Korrektur mit Zahlungsbestand definieren. |
 | U2-03 / A-063, A-064, A-065 | geplant | Importidentitaet, unvollstaendige Sammelbewegungen und sichere Parserfehler; kein erfundener Betrag. |
 | U2-04 / R04d, A-059, A-066, A-069, A-070, A-073, A-074 | geplant | Beleg-/Budget-/Revisionszustand, Historie und Abschlussgrenzen in getrennten Teilpaketen; bestaetigte F6/R13-Regeln. |
 

@@ -844,3 +844,14 @@ Ausgabe oder Klartextpersistenz. Hostingidentitaet wird extern nachgewiesen;
 Audit nennt diesen Ursprung und Operator-/Vorgangsreferenz explizit, statt eine
 App-Anmeldung vorzutäuschen. Existierende aktive Adminrolle voraussetzen;
 keine Reaktivierung, Rollenvergabe oder Schluesselrotation im Notfallkommando.
+
+
+## Buchungseingaben (U2-01)
+
+CHF-Eingaben fuer Buchungen exakt in Integer-Rappen umwandeln, keine automatische
+Fuenf-Rappen-Rundung. Nichtendliche Werte, Rappenbruchteile und Ueberschreitung
+der vorhandenen Integer-Spalte ablehnen. Formulare erhalten Eingaben und zeigen
+Feldfehler; Service prueft unabhaengig Betrag und Datum im Geschaeftsjahr.
+Updates validieren alle Kandidaten vor dem ersten Setzen von ORM-Feldern.
+Bankbuchungsjahr folgt dem Bankdatum, nicht dem Beitrags-/Forderungsjahr.
+Historische Werte werden durch diese Eingabegrenze nicht korrigiert.

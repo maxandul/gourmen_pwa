@@ -16,28 +16,27 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation
 
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Length, NumberRange, Optional, ValidationError
 
-RAPPEN_STEP = 5  # 0.05 CHF
+MAX_BOOKING_RAPPEN = 2_147_483_647  # Existing database Integer column.
 
 
 def chf_to_rappen(amount_chf) -> int:
-    """CHF → Rappen (Integer), auf 5 Rappen gerundet."""
-    if amount_chf is None:
-        raise ValueError('Betrag fehlt')
+    """Exact CHF to positive integer cents; never silently round input."""
     try:
-        dec = Decimal(str(amount_chf)).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP
-        )
-    except (InvalidOperation, ValueError) as exc:
+        dec = Decimal(str(amount_chf))
+    except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError('Ungültiger Betrag') from exc
+    if not dec.is_finite() or dec <= 0:
+        raise ValueError('Betrag muss eine endliche Zahl grösser als 0 sein')
+    if dec > Decimal(MAX_BOOKING_RAPPEN) / 100:
+        raise ValueError('Betrag überschreitet den unterstützten Höchstwert')
     rappen = int(dec * 100)
-    snapped = int(round(rappen / RAPPEN_STEP) * RAPPEN_STEP)
-    if snapped < RAPPEN_STEP:
-        raise ValueError('Betrag muss mindestens 0.05 CHF sein')
-    return snapped
+    if Decimal(rappen) / 100 != dec:
+        raise ValueError('Bitte einen Betrag in ganzen Rappen angeben')
+    return rappen
 
 
 class BookingForm(FlaskForm):
@@ -52,7 +51,6 @@ class BookingForm(FlaskForm):
     ])
     amount_chf = DecimalField('Betrag (CHF)', places=2, validators=[
         DataRequired(message='Bitte Betrag angeben'),
-        NumberRange(min=0.01, message='Betrag muss grösser als 0 sein'),
     ])
     direction = SelectField('Richtung', choices=[
         ('in', 'Einnahme'),
@@ -62,6 +60,22 @@ class BookingForm(FlaskForm):
     event_id = SelectField('Event (optional)', coerce=int, validators=[Optional()])
     member_id = SelectField('Mitglied (optional)', coerce=int, validators=[Optional()])
     submit = SubmitField('Speichern')
+
+    fiscal_year = None
+
+    def validate_amount_chf(self, field):
+        try:
+            chf_to_rappen(field.data)
+        except ValueError as exc:
+            raise ValidationError(str(exc)) from exc
+
+    def validate_booking_date(self, field):
+        if self.fiscal_year is not None:
+            from backend.services.accounting import AccountingService, AccountingValidationError
+            try:
+                AccountingService.validate_booking_date(self.fiscal_year, field.data)
+            except AccountingValidationError as exc:
+                raise ValidationError(str(exc)) from exc
 
     @property
     def amount_rappen(self):

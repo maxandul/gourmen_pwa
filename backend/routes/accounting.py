@@ -183,6 +183,8 @@ def _events_for_year(fy: FiscalYear) -> list[Event]:
 
 def _booking_form_with_choices(fy: FiscalYear, obj=None) -> BookingForm:
     form = BookingForm(obj=obj)
+    form.fiscal_year = fy
+    form.booking_date.render_kw = {"min": fy.start_date.isoformat(), "max": fy.end_date.isoformat()}
     form.account_id.choices = [
         (a.id, f'{a.code} {a.name}') for a in AccountingService.get_active_accounts()
     ]
@@ -346,10 +348,15 @@ def index():
 def booking_detail(booking_id: int):
     _require_funktion('SCHATZMEISTER', 'RECHNUNGSPRUEFER')
     booking = Booking.query.get_or_404(booking_id)
+    return _render_booking_detail(booking)
+
+
+def _render_booking_detail(booking, submitted_form=None):
     fy = booking.fiscal_year
 
     can_edit = _is_treasurer() and fy.is_open
-    form = _booking_form_with_choices(fy, obj=booking) if can_edit else None
+    form = submitted_form if submitted_form is not None else (
+        _booking_form_with_choices(fy, obj=booking) if can_edit else None)
     if form is not None and request.method == 'GET':
         form.amount_chf.data = booking.amount_rappen / 100
         form.direction.data = booking.direction.value
@@ -381,13 +388,13 @@ def booking_edit(booking_id: int):
 
     if not form.validate_on_submit():
         flash('Bitte Eingaben prüfen.', 'error')
-        return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+        return _render_booking_detail(booking, form), 400
 
     try:
         amount_rappen = form.amount_rappen
     except ValueError as exc:
         flash(str(exc), 'error')
-        return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
+        return _render_booking_detail(booking, form), 400
 
     try:
         AccountingService.update_booking(
@@ -403,6 +410,7 @@ def booking_edit(booking_id: int):
         flash('Buchung aktualisiert.', 'success')
     except AccountingError as exc:
         flash(str(exc), 'error')
+        return _render_booking_detail(booking, form), 400
     return redirect(url_for('accounting.booking_detail', booking_id=booking.id))
 
 
