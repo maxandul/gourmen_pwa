@@ -7,7 +7,7 @@ Stand: 18.10.2026. **U1 ist insgesamt offen.**
    aktuelle Reihenfolge, Restarbeit, Fachquellen und Abschlusskriterien.
 2. Bestehende Kette auf `codex/app-audit-implementation-plan` erhalten. Einstieg
    war `5b6d28d`; U1z baut darauf auf. Branch/HEAD/Status pruefen, nicht zuruecksetzen.
-3. Naechstes Paket: **U2-13 – Merch-Lesewege (A-051)**. U1z, U1-R02 und U1-R03 sind
+3. Naechstes Paket: **U2-14 – Varianten erhalten (A-050/A-054)**. U1z, U1-R02 und U1-R03 sind
    lokal geprueft (Nachweise im README). R08 gleicht die U1-Nachweise ab;
    U1 bleibt wegen externer Abnahmen offen; R04d ist lokal in U2-04b/c umgesetzt. Interne Einzelbewertungen sind nach
    bestaetigter Entscheidung fuer alle Mitglieder mit Eventzugriff lesbar.
@@ -69,3 +69,6 @@ Gesamtlauf auf 623f5ba: 1212 bestanden; U1 bleibt offen. Keine Migration in U2-1
 
 U2-12 lokal geprueft: summengleiche Einzelanteile, atomarer Erstabschluss,
 114 Python-/19 Worker-Tests. F3/F4-Korrekturwege bleiben eigenes Folgepaket.
+
+U2-13 lokal geprueft: 45 Tests; 3/30 Artikel jeweils 5 SQL-Abfragen statt
+10/64. GET mutiert keine Variante. Keine Migration, U1 bleibt offen.

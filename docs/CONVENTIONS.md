@@ -1029,3 +1029,7 @@ Vorhandene Abschluesse/Forderungen sperren direkte Neuberechnung; F3/F4 separat.
 Gespeicherte Einzelanteile vor Kategorie-Fallback verwenden, null ist ein Betrag.
 Gewichte: positive endliche Dezimalzahl, maximal 40 Zeichen und Betragsexponent
 zwischen -100 und 100; technische Ressourcenbegrenzung vor Fraction-Konvertierung.
+
+Anzeigeauswahlen duerfen persistente ORM-Relationen nicht ersetzen. Merch-GETs
+verwenden catalogue_variants/catalogue_colors nach Artikel-ID und einen
+getrennten existing_items-Kontext. Keine Dirty-/Delete-orphan-Seiteneffekte.

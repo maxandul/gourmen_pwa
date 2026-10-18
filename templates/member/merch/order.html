@@ -46,7 +46,7 @@
                                                 data-article-id="{{ article.id }}"
                                                 data-row-index="0">
                                             <option value="">Farbe wählen</option>
-                                            {% for color in article.available_colors %}
+                                            {% for color in catalogue_colors[article.id] %}
                                             <option value="{{ color }}">{{ color }}</option>
                                             {% endfor %}
                                         </select>
@@ -158,9 +158,9 @@
 const variantsData = {
     {% for article in articles %}
     {{ article.id }}: {
-        availableColors: [{% for color in article.available_colors %}"{{ color }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+        availableColors: [{% for color in catalogue_colors[article.id] %}"{{ color }}"{% if not loop.last %}, {% endif %}{% endfor %}],
         variants: {
-            {% for variant in article.variants %}
+            {% for variant in catalogue_variants[article.id] %}
             "{{ variant.color }}_{{ variant.size }}": {
                 id: {{ variant.id }},
                 price: {{ variant.member_price_rappen }},

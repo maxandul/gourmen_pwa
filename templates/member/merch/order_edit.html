@@ -38,8 +38,8 @@
                     </div>
                     <div class="card__body">
                         <div id="variants_container_{{ article.id }}" data-article-id="{{ article.id }}" class="form-row" style="flex-direction: column; gap: var(--space-3);">
-                            {% if article.existing_items %}
-                                {% for item in article.existing_items %}
+                            {% if existing_items.get(article.id, []) %}
+                                {% for item in existing_items.get(article.id, []) %}
                                 <div class="form-row variant-row" data-article-id="{{ article.id }}" data-row-index="{{ loop.index0 }}">
                                     <div class="form-field">
                                         <label class="form-field__label">Farbe</label>
@@ -50,7 +50,7 @@
                                                 data-preselect-color="{{ item.color }}"
                                                 data-preselect-size="{{ item.size }}">
                                             <option value="">Farbe wählen</option>
-                                            {% for color in article.available_colors %}
+                                            {% for color in catalogue_colors[article.id] %}
                                             <option value="{{ color }}" {% if color == item.color %}selected{% endif %}>{{ color }}</option>
                                             {% endfor %}
                                         </select>
@@ -94,7 +94,7 @@
                                                 data-article-id="{{ article.id }}"
                                                 data-row-index="0">
                                             <option value="">Farbe wählen</option>
-                                            {% for color in article.available_colors %}
+                                            {% for color in catalogue_colors[article.id] %}
                                             <option value="{{ color }}">{{ color }}</option>
                                             {% endfor %}
                                         </select>
@@ -198,9 +198,9 @@
         {% for article in articles %}
         {
           "id": {{ article.id }},
-          "available_colors": {{ article.available_colors|tojson }},
+          "available_colors": {{ catalogue_colors[article.id]|tojson }},
           "variants": [
-            {% for variant in article.variants %}
+            {% for variant in catalogue_variants[article.id] %}
             {
               "id": {{ variant.id }},
               "color": {{ variant.color|tojson }},
@@ -210,7 +210,7 @@
             {% endfor %}
           ],
           "existing_items": [
-            {% for item in article.existing_items %}
+            {% for item in existing_items.get(article.id, []) %}
             {
               "color": {{ item.color|tojson }},
               "size": {{ item.size|tojson }},

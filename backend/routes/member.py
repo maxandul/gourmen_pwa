@@ -334,14 +334,9 @@ def merch():
     from backend.models.merch_variant import MerchVariant
     from backend.models.merch_order import MerchOrder
     
-    # Get active articles
-    articles = MerchArticle.query.filter_by(is_active=True).all()
-    # Enrich articles with variants and available colors (used by template/JS)
-    for article in articles:
-        variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
-        article.variants = variants
-        article.available_colors = sorted({v.color for v in variants}) if variants else []
-    
+    from backend.services.merch_catalogue import catalogue_context
+    catalogue = catalogue_context()
+
     # Get user's orders
     user_orders = MerchOrder.query.filter_by(member_id=current_user.id).order_by(MerchOrder.created_at.desc()).all()
     selected_order_id = request.args.get('order_id', type=int)
@@ -355,7 +350,7 @@ def merch():
     
     return render_template(
         'member/merch/index.html',
-        articles=articles,
+        **catalogue,
         orders=user_orders,
         selected_order=selected_order,
         selected_order_id=selected_order_id
@@ -443,17 +438,8 @@ def merch_order():
             db.session.rollback()
             flash(f'Fehler beim Aufgeben der Bestellung: {str(e)}', 'error')
     
-    # GET request - show form
-    # Get active articles with their variants
-    articles = MerchArticle.query.filter_by(is_active=True).all()
-    
-    # Get all variants for each article and prepare available colors
-    for article in articles:
-        article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
-        # Get unique colors for this article
-        article.available_colors = list(set([variant.color for variant in article.variants]))
-    
-    return render_template('member/merch/order.html', articles=articles)
+    from backend.services.merch_catalogue import catalogue_context
+    return render_template('member/merch/order.html', **catalogue_context())
 
 @bp.route('/merch/orders')
 @login_required
@@ -553,7 +539,7 @@ def merch_order_edit(order_id):
             flash(f'Fehler beim Aktualisieren der Bestellung: {str(e)}', 'error')
     
     # GET request - show form with existing data
-    articles = MerchArticle.query.filter_by(is_active=True).all()
+    from backend.services.merch_catalogue import catalogue_context
     
     # Prepare existing order data (now supporting multiple items per article)
     existing_items = {}  # article_id -> list of items
@@ -566,15 +552,8 @@ def merch_order_edit(order_id):
             'quantity': item.quantity
         })
     
-    # Get all variants for each article
-    for article in articles:
-        article.variants = MerchVariant.query.filter_by(article_id=article.id, is_active=True).all()
-        article.available_colors = list(set([variant.color for variant in article.variants]))
-        
-        # Pre-fill existing data if available (now as a list)
-        article.existing_items = existing_items.get(article.id, [])
-    
-    return render_template('member/merch/order_edit.html', articles=articles, order=order)
+    return render_template('member/merch/order_edit.html', **catalogue_context(),
+                           existing_items=existing_items, order=order)
 
 
 # ---------------------------------------------------------------------------

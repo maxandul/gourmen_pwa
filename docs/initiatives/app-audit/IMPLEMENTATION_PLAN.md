@@ -125,7 +125,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-10 / A-033 | lokal geprüft | Organisationswechsel von Teilnahme trennen; vorhandene Angaben/Finanzwerte erhalten und keine automatische Zusage behaupten. |
 | U2-11 / A-053 | lokal geprüft | Merch-Preise rappengetreu und nichtnegativ validieren; Fehler ohne Teilmutation, bestehende Ausfuehrungspreise bewahren. |
 | U2-12 / A-031 | lokal geprüft | Rappengenau/summengleich, Restrappen nach groesstem Rechenrest, Gleichstand nach Mitglied-ID. Keine automatische Neuberechnung alter Abschluesse. |
-| U2-13 / A-051 | **bereit / nächstes Paket** | Merch-GETs ohne ORM-Relationsmutation; aktive Varianten als getrennten Anzeige-Kontext gebuendelt laden, historische/inaktive Bestellreferenzen bewahren. |
+| U2-13 / A-051 | lokal geprüft | Merch-GETs ohne ORM-Relationsmutation; aktive Varianten als getrennten Anzeige-Kontext gebuendelt laden, historische/inaktive Bestellreferenzen bewahren. |
+| U2-14 / A-050, A-054 | **bereit / nächstes Paket** | Varianten stabil pflegen statt loeschen, Auswahl normalisieren, mehrdeutigen Altbestand erhalten und explizit sperren; Bestellreferenzen und historische Eigenschaften bewahren. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt
