@@ -24,3 +24,5 @@ from backend.models.bank_refund_payment import BankRefundPayment
 from .billbro_correction import BillBroCorrection
 
 from .billbro_correction_draft import BillBroCorrectionDraft
+
+from backend.models.claim_refund_payment import ClaimRefundPayment

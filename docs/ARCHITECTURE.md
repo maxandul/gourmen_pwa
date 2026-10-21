@@ -427,3 +427,9 @@ CleanupParticipationService fuehrt einfache Bereinigungsantworten und Undo
 unter Event-/Teilnahmesperre aus. Der signierte Sitzungseintrag enthaelt den
 Vorstatus und einen Fingerabdruck des eigenen Nachzustands, keine freie
 Wiederherstellung alter Teilnahmedatensaetze.
+
+
+ClaimRefundPayment (U2-17c1b1) verknuepft eine echte Ausgangszuordnung mit
+erhaltener MemberClaim und BillBroCorrection. Bruttoeingang bleibt im Claim;
+aktive Rueckfluesse werden separat summiert. Keine neue Bankbewegung durch
+das Modell. Finanzfreigabe und neuer Bankabgleich folgen in c1b2.

@@ -144,8 +144,11 @@ class BillBroCorrectionService:
             for claim in claims:
                 if type(claim.paid_rappen) is not int or claim.paid_rappen < 0:
                     raise CorrectionError('Gespeicherter Zahlungsstand ist ungültig. Zuerst klären.')
-                expected_status = (ClaimStatus.BEGLICHEN if claim.paid_rappen >= claim.expected_rappen else
-                                   ClaimStatus.TEILWEISE if claim.paid_rappen else ClaimStatus.OFFEN)
+                net = claim.net_paid_rappen
+                if net < 0:
+                    raise CorrectionError('Rueckzahlungen uebersteigen gespeicherte Eingaenge. Zuerst klaeren.')
+                expected_status = (ClaimStatus.BEGLICHEN if net >= claim.expected_rappen else
+                                   ClaimStatus.TEILWEISE if net else ClaimStatus.OFFEN)
                 if claim.status != expected_status:
                     raise CorrectionError('Erlass oder Zahlungsstatus benötigt eine gesonderte Klärung.')
         if not paid_club_draft and any(c.paid_rappen != 0 or c.status != ClaimStatus.OFFEN or c.settled_at is not None for c in claims):
@@ -161,6 +164,10 @@ class BillBroCorrectionService:
         if event.bill_paid_by == BillPaidBy.MITGLIED and old_creditor not in attending:
             raise CorrectionError('Bisherige auslegende Person ist nicht eindeutig. Zuerst klären.')
         expected = {mid: share for mid, share in old_shares.items() if share > 0 and mid != old_creditor} if event.bill_paid_by else {}
+        if paid_club_draft:
+            # Paid corrections retain zero-valued claims and their payment identities.
+            expected.update({c.member_id: 0 for c in claims if c.expected_rappen == 0 and
+                             c.member_id in {p.member_id for p in parts} and old_shares.get(c.member_id, 0) == 0})
         if len(claims) != len(expected) or len({c.member_id for c in claims}) != len(claims) or any(
                 c.claim_type != ClaimType.ESSENSANTEIL or c.expected_rappen != expected.get(c.member_id) or
                 c.creditor_member_id != old_creditor or c.merch_order_id is not None for c in claims):

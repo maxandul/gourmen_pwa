@@ -1141,3 +1141,16 @@ Organisation schreibt, accounting_read mit Eventzugriff liest. Geschlossenes
 Jahr erlaubt nur Vorbereitung, keine Wiedereroeffnung oder Finanzfreigabe.
 Eventloeschung schuetzt Entwuerfe und explizite Anwesenheit auch bei False.
 PostgreSQL-Parallelitaet bleibt separat nachzuweisen.
+
+
+U2-17c1b1: MemberClaim.paid_rappen bleibt Bruttoeingang. refunded_rappen
+summiert aktive ClaimRefundPayment-Zuordnungen frisch aus der Datenbank;
+net_paid_rappen = Brutto minus Rueckfluss. open_rappen und refund_due_rappen
+sind die positiven Gegenrichtungen gegen expected_rappen. sync_payment_status
+verwendet dieselbe Bilanz; Null-Soll ohne Restschuld ist beglichen.
+Ruecknahme erhaelt alle Links, schreibt Status erst nach Flush der Ruecknahme
+fort und sperrt Eingangsruecknahme bei aktiver Forderungsrueckzahlung. Keine
+Verrechnung mit dem separaten Eingangsueberschussmodell BankRefundConfirmation.
+Entwurfsvorschau v2 bindet Rueckzahlungslinks/-zuordnungen und zeigt brutto,
+Rueckfluss, netto. Alte v1-Vorschauen neu vorbereiten; gespeicherter Verlauf
+bleibt lesbar, geaenderter Ausgangsstand erfordert neuen Entwurf.

@@ -1,6 +1,6 @@
 # Verbindlicher Umsetzungsplan für Agenten
 
-Stand: 18.10.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
+Stand: 21.10.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
 Dieser Plan konsolidiert vorhandene Entscheidungen und Nachweise; er ist kein neuer Audit.
 Die aktuelle Beauftragung umfasst die fortlaufende lokale Umsetzung bereiter Pakete
 mit Tests, Dokumentation und lokalen Commits. Keine Produktionsfreigabe.
@@ -141,8 +141,8 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-17c1a | lokal geprüft | Bezahlten Vereinsentwurf mit gebundenem Zahlungsstand/Vorschau speichern und zurueckziehen; bisherige Abrechnung bleibt wirksam. Finanzrolle liest mit Eventzugriff. Migration separat, keine Freigabeaktion. Vertrag U2_17C_ZAHLUNGSERHALT.md. |
 | U2-17c1b | in Teilpakete aufgeteilt | Finanzielle Bestaetigung des aktuellen Entwurfs, erhaltene Forderungs-/Zahlungs-IDs und eigenstaendiger Rueckzahlungsbedarf mit K1-Abgleich; erst nach c1a und konkretisiertem Erstattungsmodell. |
 
-| U2-17c1b1 | **bereit / nächstes Paket** | Zahlungsbilanz und Journalgrundlage fuer Forderungsrueckzahlungen; Bruttoeingang erhalten, aktive Ausgaenge getrennt, konsistente Nettobilanz und Ruecknahme. Migration separat. Noch keine Finanzfreigabe. |
-| U2-17c1b2 | geplant | Aktuellen Vereinsentwurf finanziell bestaetigen und korrigierte Forderungen unter derselben ID erhalten; Rueckzahlungsbedarf separat anzeigen und echte Ausgaenge auf 6710 abgleichen. |
+| U2-17c1b1 | lokal geprüft | Zahlungsbilanz und Journalgrundlage fuer Forderungsrueckzahlungen; Bruttoeingang erhalten, aktive Ausgaenge getrennt, konsistente Nettobilanz und Ruecknahme. Migration separat. Noch keine Finanzfreigabe. |
+| U2-17c1b2 | **bereit / nächstes Paket** | Aktuellen Vereinsentwurf finanziell bestaetigen und korrigierte Forderungen unter derselben ID erhalten; Rueckzahlungsbedarf separat anzeigen und echte Ausgaenge auf 6710 abgleichen. |
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

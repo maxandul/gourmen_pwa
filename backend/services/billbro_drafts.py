@@ -16,7 +16,7 @@ from backend.services.ggl_rules import GGLService
 class BillBroDraftService(BillBroCorrectionService):
     @staticmethod
     def serializer():
-        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-paid-draft-v1')
+        return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='billbro-paid-draft-v2')
 
     @staticmethod
     def require_actor(event, actor):
@@ -37,6 +37,10 @@ class BillBroDraftService(BillBroCorrectionService):
         allocations = BankPaymentAllocation.query.filter(or_(
             BankPaymentAllocation.claim_id.in_([c.id for c in claims]),
             BankPaymentAllocation.booking_id.in_([b.id for b in bookings]))).order_by(BankPaymentAllocation.id).populate_existing().all()
+        from backend.models.claim_refund_payment import ClaimRefundPayment
+        refunds = ClaimRefundPayment.query.filter(ClaimRefundPayment.claim_id.in_([c.id for c in claims])).order_by(ClaimRefundPayment.id).all()
+        state['claim_refund_payments'] = [record(r) for r in refunds]
+        state['claim_refund_allocations'] = [record(r.allocation) for r in refunds]
         state['bookings'] = [record(b) for b in bookings]
         state['payment_allocations'] = [record(a) for a in allocations]
         state['payment_bookings'] = [record(a.effective_booking) for a in allocations if a.effective_booking]
@@ -61,10 +65,12 @@ class BillBroDraftService(BillBroCorrectionService):
         rows = []
         for part in parts:
             paid = claims_by_member[part.member_id].paid_rappen if part.member_id in claims_by_member else 0
+            refunded = claims_by_member[part.member_id].refunded_rappen if part.member_id in claims_by_member else 0
+            net = paid - refunded
             expected = new.get(part.member_id, 0)
             rows.append(dict(name=part.member.display_name, member_id=part.member_id,
-                before=old.get(part.member_id, 0), after=expected, paid=paid,
-                open=max(expected-paid, 0), refund=max(paid-expected, 0),
+                before=old.get(part.member_id, 0), after=expected, paid=paid, refunded=refunded, net=net,
+                open=max(expected-net, 0), refund=max(net-expected, 0),
                 before_attending=part.billbro_attending, after_attending=proposed['attendance'][str(part.id)],
                 before_type=part.esstyp.value if part.esstyp else None, after_type=proposed['types'].get(str(part.id))))
         result = dict(old_invoice=event.rechnungsbetrag_rappen, old_total=event.gesamtbetrag_rappen,

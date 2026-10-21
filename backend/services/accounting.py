@@ -791,9 +791,9 @@ class AccountingService:
             })
             if claim.is_open:
                 entry['open_rappen'] += claim.open_rappen
-                entry['paid_rappen'] += min(claim.paid_rappen, claim.expected_rappen)
+                entry['paid_rappen'] += min(claim.net_paid_rappen, claim.expected_rappen)
             elif claim.status != ClaimStatus.ERLASSEN:
-                entry['paid_rappen'] += min(claim.paid_rappen, claim.expected_rappen)
+                entry['paid_rappen'] += min(claim.net_paid_rappen, claim.expected_rappen)
             entry['claims'].append(claim)
         return sorted(
             by_member.values(),

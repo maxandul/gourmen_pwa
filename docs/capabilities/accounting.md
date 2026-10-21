@@ -865,3 +865,15 @@ Historische gegenlaeufige Buchungen werden im Live-Ist saldiert; neue
 Buchungen muessen zur Kontoart passen. Budgetvorschlag nutzt denselben
 Vorjahres-Ist wie die Jahresansicht. Alte Prueffassungen behalten ihren
 gesicherten Berechnungsstand; Korrektur durch neue begruendete Vorlage.
+
+
+### App-Audit U2-17c1b1: Zahlungsbilanz nach Forderungskorrektur
+
+Bruttoeingang in MemberClaim bleibt erhalten. ClaimRefundPayment verknuepft
+tatsaechliche Ausgangszuordnungen mit Forderung/Korrektur; rueckgenommene
+Zuordnungen bleiben Historie. Offen/Status/Netto-Mitgliederuebersicht beachten
+aktive Rueckfluesse. Eingangsueberschuss (3620) bleibt getrennt; Senkung eines
+bereits verbuchten Anteils erzeugt keine neue Einnahme. Freigabe und zugehoeriger
+6710-Abgleich folgen c1b2. Die aelteren Privatbestaetigungsregeln in 11.6 sind
+durch B01/B02 ersetzt: private Erinnerung, kein verifizierter Zahlungsstatus;
+Legacy-Route wird im eigenen B02-Paket ersetzt.

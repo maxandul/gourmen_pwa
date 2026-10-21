@@ -348,3 +348,10 @@ Rueckzahlungsbedarf. Er aendert die laufende Abrechnung noch nicht. Rueckzug
 oder neuerer Entwurf bleibt im Verlauf; Finanzberechtigte koennen mit
 Eventzugriff lesen. Finanzielle Bestaetigung und tatsaechlicher Ausgang sind
 getrennte Schritte des Folgepakets. Kein automatischer Zahlungsauftrag.
+
+
+Zahlungsbilanz eines korrigierten Vereinspostens: erfasster Bruttoeingang und
+tatsaechlicher Rueckfluss bleiben getrennt erhalten. Verbleibender Nettoeingang
+deckt den korrigierten Sollbetrag. Nur ein positiver Rest ist noch zu zahlen
+oder zurueckzuzahlen. Beispiel: 84 Eingang, 6 Rueckfluss, spaeter 90 Soll
+ergibt 12 offen. Das ist keine neue Buchung und keine doppelte Einnahme.

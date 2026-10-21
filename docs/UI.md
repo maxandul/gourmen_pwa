@@ -572,3 +572,8 @@ Anteile/Anwesenheit/Ess-Typ/GGL, Zahlungsstand, offenen Betrag und moeglichen
 Rueckzahlungsbedarf; ausdruecklich noch keine wirksame Abrechnung. Veralteter
 Ausgangsstand wird sichtbar. Keine neue CSS-Klasse. PWA 3.16.42 /
 pwa.96f8a9f1.js; Browser/Geraete und Hell-/Dunkel-Abnahme weiterhin offen.
+
+
+U2-17c1b1 ergaenzt die vorhandene Entwurfszeile um Bruttoeingang, tatsaechlichen
+Rueckfluss und Nettoeingang; keine neue Klasse. PWA 3.16.43 / pwa.1286f295.js.
+Finanzfreigabe/Bankabgleich folgt in c1b2, reale Darstellungsabnahme offen.

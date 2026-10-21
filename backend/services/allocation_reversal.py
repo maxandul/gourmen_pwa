@@ -2,7 +2,7 @@
 from collections import defaultdict
 
 from backend.extensions import db
-from backend.models.accounting import Booking, BankTransactionStatus, ClaimStatus, MemberClaim, FiscalYear
+from backend.models.accounting import Booking, BankTransactionStatus, ClaimStatus, MemberClaim, FiscalYear, BookingDirection
 from backend.models.bank_allocation_reversal import BankAllocationReversal
 from backend.services.accounting import AccountingService, AccountingValidationError
 from backend.services.area_permissions import AreaPermissionService
@@ -57,13 +57,24 @@ class AllocationReversalService:
                     raise BankImportError('Buchungsstand weicht von Zuordnung ab. Zuerst gezielt abgleichen.')
                 if row.kind == 'claim':
                     totals[row.claim_id] += row.amount_rappen
-            claims = {c.id: c for c in MemberClaim.query.filter(MemberClaim.id.in_(totals)).order_by(MemberClaim.id).populate_existing().with_for_update().all()}
+            refunded_claim_ids = {row.claim_refund_payment.claim_id for row in rows if row.claim_refund_payment}
+            claims = {c.id: c for c in MemberClaim.query.filter(MemberClaim.id.in_(set(totals) | refunded_claim_ids)).order_by(MemberClaim.id).populate_existing().with_for_update().all()}
             for claim_id, amount in totals.items():
                 claim = claims.get(claim_id)
                 if not claim or not claim.is_club_claim or claim.paid_rappen < amount:
                     raise BankImportError('Forderungsstand passt nicht zur Zuordnung. Zuerst gezielt abgleichen.')
                 if any(row.member_id != claim.member_id for row in rows if row.kind == 'claim' and row.claim_id == claim_id):
                     raise BankImportError('Forderungsmitglied wurde geändert. Zuerst gezielt abgleichen.')
+                if claim.refunded_rappen:
+                    raise BankImportError('Verknuepfte Forderungsrueckzahlung zuerst begruendet zuruecknehmen.')
+            for row in rows:
+                link = row.claim_refund_payment
+                if link and (tx.direction != BookingDirection.OUT or row.kind != 'booking' or
+                             row.member_id != claims[link.claim_id].member_id or
+                             row.booking.event_id != claims[link.claim_id].event_id or
+                             row.booking.account.code != '6710' or
+                             link.correction.event_id != claims[link.claim_id].event_id):
+                    raise BankImportError('Rueckzahlungsnachweis passt nicht zur Forderung. Zuerst klaeren.')
             reversal = BankAllocationReversal(bank_transaction_id=tx.id, version=tx.allocation_version+1,
                                                reason=reason, created_by=actor.id)
             db.session.add(reversal)
@@ -73,12 +84,12 @@ class AllocationReversalService:
                 if row.effective_booking:
                     row.effective_booking.reversal_id = reversal.id
             for claim_id, amount in totals.items():
-                claim = claims[claim_id]
-                claim.paid_rappen -= amount
+                claims[claim_id].paid_rappen -= amount
+            db.session.flush()  # Net balances must see the withdrawn outgoing rows.
+            for claim in claims.values():
                 if claim.status != ClaimStatus.ERLASSEN:
-                    claim.status = (ClaimStatus.BEGLICHEN if claim.paid_rappen >= claim.expected_rappen else
-                                    ClaimStatus.TEILWEISE if claim.paid_rappen else ClaimStatus.OFFEN)
-                if claim.paid_rappen < claim.expected_rappen:
+                    claim.sync_payment_status()
+                elif claim.net_paid_rappen < claim.expected_rappen:
                     claim.settled_at = None
             tx.allocation_version += 1
             tx.status = BankTransactionStatus.PENDING

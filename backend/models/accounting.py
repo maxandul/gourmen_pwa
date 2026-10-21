@@ -588,7 +588,26 @@ class MemberClaim(db.Model):
 
     @property
     def open_rappen(self):
-        return max(self.expected_rappen - self.paid_rappen, 0)
+        return max(self.expected_rappen - self.net_paid_rappen, 0)
+
+    @property
+    def refunded_rappen(self):
+        """Active real outflows only; never subtract them from gross receipts."""
+        if self.id is None:
+            return 0
+        from backend.models.claim_refund_payment import ClaimRefundPayment
+        from backend.models.bank_payment_allocation import BankPaymentAllocation
+        return db.session.query(db.func.coalesce(db.func.sum(BankPaymentAllocation.amount_rappen), 0)).join(
+            ClaimRefundPayment, ClaimRefundPayment.allocation_id == BankPaymentAllocation.id).filter(
+            ClaimRefundPayment.claim_id == self.id, BankPaymentAllocation.reversal_id.is_(None)).scalar()
+
+    @property
+    def net_paid_rappen(self):
+        return self.paid_rappen - self.refunded_rappen
+
+    @property
+    def refund_due_rappen(self):
+        return max(self.net_paid_rappen - self.expected_rappen, 0)
 
     @property
     def expected_chf(self):
@@ -635,8 +654,16 @@ class MemberClaim(db.Model):
     def register_payment(self, amount_rappen, settled=None):
         """Zahlungseingang fortschreiben; Status-Übergang offen → teilweise → beglichen."""
         self.paid_rappen += amount_rappen
-        if self.paid_rappen >= self.expected_rappen:
+        self.sync_payment_status(settled=settled)
+
+    def sync_payment_status(self, settled=None):
+        """Reconcile status after changing a claim, receipt, or refund allocation."""
+        net = self.net_paid_rappen
+        if net < 0:
+            raise ValueError('Refunds exceed recorded receipts')
+        if net >= self.expected_rappen:
             self.status = ClaimStatus.BEGLICHEN
-            self.settled_at = settled or datetime.utcnow()
-        elif self.paid_rappen > 0:
-            self.status = ClaimStatus.TEILWEISE
+            self.settled_at = self.settled_at or settled or datetime.utcnow()
+        else:
+            self.status = ClaimStatus.TEILWEISE if net else ClaimStatus.OFFEN
+            self.settled_at = None

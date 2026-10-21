@@ -182,3 +182,61 @@ PostgreSQL-Parallelitaet bleibt separate Abnahme, keine Behauptung aus SQLite.
 C1b1-Migration u217c1b120261018: Upgrade/Downgrade/Upgrade, FK- und
 Eindeutigkeitspruefung sowie Downgrade-Historiensperre: **1 bestanden, 0.13 s**.
 pyreadline3-Handlefehler erst nach Testende, Exit 0. Keine Live-Migration.
+
+
+### C1b2: konkrete Freigabe- und Abgleichgrenzen vor Implementierung
+
+- Finanzfreigabe hat eine eigene signierte Pruefansicht, gebunden an Akteur/
+  Zugang, Event, Entwurfs-ID/-inhalt/-status und aktuellen Zahlungsstand.
+  GET schreibt nichts; POST wiederholt erfolgreiche Bestaetigung ohne zweite
+  Historie. Neuer/entzogener/ersetzter Entwurf oder neue Zahlung erfordert
+  erneute Vorlage. Finanzrolle kann mit Grund zur Bearbeitung zurueckgeben;
+  vorhandener Status withdrawn mit ausdruecklichem Rueckgabevermerk genuegt.
+- Bestehende Forderungen niemals ersetzen/loeschen; bei Abwesenheit Soll 0.
+  Brutto und aktive Rueckfluesse bleiben unangetastet. Neue Anwesende erhalten
+  neue Posten. Anteil, Anwesenheit, Ess-Typ, GGL, Soll/Status, Entwurfsstatus und
+  Korrekturhistorie werden gemeinsam gespeichert oder vollstaendig verworfen.
+- Vor Freigabe muessen aktive Claim-Eingangszuordnungen den Bruttoeingang
+  belegen und zu Mitglied/Event/Buchung/Richtung/Betrag passen. Ungeklaerte
+  Legacy-Summen werden nicht als neuer Bankbeweis ausgegeben. Jahresgrenze
+  fuer Korrektur ist das Event-/Forderungsjahr; fehlendes Jahr gezielt klaeren.
+- Auszahlung ist ein neuer getrennter Bankabgleich. Nur offene Ausgangsbewegung,
+  aktuelle Bankversion, positive Rappen bis Bankrest und Rueckzahlungsbedarf,
+  aktives 6710 und berechtigte Finanzperson mit Eventzugriff. Auswahl bindet
+  aktuelle wirksame Korrektur und erhaltene Forderung. Bereits anderweitig
+  zurueckgezahlte Betraege stehen nicht erneut zur Verfuegung.
+- Ausgang wird mit dem Claim und seiner aktuellen Finanzkorrektur verknuepft;
+  die erhaltenen Claim-Eingangszuordnungen liefern die Originaleingangskette.
+  Kein Ausgang vor den zugehoerigen aktiven Eingaengen. Folgejahr erlaubt,
+  Ausgangsjahr muss offen sein; Originaljahr nicht allein wegen Ausgang oeffnen.
+- Rueckzahlungsbedarf auf eigener Finanzuebersicht und im Korrekturkontext
+  zeigen. Bankzeile/Verlauf verlinkt den Ursprungsfall. Private Faelle und
+  Zahlwegwechsel bleiben im G1-Folgepaket. Keine Versand- oder Transferaktion.
+
+
+## c1b1 lokal umgesetzt und geprueft (21.10.2026)
+
+Migration separat **16d8f3d** (u217c1b120261018). ClaimRefundPayment erhaelt
+Ausgang/Forderung/Korrektur. Bruttoeingang bleibt erhalten; aktive Rueckfluesse
+liefern die Nettobilanz fuer Offen/Status/Mitgliederuebersicht. Die Ruecknahme
+passt diese Bilanz atomar an und sperrt Eingaenge mit aktiven Rueckzahlungen.
+Entwurf v2 bindet Rueckflussnachweise und zeigt Brutto/Rueckfluss/Netto.
+Keine Finanzfreigabe oder neue Ausgangsaktion in diesem Grundlagenpaket.
+
+Isolierter Lauf claim_refund_balance, claim_refund_migration, billbro_drafts,
+payment_allocations, refund_payment: **64 bestanden, 2119 Warnungen, 31.83 s**.
+Erweiterte Bilanztests anschliessend: **9 bestanden, 495 Warnungen, 7.82 s**;
+Null-Soll bei Abwesenheit mit erhaltener ID und fehlerhafte Mitgliedsverknuepfung
+zusaetzlich geprueft. 24 JavaScript-Tests bestanden.
+
+Gesamte Python-Regression auf unveraendertem Anwendungscode abgeschlossen:
+**1510 bestanden, 24300 Warnungen, Prozessstatus 0**. Gemeldete Laufzeit
+**261968.09 s (3 Tage, 0:46:08)** enthaelt die mehrtaegige Unterbrechung vom
+18. bis 21.10.; ausdruecklich kein Performance-Nachweis. Die beiden zuletzt
+ergaenzten Bilanzfaelle waren nicht in dieser bereits gestarteten Sammlung,
+sondern im separaten erfolgreichen Neuner-Lauf enthalten. Kein dotenv/Netz.
+
+PWA 3.16.43 / pwa.1286f295.js; git diff --check ohne Fehler. PostgreSQL-
+Migration/Sperren, Browser/Geraete bleiben offen. C1b2 ist nun bereit:
+Finanzfreigabe des Entwurfs und echter 6710-Ausgangsabgleich gemaess Vertrag
+oben. C1/F3/F4 und U1 bleiben insgesamt offen.
