@@ -116,6 +116,8 @@ Aktuelle Services:
 | `SecurityService` | Hashing, Encryption (Fernet), 2FA, Step-Up-Auth, Audit-Log |
 | `GGLService` | Ranking-Berechnung, Punkte, Saisonwertung |
 | `BillBroAttendanceService` | Tatsaechliche Anwesenheit vor Abschluss mit erhaltenem RSVP, berechtigter Mitgliederauswahl und atomarer GGL-Anpassung. |
+| `BillBroFinanceService` | Finanzielle Pruefansicht/Freigabe oder begruendete Rueckgabe von Vereinsentwuerfen; bestehende Forderungs-IDs und Banknachweise erhalten. |
+| `ClaimRefundService` / `ClaimPaymentEvidence` | Belegten Forderungsrueckzahlungsbedarf mit realem 6710-Ausgang abgleichen; Banknachweise vor Freigabe/Abgleich konsistent pruefen. |
 | `BillBroDraftService` | Zahlungsgebundene Vereinskorrekturentwuerfe mit BillBroCorrectionDraft-Historie; Vorbereitung/Rueckzug ohne finanzielle Wirkung (U2-17c1a). |
 | `BillBroCorrectionService` | Signierte Vorschau, unveraenderter Ausgangsstand und atomare unbezahlte Rechnungs-/Gesamtbetrag-/Zahlweg-/Ess-Typ-/Anwesenheitskorrektur mit GGL-Vorschau und BillBroCorrection-Historie (U2-17b1/b2). |
 | `BillBroStateService` | Erkennt Abschluss-/Anteils-/Forderungshistorie; gemeinsamer Route-Guard sperrt direkte Mutationen nach Abschluss (U2-17a). |

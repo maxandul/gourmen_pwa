@@ -83,7 +83,7 @@ def _require_funktion(*funktionen) -> None:
     # Explicit endpoint sets fail closed for future routes, including revision actions.
     read_endpoints = {'accounting.index', 'accounting.booking_detail',
                       'accounting.export_csv', 'accounting.export_pdf', 'accounting.stats', 'accounting.payment_allocations', 'accounting.revision_history'}
-    write_endpoints = {'accounting.refund_payment', 'accounting.refund_confirm', 'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
+    write_endpoints = {'accounting.claim_refund_payment', 'accounting.refund_payment', 'accounting.refund_confirm', 'accounting.payment_reverse', 'accounting.payment_allocate', 'accounting.booking_edit', 'accounting.booking_attach_receipt',
                        'accounting.booking_new', 'accounting.year_comment', 'accounting.comment_resolve',
                        'accounting.bank_import_upload', 'accounting.bank_import_review',
                        'accounting.bank_review_all', 'accounting.bank_tx_book', 'accounting.bank_tx_ignore',
@@ -985,7 +985,9 @@ def _review_context(pending):
             if row.claim:
                 allocation_claims[row.claim.id] = row.claim
     from backend.services.refund_payment import RefundPaymentService
+    from backend.services.claim_refunds import ClaimRefundService
     return {
+        'claim_refund_options': ClaimRefundService.available(current_user) if any(not tx.is_income and tx.is_pending for tx in pending) else [],
         'refund_options': RefundPaymentService.available() if any(not tx.is_income and tx.is_pending for tx in pending) else [],
         'allocation_summaries': allocation_summaries,
         'allocation_claims': list(allocation_claims.values()),
@@ -1311,3 +1313,26 @@ def refund_payment(tx_id):
             submitted_refund=request.form, **_review_context([tx])), 400
     flash('Bankausgang auf 6710 zugeordnet. Keine Überweisung ausgelöst.', 'success')
     return redirect(url_for('accounting.payment_allocations', tx_id=tx_id))
+
+
+@bp.route('/import/tx/<int:tx_id>/claim-refund-payment', methods=['POST'])
+@login_required
+def claim_refund_payment(tx_id):
+    _require_funktion('SCHATZMEISTER')
+    _validate_csrf_or_403()
+    from backend.services.claim_refunds import ClaimRefundService
+    from backend.forms.accounting import chf_to_rappen
+    try:
+        raw=request.form.get('source','').split(':')
+        if len(raw)!=2:
+            raise ValueError('Korrigierte Forderung auswaehlen.')
+        claim_id,correction_id=map(int,raw)
+        ClaimRefundService.allocate(tx_id,claim_id,correction_id,current_user,
+            expected_version=request.form.get('version',type=int),amount_rappen=chf_to_rappen(request.form.get('amount_chf','')))
+    except (AccountingError,ValueError) as exc:
+        flash(str(exc),'error')
+        tx=BankImportService.get_transaction(tx_id)
+        return render_template('accounting/payment_allocations.html',tx=tx,
+            submitted_claim_refund=request.form,**_review_context([tx])),400
+    flash('Tatsaechlichen Ausgang auf 6710 abgeglichen. Keine Ueberweisung ausgeloest.','success')
+    return redirect(url_for('accounting.payment_allocations',tx_id=tx_id))

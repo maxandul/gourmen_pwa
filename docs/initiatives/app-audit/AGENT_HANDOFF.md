@@ -6,11 +6,11 @@ Stand: 21.10.2026. **U1 ist insgesamt offen.**
    lesen. Plan steuert die aktuelle Paketfolge, README ist das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder von master starten.
-3. Naechstes Paket: **U2-17c1b2 – Finanzbestaetigung und Bankabgleich**.
-   U1z bis R08 sowie U2-01 bis U2-17c1b1 sind im dokumentierten Umfang lokal
-   geprueft. U1 bleibt offen, C1/F3/F4 sind noch nicht insgesamt abgeschlossen.
+3. Naechstes Paket: **U3-01/B02 – persoenliche private Betragserinnerung**.
+   U1z bis R08 sowie U2-01 bis U2-17c1b2 sind im dokumentierten Umfang lokal
+   geprueft. U1 bleibt offen; Vereinskorrektur C1 lokal, private F3/F4/G1-Faelle noch offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Konkreter Vertrag:
-   [Zahlungserhalt](U2_17C_ZAHLUNGSERHALT.md), insbesondere c1b2-Grenzen.
+   [Zahlungserhalt](U2_17C_ZAHLUNGSERHALT.md), c1b2-Nachweis; fuer das naechste Paket B01/B02 im Praxisabgleich lesen.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
    oder ausgehendes Netz. Versionierte Login-Identitaeten verwenden.
 6. Jedes Paket mit Tests, Dokumentation, Plan/Handoff und lokalen Commits
@@ -50,17 +50,24 @@ Unterbrechung 18.-21.10.2026 und sind kein Performance-Nachweis.
 Gezielt c1b1: 64 Tests; erweitert 9 Bilanztests (zwei neue Faelle ausserhalb
 der bereits gestarteten Gesamtsammlung), 24 JavaScript-Tests bestanden.
 Migration **16d8f3d** (u217c1b120261018) separat, SQLite-Zyklus/FK/Unique/
-Historien-Downgrade-Sperre geprueft. PWA **3.16.43 / pwa.1286f295.js**.
+Historien-Downgrade-Sperre geprueft. Danach c1b2: **196 Tests bestanden**, erweitert 2; 24 JS.
+PWA **3.16.44 / pwa.e8bff355.js**. Gesamtbasis 1510 war vor c1b2.
 C1a davor **3ec23f8**, Migration **0856609**; 138 Tests, erweitert 22, 24 JS.
 Weitere konkrete Nachweise im README und den Paketvertraegen.
 
 C1a speichert Entwuerfe ohne Finanzmutation, c1b1 liefert ClaimRefundPayment
-und Nettobilanz. Keine Finanzfreigabe oder neuer Ausgangsabgleich aktiviert.
+und Nettobilanz (Anwendung be9d133). C1b2 bestaetigt aktuelle Vereinsentwuerfe
+finanziell mit erhaltenen Claim-IDs und gleicht reale Ausgaenge auf 6710 ab.
 MemberClaim.paid_rappen bleibt Brutto; aktive Rueckfluesse separat, Netto fuer
-Offen/Status. Ruecknahme erhaelt Links. BankRefundConfirmation bleibt gesondert
-fuer Eingangsueberschuesse. C1b2 verbindet aktuellen Entwurf, erhaltene Claim-
-IDs, atomare Finanzhistorie und tatsaechlichen 6710-Ausgang. Vertragsdetails
-und Testgrenzen vor Code in U2_17C_ZAHLUNGSERHALT.md lesen.
+Offen/Status. BankRefundConfirmation bleibt gesondert fuer Eingangsueberschuss.
+Persoenliche Zahlungsansicht filtert Mitglied; alle Eventposten nur Organisation/
+Finanz, Banklinks nur Finanz-Leserecht. Private und Glaeubigerwechsel-Faelle offen.
+
+Naechstes B02: private Erinnerung aus-/wiederanzeigen ohne Zahlungsbestaetigung,
+bei Aenderung von Betrag/Empfaenger erneut zeigen, bei Textaenderung erhalten.
+Legacy-Zahlungsnachweise nicht loeschen oder als aktuelle Zahlungswahrheit
+uebernehmen; Altbestands-/Schema-Vertrag vor Code festhalten. Keine neue
+fachliche Abstimmung bestaetigter B02-Regeln. Unabhaengig von G1 umsetzen.
 
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und Hosting-
 Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;

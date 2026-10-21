@@ -240,3 +240,52 @@ PWA 3.16.43 / pwa.1286f295.js; git diff --check ohne Fehler. PostgreSQL-
 Migration/Sperren, Browser/Geraete bleiben offen. C1b2 ist nun bereit:
 Finanzfreigabe des Entwurfs und echter 6710-Ausgangsabgleich gemaess Vertrag
 oben. C1/F3/F4 und U1 bleiben insgesamt offen.
+
+
+## c1b2 lokal umgesetzt und geprueft (21.10.2026)
+
+BillBroFinanceService liefert signierte Pruefansicht, ausdrueckliche Freigabe
+und begruendete Rueckgabe. Bestehende Claim-IDs/Bruttoeingaenge bleiben erhalten;
+Soll 0 bei Abwesenheit loescht nichts. Anteil/Teilnahme/GGL, Soll/Status,
+Entwurfsstatus und Historie atomar. ClaimPaymentEvidence sperrt ungeklaerte
+Legacy-Summen. Aktuelle Vereinskorrektur bei gleichem Glaeubiger umgesetzt;
+private Klaerung und bezahlter Glaeubigerwechsel bleiben getrennte Folgearbeit.
+
+ClaimRefundService gleicht reale Ausgaenge auf 6710 ab, mit Bankversion,
+aktuellem Finanzkorrekturbezug, positivem Betrag bis Rest/Bedarf, Datum und
+Jahressperre. Teilbetraege/Folgejahr und Ruecknahme erhalten die Nachweiskette.
+Keine automatische Ueberweisung, keine neue 3620-Einnahme aus Betragssenkung,
+kein Versand. Eigene Zahlungsansicht serverseitig auf Mitglied begrenzt;
+Organisation/Finanz sieht Eventposten, Banklinks nur mit Finanz-Leserecht.
+Kein neues Schema in c1b2; Migration 16d8f3d aus c1b1 bleibt separat.
+
+Erster isolierter Lauf finance/correction: **45 bestanden, 2219 Warnungen,
+48.85 s**. Erweiterter Lauf zunaechst **194 bestanden, 1 fehlgeschlagen**:
+Der Hidden-Event-Negativtest verwendete den weiterhin berechtigten Organisator.
+Test auf Finanzperson ohne Organisations-/Vorstandszugriff korrigiert; keine
+Aufweichung der bestehenden Sichtbarkeitsregel. Danach Finanzsuite **33 bestanden,
+2224 Warnungen, 38.56 s**.
+
+Abschliessender Lauf finance, drafts, correction, attendance, invoice_correction,
+type_correction, claim_refund_balance, payment_allocations, allocation_reversal,
+refund_payment, accounting_year_guards: **196 bestanden, 7160 Warnungen,
+136.70 s**. Danach zwei erweiterte Faelle (zweite Bankbewegung nach voller
+Erstattung und Tokenwechsel auf anderen Finanzakteur): **2 bestanden,
+155 Warnungen, 7.07 s**. 24 JavaScript-Tests bestanden; git diff --check sauber.
+Bei einzelnen gezielten Laeufen pyreadline3-Handlefehler nach Testende,
+Erfolgsläufe trotzdem Exit 0. Kein dotenv oder ausgehendes Netz.
+
+Geprueft: Freigabe/Retry ohne neue Claim-ID oder Bankmutation, Rollback bei
+Historien-/Commitfehler, Rollen/CSRF/Eventzugriff, veralteter/ersetzter Entwurf,
+Zeit/Signatur/Zugang/Akteur, neue Anwesende ohne erfundenes RSVP, GGL/Null-Soll,
+Teil-/Vollrueckzahlung, Jahreswechsel, erneute Sollerhoehung, Ruecknahme,
+Ueberbetrag/Bankrest/Datum/Richtung/Konto/Bankversion/Korrekturbezug sowie
+Insert-/Commitfehler beim Ausgang. Persoenliche Ansicht ohne fremde Posten
+oder Bankarbeitsplatzlinks geprueft.
+
+PWA 3.16.44 / pwa.e8bff355.js. Letzte Gesamtregression war c1b1 (1510 Tests),
+nicht als neuer Gesamtlauf fuer c1b2 ausgeben. Echte PostgreSQL-Sperren/FK-
+Konkurrenz und Migrationen, Browser/Geraete bleiben offen. U1 bleibt offen.
+Naechstes unabhaengiges Paket: U3-01/B02 private Betragserinnerung mit eigenem
+Ausblenden/Wiederanzeigen; Legacy-Privatbestaetigung ersetzen. U2-17c2/G1
+bezahlter Glaeubigerwechsel und Merch-Folgepakete bleiben geplant.

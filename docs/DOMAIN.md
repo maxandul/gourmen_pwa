@@ -355,3 +355,13 @@ tatsaechlicher Rueckfluss bleiben getrennt erhalten. Verbleibender Nettoeingang
 deckt den korrigierten Sollbetrag. Nur ein positiver Rest ist noch zu zahlen
 oder zurueckzuzahlen. Beispiel: 84 Eingang, 6 Rueckfluss, spaeter 90 Soll
 ergibt 12 offen. Das ist keine neue Buchung und keine doppelte Einnahme.
+
+
+U2-17c1b2 aktiviert die ausdrueckliche Finanzbestaetigung eines aktuellen
+Vereinsentwurfs bei unveraendertem Glaeubiger. Die Abrechnung wird erst dann
+wirksam; bisherige Zahlungseingaenge/Forderungs-IDs bleiben. Ein Soll 0
+loescht keinen bezahlten Posten. Rueckzahlungsbedarf ist getrennt von einer
+tatsaechlichen Rueckzahlung: erst zugeordneter Bankausgang auf 6710 reduziert
+ihn. Folgejahresausgang bleibt in seinem Zahlungsjahr. Eigene Betraege sind
+fuer das Mitglied lesbar, andere Posten nicht allein durch diesen Zugang.
+Private Faelle und bezahlter Glaeubigerwechsel sind weiterhin gesondert.

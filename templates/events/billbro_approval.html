@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% from 'events/_billbro_draft_summary.html' import summary %}
+{% block title %}Finanzkorrektur prüfen - Gourmen{% endblock %}
+{% block content %}<div class="container"><div class="page-header"><h1>Finanzkorrektur prüfen</h1></div><div class="page-content">
+<p class="page-back"><a href="{{ url_for('billbro.correction_drafts',event_id=event.id) }}">Zurück zu Entwürfen</a></p>
+<p>Vorbereitet von {{ draft.actor.display_name }}. Bisherige Bankeingänge und tatsächliche Rückzahlungen bleiben erhalten. Mit deiner Bestätigung werden die neuen Anteile und offenen Beträge wirksam. Es wird nichts überwiesen oder versandt.</p>
+{% if error %}<p class="form-field__error" role="alert">{{ error }}</p>{% endif %}
+{% if preview %}{{ summary(preview) }}<form method="POST" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="approval_token" value="{{ preview.token }}"><button class="btn btn--primary" type="submit" name="action" value="approve">Finanzkorrektur verbindlich bestätigen</button></form>{% endif %}
+{% if draft.status == 'pending' %}<details class="disclosure"><summary>Zur Bearbeitung zurückgeben</summary><div class="disclosure__content"><form method="POST" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="form-field"><label class="form-field__label" for="return-reason">Grund für Rückgabe</label><textarea class="form-field__textarea" id="return-reason" name="reason" maxlength="900" required>{{ values.get('reason','') }}</textarea></div><button class="btn btn--outline" type="submit" name="action" value="return">Mit Grund zurückgeben</button></form></div></details>{% endif %}
+</div></div>{% endblock %}

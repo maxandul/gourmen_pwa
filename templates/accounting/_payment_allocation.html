@@ -14,6 +14,7 @@
     {% if row.reversal %}<br>Rücknahme: {{ row.reversal.reason }} · {{ row.reversal.actor.display_name }} · {{ row.reversal.created_at.strftime('%d.%m.%Y %H:%M') }}{% endif %}
     · {{ row.created_at.strftime('%d.%m.%Y') }} · {{ row.actor.display_name }}</span>
 </div>
+{% if row.claim_refund_payment %}<p><a href="{{ url_for('billbro.correction_balances', event_id=row.claim_refund_payment.claim.event_id) }}">Korrigierte Forderung und Rückzahlungsverlauf ansehen</a> · Ausgang auf 6710 · Finanzkorrektur {{ row.claim_refund_payment.correction_id }}</p>{% endif %}
 {% if row.refund_payment %}<p><a href="{{ url_for('accounting.payment_allocations', tx_id=row.refund_payment.confirmation.allocation.bank_transaction_id) }}">Zugehörigen Überschuss ansehen</a> · Rückzahlung auf 6710</p>{% endif %}
 {% if row.refund_confirmation %}<p class="text-secondary">Überschuss auf 3620 bestätigt · {{ row.refund_confirmation.actor.display_name }} · {{ row.refund_confirmation.created_at.strftime('%d.%m.%Y %H:%M') }}. Keine Rückzahlung durch diese Bestätigung.</p>
 {% for payment in row.refund_confirmation.payments %}
@@ -72,4 +73,12 @@
 <p>Nur den tatsächlich erhaltenen Bankausgang auf 6710 zuordnen. Es wird keine Überweisung ausgelöst.</p>
 <button class="btn btn--primary" type="submit">Rückzahlung mit Bankausgang abgleichen</button>
 </form></div></details>
+{% endif %}
+
+{% if can_allocate and not tx.is_income and tx.is_pending and not tx.is_collective and allocation.remaining > 0 and (claim_refund_options or submitted_claim_refund is defined) %}
+{% set cr_values = submitted_claim_refund|default({}) %}
+<details class="card" {{ 'open' if submitted_claim_refund is defined else '' }}><summary>Rückzahlung aus korrigierter Forderung abgleichen</summary><div class="card__body"><form method="POST" class="form" action="{{ url_for('accounting.claim_refund_payment',tx_id=tx.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="version" value="{{ tx.allocation_version }}">
+<div class="form-field"><label class="form-field__label" for="claim-refund-{{ tx.id }}-source">Korrigierte Forderung</label><select class="form-field__select" name="source" id="claim-refund-{{ tx.id }}-source" required><option value="">Bitte wählen</option>{% for option in claim_refund_options %}{% set source=option.claim.id|string ~ ':' ~ option.correction.id|string %}<option value="{{ source }}" {{ 'selected' if cr_values.get('source')==source else '' }}>{{ option.claim.member.display_name }} · {{ option.claim.event.display_date }} · CHF {{ chf(option.claim.refund_due_rappen) }} zurückzuzahlen</option>{% endfor %}</select></div>
+<div class="form-field"><label class="form-field__label" for="claim-refund-{{ tx.id }}-amount">Ausgangsteilbetrag (CHF)</label><input class="form-field__input" type="text" inputmode="decimal" id="claim-refund-{{ tx.id }}-amount" name="amount_chf" required value="{{ cr_values.get('amount_chf','') }}"></div>
+<p>Nur einen tatsächlichen Bankausgang auf 6710 abgleichen. Ursprüngliche Eingänge bleiben erhalten; es wird nichts überwiesen.</p><button class="btn btn--primary" type="submit">Ausgang mit korrigierter Forderung abgleichen</button></form></div></details>
 {% endif %}

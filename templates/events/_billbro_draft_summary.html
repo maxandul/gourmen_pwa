@@ -1,0 +1,8 @@
+{% macro money(value) %}{{ '%.2f'|format(value / 100) }} CHF{% endmacro %}
+{% macro summary(view) %}
+<p>Restaurantrechnung {{ money(view.old_invoice) }} â†’ {{ money(view.proposed.invoice) }}; Gesamtbetrag {{ money(view.old_total) }} â†’ {{ money(view.proposed.total) }}</p>
+<p>Grund: {{ view.proposed.reason }}</p>
+{% for row in view.rows %}<div class="info-row"><span class="info-row__label">{{ row.name }}</span><span class="info-row__value">Anteil {{ money(row.before) }} â†’ {{ money(row.after) }}; Eingaenge brutto {{ money(row.paid) }}; zurueckgezahlt {{ money(row.refunded|default(0)) }}; verbleibend netto {{ money(row.net|default(row.paid)) }}; danach offen {{ money(row.open) }}; RÃ¼ckzahlungsbedarf {{ money(row.refund) }}; Ess-Typ {{ row.before_type or '–' }} → {{ row.after_type or '–' }}; {{ 'anwesend' if row.before_attending else 'abwesend' }} â†’ {{ 'anwesend' if row.after_attending else 'abwesend' }}</span></div>{% endfor %}
+{% if view.ggl_rows %}<h3>GGL: bisher â†’ neu</h3>{% for row in view.ggl_rows %}<p>{{ row.name }}: Rang {{ row.before.rank if row.before.rank is not none else 'â€“' }} â†’ {{ row.after.rank if row.after.rank is not none else 'â€“' }}, Punkte {{ row.before.points if row.before.points is not none else 'â€“' }} â†’ {{ row.after.points if row.after.points is not none else 'â€“' }}</p>{% endfor %}{% endif %}
+{% if view.blocked_years %}<p>Betroffene Jahre in Revision oder abgeschlossen: {{ view.blocked_years|join(', ') }}. Der Entwurf Ã¶ffnet kein Jahr und erteilt keine Finanzfreigabe.</p>{% endif %}
+{% endmacro %}

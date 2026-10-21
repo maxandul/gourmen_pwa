@@ -577,3 +577,11 @@ pwa.96f8a9f1.js; Browser/Geraete und Hell-/Dunkel-Abnahme weiterhin offen.
 U2-17c1b1 ergaenzt die vorhandene Entwurfszeile um Bruttoeingang, tatsaechlichen
 Rueckfluss und Nettoeingang; keine neue Klasse. PWA 3.16.43 / pwa.1286f295.js.
 Finanzfreigabe/Bankabgleich folgt in c1b2, reale Darstellungsabnahme offen.
+
+
+U2-17c1b2 ergaenzt Finanz-Pruefansicht, Rueckgabe mit Grund, Zahlungsuebersicht
+und 6710-Abgleich im vorhandenen Bankformular. Gemeinsames Vorschau-Macro,
+form-field, info-row, disclosure, card und btn; keine neue CSS-Klasse.
+Persoenlicher Einstieg auch fuer nachtraeglich Abwesende mit eigenem Posten.
+Banklinks nur bei Finanz-Leserecht. PWA 3.16.44 / pwa.e8bff355.js.
+Funktionale Templates getestet; reale Geraete-/Hell-/Dunkel-Abnahme offen.

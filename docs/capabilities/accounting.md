@@ -877,3 +877,13 @@ bereits verbuchten Anteils erzeugt keine neue Einnahme. Freigabe und zugehoerige
 6710-Abgleich folgen c1b2. Die aelteren Privatbestaetigungsregeln in 11.6 sind
 durch B01/B02 ersetzt: private Erinnerung, kein verifizierter Zahlungsstatus;
 Legacy-Route wird im eigenen B02-Paket ersetzt.
+
+
+U2-17c1b2: Aktueller Vereinskorrekturentwurf kann durch accounting_write mit
+Eventzugriff finanziell bestaetigt oder mit Grund zurueckgegeben werden.
+Forderungs-IDs, Bruttoeingang und Bankbelege bleiben erhalten. Abgeschlossene
+Event-/Forderungsjahre sperren die Korrektur. Tatsächlicher Bankausgang wird
+anschliessend mit korrigierter Forderung auf 6710 verknuepft, Teilbeträge und
+Folgejahr erlaubt, keine automatische Ueberweisung. Ruecknahme erhaelt die
+Kette. Eigene Zahlungs-/Rueckzahlungsansicht filtert auf das Mitglied; voller
+Eventstand fuer Organisation/Finanz und Banklinks nur fuer Finanz-Leserecht.

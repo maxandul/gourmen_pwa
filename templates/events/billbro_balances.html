@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% from 'events/_billbro_draft_summary.html' import money %}
+{% block title %}Zahlungsstand - Gourmen{% endblock %}
+{% block content %}<div class="container"><div class="page-header"><h1>Zahlungs- und Rückzahlungsstand</h1></div><div class="page-content">
+<p class="page-back"><a href="{{ url_for('billbro.correction_drafts',event_id=event.id) if can_view_all else url_for('events.detail',event_id=event.id,tab='billbro') }}">Zurück</a></p>
+<p>Erfasste Eingänge und tatsächliche Rückzahlungen bleiben getrennt sichtbar. Offene Rückzahlungen müssen ausserhalb der App ausgeführt und anschliessend mit dem Bankausgang abgeglichen werden.</p>
+{% for claim in claims %}<section><h2>{{ claim.member.display_name }}</h2><p>Soll {{ money(claim.expected_rappen) }} · Eingang brutto {{ money(claim.paid_rappen) }} · zurückgezahlt {{ money(claim.refunded_rappen) }} · verbleibend netto {{ money(claim.net_paid_rappen) }}</p><p>Forderung offen {{ money(claim.open_rappen) }} · Rückzahlung offen {{ money(claim.refund_due_rappen) }}</p>
+{% for row in receipts.get(claim.id,[]) %}<p>{% if can_read_finance %}<a href="{{ url_for('accounting.payment_allocations',tx_id=row.bank_transaction_id) }}">{% endif %}Eingang {{ money(row.amount_rappen) }} vom {{ row.transaction.booked_date.strftime('%d.%m.%Y') }}{% if can_read_finance %}</a>{% endif %}{{ ' (zurückgenommen)' if row.reversal_id else '' }}</p>{% endfor %}
+{% for payment in refunds.get(claim.id,[]) %}<p>{% if can_read_finance %}<a href="{{ url_for('accounting.payment_allocations',tx_id=payment.allocation.bank_transaction_id) }}">{% endif %}Rückzahlung {{ money(payment.allocation.amount_rappen) }} vom {{ payment.allocation.transaction.booked_date.strftime('%d.%m.%Y') }}{% if can_read_finance %}</a>{% endif %}{{ ' (zurückgenommen)' if payment.allocation.reversal_id else '' }} · Finanzkorrektur {{ payment.correction_id }}</p>{% endfor %}
+</section>{% else %}<p>Keine Forderungen vorhanden.</p>{% endfor %}
+{% if can_approve %}<p><a href="{{ url_for('accounting.index',tab='import') }}">Bankausgänge in der Buchhaltung abgleichen</a></p>{% endif %}
+</div></div>{% endblock %}

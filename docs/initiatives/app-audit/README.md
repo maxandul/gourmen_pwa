@@ -2,7 +2,7 @@
 
 ## Aktuelle Arbeitssteuerung (21.10.2026)
 
-Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U2-17c1b2 (Finanzbestaetigung und Bankabgleich). Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
+Einstieg: [AGENT_HANDOFF.md](AGENT_HANDOFF.md). Verbindliche Paketfolge, Restarbeit und Abnahmen: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). U1 ist offen; nächstes lokales Paket ist U3-01/B02 (persoenliche private Betragserinnerung). Die lokale Umsetzung läuft auf der bestehenden Branchkette `codex/app-audit-implementation-plan` weiter.
 
 ## Nachweisregister der lokalen Umsetzung (21.10.2026)
 
@@ -12,6 +12,7 @@ Veröffentlichung oder externe Ausführung ist damit freigegeben.
 
 | Paket | Status | Branch und Nachweis |
 |---|---|---|
+| U2-17c1b2 | lokal geprüft | Finanzfreigabe mit erhaltenen Claims/Banknachweisen und separatem 6710-Abgleich; 196 Tests, erweitert 2, 24 JS. Private/Glaeubigerwechsel-Faelle bleiben offen. [Nachweis](U2_17C_ZAHLUNGSERHALT.md). |
 | U2-17c1b1 | lokal geprüft | Brutto-/Rueckfluss-/Nettobilanz und Ruecknahme; 64 Tests, erweitert 9, 24 JS; Gesamtregression 1510 bestanden. Migration 16d8f3d separat. [Nachweis](U2_17C_ZAHLUNGSERHALT.md). |
 | U2-17c1a | lokal geprüft | Zahlungsgebundene Vereinsentwuerfe ohne Finanzmutation; 138 Python-Tests, erweitert 22; 24 JS-Tests. Migration 0856609 separat. [Nachweis](U2_17C_ZAHLUNGSERHALT.md). |
 | U2-03b / A-063: Importidentität | Lokal geprüft, mehrdeutige Dateien gezielt klären | Migration b8e38ec separat, 78 Python-Tests; [Nachweis](U2_03_IMPORTPRUEFUNG.md) |

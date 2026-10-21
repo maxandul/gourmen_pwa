@@ -671,7 +671,10 @@ def detail(event_id):
         .first()
     )
     
+    from backend.models.accounting import MemberClaim
+    has_own_billbro_claim = MemberClaim.query.filter_by(event_id=event_id,member_id=current_user.id,creditor_member_id=None).first() is not None
     return render_template('events/detail.html', 
+                         has_own_billbro_claim=has_own_billbro_claim,
                          can_read_billbro_drafts=AreaPermissionService.has_scope(current_user, 'accounting_read'),
                          is_organizer=is_organizer,
                          event=event, 

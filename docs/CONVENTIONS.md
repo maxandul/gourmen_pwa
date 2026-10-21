@@ -1154,3 +1154,21 @@ Verrechnung mit dem separaten Eingangsueberschussmodell BankRefundConfirmation.
 Entwurfsvorschau v2 bindet Rueckzahlungslinks/-zuordnungen und zeigt brutto,
 Rueckfluss, netto. Alte v1-Vorschauen neu vorbereiten; gespeicherter Verlauf
 bleibt lesbar, geaenderter Ausgangsstand erfordert neuen Entwurf.
+
+
+U2-17c1b2: BillBroFinanceService verwendet eigene signierte 30-Minuten-Vorschau
+fuer accounting_write plus Eventzugriff; Organisationsrecht allein reicht
+nicht. Entwurfsinhalt/-status und Ausgangszustand vor Mutation erneut pruefen.
+apply_event teilt Anwesenheit/Ess-Typ/GGL/Anteile mit dem unbezahlten Weg;
+Finanzfreigabe erhaelt jedoch bestehende Claims und setzt nur Soll/Status,
+auch Soll 0 bei Abwesenheit. Neue Claims nur fuer neue Schuldner. Ein Commit
+fuer Event/Claims/Historie/Entwurf, keine Bankmutation. Rueckgabe mit Grund
+verwendet withdrawn und dokumentiert Finanzakteur/Zeit.
+ClaimPaymentEvidence fordert passende aktive Eingangszuordnungen fuer den
+Bruttostand; ungeklaerte Altwerte sperren Freigabe. ClaimRefundService bindet
+aktuelle Finanzkorrektur, Claim und Bankversion; positiver Betrag bis Bankrest
+und Rueckzahlungsbedarf, aktives 6710, Ausgang nicht vor aktiven Eingaengen,
+nur Ausgangsjahr offen. Ursprungsjahr bleibt bei Folgejahresausgang geschlossen.
+Eigene Zahlungsansicht filtert serverseitig auf Mitglied; Organisation/Finanz
+sieht Eventposten, Bankarbeitsplatzlinks nur mit accounting_read. Eventzugriff
+bleibt Voraussetzung. Keine automatische Ueberweisung oder Benachrichtigung.

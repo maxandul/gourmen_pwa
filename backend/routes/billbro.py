@@ -915,6 +915,70 @@ def correction_drafts(event_id):
     drafts = BillBroCorrectionDraft.query.filter_by(event_id=event_id).order_by(BillBroCorrectionDraft.id.desc()).all()
     state_hash = digest(BillBroDraftService.load(event_id, current_user)[4])
     return render_template('events/billbro_drafts.html', event=event, values=values, preview=preview,
-        error=error, can_prepare=can_prepare, paid_draft=True, correction_parts=correction_parts,
+        error=error, can_prepare=can_prepare, can_approve=AreaPermissionService.has_scope(current_user, 'accounting_write'), paid_draft=True, correction_parts=correction_parts,
         members={p.member_id:p.member.display_name for p in correction_parts}, drafts=drafts,
         current={d.id: digest(d.before_json) == state_hash for d in drafts}), 400 if error else 200
+
+
+@bp.route('/<int:event_id>/correction-drafts/<int:draft_id>/approve', methods=['GET','POST'])
+@login_required
+def correction_approval(event_id,draft_id):
+    from backend.services.billbro_finance import BillBroFinanceService as Service
+    from backend.services.billbro_correction import CorrectionError
+    event=_get_visible_event_or_404(event_id)
+    try:
+        Service.require_actor(event,current_user)
+    except CorrectionError:
+        abort(403)
+    try:
+        draft=Service.get_draft(event_id,draft_id)
+    except CorrectionError:
+        abort(404)
+    error=None
+    if request.method=='POST':
+        try:
+            if request.form.get('action')=='return':
+                Service.return_draft(event_id,draft_id,current_user,request.form.get('reason'))
+                flash('Entwurf mit Grund zur Bearbeitung zurueckgegeben. Abrechnung unveraendert.','success')
+            elif request.form.get('action')=='approve':
+                _,changed=Service.approve(event_id,draft_id,current_user,request.form.get('approval_token'))
+                flash('Finanzkorrektur bestaetigt. Keine Ueberweisung ausgeloest.' if changed else 'Bereits bestaetigt; keine zweite Aenderung.','success')
+            else:
+                raise CorrectionError('Unbekannte Aktion.')
+            return redirect(url_for('billbro.correction_drafts',event_id=event_id))
+        except CorrectionError as exc:
+            error=str(exc)
+    preview=None
+    try:
+        preview=Service.approval_preview(event_id,draft_id,current_user)
+    except CorrectionError as exc:
+        error=error or str(exc)
+    return render_template('events/billbro_approval.html',event=event,draft=draft,preview=preview,
+        error=error,values=request.form),400 if error else 200
+
+
+@bp.route('/<int:event_id>/correction-balances')
+@login_required
+def correction_balances(event_id):
+    from backend.services.billbro_drafts import BillBroDraftService
+    from backend.services.billbro_correction import CorrectionError
+    from backend.models.accounting import MemberClaim
+    from backend.models.bank_payment_allocation import BankPaymentAllocation
+    from backend.models.claim_refund_payment import ClaimRefundPayment
+    event=_get_visible_event_or_404(event_id)
+    can_view_all = (AreaPermissionService.can_manage_event(current_user,event) or
+                    AreaPermissionService.has_scope(current_user,'accounting_read'))
+    query=MemberClaim.query.filter_by(event_id=event_id,creditor_member_id=None)
+    if not can_view_all:
+        query=query.filter_by(member_id=current_user.id)
+    claims=query.order_by(MemberClaim.member_id).all()
+    if not can_view_all and not claims:
+        abort(403)
+    receipts={c.id:[] for c in claims}; refunds={c.id:[] for c in claims}
+    for row in BankPaymentAllocation.query.filter(BankPaymentAllocation.claim_id.in_(receipts),BankPaymentAllocation.kind=='claim').order_by(BankPaymentAllocation.id):
+        receipts[row.claim_id].append(row)
+    for row in ClaimRefundPayment.query.filter(ClaimRefundPayment.claim_id.in_(refunds)).order_by(ClaimRefundPayment.id):
+        refunds[row.claim_id].append(row)
+    return render_template('events/billbro_balances.html',event=event,claims=claims,receipts=receipts,refunds=refunds,
+        can_view_all=can_view_all, can_approve=AreaPermissionService.has_scope(current_user,'accounting_write'),
+        can_read_finance=AreaPermissionService.has_scope(current_user,'accounting_read'))

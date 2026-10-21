@@ -136,13 +136,25 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 | U2-17b3a | lokal geprüft | Ess-Typ-Korrektur vorhandener Anwesender im unbezahlten Vorschau-/Historienweg; Auswirkungen auf alle Anteile/Forderungen, unveraenderte GGL-Werte. Danach b3b tatsaechliche Anwesenheit von urspruenglichem RSVP trennen. |
 | U2-17b3b | lokal geprüft | Anwesenheit/RSVP getrennt; Vorschau, Anteile/Forderungen/GGL und Historie. Migration 3f09db1 separat; 230 Tests, Anschluss 47/40, abschliessend 23. Keine erfundene Antwort; PostgreSQL/Geraete offen. |
 | U2-17c0 / B01, G1 | lokal geprüft | Private Zahlungen sind unbekannt: paid=0 allein nicht als unbezahlt behandeln. Fuer unbezahlte Korrektur eines privaten Ausgangsfalls ausdrueckliche Aussage nach Klaerung und Vermerk verlangen, an Vorschau binden und historisieren. Keine allgemeine private Zahlungsbestaetigung neu einfuehren. |
-| U2-17c1 / F3, K1 | in Teilpakete aufgeteilt | Bezahlte Vereinskorrektur bei unveraendertem Zahlweg/Glaeubiger fein abgrenzen und umsetzen: Zahlungsnachweise erhalten, Mehrforderung/Rueckzahlungsbedarf sichtbar, Bestaetigung durch berechtigte Finanzrolle. Vor Code Zahlungs-/Erstattungsmodell gegen bestaetigte F3/K1-Quellen konkretisieren; Migration separat. Private Faelle folgen B01/B02/G1 (keine allgemeine Zahlungskontrolle; Legacy-Eingangsbestaetigung in B02 ersetzen); bezahlter Glaeubigerwechsel bleibt eigenes Folgepaket. |
+| U2-17c1 / F3, K1 | lokal geprüft im Vereinsumfang | Bezahlte Vereinskorrektur bei unveraendertem Zahlweg/Glaeubiger fein abgrenzen und umsetzen: Zahlungsnachweise erhalten, Mehrforderung/Rueckzahlungsbedarf sichtbar, Bestaetigung durch berechtigte Finanzrolle. Vor Code Zahlungs-/Erstattungsmodell gegen bestaetigte F3/K1-Quellen konkretisieren; Migration separat. Private Faelle folgen B01/B02/G1 (keine allgemeine Zahlungskontrolle; Legacy-Eingangsbestaetigung in B02 ersetzen); bezahlter Glaeubigerwechsel bleibt eigenes Folgepaket. |
 
 | U2-17c1a | lokal geprüft | Bezahlten Vereinsentwurf mit gebundenem Zahlungsstand/Vorschau speichern und zurueckziehen; bisherige Abrechnung bleibt wirksam. Finanzrolle liest mit Eventzugriff. Migration separat, keine Freigabeaktion. Vertrag U2_17C_ZAHLUNGSERHALT.md. |
-| U2-17c1b | in Teilpakete aufgeteilt | Finanzielle Bestaetigung des aktuellen Entwurfs, erhaltene Forderungs-/Zahlungs-IDs und eigenstaendiger Rueckzahlungsbedarf mit K1-Abgleich; erst nach c1a und konkretisiertem Erstattungsmodell. |
+| U2-17c1b | lokal geprüft | Finanzielle Bestaetigung des aktuellen Entwurfs, erhaltene Forderungs-/Zahlungs-IDs und eigenstaendiger Rueckzahlungsbedarf mit K1-Abgleich; erst nach c1a und konkretisiertem Erstattungsmodell. |
 
 | U2-17c1b1 | lokal geprüft | Zahlungsbilanz und Journalgrundlage fuer Forderungsrueckzahlungen; Bruttoeingang erhalten, aktive Ausgaenge getrennt, konsistente Nettobilanz und Ruecknahme. Migration separat. Noch keine Finanzfreigabe. |
-| U2-17c1b2 | **bereit / nächstes Paket** | Aktuellen Vereinsentwurf finanziell bestaetigen und korrigierte Forderungen unter derselben ID erhalten; Rueckzahlungsbedarf separat anzeigen und echte Ausgaenge auf 6710 abgleichen. |
+| U2-17c1b2 | lokal geprüft | Aktuellen Vereinsentwurf finanziell bestaetigen und korrigierte Forderungen unter derselben ID erhalten; Rueckzahlungsbedarf separat anzeigen und echte Ausgaenge auf 6710 abgleichen. |
+
+| U2-17c2 / G1, F4 | geplant | Bezahlten Glaeubigerwechsel mit ausdruecklich dokumentiertem realem Ausgleich konkretisieren. Private Zahlungen unbekannt; keine automatische Umbuchung oder doppelte Forderung. |
+
+### Bereite Fortsetzung im privaten Fachablauf
+
+| Paket | Lokal | Begrenzter Auftrag |
+|---|---|---|
+| U3-01 / B02 | **bereit / nächstes Paket** | Eigene private Betragserinnerung aus-/wiederanzeigen, Betrag/Empfaenger im Event erreichbar lassen. Aenderung von eigenem Betrag/Empfaenger zeigt Erinnerung erneut; reine Textaenderung nicht. Legacy-Privatbestaetigung ersetzen, keine verifizierten Zahlungsstaende oder Vereinsbuchung erzeugen. BUCHHALTUNG_PRAXISABGLEICH B01/B02 und FINANZ_ERGAENZUNG_ENTWURF lesen; Schema/Altbestand vor Code konkretisieren, Migration separat. |
+
+B02 ist unabhaengig vom noch geplanten bezahlten Glaeubigerwechsel; benoetigte
+Rechte-/Betrags-/Korrekturgrundlagen liegen lokal vor. U2 ist dadurch nicht
+insgesamt abgeschlossen. U3/U4 weiterhin je Fachablauf begrenzt umsetzen.
 
 Weitere U2-Befunde aus dem unveraenderten CSV (BillBro, Merch, Auswertungen,
 Auditfehler) bleiben beauftragt; nach konkreten Abhaengigkeiten begrenzt

@@ -203,6 +203,33 @@ class BillBroCorrectionService:
                                after_claim=shares.get(p.member_id, 0) if p.member_id != proposed['payer'] else 0) for p in parts])
 
     @classmethod
+    def apply_event(cls, event, parts, proposed):
+        ggl = GGLService.project_points(cls.projected_parts(parts, proposed), proposed['invoice']) if cls.ggl_changes(event, parts, proposed) else None
+        for part in parts:
+            key = str(part.id)
+            old_id = part.id
+            if part.id < 0:
+                if not proposed['attendance'][key]:
+                    continue
+                part = Participation(event_id=event.id, member_id=part.member_id, teilnahme=None)
+                db.session.add(part)
+            part.billbro_attendance = proposed['attendance'][key]
+            if part.billbro_attendance:
+                part.esstyp = Esstyp(proposed['types'][key])
+            if ggl is not None:
+                for field, value in ggl[old_id].items():
+                    setattr(part, field, value)
+        db.session.flush()
+        db.session.expire(event, ['participations'])
+        event.rechnungsbetrag_rappen = proposed['invoice']
+        event.gesamtbetrag_rappen = proposed['total']
+        event.trinkgeld_rappen = proposed['total'] - event.rechnungsbetrag_rappen
+        event.bill_paid_by = BillPaidBy(proposed['paid_by'])
+        event.bill_payer_member_id = proposed['payer']
+        shares = BillBroShareService.apply(event, proposed['total'])
+        return shares
+
+    @classmethod
     def confirm(cls, event_id, actor, token):
         try:
             try:
@@ -222,29 +249,7 @@ class BillBroCorrectionService:
                 raise CorrectionError('Stand wurde seit der Vorschau geändert. Neu vorbereiten; nichts wurde überschrieben.')
             proposed = payload['proposed']
             cls.validate(event, parts, claims, years, proposed)
-            ggl = GGLService.project_points(cls.projected_parts(parts, proposed), proposed['invoice']) if cls.ggl_changes(event, parts, proposed) else None
-            for part in parts:
-                key = str(part.id)
-                old_id = part.id
-                if part.id < 0:
-                    if not proposed['attendance'][key]:
-                        continue
-                    part = Participation(event_id=event.id, member_id=part.member_id, teilnahme=None)
-                    db.session.add(part)
-                part.billbro_attendance = proposed['attendance'][key]
-                if part.billbro_attendance:
-                    part.esstyp = Esstyp(proposed['types'][key])
-                if ggl is not None:
-                    for field, value in ggl[old_id].items():
-                        setattr(part, field, value)
-            db.session.flush()
-            db.session.expire(event, ['participations'])
-            event.rechnungsbetrag_rappen = proposed['invoice']
-            event.gesamtbetrag_rappen = proposed['total']
-            event.trinkgeld_rappen = proposed['total'] - event.rechnungsbetrag_rappen
-            event.bill_paid_by = BillPaidBy(proposed['paid_by'])
-            event.bill_payer_member_id = proposed['payer']
-            shares = BillBroShareService.apply(event, proposed['total'])
+            shares = cls.apply_event(event, parts, proposed)
             creditor = proposed['payer']
             # Insert before deleting, so even SQLite cannot reuse an old claim identity.
             for mid, share in shares.items():

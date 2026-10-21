@@ -72,7 +72,7 @@ class BillBroDraftService(BillBroCorrectionService):
                 before=old.get(part.member_id, 0), after=expected, paid=paid, refunded=refunded, net=net,
                 open=max(expected-net, 0), refund=max(net-expected, 0),
                 before_attending=part.billbro_attending, after_attending=proposed['attendance'][str(part.id)],
-                before_type=part.esstyp.value if part.esstyp else None, after_type=proposed['types'].get(str(part.id))))
+                before_type=part.esstyp.value if part.esstyp else None, after_type=proposed['types'].get(str(part.id), part.esstyp.value if part.esstyp else None)))
         result = dict(old_invoice=event.rechnungsbetrag_rappen, old_total=event.gesamtbetrag_rappen,
             rows=rows, proposed=proposed,
             blocked_years=[y.year for y in years if not y.is_open],
