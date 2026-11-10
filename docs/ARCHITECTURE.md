@@ -435,3 +435,8 @@ ClaimRefundPayment (U2-17c1b1) verknuepft eine echte Ausgangszuordnung mit
 erhaltener MemberClaim und BillBroCorrection. Bruttoeingang bleibt im Claim;
 aktive Rueckfluesse werden separat summiert. Keine neue Bankbewegung durch
 das Modell. Finanzfreigabe und neuer Bankabgleich folgen in c1b2.
+
+U3-01/B02: `PrivateReminderService` verwaltet ausschliesslich eigene private
+Anzeige-Praeferenzen auf MemberClaim. Dashboard, Eventdetail und eigene Liste
+verwenden denselben Service. Keine Zahlungsbestaetigung, Buchung oder Nachricht.
+Migration u30120261021 ist additiv; verwendete Praeferenzen sperren Downgrade.

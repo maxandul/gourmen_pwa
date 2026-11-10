@@ -1190,17 +1190,8 @@ def claim_settle(claim_id: int):
 @bp.route('/claims/<int:claim_id>/confirm', methods=['POST'])
 @login_required
 def claim_confirm(claim_id: int):
-    """Privatzahler bestätigt den Eingang eines Anteils (vom Dashboard)."""
-    _validate_csrf_or_403()
-    try:
-        claim = AccountingService.confirm_private_payment(claim_id, current_user)
-        flash(
-            f'Eingang von {claim.member.display_name} bestätigt.',
-            'success',
-        )
-    except AccountingError as exc:
-        flash(str(exc), 'error')
-    return redirect(request.referrer or url_for('dashboard.index'))
+    """Retired compatibility endpoint; no private-payment mutation."""
+    return 'Private Zahlungen werden nicht mehr bestaetigt. Die eigene Erinnerung kann im Dashboard aus- oder wieder angezeigt werden.',410
 
 
 # ---------------------------------------------------------------------------

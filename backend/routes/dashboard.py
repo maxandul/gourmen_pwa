@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from flask_login import login_required, current_user
 from backend.models.event import Event
 from backend.models.participation import Participation
@@ -97,10 +97,14 @@ def index():
         1 for o in merch_orders if o.status in (OrderStatus.BESTELLT, OrderStatus.WIRD_GELIEFERT)
     )
 
-    # Offene Posten (Phase 4b): eigene Schulden + zu bestätigende Eingänge
+    # Club debt and private personal reminders are separate.
     open_claims = AccountingService.get_open_claims_for_member(current_user)
     open_claims_total_rappen = sum(c.open_rappen for c in open_claims)
-    claims_to_confirm = AccountingService.get_claims_to_confirm(current_user)
+    from backend.services.private_reminders import PrivateReminderService
+    private_reminders = PrivateReminderService.rows(current_user)
+    latest_bill_private_hidden = bool(latest_bill_event and PrivateReminderService.query(current_user).filter_by(
+        event_id=latest_bill_event.id,private_reminder_hidden=True).first())
+    reminder_undo = PrivateReminderService.undo_row(current_user,request.args.get('hidden_reminder',type=int))
 
     return render_template(
         'dashboard/index.html',
@@ -116,7 +120,9 @@ def index():
         merch_open_count=merch_open_count,
         open_claims=open_claims,
         open_claims_total_rappen=open_claims_total_rappen,
-        claims_to_confirm=claims_to_confirm,
+        private_reminders=private_reminders,
+        latest_bill_private_hidden=latest_bill_private_hidden,
+        reminder_undo=reminder_undo,
         hamburg2026_visible=hamburg2026_is_visible(),
     )
 

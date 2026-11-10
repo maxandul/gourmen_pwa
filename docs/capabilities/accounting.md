@@ -37,7 +37,7 @@ Aus `STRATEGY_2026.md`:
 | Schatzmeister | «Ich lade den monatlichen ZKB-Kontoauszug (CSV) hoch und bekomme alle neuen Transaktionen als Buchungsvorschläge — mit erkannten Mitgliedern, Konten und offenen Posten.» |
 | Schatzmeister | «Ich sehe pro Mitglied, welche Beträge (Beiträge, Essensanteile, Merch) noch offen sind und was wann bezahlt wurde.» |
 | Mitglied | «Ich sehe auf dem Dashboard meine offenen Posten; nach Eingang und Verbuchung meiner Zahlung stehen sie auf 'beglichen'.» |
-| Mitglied | «Wenn ich eine Event-Rechnung privat bezahlt habe, bestätige ich in der App die Eingänge der Anteile der anderen.» |
+| Mitglied | «Private Zahlungen sind der App unbekannt. Ich kann nur meine eigene Betragserinnerung aus- oder wiederanzeigen.» |
 | Organisator | «Beim BillBro-Start gebe ich an, ob mit dem Vereinskonto bezahlt wird oder welches Mitglied die Rechnung übernimmt.» |
 
 ## 3. Architektur-Entscheide
@@ -876,7 +876,9 @@ aktive Rueckfluesse. Eingangsueberschuss (3620) bleibt getrennt; Senkung eines
 bereits verbuchten Anteils erzeugt keine neue Einnahme. Freigabe und zugehoeriger
 6710-Abgleich folgen c1b2. Die aelteren Privatbestaetigungsregeln in 11.6 sind
 durch B01/B02 ersetzt: private Erinnerung, kein verifizierter Zahlungsstatus;
-Legacy-Route wird im eigenen B02-Paket ersetzt.
+Legacy-Route ist seit U3-01/B02 ohne Mutation stillgelegt (HTTP 410). Eigene
+Erinnerungen koennen aus-/wiederangezeigt werden; Vereinsuebersichten enthalten
+nur Vereinsposten. Alte private Zahlungswerte bleiben historisch erhalten.
 
 
 U2-17c1b2: Aktueller Vereinskorrekturentwurf kann durch accounting_write mit

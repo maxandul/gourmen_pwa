@@ -1172,3 +1172,12 @@ nur Ausgangsjahr offen. Ursprungsjahr bleibt bei Folgejahresausgang geschlossen.
 Eigene Zahlungsansicht filtert serverseitig auf Mitglied; Organisation/Finanz
 sieht Eventposten, Bankarbeitsplatzlinks nur mit accounting_read. Eventzugriff
 bleibt Voraussetzung. Keine automatische Ueberweisung oder Benachrichtigung.
+
+U3-01/B02: PrivateReminderService bindet Anzeigeaktionen an Mitglied,
+Zugangsgeneration, Claim, Betrag, Empfaenger, Ziel und monotone Version (30 min).
+Unter Claim-Sperre erneut pruefen; unmittelbare Wiederholung ohne Mutation,
+veraltete/ABA-Formulare ablehnen. Nur eigene Praeferenzfelder schreiben.
+Korrektur kopiert Ausblenden nur bei gleichem Betrag/Empfaenger; ansonsten
+zuruecksetzen und Aenderung markieren. Legacy-Zahlungswerte unveraendert lassen.
+Vereins-Postenansichten filtern creditor_member_id IS NULL. Private Bestaetigung
+liefert HTTP 410; auch manuelles Begleichen privater Posten ist gesperrt.

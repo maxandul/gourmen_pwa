@@ -672,9 +672,12 @@ def detail(event_id):
     )
     
     from backend.models.accounting import MemberClaim
+    from backend.services.private_reminders import PrivateReminderService
+    private_reminders = PrivateReminderService.rows(current_user,include_hidden=True,event_id=event_id)
     has_own_billbro_claim = MemberClaim.query.filter_by(event_id=event_id,member_id=current_user.id,creditor_member_id=None).first() is not None
     return render_template('events/detail.html', 
                          has_own_billbro_claim=has_own_billbro_claim,
+                         private_reminders=private_reminders,
                          can_read_billbro_drafts=AreaPermissionService.has_scope(current_user, 'accounting_read'),
                          is_organizer=is_organizer,
                          event=event, 

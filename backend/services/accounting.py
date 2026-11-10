@@ -627,18 +627,7 @@ class AccountingService:
         return (
             MemberClaim.query.filter(
                 MemberClaim.member_id == member.id,
-                MemberClaim.status.in_((ClaimStatus.OFFEN, ClaimStatus.TEILWEISE)),
-            )
-            .order_by(MemberClaim.created_at)
-            .all()
-        )
-
-    @staticmethod
-    def get_claims_to_confirm(member: Member) -> list[MemberClaim]:
-        """Posten, bei denen dieses Mitglied privater Gläubiger ist."""
-        return (
-            MemberClaim.query.filter(
-                MemberClaim.creditor_member_id == member.id,
+                MemberClaim.creditor_member_id.is_(None),
                 MemberClaim.status.in_((ClaimStatus.OFFEN, ClaimStatus.TEILWEISE)),
             )
             .order_by(MemberClaim.created_at)
@@ -683,6 +672,8 @@ class AccountingService:
                 if existing.paid_rappen == 0 and existing.status in (
                     ClaimStatus.OFFEN, ClaimStatus.TEILWEISE,
                 ):
+                    from backend.services.private_reminders import PrivateReminderService
+                    PrivateReminderService.before_sync(existing,share,creditor_id)
                     existing.creditor_member_id = creditor_id
                     existing.expected_rappen = share
                     existing.note = note
@@ -753,6 +744,8 @@ class AccountingService:
     def settle_claim(cls, claim_id: int, *, waive: bool = False) -> MemberClaim:
         """Posten manuell abschliessen: beglichen oder erlassen."""
         claim = cls.get_claim(claim_id, lock=True)
+        if not claim.is_club_claim:
+            raise AccountingValidationError('Private Betraege sind persoenliche Erinnerungen, keine bestaetigbaren Zahlungseingaenge.')
         if not claim.is_open:
             raise AccountingValidationError("Dieser Posten ist bereits abgeschlossen.")
         if waive:
@@ -765,22 +758,13 @@ class AccountingService:
 
     @classmethod
     def confirm_private_payment(cls, claim_id: int, creditor: Member) -> MemberClaim:
-        """Privatzahler bestätigt den Eingang eines Anteils (Spec 11.6)."""
-        claim = cls.get_claim(claim_id, lock=True)
-        if claim.creditor_member_id != creditor.id:
-            raise AccountingValidationError(
-                "Nur das auslegende Mitglied kann Eingänge bestätigen."
-            )
-        if not claim.is_open:
-            raise AccountingValidationError("Dieser Posten ist bereits beglichen.")
-        claim.register_payment(claim.open_rappen)
-        db.session.commit()
-        return claim
+        """Retired compatibility entry point: no private payment tracking."""
+        raise AccountingValidationError('Private Zahlungen werden nicht bestaetigt. Nur eigene Erinnerung aus- oder wieder anzeigen.')
 
     @classmethod
     def get_claims_overview(cls) -> list[dict]:
         """Pro Mitglied: offene und bezahlte Beträge (Tab «Offene Posten»)."""
-        claims = MemberClaim.query.order_by(MemberClaim.created_at).all()
+        claims = MemberClaim.query.filter(MemberClaim.creditor_member_id.is_(None)).order_by(MemberClaim.created_at).all()
         by_member: dict[int, dict] = {}
         for claim in claims:
             entry = by_member.setdefault(claim.member_id, {

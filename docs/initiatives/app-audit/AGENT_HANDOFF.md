@@ -1,22 +1,24 @@
 # Agenteneinstieg: App-Audit-Umsetzung
 
-Stand: 21.10.2026. **U1 ist insgesamt offen.**
+Stand: 10.11.2026. **U1 ist insgesamt offen.**
 
 1. AGENTS.md, [README](README.md) und [Umsetzungsplan](IMPLEMENTATION_PLAN.md)
    lesen. Plan steuert die aktuelle Paketfolge, README ist das Nachweisregister.
 2. Bestehende Kette auf codex/app-audit-implementation-plan erhalten. Einstieg
    war 5b6d28d; Branch/HEAD/Status pruefen, nicht zuruecksetzen oder von master starten.
-3. Naechstes Paket: **U3-01/B02 – persoenliche private Betragserinnerung**.
-   U1z bis R08 sowie U2-01 bis U2-17c1b2 sind im dokumentierten Umfang lokal
+3. Naechstes Paket: **U3-02 – GGL-Dashboard-Rangabgleich**.
+   U3-01/B02 sowie U1z bis R08 und U2-01 bis U2-17c1b2 sind im dokumentierten Umfang lokal
    geprueft. U1 bleibt offen; Vereinskorrektur C1 lokal, private F3/F4/G1-Faelle noch offen.
 4. Relevante Anchor-Docs und Paketquellen vor Code lesen. Konkreter Vertrag:
-   [Zahlungserhalt](U2_17C_ZAHLUNGSERHALT.md), c1b2-Nachweis; fuer das naechste Paket B01/B02 im Praxisabgleich lesen.
+   [Zahlungserhalt](U2_17C_ZAHLUNGSERHALT.md), c1b2-Nachweis; fuer U3-02 DOMAIN und U2_17B_BILLBRO_KORREKTUR.md lesen.
 5. [Isolierter Runner](run_existing_tests.py): synthetische Daten, kein dotenv
    oder ausgehendes Netz. Versionierte Login-Identitaeten verwenden.
 6. Jedes Paket mit Tests, Dokumentation, Plan/Handoff und lokalen Commits
    abschliessen, Migrationen separat. Danach naechstes bereites Paket fortsetzen.
 
-Kein Push, Merge, Deploy, Produktionszugriff, Schluesselwechsel oder automatisches
+Einmalige GitHub-Veroeffentlichung der bestehenden Kette fuer die Uebergabe am
+10.11.2026 beauftragt. Danach ohne neuen Auftrag kein Push. Kein Merge, Deploy,
+Produktionszugriff, Schluesselwechsel oder automatisches
 Starten von Chats/Agenten. Fremde unversionierte Dateien bewahren:
 build_logs.txt, docs/GDD_FOOD_POKEMON.md, docs/GDD_FOOD_POKEMON_REVIEW.md,
 docs/capabilities/game.md, static/js/pwa.6af171c6.js, static/js/pwa.fa8699c7.js.
@@ -38,7 +40,7 @@ Zusaetzlich jeweils aktuellen Status pruefen.
 - B01/B02/G1 ersetzt private Zahlungsbestaetigung als Ziel: private Zahlungen
   unbekannt, paid=0 kein Unbezahlt-Beweis. C0 verlangt Erklaerung nach Klaerung
   und Vermerk fuer unbezahlte Privatkorrektur. Legacy-Privatbestaetigungsroute
-  noch in eigenem B02-Paket ersetzen; keine allgemeine Zahlungskontrolle.
+  seit B02 stillgelegt (410); nur eigene Anzeige, keine Zahlungskontrolle.
 - F1/F2/R13, F3/F4, G1-G3/K1 und weitere bestaetigte Entwuerfe gelten weiterhin.
   Keine bestaetigten Regeln erneut abstimmen.
 
@@ -63,16 +65,20 @@ Offen/Status. BankRefundConfirmation bleibt gesondert fuer Eingangsueberschuss.
 Persoenliche Zahlungsansicht filtert Mitglied; alle Eventposten nur Organisation/
 Finanz, Banklinks nur Finanz-Leserecht. Private und Glaeubigerwechsel-Faelle offen.
 
-Naechstes B02: private Erinnerung aus-/wiederanzeigen ohne Zahlungsbestaetigung,
-bei Aenderung von Betrag/Empfaenger erneut zeigen, bei Textaenderung erhalten.
-Legacy-Zahlungsnachweise nicht loeschen oder als aktuelle Zahlungswahrheit
-uebernehmen; Altbestands-/Schema-Vertrag vor Code festhalten. Keine neue
-fachliche Abstimmung bestaetigter B02-Regeln. Unabhaengig von G1 umsetzen.
+B02 ist lokal abgeschlossen: Migration b9727e4 separat; 122 Python-Tests
+(5444 Warnungen, 305.27 s, Exit 0) und 24 JS am 10.11.2026 bestanden.
+PWA aktuell 3.16.45 / pwa.9af46541.js. Kein neuer Gesamtsuite-Nachweis.
+Details/Fehlerkorrektur: [B02](U3_01_PRIVATE_ERINNERUNG.md).
+
+Naechstes U3-02: Dashboard berechnet GGL-Rang derzeit als Listenposition.
+Berechneten Saisonrang verwenden und Gleichstand regressiv pruefen, ohne
+historische Neuberechnung. Auftrag und Abschlusskriterien stehen im Plan.
+Reproduzierbarer Einstieg: [START_NEXT_AGENT.md](START_NEXT_AGENT.md).
 
 Echte PostgreSQL-Sperren/Migrationen, Browser/Geraete, Mail, Drive und Hosting-
 Recovery bleiben externe Abnahmen. D-01 Google-Mehrfachzuordnung offen;
 unabhaengige lokale Arbeit fortsetzen. Keine pauschale Produktionsfreigabe.
-Merch-Runden-/Zuschuss-/Korrekturmodell, bezahlter Glaeubigerwechsel und B02
+Merch-Runden-/Zuschuss-/Korrekturmodell und bezahlter Glaeubigerwechsel
 bleiben Folgearbeit; anschliessend weitere U2-U6-Pakete nach Plan ableiten.
 
 Aeltere U1-Uebergabe: [Verlauf](AGENT_HANDOFF_HISTORY_20261016.md).

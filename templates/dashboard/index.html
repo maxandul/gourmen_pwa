@@ -131,7 +131,7 @@
 
                 {{ dashboard_info_tile(
                     'Letzter Anteil',
-                    latest_bill_participation.display_share if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'CHF TBD',
+                    'Betrag ausgeblendet' if latest_bill_private_hidden else latest_bill_participation.display_share if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'CHF TBD',
                     (latest_bill_event.display_date if latest_bill_event.is_visible_to(current_user) else 'Geschuetztes Event') if (latest_bill_event and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else 'TBD',
                     url_for('events.detail', event_id=latest_bill_event.id, tab='billbro') if (latest_bill_event and latest_bill_event.is_visible_to(current_user) and latest_bill_participation and latest_bill_participation.calculated_share_rappen) else None,
                     'dashboard-info-tile__line--hint'
@@ -157,7 +157,7 @@
             </div>
         </section>
 
-        {% if open_claims or claims_to_confirm %}
+        {% if open_claims %}
         <section class="dashboard-intent" aria-labelledby="dashboard-claims-heading">
             <h2 id="dashboard-claims-heading" class="dashboard-intent__heading">Offene Posten</h2>
             {% if open_claims %}
@@ -192,39 +192,15 @@
                 </div>
             </div>
             {% endif %}
-            {% if claims_to_confirm %}
-            <div class="card">
-                <div class="card__header">
-                    <h3 class="card__title">
-                        {{ lucide_icon('circle-check') }}
-                        Eingänge bestätigen
-                    </h3>
-                </div>
-                <div class="card__body">
-                    <p class="text-secondary">
-                        Du hast für diese Anteile ausgelegt. Bestätige den Eingang, sobald das Geld bei dir angekommen ist.
-                    </p>
-                    {% for claim in claims_to_confirm %}
-                    <div class="info-row">
-                        <span class="info-row__label">
-                            {{ claim.member.display_name_with_spirit }}
-                            {% if claim.event %}<br><span class="text-secondary">{% if claim.event.is_visible_to(current_user) %}{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}{% else %}Geschuetztes Event{% endif %}</span>{% endif %}
-                        </span>
-                        <span class="info-row__value">
-                            CHF {{ "%.2f"|format(claim.open_rappen / 100) }}
-                            <form method="POST" action="{{ url_for('accounting.claim_confirm', claim_id=claim.id) }}" class="form"
-                                  onsubmit="return confirm('Eingang von {{ claim.member.display_name }} über CHF {{ "%.2f"|format(claim.open_rappen / 100) }} bestätigen?');">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn--outline btn--sm">Erhalten</button>
-                            </form>
-                        </span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
         </section>
         {% endif %}
+
+        {% from 'member/_private_reminder.html' import private_reminder with context %}
+        <section class="dashboard-intent" aria-labelledby="private-reminders-heading"><h2 id="private-reminders-heading" class="dashboard-intent__heading">Private Betragserinnerungen</h2>
+        {% if reminder_undo %}<form method="POST" class="form" action="{{ url_for('member.private_reminder_toggle',claim_id=reminder_undo.claim.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reminder_token" value="{{ reminder_undo.token }}"><input type="hidden" name="return_to" value="dashboard"><button class="btn btn--outline" type="submit" name="action" value="show">Rückgängig: Erinnerung wieder anzeigen</button></form>{% endif %}
+        {% for row in private_reminders %}{{ private_reminder(row,'dashboard') }}{% endfor %}
+        <p><a href="{{ url_for('member.private_reminders') }}">Meine Erinnerungen einschliesslich ausgeblendeter ansehen</a></p>
+        </section>
 
         <section class="dashboard-intent" aria-labelledby="dashboard-explore-heading">
             <h2 id="dashboard-explore-heading" class="dashboard-intent__heading">Erkunden</h2>

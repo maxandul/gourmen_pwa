@@ -365,3 +365,9 @@ tatsaechlichen Rueckzahlung: erst zugeordneter Bankausgang auf 6710 reduziert
 ihn. Folgejahresausgang bleibt in seinem Zahlungsjahr. Eigene Betraege sind
 fuer das Mitglied lesbar, andere Posten nicht allein durch diesen Zugang.
 Private Faelle und bezahlter Glaeubigerwechsel sind weiterhin gesondert.
+
+Private Betragserinnerung (U3-01/B02): eigenes Ausblenden ist keine Zahlung.
+Die App kennt private Zahlungen nicht. Wiederanzeigen ist jederzeit moeglich;
+Betrags-/Empfaengerwechsel zeigt die Erinnerung erneut, Textaenderung nicht.
+Legacy-Zahlungswerte bleiben Historie; bereits erlassene Posten werden nicht
+als neue Erinnerung wiederbelebt. Bezahlter Glaeubigerwechsel bleibt G1.

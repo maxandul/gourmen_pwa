@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% from 'member/_private_reminder.html' import private_reminder with context %}
+{% block title %}Private Betragserinnerungen - Gourmen{% endblock %}
+{% block content %}<div class="container"><div class="page-header"><h1>Meine privaten Betragserinnerungen</h1></div><div class="page-content">
+<p class="page-back"><a href="{{ url_for('dashboard.index') }}">Zurück zum Dashboard</a></p>
+{% if error %}<p class="form-field__error" role="alert">{{ error }}</p>{% endif %}
+<p>Ausblenden betrifft nur deine Anzeige. Niemand bestätigt hier private Zahlungen; es entsteht keine Vereinsbuchung.</p>
+{% for row in reminders %}{{ private_reminder(row) }}{% else %}<p>Keine privaten Betragserinnerungen vorhanden.</p>{% endfor %}
+</div></div>{% endblock %}

@@ -303,6 +303,8 @@
                     {% set has_final = event.gesamtbetrag_rappen is not none %}
                     {% if can_read_billbro_drafts and event.is_paid_by_club and event.gesamtbetrag_rappen is not none %}<p><a href="{{ url_for('billbro.correction_drafts', event_id=event.id) }}">Vereinskorrektur: Entwürfe ansehen</a></p>{% endif %}
                     {% if has_own_billbro_claim %}<p><a href="{{ url_for('billbro.correction_balances',event_id=event.id) }}">Meinen Zahlungs- und Rückzahlungsstand ansehen</a></p>{% endif %}
+                    {% from 'member/_private_reminder.html' import private_reminder with context %}
+                    {% for row in private_reminders %}{{ private_reminder(row,'event') }}{% endfor %}
                     {% set can_access_billbro = (participation and participation.billbro_attending) or is_organizer %}
                     {% set supports_ggl = event.supports_ggl %}
                     {% if can_access_billbro %}

@@ -254,10 +254,13 @@ class BillBroCorrectionService:
             # Insert before deleting, so even SQLite cannot reuse an old claim identity.
             for mid, share in shares.items():
                 if share > 0 and mid != creditor:
-                    db.session.add(MemberClaim(member_id=mid, creditor_member_id=creditor, event_id=event.id,
+                    replacement = MemberClaim(member_id=mid, creditor_member_id=creditor, event_id=event.id,
                         claim_type=ClaimType.ESSENSANTEIL, expected_rappen=share,
                         fiscal_year_id=next((c.fiscal_year_id for c in claims if c.member_id == mid), None),
-                        note=f'Essensanteil {event.display_date} (korrigiert)'))
+                        note=f'Essensanteil {event.display_date} (korrigiert)')
+                    from backend.services.private_reminders import PrivateReminderService
+                    PrivateReminderService.copy_for_correction(next((c for c in claims if c.member_id==mid),None),replacement)
+                    db.session.add(replacement)
             db.session.flush()
             for claim in claims:
                 db.session.delete(claim)

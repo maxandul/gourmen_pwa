@@ -570,6 +570,9 @@ class MemberClaim(db.Model):
     )
     expected_rappen = db.Column(db.Integer, nullable=False)
     paid_rappen = db.Column(db.Integer, nullable=False, default=0)
+    private_reminder_hidden = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    private_reminder_changed = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    private_reminder_version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     status = db.Column(
         db.Enum(ClaimStatus), default=ClaimStatus.OFFEN, nullable=False, index=True,
     )

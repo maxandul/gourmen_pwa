@@ -688,3 +688,30 @@ def calendar_feed_disable():
 
 # Import here to avoid circular imports
 from datetime import datetime  # noqa: E402, F811 – legacy import, vom Profile-Block weiterhin benoetigt
+
+
+@bp.route('/private-reminders')
+@login_required
+def private_reminders():
+    from backend.services.private_reminders import PrivateReminderService
+    return render_template('member/private_reminders.html',reminders=PrivateReminderService.rows(current_user,include_hidden=True),error=None)
+
+
+@bp.route('/private-reminders/<int:claim_id>',methods=['POST'])
+@login_required
+def private_reminder_toggle(claim_id):
+    from backend.services.private_reminders import PrivateReminderService,ReminderError
+    try:
+        PrivateReminderService.toggle(claim_id,current_user,request.form.get('action'),request.form.get('reminder_token'))
+    except ReminderError as exc:
+        return render_template('member/private_reminders.html',reminders=PrivateReminderService.rows(current_user,include_hidden=True),error=str(exc)),400
+    hidden=request.form.get('action')=='hide'
+    flash('Erinnerung ausgeblendet. Keine Zahlung bestaetigt.' if hidden else 'Erinnerung wieder sichtbar. Keine Zahlung bestaetigt.','success')
+    destination=request.form.get('return_to')
+    if destination=='dashboard':
+        return redirect(url_for('dashboard.index',hidden_reminder=claim_id if hidden else None))
+    if destination=='event':
+        claim=PrivateReminderService.query(current_user).filter_by(id=claim_id).first()
+        if claim and claim.event and claim.event.is_visible_to(current_user):
+            return redirect(url_for('events.detail',event_id=claim.event_id,tab='billbro'))
+    return redirect(url_for('member.private_reminders'))

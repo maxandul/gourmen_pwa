@@ -1,0 +1,12 @@
+{% macro private_reminder(row, return_to='list') %}
+{% set claim=row.claim %}
+<div class="card"><div class="card__body">
+{% if claim.event %}<p>{% if claim.event.is_visible_to(current_user) %}{{ claim.event.display_date }} {{ claim.event.restaurant or '' }}{% else %}Geschuetztes Event{% endif %}</p>{% endif %}
+<p>Dein privater Anteil: CHF {{ '%.2f'|format(claim.expected_rappen / 100) }} · Empfänger: {{ claim.creditor.display_name }}</p>
+<p class="text-secondary">Private Zahlungen sind der App unbekannt. Diese Anzeige ist keine Zahlungsbestätigung.</p>
+{% if claim.private_reminder_changed %}<p>Betrag oder Empfänger wurde geändert. Die Erinnerung wird erneut angezeigt.</p>{% endif %}
+{% if claim.private_reminder_hidden %}<p>Erinnerung auf deinem Dashboard ausgeblendet.</p>{% endif %}
+<form method="POST" class="form" action="{{ url_for('member.private_reminder_toggle',claim_id=claim.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reminder_token" value="{{ row.token }}"><input type="hidden" name="return_to" value="{{ return_to }}"><button class="btn btn--outline" type="submit" name="action" value="{{ 'show' if claim.private_reminder_hidden else 'hide' }}">{{ 'Erinnerung wieder anzeigen' if claim.private_reminder_hidden else 'Erinnerung ausblenden' }}</button></form>
+{% if return_to != 'event' and claim.event and claim.event.is_visible_to(current_user) %}<p><a href="{{ url_for('events.detail',event_id=claim.event_id,tab='billbro') }}">Betrag im Event ansehen</a></p>{% endif %}
+</div></div>
+{% endmacro %}

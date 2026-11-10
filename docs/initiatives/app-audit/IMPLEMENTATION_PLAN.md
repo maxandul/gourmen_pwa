@@ -1,6 +1,6 @@
 # Verbindlicher Umsetzungsplan für Agenten
 
-Stand: 21.10.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
+Stand: 10.11.2026. **U1 ist in Arbeit und insgesamt nicht abgeschlossen.**
 Dieser Plan konsolidiert vorhandene Entscheidungen und Nachweise; er ist kein neuer Audit.
 Die aktuelle Beauftragung umfasst die fortlaufende lokale Umsetzung bereiter Pakete
 mit Tests, Dokumentation und lokalen Commits. Keine Produktionsfreigabe.
@@ -146,11 +146,23 @@ in der Nachweistabelle. Keine neue Produktions- oder Datenkorrekturfreigabe.
 
 | U2-17c2 / G1, F4 | geplant | Bezahlten Glaeubigerwechsel mit ausdruecklich dokumentiertem realem Ausgleich konkretisieren. Private Zahlungen unbekannt; keine automatische Umbuchung oder doppelte Forderung. |
 
-### Bereite Fortsetzung im privaten Fachablauf
+### Aktuelle Fortsetzung nach B02
 
 | Paket | Lokal | Begrenzter Auftrag |
 |---|---|---|
-| U3-01 / B02 | **bereit / nächstes Paket** | Eigene private Betragserinnerung aus-/wiederanzeigen, Betrag/Empfaenger im Event erreichbar lassen. Aenderung von eigenem Betrag/Empfaenger zeigt Erinnerung erneut; reine Textaenderung nicht. Legacy-Privatbestaetigung ersetzen, keine verifizierten Zahlungsstaende oder Vereinsbuchung erzeugen. BUCHHALTUNG_PRAXISABGLEICH B01/B02 und FINANZ_ERGAENZUNG_ENTWURF lesen; Schema/Altbestand vor Code konkretisieren, Migration separat. |
+| U3-01 / B02 | lokal geprüft | Eigene private Betragserinnerung aus-/wiederanzeigen, Betrag/Empfaenger im Event erreichbar lassen. Aenderung von eigenem Betrag/Empfaenger zeigt Erinnerung erneut; reine Textaenderung nicht. Legacy-Privatbestaetigung ersetzen, keine verifizierten Zahlungsstaende oder Vereinsbuchung erzeugen. BUCHHALTUNG_PRAXISABGLEICH B01/B02 und FINANZ_ERGAENZUNG_ENTWURF lesen; Schema/Altbestand vor Code konkretisieren, Migration separat. |
+
+B02-Abschluss: [Vertrag und Nachweis](U3_01_PRIVATE_ERINNERUNG.md), 122 Python-
+und 24 JavaScript-Tests am 10.11.2026 bestanden; Migration b9727e4 separat.
+
+| Paket | Lokal | Begrenzter Auftrag |
+|---|---|---|
+| U3-02 / GGL-Dashboard | **bereit / nächstes Paket** | Dashboard setzt user_rank derzeit aus enumerate(season_ranking) statt aus dem berechneten rank. Bestehende Gleichstandsregel aus DOMAIN und U2_17B_BILLBRO_KORREKTUR lesen; Dashboard an GGLService-Rang angleichen. Regression fuer Gleichstand, normalen Rang und fehlende Wertung; keine historische Neuberechnung, keine Migration. UI-Cache-Buster und Dokumentation aktualisieren. Danach G1/weitere Restpakete nach Abhaengigkeiten fein abgrenzen. |
+
+Am 10.11.2026 wurde die laufende Umsetzung fuer eine GitHub-Uebergabe beendet.
+Der neue Agent startet erst mit eigenem Nutzerauftrag; [Startauftrag](START_NEXT_AGENT.md).
+Die einmalige Veroeffentlichung dieser Branchkette ist ausdruecklich beauftragt;
+kein Merge, Deploy oder Produktionszugriff. Weitere Pushes brauchen einen Auftrag.
 
 B02 ist unabhaengig vom noch geplanten bezahlten Glaeubigerwechsel; benoetigte
 Rechte-/Betrags-/Korrekturgrundlagen liegen lokal vor. U2 ist dadurch nicht

@@ -29,7 +29,7 @@ from backend.models.accounting import (
     MemberClaim,
 )
 from backend.models.member import Member
-from backend.services.accounting import AccountingService
+from backend.services.accounting import AccountingService, AccountingValidationError
 from backend.services.bank_import import (
     BankImportService,
     normalize_bank_text,
@@ -316,8 +316,9 @@ def test_billbro_claims_club_vs_private(app):
         assert claims[0].creditor_member_id == roman.id
         assert not claims[0].is_club_claim
 
-        confirmed = AccountingService.confirm_private_payment(claims[0].id, roman)
-        assert confirmed.status == ClaimStatus.BEGLICHEN
+        with pytest.raises(AccountingValidationError):
+            AccountingService.confirm_private_payment(claims[0].id, roman)
+        assert claims[0].status == ClaimStatus.OFFEN and claims[0].paid_rappen == 0
 
 
 def test_billbro_claims_reconcile_on_zahlweg_change(app):

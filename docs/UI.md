@@ -585,3 +585,9 @@ form-field, info-row, disclosure, card und btn; keine neue CSS-Klasse.
 Persoenlicher Einstieg auch fuer nachtraeglich Abwesende mit eigenem Posten.
 Banklinks nur bei Finanz-Leserecht. PWA 3.16.44 / pwa.e8bff355.js.
 Funktionale Templates getestet; reale Geraete-/Hell-/Dunkel-Abnahme offen.
+
+U3-01/B02 verwendet card, form, btn, page-back und form-field__error fuer
+eigene private Erinnerungen auf Dashboard, Event und eigener Liste. Keine neue
+CSS-Klasse. Ausblenden entfernt auch den Betrag aus der Dashboard-Kachel
+Letzter Anteil; direkte Wiederaufnahme und eigene Liste bleiben erreichbar.
+PWA 3.16.45 / pwa.9af46541.js. Funktionale Tests sind keine Geraeteabnahme.

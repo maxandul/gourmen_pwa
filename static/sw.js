@@ -3,7 +3,7 @@
  * Verbesserte Offline-Funktionalität und Update-Management
  */
 
-const VERSION = '3.16.44';
+const VERSION = '3.16.45';
 const CACHE_NAME = `gourmen-v${VERSION}`;
 const STATIC_CACHE = `gourmen-static-v${VERSION}`;
 // Nur bekannte eigene Cache-Familien entfernen; fremde Origin-Caches erhalten.
