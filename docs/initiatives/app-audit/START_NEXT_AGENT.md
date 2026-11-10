@@ -1,6 +1,6 @@
 # Neuer Agent: Startauftrag und reproduzierbarer Einstieg
 
-Stand: 10.11.2026. Repository: https://github.com/maxandul/gourmen_pwa
+Stand: 10.11.2026. B02-Anwendungsabschluss: `4bc210e`; separate Migration: `b9727e4`. Repository: https://github.com/maxandul/gourmen_pwa
 Branch: `codex/app-audit-implementation-plan`. **Nicht master verwenden.**
 Dieser Branch enthaelt Code, separat committete Migrationen, Fachentscheidungen,
 Tests und Paketnachweise. Kein vorheriger Chat ist erforderlich.

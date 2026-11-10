@@ -1,6 +1,6 @@
 # Agenteneinstieg: App-Audit-Umsetzung
 
-Stand: 10.11.2026. **U1 ist insgesamt offen.**
+Stand: 10.11.2026. B02-Anwendungsabschluss: `4bc210e`; separate Migration: `b9727e4`. **U1 ist insgesamt offen.**
 
 1. AGENTS.md, [README](README.md) und [Umsetzungsplan](IMPLEMENTATION_PLAN.md)
    lesen. Plan steuert die aktuelle Paketfolge, README ist das Nachweisregister.

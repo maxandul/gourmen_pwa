@@ -88,3 +88,10 @@ PostgreSQL-Sperren/Migration unter PostgreSQL, echte Browser/Geraete und
 Darstellungsabnahme bleiben offen. Keine Produktionsfreigabe, kein Versand.
 Separat entdeckt und noch nicht korrigiert: Dashboard verwendet fuer GGL
 Listenposition statt berechnetem Saisonrang; Folgeauftrag U3-02 im Plan.
+
+Anwendungsabschluss: 4bc210e. Uebergabelinks lokal auf vorhandene Dateien
+geprueft; generierte PWA-Datei bytegleich zur Quelle. git diff --check fuer
+geaenderte bestehende Dateien ohne Befund; nach Aufnahme der generierten neuen
+PWA-Datei meldet die Pruefung vorhandene Leerzeichen am Zeilenende aus der
+bytegleich kopierten Quelle. Keine Funktionsabweichung; nicht als vollstaendig
+warnungsfreier Gesamt-Diff ausweisen.
